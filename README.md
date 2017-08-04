@@ -1,1 +1,2 @@
-# type-I-ckine-model
+# An activation model for the type I cytokine receptors
+
