@@ -8,15 +8,44 @@ pipeline {
       }
     }
     stage('Build') {
-      steps { sh 'make all' }
+      steps { sh 'make -j 8' }
     }
     stage('Test'){
       steps {
-        sh 'make test'
+        sh 'make testcover'
+        sh '(pylint --rcfile=.pylintrc recepmod > pylint.log || echo "pylint exited with $?")'
       }
     }
     stage('Report') {
       steps {
+        archiveArtifacts artifacts: 'Manuscript/Manuscript.pdf', onlyIfSuccessful: true
+        publishHTML([
+          allowMissing: false,
+          alwaysLinkToLastBuild: false,
+          keepAll: false,
+          reportDir: 'Manuscript',
+          reportFiles: 'index.html',
+          reportName: 'Manuscript',
+          reportTitles: ''])
+        step([
+          $class                     : 'WarningsPublisher',
+          parserConfigurations       : [[
+          parserName: 'PYLint',
+          pattern   : 'pylint.log'
+          ]],
+          unstableTotalAll           : '1000',
+          usePreviousBuildAsReference: true
+          ])
+        step([
+          $class: 'CoberturaPublisher',
+          autoUpdateHealth: true,
+          autoUpdateStability: true,
+          coberturaReportFile: 'coverage.xml',
+          failNoReports: true,
+          failUnhealthy: true,
+          failUnstable: true,
+          sourceEncoding: 'UTF_8',
+          zoomCoverageChart: true])
         step([
           $class: 'TasksPublisher',
           canComputeNew: false,
