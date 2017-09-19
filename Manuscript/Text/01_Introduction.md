@@ -1,14 +1,16 @@
 ---
 title: Title
 author:
-- name: Name
-  affiliation: Affiliation
+- name: Adam Weiner
+  affilnum: a
 - name: Aaron S. Meyer
-  affiliation: Department of Bioengineering, University of California, Los Angeles
-keywords:
-- Type I cytokine receptors
-- Immunology
-institute: A
+  affilnum: a,b
+keywords: [IL2, IL15]
+affiliation:
+- name: Department of Bioengineering, Jonsson Comprehensive Cancer Center, Eli and Edythe Broad Center of Regenerative Medicine and Stem Cell Research; University of California, Los Angeles
+  key: a
+- name: Contact info
+  key: b
 bibliography: ./Manuscript/References.bib
 abstract: Abstract
 link-citations: true

@@ -1,4 +1,4 @@
-\documentclass[12pt]{article}
+\documentclass[11pt]{article}
 
 \usepackage{libertine}
 \usepackage{amssymb,amsmath,mathtools}
@@ -7,6 +7,7 @@
 
 % To allow Ryan to show alterations he has made to the manuscript using colored text:
 \usepackage{color}
+\usepackage[affil-it]{authblk}
 
 \PassOptionsToPackage{hyphens}{url} % url is loaded by hyperref
 
@@ -110,19 +111,19 @@ $endif$
 % Defines absolute value paired delimiter "\abs{}"
 \DeclarePairedDelimiter\abs{\lvert}{\rvert}
 
-$if(title)$
-\title{$title$$if(thanks)$\thanks{$thanks$}$endif$}
-$endif$
-$if(author)$
-\author{$for(author)$ $author.name$ $sep$ \and $endfor$}
-$endif$
-$if(institute)$
-\providecommand{\institute}[1]{}
-\institute{$for(institute)$$institute$$sep$ \and $endfor$}
-$endif$
+\title{$title$}
+
+$for(author)$
+\author[$author.affilnum$]{$author.name$}
+$endfor$
+
+$for(affiliation)$
+\affil[$affiliation.key$]{$affiliation.name$}
+$endfor$
+
 \date{$date$}
 
-\newcommand{\beginsupplement}{%
+\newcommand{\beginsupplement}{\cleardoublepage%
       \setcounter{table}{0}
       \renewcommand{\thetable}{S\arabic{table}}%
       \setcounter{figure}{0}
