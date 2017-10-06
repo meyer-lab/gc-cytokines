@@ -51,6 +51,6 @@ def dy_dt(y, t, IL2, k1fwd, k4fwd, k5rev, k6rev, k10rev, k11rev):
     # added dydt[2] through dydt[9] based on the diagram pictured in type-I-ckine-model/model/graph.pdf on 9/19/17 by Adam; dydt[0] and dydt[1] were done by Aaron
 
     return dydt
-
-x = odeint(dy_dt, np.array([1,1,1,1,1,1,1,1,1,1]), 100000000, (1, 1, 1, 1, 1, 1, 1))
+t = np.linspace(0,100000 )
+x = odeint(dy_dt, np.array([1,1,1,1,1,1,1,1,1,1]), t, (1, 1, 1, 1, 1, 1, 1))
 print (x)
