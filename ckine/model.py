@@ -23,7 +23,7 @@ def dy_dt(y, t, IL2, k1fwd, k4fwd, k5rev, k6rev, k10rev, k11rev):
     k1rev = k1fwd * 10 # doi:10.1016/j.jmb.2004.04.038, 10 nM
     k2fwd = k1fwd
     k2rev = k2fwd * 144 # doi:10.1016/j.jmb.2004.04.038, 144 nM
-    k3fwd = k1fwd / 10 # Very weak, > 50 uM. Voss, et al (1993). PNAS. 90, 2428–2432.
+    k3fwd = k1fwd / 10.0 # Very weak, > 50 uM. Voss, et al (1993). PNAS. 90, 2428–2432.
     k3rev = 50000 * k3fwd
 
     # To satisfy detailed balance these relationships should hold
@@ -51,6 +51,3 @@ def dy_dt(y, t, IL2, k1fwd, k4fwd, k5rev, k6rev, k10rev, k11rev):
     # added dydt[2] through dydt[9] based on the diagram pictured in type-I-ckine-model/model/graph.pdf on 9/19/17 by Adam; dydt[0] and dydt[1] were done by Aaron
 
     return dydt
-
-x = odeint(dy_dt, np.array([1,1,1,1,1,1,1,1,1,1]), 100000000, (1, 1, 1, 1, 1, 1, 1))
-print (x)
