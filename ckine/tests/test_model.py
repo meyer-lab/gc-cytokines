@@ -7,9 +7,6 @@ from scipy.integrate import odeint
 class TestModel(unittest.TestCase):
     def setUp(self):
         print("Setup testing")
-
-    def test_nchoosek(self):
-        print("Ran test")
         
     def test_equilibrium(self):
         ts = np.array([0.0, 100000.0])
