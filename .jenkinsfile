@@ -13,7 +13,7 @@ pipeline {
     stage('Test'){
       steps {
         sh 'make testcover'
-        sh '(pylint --rcfile=.pylintrc recepmod > pylint.log || echo "pylint exited with $?")'
+        sh '(pylint --rcfile=.pylintrc ckine > pylint.log || echo "pylint exited with $?")'
       }
     }
     stage('Report') {
