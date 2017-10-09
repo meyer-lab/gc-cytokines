@@ -1,7 +1,9 @@
 ---
-title: Title
+title: Receptor Competition Shapes the Response Among Common Gamma Chain Receptors
 author:
 - name: Adam Weiner
+  affilnum: a
+- name: Ali Farhat
   affilnum: a
 - name: Aaron S. Meyer
   affilnum: a,b
