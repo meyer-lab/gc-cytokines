@@ -1,7 +1,24 @@
 # Results
 
-## One
+## Model Construction
 
-## Two
+## Parameterization / Fitting
 
-## Three
+
+
+## Predictions for individual dose-response
+
+
+
+
+
+## Gamma chain competition reshapes the response to multiple cytokines
+
+
+
+
+
+## Further prediction
+
+
+
