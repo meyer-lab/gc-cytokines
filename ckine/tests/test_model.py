@@ -7,7 +7,13 @@ from scipy.integrate import odeint
 class TestModel(unittest.TestCase):
     def setUp(self):
         print("Setup testing")
-        
+
+    def test_length(self):
+        y0 = np.ones((10, ), dtype = np.float64)
+        args = (1., 1., 1., 1., 1., 1., 0.5) # these 7 float values represent the inputs IL2 through k11rev
+                        
+        self.assertEqual(len(dy_dt(y0, 0, *args)),10)
+
     def test_equilibrium(self):
         ts = np.array([0.0, 100000.0])
         y0 = np.ones((10, ), dtype = np.float64)
@@ -24,7 +30,7 @@ class TestModel(unittest.TestCase):
         y, fullout = odeint(dy_dt, y0, ts, args,
                     full_output = True, mxstep = 5000)
         
-       #Assign a value eq for the sum of amounts of receptors at equilirium
+        #Assign a value eq for the sum of amounts of receptors at equilirium
         gc_eq = y[1,2] + y[1,5] + y[1,7] + y[1,8] + y[1,9]
         IL2Ra_eq = y[1,0] + y[1,3] + y[1,6] + y[1,7] + y[1,9]
         IL2Rb_eq = y[1,1] + y[1,4] + y[1,6] + y[1,8] + y[1,9]
