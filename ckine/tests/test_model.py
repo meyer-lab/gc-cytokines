@@ -18,14 +18,12 @@ class TestModel(unittest.TestCase):
         self.assertEqual(len(dy_dt(self.y0, 0, *self.args)),10)
 
     def test_equilibrium(self):
-        y, fullout = odeint(dy_dt, self.y0, self.ts, self.args,
-                    full_output = True, mxstep = 5000)
+        y = odeint(dy_dt, self.y0, self.ts, self.args, mxstep = 5000)
         z = np.linalg.norm(dy_dt(y[1, :], 0, *self.args)) # have the sum of squares for all the dy_dt values be z
         self.assertTrue(z < 1E-5)
   
     def test_conservation(self):
-        y, fullout = odeint(dy_dt, self.y0, self.ts, self.args,
-                    full_output = True, mxstep = 5000)
+        y = odeint(dy_dt, self.y0, self.ts, self.args, mxstep = 5000)
         
         #Assign a value eq for the sum of amounts of receptors at equilirium
         gc_eq = y[1,2] + y[1,5] + y[1,7] + y[1,8] + y[1,9]
