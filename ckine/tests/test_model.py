@@ -8,26 +8,23 @@ class TestModel(unittest.TestCase):
     def setUp(self):
         print("Setup testing")
 
-    def test_length(self):
-        y0 = np.ones((10, ), dtype = np.float64)
-        args = (1., 1., 1., 1., 1., 1., 0.5) # these 7 float values represent the inputs IL2 through k11rev
-                        
-        self.assertEqual(len(dy_dt(y0, 0, *args)),10)
+        self.ts = np.array([0.0, 100000.0])
+        self.y0 = np.random.lognormal(0., 1., 10)
+        self.args1 = list(np.random.lognormal(0., 1., 7))
+        self.args = tuple(self.args1)
+        # need to convert args from an array to a tuple of numbers
+
+    def test_length(self):                        
+        self.assertEqual(len(dy_dt(self.y0, 0, *self.args)),10)
 
     def test_equilibrium(self):
-        ts = np.array([0.0, 100000.0])
-        y0 = np.ones((10, ), dtype = np.float64)
-        args = (1., 1., 1., 1., 1., 1., 0.5) # these 7 float values represent the inputs IL2 through k11rev
-        y, fullout = odeint(dy_dt, y0, ts, args,
+        y, fullout = odeint(dy_dt, self.y0, self.ts, self.args,
                     full_output = True, mxstep = 5000)
-        z = np.linalg.norm(dy_dt(y[1, :], 0, *args)) # have the sum of squares for all the dy_dt values be z
+        z = np.linalg.norm(dy_dt(y[1, :], 0, *self.args)) # have the sum of squares for all the dy_dt values be z
         self.assertTrue(z < 1E-5)
-        
+  
     def test_conservation(self):
-        ts = np.array([0.0, 100000.0])
-        y0 = np.ones((10, ), dtype = np.float64)
-        args = (1., 1., 1., 1., 1., 1., 0.5) # these 7 float values represent the inputs IL2 through k11rev
-        y, fullout = odeint(dy_dt, y0, ts, args,
+        y, fullout = odeint(dy_dt, self.y0, self.ts, self.args,
                     full_output = True, mxstep = 5000)
         
         #Assign a value eq for the sum of amounts of receptors at equilirium
@@ -36,9 +33,9 @@ class TestModel(unittest.TestCase):
         IL2Rb_eq = y[1,1] + y[1,4] + y[1,6] + y[1,8] + y[1,9]
         
         #Assign a value for the sum of amounts of each receptor at initial conditions
-        gc_initial = y0[2] + y0[5] + y0[7] + y0[8] + y0[9]
-        IL2Ra_initial = y0[0] + y0[3] + y0[6] + y0[7] + y0[9]
-        IL2Rb_initial = y0[1] + y0[4] + y0[6] + y0[8] + y0[9]
+        gc_initial = self.y0[2] + self.y0[5] + self.y0[7] + self.y0[8] + self.y0[9]
+        IL2Ra_initial = self.y0[0] + self.y0[3] + self.y0[6] + self.y0[7] + self.y0[9]
+        IL2Rb_initial = self.y0[1] + self.y0[4] + self.y0[6] + self.y0[8] + self.y0[9]
         
         #Check for conservation of gc
         self.assertAlmostEqual(gc_eq,gc_initial)
