@@ -1,7 +1,7 @@
 """
 This creates Figure 3.
 """
-from .FigureCommon import subplotLabel, getSetup
+from .figureCommon import subplotLabel, getSetup
 
 
 def makeFigure():
