@@ -14,7 +14,8 @@ def plot(t, IL2Ra, IL2Rb, gc, IL2, k1fwd, k4fwd, k5rev, k6rev, k10rev, k11rev):
     plt.rcParams.update({'font.size': 14})  # increase the font size
     plt.xlabel("t")
     plt.ylabel("y")
-    plt.plot(ts, ys);
+    lines = plt.plot(ts, ys);
+    plt.legend(lines, ["IL2Ra", "IL2Rb", "gc", "IL2_IL2Ra", "IL2_IL2Rb", "IL2_gc", "IL2_IL2Ra_IL2Rb", "IL2_IL2Ra_gc", "IL2_IL2Rb_gc", "IL2_IL2Ra_IL2Rb_gc"], bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0.)
 
 # example of calling the plot with randomnly selected arguments    
-plot(10, 3., 1., 0.5, 0.2, 0.5, 0.9, 1.0, 1.8, 1.2, 0.8)
+plot(2, 3., 1., 0.5, 0.2, 0.5, 0.9, 1.0, 1.8, 1.2, 0.8)
