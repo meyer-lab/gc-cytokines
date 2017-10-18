@@ -104,6 +104,3 @@ def dy_dt_IL2_wrapper(y, t, IL2, k4fwd, k5rev, k6rev):
    ys = np.concatenate((y,z), axis=0)
    ret_val = dy_dt(ys, t, IL2, 0., k4fwd, k5rev, k6rev, 1., 1., 1., 1., 1.) # set the IL15 reaction rates to 1
    return ret_val[0:10]
-
-# might need to limit y to just 10 elements instead of 18
-dy_dt_IL2_wrapper([1.,2.,3.,4.,5.,6.,7.,8.,9.,10.], 3., 1.,2.,3.,4.)
