@@ -20,3 +20,4 @@ for ii in range (mat.shape[0]): # iterates through every combination of the argu
         ys[ii,:] = temp[1,:] 
 table = np.concatenate((mat, ys), 1) # puts the arguments to the left of the output data in a matrix
 print (table)
+# fixed #18 
