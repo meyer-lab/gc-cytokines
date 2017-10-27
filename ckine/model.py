@@ -52,11 +52,21 @@ def dy_dt(y, t, IL2, IL15, IL7, IL9, k4fwd, k5rev, k6rev, k13fwd, k17rev, k18rev
     k10rev = 12.0 * k5rev * k10fwd / 1.5 / k5fwd # doi:10.1016/j.jmb.2004.04.038
     k11rev = 63.0 * k5rev * k11fwd / 1.5 / k5fwd # doi:10.1016/j.jmb.2004.04.038
     
+    
+    
+    
+    
+    
+    
+    
+    
     # Literature values for k values for IL-15
     # TODO: Find actual literature values for these
-    k13rev = k13fwd * 10
+    k13rev = k13fwd * 0.065 #based on the multiple papers suggesting 30-100 pM
     k14fwd = k13fwd
-    k14rev = k14fwd * 144
+    k14rev = k14fwd * 438 # doi:10.1038/ni.2449, 438 nM
+    
+    
     k15fwd = k13fwd / 10.0
     k15rev = 50000 * k15fwd
 
