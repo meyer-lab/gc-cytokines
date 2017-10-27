@@ -2,6 +2,7 @@ import numpy as np
 from scipy.integrate import odeint
 from model import dy_dt_IL2_wrapper
 from sklearn.decomposition import PCA
+from sklearn import preprocessing
 import matplotlib.pyplot as plt
 
 # IL2 (third argument) will always be 1 nM and there will be 1000 of each receptor (first 3 elements of first argument (y))
@@ -25,14 +26,14 @@ table = np.concatenate((mat, ys), 1) # puts the arguments to the left of the out
 # fixed #18 
 
 # now going to use PCA to make sense of the data
-pca = PCA(n_components=3) # found percent of explained variance for each of the 13 components and the first 3 components each made up 33% of the explained variance
-scores = pca.fit_transform(table) # this has my scores - now need to print/plot it
+pca = PCA(n_components=10) # found percent of explained variance for each of the 13 components and the first 3 components each made up 33% of the explained variance
+scores = pca.fit_transform(preprocessing.scale(table)) # this has my scores - now need to print/plot it
 ######## the following 5 lines found the % explained variance for each PC ############
-#exp_var = pca.explained_variance_ # this gives us the length of each eigenvalue in descending order
-#total_exp_var = sum(exp_var)
-#percent_exp_var = (exp_var * 100.) / total_exp_var
-#print (percent_exp_var)
-#print (sum(percent_exp_var))
+exp_var = pca.explained_variance_ # this gives us the length of each eigenvalue in descending order
+total_exp_var = sum(exp_var)
+percent_exp_var = (exp_var * 100.) / total_exp_var
+print (percent_exp_var)
+print (sum(percent_exp_var))
 #print (pca.components_[0,:]) # this gives me the scaling for the loadings plot
 #print (scores[:,0])
 
