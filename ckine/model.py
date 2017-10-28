@@ -1,7 +1,7 @@
 import numpy as np
 
 
-def dy_dt(y, t, IL2, IL15, IL7, IL9, k4fwd, k5rev, k6rev, k13fwd, k17rev, k18rev, k22rev, k23rev, k25rev, k26rev, k27rev, k29rev, k30rev, k31rev):
+def dy_dt(y, t, IL2, IL15, IL7, IL9, k4fwd, k5rev, k6rev, k13fwd, k15rev, k17rev, k18rev, k22rev, k23rev, k25rev, k26rev, k27rev, k29rev, k30rev, k31rev):
     # IL2 in nM
     IL2Ra = y[0]
     IL2Rb = y[1]
@@ -54,22 +54,13 @@ def dy_dt(y, t, IL2, IL15, IL7, IL9, k4fwd, k5rev, k6rev, k13fwd, k17rev, k18rev
     
     
     
-    
-    
-    
-    
-    
-    
     # Literature values for k values for IL-15
     # TODO: Find actual literature values for these
     k13rev = k13fwd * 0.065 #based on the multiple papers suggesting 30-100 pM
     k14fwd = k13fwd
     k14rev = k14fwd * 438 # doi:10.1038/ni.2449, 438 nM
     
-    
-    k15fwd = k13fwd / 10.0
-    k15rev = 50000 * k15fwd
-
+    k15fwd = k1fwd
     k17fwd = k18fwd = k1fwd
     k13fwd = k14fwd = k1fwd
     k25fwd = k26fwd = k1fwd
