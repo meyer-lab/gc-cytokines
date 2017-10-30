@@ -2,6 +2,8 @@ import unittest
 from ..model import dy_dt
 import numpy as np
 from scipy.integrate import odeint
+from ..model import dy_dt_IL2_wrapper
+from inspect import signature
 
 
 class TestModel(unittest.TestCase):
@@ -38,3 +40,18 @@ class TestModel(unittest.TestCase):
         self.assertAlmostEqual(np.sum(species_delta[IL2Ra_species]), 0.0)
         #Check for conservation of IL15Ra
         self.assertAlmostEqual(np.sum(species_delta[IL15Ra_species]), 0.0)
+
+    def test_IL2_wrapper_args(self):
+        # checks to make sure there are 15 more arguments in dy_dt than there are in the IL2 wrapper
+        self.sig = signature(dy_dt)
+        self.sig_wrap = signature(dy_dt_IL2_wrapper)
+        self.par = self.sig.parameters
+        self.par_wrap = self.sig_wrap.parameters
+        self.assertEqual(len(self.par), (len(self.par_wrap) + 15)) 
+        
+    def test_IL2_wrapper_y(self):
+        # checks to make sure the initial concentration of IL15, IL7 and IL9 receptors are set to 0
+        
+
+
+        
