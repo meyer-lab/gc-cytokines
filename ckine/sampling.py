@@ -66,8 +66,8 @@ fig = plt.figure()
 ax = fig.add_subplot(111)
 # plot all the points from PC1 and PC2 in a scatter plot
 plt.rcParams.update({'font.size': 8})
-plt.xlabel("PC 1 scores (33%)")
-plt.ylabel("PC 2 scores (33%)")
+plt.xlabel("PC 1 loadings (33%)")
+plt.ylabel("PC 2 loadings (33%)")
 plt.scatter(pc1,pc2)
 # label all the points on the scatterplot in accordance with the columns of 'table'
 ax.annotate('k4fwd', xy=(pc1[0], pc2[0]))
@@ -93,8 +93,8 @@ fig = plt.figure()
 ax = fig.add_subplot(111)
 # plot all the points from PC1 and PC3 in a scatter plot
 plt.rcParams.update({'font.size': 8})
-plt.xlabel("PC 1 scores (33%)")
-plt.ylabel("PC 3 scores (33%)")
+plt.xlabel("PC 1 loadings (33%)")
+plt.ylabel("PC 3 loadings (33%)")
 plt.scatter(pc1,pc3)
 # label all the points on the scatterplot in accordance with the columns of 'table'
 ax.annotate('k4fwd', xy=(pc1[0], pc3[0]))
