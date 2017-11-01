@@ -1,0 +1,38 @@
+##"A few people in the field of genetics are using dot to draw "marriage node diagram"  pedigree drawings.  Here is one I have done of a test pedigree from the FTREE pedigree drawing package (Lion Share was a racehorse)." Contributed by David Duffy.
+
+##Command to get the layout: "dot -Tpng thisfile > thisfile.png"
+
+digraph Ped_Lion_Share           {
+# page = "8.2677165,11.692913";
+ratio = "auto";
+label = "IL9 model";
+
+"IL9"   [shape=circle];
+"IL9R" [shape=box    ];
+"gc"    [shape=box    ];
+"IL9-IL9R" [shape=box];
+"IL9-gc" [shape=box];
+"IL9-IL9R-gc" [shape=box ];
+
+
+"k17" [shape=diamond,style=filled,height=.1,width=.1];
+"IL9" -> "k17" [dir=none,weight=1];
+"IL9R" -> "k17" [dir=none,weight=1];
+"k17" -> "IL9-IL9R" [dir=none, weight=2];
+
+"k18" [shape=diamond,style=filled,height=.1,width=.1];
+"IL9" -> "k18" [dir=none,weight=1];
+"gc" -> "k18" [dir=none,weight=1];
+"k18" -> "IL9-gc" [dir=none, weight=2];
+
+"k19" [shape=diamond,style=filled,height=.1,width=.1];
+"IL9-IL9R" -> "k19" [dir=none,weight=1];
+"gc" -> "k19" [dir=none,weight=1];
+"k19" -> "IL9-IL9R-gc" [dir=none, weight=2];
+
+"k20" [shape=diamond,style=filled,height=.1,width=.1];
+"IL9-gc" -> "k20" [dir=none,weight=1];
+"IL9R" -> "k20" [dir=none,weight=1];
+"k20" -> "IL9-IL9R-gc" [dir=none, weight=2];
+
+}
