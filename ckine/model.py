@@ -137,8 +137,8 @@ def dy_dt_IL2_wrapper(y, t, IL2, k4fwd, k5rev, k6rev):
     ''' Wrapper for dy_dt that is specific to IL2 '''
     # need to add zero's for the IL15 elements of y0 in dy_dt
     # TODO: Unit test of wrapper
-    z = np.array([0., 0., 0., 0., 0., 0., 0., 0.]) # set the initial concentration of IL15 receptors to 0
+    z = np.array([0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.]) # set the initial concentration of IL15, IL7 and IL9 receptors to 0
     # need to combine y and z as a numpy array
     ys = np.concatenate((y, z), axis=0)
-    ret_val = dy_dt(ys, t, IL2, 0., k4fwd, k5rev, k6rev, 1., 1., 1., 1., 1.) # set the IL15 reaction rates to 1
+    ret_val = dy_dt(ys, t, IL2, 0., 0., 0., k4fwd, k5rev, k6rev, 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1.) # set the IL15, IL7 and IL9 reaction rates to 1
     return ret_val[0:10]

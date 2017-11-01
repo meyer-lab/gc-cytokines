@@ -2,6 +2,7 @@ import unittest
 from ..model import dy_dt
 import numpy as np
 from scipy.integrate import odeint
+from ..model import dy_dt_IL2_wrapper
 
 
 class TestModel(unittest.TestCase):
@@ -38,3 +39,16 @@ class TestModel(unittest.TestCase):
         self.assertAlmostEqual(np.sum(species_delta[IL2Ra_species]), 0.0)
         #Check for conservation of IL15Ra
         self.assertAlmostEqual(np.sum(species_delta[IL15Ra_species]), 0.0)
+        
+    def test_IL2_wrapper(self):
+        # run odeint on some of the values... make sure they compile correctly and then check the length of the output
+        self.t = 50. # let's let the system run for 50 seconds
+        self.ts = np.linspace(0.0, self.t, 2)
+        self.y0 = np.array([1000.,1000.,1000.,0.,0.,0.,0.,0.,0.,0.])
+        self.z = self.w = self.x = np.logspace(-2, 2, num=5) # creates a list with floats ranging from 10**-2 to 10**2
+        self.mat = np.array(np.meshgrid(self.w,self.x,self.z)).T.reshape(-1, 3)
+        self.ys = np.zeros((125, 10))
+        for ii in range (self.mat.shape[0]): # iterates through every combination of the arguments
+            self.args = (1., self.mat[ii,0], self.mat[ii,1], self.mat[ii,2] )
+            self.temp = odeint(dy_dt_IL2_wrapper, self.y0, self.ts, self.args, mxstep = 6000)
+        self.assertEqual(len(self.temp[1]), 10)
