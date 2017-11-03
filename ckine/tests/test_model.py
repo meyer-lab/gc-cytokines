@@ -42,9 +42,9 @@ class TestModel(unittest.TestCase):
         #Check for conservation of IL15Ra
         self.assertAlmostEqual(np.sum(species_delta[IL15Ra_species]), 0.0)
         #Check for conservation of IL7Ra
-        self.assertAlmostEquals(np.sum(species_delta[IL7Ra_species]), 0.0)
+        self.assertAlmostEqual(np.sum(species_delta[IL7Ra_species]), 0.0)
         #Check for Conservation of IL9R
-        self.assertAlmostEquals(np.sum(species_delta[IL9R_species]), 0.0)
+        self.assertAlmostEqual(np.sum(species_delta[IL9R_species]), 0.0)
         
     def test_IL2_wrapper(self):
         # run odeint on some of the values... make sure they compile correctly and then check the length of the output
