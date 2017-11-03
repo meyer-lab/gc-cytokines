@@ -30,6 +30,8 @@ class TestModel(unittest.TestCase):
         IL2Ra_species = np.array([0, 3, 6, 7, 9])
         IL2Rb_species = np.array([1, 4, 6, 8, 9, 12, 14, 16, 17])
         IL15Ra_species = np.array([10, 11, 14, 15, 17])
+        IL7Ra_species = np.array([18,19,21])
+        IL9R_species = np.array([22,23,25])
         
         #Check for conservation of gc
         self.assertAlmostEqual(np.sum(species_delta[gc_species]), 0.0)
@@ -39,6 +41,10 @@ class TestModel(unittest.TestCase):
         self.assertAlmostEqual(np.sum(species_delta[IL2Ra_species]), 0.0)
         #Check for conservation of IL15Ra
         self.assertAlmostEqual(np.sum(species_delta[IL15Ra_species]), 0.0)
+        #Check for conservation of IL7Ra
+        self.assertAlmostEqual(np.sum(species_delta[IL7Ra_species]), 0.0)
+        #Check for Conservation of IL9R
+        self.assertAlmostEqual(np.sum(species_delta[IL9R_species]), 0.0)
         
     def test_IL2_wrapper(self):
         # run odeint on some of the values... make sure they compile correctly and then check the length of the output
