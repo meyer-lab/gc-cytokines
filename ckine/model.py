@@ -1,6 +1,5 @@
 import numpy as np
 
-
 def dy_dt(y, t, IL2, IL15, IL7, IL9, k4fwd, k5rev, k6rev, k13fwd, k15rev, k17rev, k18rev, k22rev, k23rev, k25rev, k26rev, k27rev, k29rev, k30rev, k31rev):
     # IL2 in nM
     IL2Ra = y[0]
@@ -156,8 +155,3 @@ def dy_dt_IL15_wrapper(y,t, IL15, k13fwd, k15rev, k17rev, k18rev, k22rev, k23rev
     return ret_values
 
 dy_dt_IL15_wrapper([1., 1., 1.], 2., 5., 2., 2., 2.,2.,2.,2.)
-
-
-
-
-
