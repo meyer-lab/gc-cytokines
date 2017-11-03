@@ -24,12 +24,14 @@ def dy_dt(y, t, IL2, IL15, IL7, IL9, k4fwd, k5rev, k6rev, k13fwd, k15rev, k17rev
     IL15_IL2Rb_gc = y[16]
     IL15_IL15Ra_IL2Rb_gc = y[17]
     
+    #IL7 in nM
     IL7Ra = y[18]
     IL7Ra_IL7 = y[19]
     gc_IL7 = y[20]
     IL7Ra_gc_IL7 = y[21]
     # k25 - k28
 
+    #IL9 in nM
     IL9R = y[22]
     IL9R_IL9 = y[23]
     gc_IL9 = y[24]
@@ -142,7 +144,20 @@ def dy_dt_IL2_wrapper(y, t, IL2, k4fwd, k5rev, k6rev):
     ret_val = dy_dt(ys, t, IL2, 0., 0., 0., k4fwd, k5rev, k6rev, 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1.) # set the IL15, IL7 and IL9 reaction rates to 1
     return ret_val[0:10]
 
-def dy_dt_IL15_wrapper(y,t, k13fwd, k15rev, k17rev, k18rev, k22rev, k23rev):
+def dy_dt_IL15_wrapper(y,t, IL15, k13fwd, k15rev, k17rev, k18rev, k22rev, k23rev):
     ''' Wrapper function for dy_dt that is for IL15'''
     # set the values of the receptor concentrations of IL2, IL7, and IL9 to zero in y for dy_dt
-    z = np.array([])
+    ys = np.zeros(26)
+    ys[10]= y[0] #Set the first value in y to be equal to IL15Ra
+    ys[1] = y[1] #Set the second value in y to be equal to IL2Rb
+    ys[2] = y[2] #Set the third value in y to be equal to gc
+    ret_value = dy_dt(ys, t, 0., IL15, 0., 0., 1., 1., 1., k13fwd, k15rev, k17rev, k18rev, k22rev, k23rev, 1., 1., 1., 1., 1., 1.) # set the IL2, IL7 and IL9 reaction rates to 1
+    ret_values = np.concatenate((ret_value[1:3], ret_value[10:18]), axis=0) #Need to use [2:3] to ensure storing as an array instead of a float number
+    return ret_values
+
+dy_dt_IL15_wrapper([1., 1., 1.], 2., 5., 2., 2., 2.,2.,2.,2.)
+
+
+
+
+
