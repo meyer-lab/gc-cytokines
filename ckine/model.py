@@ -173,5 +173,3 @@ def dy_dt_IL7_wrapper(y, t, IL7, k25rev, k26rev, k27rev):
     ret_val = dy_dt(ys, t, 0., 0., IL7, 0., 1., 1., 1., 1., 1., 1., 1., 1., 1., k25rev, k26rev, k27rev, 1., 1., 1.)
     ret_values = np.concatenate((ret_val[2:3], ret_val[18:22]), axis=0)
     return ret_values
-
-dy_dt_IL15_wrapper([1.,1.,1.,1.,1.,1.,1., 1.,1.,1.],5.,2.,1.,1.,1.,1.,1.,1.)
