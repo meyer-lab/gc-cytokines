@@ -3,6 +3,7 @@ from ..model import dy_dt
 import numpy as np
 from scipy.integrate import odeint
 from ..model import dy_dt_IL2_wrapper
+from ..model import dy_dt_IL15_wrapper
 
 
 class TestModel(unittest.TestCase):
@@ -58,3 +59,14 @@ class TestModel(unittest.TestCase):
             self.args = (1., self.mat[ii,0], self.mat[ii,1], self.mat[ii,2] )
             self.temp = odeint(dy_dt_IL2_wrapper, self.y0, self.ts, self.args, mxstep = 6000)
         self.assertEqual(len(self.temp[1]), 10)
+        
+    def test_IL15_wrapper(self):
+        self.t = 50 #Choose to run for 50s, can choose anything
+        self.ts = np.linspace(0.0, self.t,2)
+        self.y0 = np.array([1000.,1000.,1000., 0., 0., 0., 0., 0., 0., 0.]) #Assume starting with 1000 receptors of IL15Ra, IL2Rb, and gc
+        self.a = self.b = self.c =self.d = self.e = self.f = 10e-2
+        self.mat = np.array(np.meshgrid(self.a,self.b,self.c,self.d,self.e,self.f)).T.reshape(-1,6)
+        self.ys = np.zeros((1,10))
+        self.args = (1., self.mat[0,0], self.mat[0,1], self.mat[0,2], self.mat[0,3], self.mat[0,4], self.mat[0,5])
+        self.temp = odeint(dy_dt_IL15_wrapper, self.y0, self.ts, self.args, mxstep = 6000)
+        self.assertEqual(len(self.temp[1]),10)
