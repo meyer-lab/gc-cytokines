@@ -16,9 +16,32 @@ def IL2_activity_input(y0, t, IL2, k4fwd, k5rev, k6rev):
     act = IL2_pSTAT_activity(ys)
     return act
 
-print (IL2_activity_input([1000.,1000.,1000.,0.,0.,0.,0.,0.,0.,0.], 50, 2., 1., 1., 1.))
+#print (IL2_activity_input([1000.,1000.,1000.,0.,0.,0.,0.,0.,0.,0.], 50., 2., 1., 1., 1.))
 
 # this takes all the desired IL2 values we want to test and gives us the maximum activity value
-def IL2_max_activity(IL2_start, IL2_stop, IL2_step):
-    IL2_array = np.linspace(IL2_start, IL2_stop, IL2_step)
-    activity_array = 
+# IL2 values pretty much ranged from 5 x 10**-4 to 500 nm with 8 points in between
+def IL2_activity_values(y0, t, k4fwd, k5rev, k6rev):
+    IL2s = np.logspace(-3.3, 2.7, 8) # 8 log-spaced values between our two endpoints
+    activity = np.zeros(8)
+    table = np.zeros((8,2))
+    for ii in range (IL2s.shape[0]):
+        activity[ii] = IL2_activity_input(y0, t, IL2s[ii], k4fwd, k5rev, k6rev)
+        table[ii, 0] = IL2s[ii]
+        table[ii, 1] = activity[ii]
+    return table
+
+print (IL2_activity_values([1000.,1000.,1000.,0.,0.,0.,0.,0.,0.,0.], 2., 1., 1., 1.))
+
+def IL2_percent_activity(y0, t, k4fwd, k5rev, k6rev):
+    values = IL2_activity_values(y0, t, k4fwd, k5rev, k6rev)
+    maximum = np.amax(values[:,1], 0) #
+    print (maximum) 
+    new_table = np.zeros((8,2))
+    for ii in range (values.shape[0]):
+        new_table[ii, 0] = values[ii, 0]
+        new_table[ii, 1] = 100. * values[ii, 1] / maximum
+    return new_table
+        
+        
+    
+print (IL2_percent_activity([1000.,1000.,1000.,0.,0.,0.,0.,0.,0.,0.], 2., 1., 1., 1.))
