@@ -1,6 +1,8 @@
 from model import dy_dt_IL2_wrapper
 from scipy.integrate import odeint
 import numpy as np
+import matplotlib.pyplot as plt
+import math
 
 # this just takes the output of odeint (y values) and determines pSTAT activity
 def IL2_pSTAT_activity(ys):
@@ -30,18 +32,22 @@ def IL2_activity_values(y0, t, k4fwd, k5rev, k6rev):
         table[ii, 1] = activity[ii]
     return table
 
-print (IL2_activity_values([1000.,1000.,1000.,0.,0.,0.,0.,0.,0.,0.], 2., 1., 1., 1.))
 
 def IL2_percent_activity(y0, t, k4fwd, k5rev, k6rev):
     values = IL2_activity_values(y0, t, k4fwd, k5rev, k6rev)
-    maximum = np.amax(values[:,1], 0) #
-    print (maximum) 
+    maximum = np.amax(values[:,1], 0) # find the max value in the second column for all rows
+    #print (maximum) 
     new_table = np.zeros((8,2))
+    x = np.zeros((8,1))
     for ii in range (values.shape[0]):
-        new_table[ii, 0] = values[ii, 0]
-        new_table[ii, 1] = 100. * values[ii, 1] / maximum
+        new_table[ii, 0] = values[ii, 0] # IL2 values in first column are the same
+        new_table[ii, 1] = 100. * values[ii, 1] / maximum # activity values in second column are converted to percents relative to maximum
+        x[ii] = math.log10(new_table[ii,0])
+    plt.rcParams.update({'font.size': 8})
+    plt.xlabel("IL2 concentration (log(nm))")
+    plt.ylabel("percent activation of pSTAT")
+    plt.scatter(x[:], new_table[:,1])
+    plt.show()
     return new_table
-        
-        
     
 print (IL2_percent_activity([1000.,1000.,1000.,0.,0.,0.,0.,0.,0.,0.], 2., 1., 1., 1.))
