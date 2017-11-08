@@ -3,6 +3,7 @@ from scipy.integrate import odeint
 import numpy as np
 import matplotlib.pyplot as plt
 import math
+import pandas as pds
 
 # this just takes the output of odeint (y values) and determines pSTAT activity
 def IL2_pSTAT_activity(ys):
@@ -51,3 +52,8 @@ def IL2_percent_activity(y0, t, k4fwd, k5rev, k6rev):
     return new_table
     
 print (IL2_percent_activity([1000.,1000.,1000.,0.,0.,0.,0.,0.,0.,0.], 2., 1., 1., 1.))
+
+# now need to put IL2 extracted data into array format
+## IL2 in IL2Ra- in YT-1 cells
+data = pds.read_csv(".data\IL2_IL15_extracted_data")
+print (data)
