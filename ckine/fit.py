@@ -43,7 +43,7 @@ def IL2_percent_activity(y0, t, k4fwd, k5rev, k6rev):
     for ii in range (values.shape[0]):
         new_table[ii, 0] = values[ii, 0] # IL2 values in first column are the same
         new_table[ii, 1] = 100. * values[ii, 1] / maximum # activity values in second column are converted to percents relative to maximum
-        x[ii] = math.log10(new_table[ii,0])
+        x[ii] = math.log10(new_table[ii,0]) # changing the x values to the log10(nM) values that were in the published graph
     plt.rcParams.update({'font.size': 8})
     plt.xlabel("IL2 concentration (log(nm))")
     plt.ylabel("percent activation of pSTAT")
@@ -51,9 +51,21 @@ def IL2_percent_activity(y0, t, k4fwd, k5rev, k6rev):
     plt.show()
     return new_table
     
-print (IL2_percent_activity([1000.,1000.,1000.,0.,0.,0.,0.,0.,0.,0.], 2., 1., 1., 1.))
+
 
 # now need to put IL2 extracted data into array format
 ## IL2 in IL2Ra- in YT-1 cells
-data = pds.read_csv(".data\IL2_IL15_extracted_data")
-print (data)
+
+def IL2_sum_mean_squared(y0, t, k4fwd, k5rev, k6rev):
+    activity_table = IL2_percent_activity(y0, t, k4fwd, k5rev, k6rev) # generates output from percent activity function
+    data = pds.read_csv("data\IL2_IL15_extracted_data.csv") # imports csv file into pandas array
+    data.columns = ['IL2_conc','h9_2Ra-','IL2_2Ra-','IL15_2Ra-','IL15_15Ra_2Ra-', 'h9_2Ra+','IL2_2Ra+','IL15_2Ra+','IL15_15Ra_2Ra+' ] #change the names of the pandas columns in data
+    print (data['IL2_2Ra-'])
+    print (activity_table[:,1])
+    pandas_activity = pds.DataFrame({'conc':[activity_table[:,0]], 'act':[activity_table[:,1]]}) # converts percent activity data into pandas file in order to allow for subtraction
+    #differences_Ra- = pandas_activity['act'].sub(data['IL2_2Ra-'])
+    print (type(pandas_activity['IL2_2Ra-'])) # this line is generating an error
+    return True
+
+IL2_sum_mean_squared([1000.,1000.,1000.,0.,0.,0.,0.,0.,0.,0.], 50., 1., 1., 1.)
+
