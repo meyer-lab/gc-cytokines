@@ -19,8 +19,6 @@ def IL2_activity_input(y0, t, IL2, k4fwd, k5rev, k6rev):
     act = IL2_pSTAT_activity(ys)
     return act
 
-#print (IL2_activity_input([1000.,1000.,1000.,0.,0.,0.,0.,0.,0.,0.], 50., 2., 1., 1., 1.))
-
 # this takes all the desired IL2 values we want to test and gives us the maximum activity value
 # IL2 values pretty much ranged from 5 x 10**-4 to 500 nm with 8 points in between
 def IL2_activity_values(y0, t, k4fwd, k5rev, k6rev):
@@ -50,11 +48,7 @@ def IL2_percent_activity(y0, t, k4fwd, k5rev, k6rev):
     plt.scatter(x[:], new_table[:,1])
     plt.show()
     return new_table
-    
 
-
-# now need to put IL2 extracted data into array format
-## IL2 in IL2Ra- in YT-1 cells
 
 def IL2_sum_squared_distance(y0, t, k4fwd, k5rev, k6rev):
     activity_table = IL2_percent_activity(y0, t, k4fwd, k5rev, k6rev) # generates output from percent activity function
@@ -71,12 +65,16 @@ def IL2_sum_squared_distance(y0, t, k4fwd, k5rev, k6rev):
     numpy_data = data.as_matrix() #the IL2_IL2Ra- data is within the 3rd column (index 2)
     #print (numpy_data[:,2])
     #print (activity_table[:,1])
-    diff_data = numpy_data[:,2] - activity_table[:,1]
+    diff_data = np.zeros((8,2))
+    diff_data[:,0] = numpy_data[:,2] - activity_table[:,1] # first column represents IL2_IL2Ra- data
+    diff_data[:,1] = numpy_data[:,6] - activity_table[:,1] # second column represents IL2_IL2Ra+ data
+    #print (diff_data)
     squared_data = diff_data**2
     #print (squared_data)
-    sum_squared_dist = np.sum(squared_data)
+    sum_squared_dist = np.sum(squared_data, 0) # 0 indicates that we're summing on the 0 axis
+    #print (sum_squared_dist)
     root_sum_squared_dist = sum_squared_dist**0.5
-    return root_sum_squared_dist
+    return root_sum_squared_dist # first value is without IL2Ra, second value is with IL2Ra present
+
 
 print (IL2_sum_squared_distance([1000.,1000.,1000.,0.,0.,0.,0.,0.,0.,0.], 50., 1., 1., 1.))
-
