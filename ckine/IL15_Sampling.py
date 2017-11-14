@@ -11,7 +11,7 @@ ts = np.linspace(0.0, t, 2)
 y0 = np.array([1000.,1000.,1000., 0., 0., 0., 0., 0., 0., 0.])
 a = b = c = d = e = f = np.logspace(-2, 2, num=3)
 mat = np.array(np.meshgrid(a,b,c,d,e,f)).T.reshape(-1, 6)
-ys = np.zeros((729,10))
+ys = np.zeros((mat.shape[0], 10))
 for i in range (len(mat)):
     args = (1., mat[i,0], mat[i,1], mat[i,2], mat[i,3], mat[i,4], mat[i,5])
     temp, d = odeint(dy_dt_IL15_wrapper, y0, ts, args, mxstep = 6000, full_output=True)
