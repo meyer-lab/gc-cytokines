@@ -2,8 +2,7 @@ import unittest
 from ..model import dy_dt
 import numpy as np
 from scipy.integrate import odeint
-from ..model import dy_dt_IL2_wrapper
-from ..model import dy_dt_IL15_wrapper
+from ..model import dy_dt_IL2_wrapper, dy_dt_IL15_wrapper
 
 
 class TestModel(unittest.TestCase):
