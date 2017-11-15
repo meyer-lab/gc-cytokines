@@ -65,16 +65,16 @@ def IL2_sum_squared_distance(y0, t, k4fwd, k5rev, k6rev):
     numpy_data = data.as_matrix() #the IL2_IL2Ra- data is within the 3rd column (index 2)
     #print (numpy_data[:,2])
     #print (activity_table[:,1])
-    diff_data = np.zeros((8,2))
-    diff_data[:,0] = numpy_data[:,2] - activity_table[:,1] # first column represents IL2_IL2Ra- data
-    diff_data[:,1] = numpy_data[:,6] - activity_table[:,1] # second column represents IL2_IL2Ra+ data
+    diff_data = np.zeros((8,1))
+    diff_data[:,0] = numpy_data[:,6] - activity_table[:,1] # second column represents IL2_IL2Ra+ data
     #print (diff_data)
     squared_data = diff_data**2
     #print (squared_data)
     sum_squared_dist = np.sum(squared_data, 0) # 0 indicates that we're summing on the 0 axis
     #print (sum_squared_dist)
     root_sum_squared_dist = sum_squared_dist**0.5
-    return root_sum_squared_dist # first value is without IL2Ra, second value is with IL2Ra present
+    dist_final = np.asscalar(np.array([root_sum_squared_dist])) # convert the numpy array of one float to a scalar float
+    return dist_final
 
 
 print (IL2_sum_squared_distance([1000.,1000.,1000.,0.,0.,0.,0.,0.,0.,0.], 50., 1., 1., 1.))
