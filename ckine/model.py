@@ -67,7 +67,10 @@ def dy_dt(y, t, IL2, IL15, IL7, IL9, k4fwd, k5rev, k6rev, k13fwd, k15rev, k17rev
     k13fwd = k14fwd = k1fwd
     k25fwd = k26fwd = k1fwd
     k29fwd = k30fwd = k1fwd
-
+    
+    # Literature values for IL-7
+    k25rev = k25fwd * 59. # DOI:10.1111/j.1600-065X.2012.01160.x, 59 nM
+    
     # To satisfy detailed balance these relationships should hold
     # _Based on initial assembly steps
     k4rev = k1fwd * k4fwd * k6rev * k3rev / k1rev / k6fwd / k3fwd
