@@ -150,9 +150,9 @@ def dy_dt_IL15_wrapper(y,t, IL15, k13fwd, k15rev, k17rev, k18rev, k22rev, k23rev
     ''' Wrapper function for dy_dt that is for IL15'''
     # set the values of the receptor concentrations of IL2, IL7, and IL9 to zero in y for dy_dt
     ys = np.zeros(26)
-    ys[1] = y[0] #Set the second value in y to be equal to IL2Rb
-    ys[2] = y[1] #Set the third value in y to be equal to gc
-    ys[10:18]= y[2:10] #Set the first value in y to be equal to IL15Ra
+    ys[1] = y[0] #Set the first value in y to be equal to IL2Rb
+    ys[2] = y[1] #Set the second value in y to be equal to gc
+    ys[10:18]= y[2:10] #Set the third value in y to be equal to IL15Ra
     ret_value = dy_dt(ys, t, 0., IL15, 0., 0., 1., 1., 1., k13fwd, k15rev, k17rev, k18rev, k22rev, k23rev, 1., 1., 1., 1., 1., 1.) # set the IL2, IL7 and IL9 reaction rates to 1
     ret_values = np.concatenate((ret_value[1:3], ret_value[10:18]), axis=0) #Need to use [2:3] to ensure storing as an array instead of a float number
     return ret_values
