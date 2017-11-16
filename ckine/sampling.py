@@ -7,7 +7,6 @@ import matplotlib.pyplot as plt
 
 # IL2 (third argument) will always be 1 nM and there will be 1000 of each receptor (first 3 elements of first argument (y))
 # run odeint of dy_dt_IL2_wrapper([1000.,1000.,1000.,0.,0.,0.,0.,0.,0.,0.], ts, 1.,x,w,z) where x,w,z range from 10**-5 to 10**5 with increments by 10x
- 
 t = 50. # let's let the system run for 50 seconds
 ts = np.linspace(0.0, t, 2)
 y0 = np.array([1000.,1000.,1000.,0.,0.,0.,0.,0.,0.,0.])
@@ -20,7 +19,7 @@ for ii in range (mat.shape[0]): # iterates through every combination of the argu
     args = (1., mat[ii,0], mat[ii,1], mat[ii,2] )
     temp, d = odeint(dy_dt_IL2_wrapper, y0, ts, args, mxstep = 6000, full_output=True)
     if d['message'] == "Integration successful.": # only assign values to ys if there isn't an error message; all errors will still be 0
-        ys[ii,:] = temp[1,:] 
+        ys[ii,:] = temp[1,:]
 table = np.concatenate((mat, ys), 1) # puts the arguments to the left of the output data in a matrix
 #print (table)
 # fixed #18 
@@ -39,15 +38,15 @@ print (sum(percent_exp_var))
 
 # generate scores plot of PC1 vs PC2
 plt.rcParams.update({'font.size': 8})
-plt.xlabel("PC 1 scores (33%)")
-plt.ylabel("PC 2 scores (33%)")
+plt.xlabel("PC 1 scores (49.74%)")
+plt.ylabel("PC 2 scores (15.19%)")
 plt.scatter(scores[:,0], scores[:,1])
 plt.show()
 
 #generate scores plot of PC1 vs PC3
 plt.rcParams.update({'font.size': 8})
-plt.xlabel("PC 1 scores (33%)")
-plt.ylabel("PC 3 scores (33%)")
+plt.xlabel("PC 1 scores (49.74%)")
+plt.ylabel("PC 3 scores (12.53%)")
 plt.scatter(scores[:,0], scores[:,2])
 plt.show() # take out both of the plt.show() lines if you want all the data to be on the same plot and color coded
 
@@ -66,8 +65,8 @@ fig = plt.figure()
 ax = fig.add_subplot(111)
 # plot all the points from PC1 and PC2 in a scatter plot
 plt.rcParams.update({'font.size': 8})
-plt.xlabel("PC 1 loadings (33%)")
-plt.ylabel("PC 2 loadings (33%)")
+plt.xlabel("PC 1 loadings (49.74%)")
+plt.ylabel("PC 2 loadings (15.19%)")
 plt.scatter(pc1,pc2)
 # label all the points on the scatterplot in accordance with the columns of 'table'
 ax.annotate('k4fwd', xy=(pc1[0], pc2[0]))
@@ -93,8 +92,8 @@ fig = plt.figure()
 ax = fig.add_subplot(111)
 # plot all the points from PC1 and PC3 in a scatter plot
 plt.rcParams.update({'font.size': 8})
-plt.xlabel("PC 1 loadings (33%)")
-plt.ylabel("PC 3 loadings (33%)")
+plt.xlabel("PC 1 loadings (49.74%)")
+plt.ylabel("PC 3 loadings (12.53%)")
 plt.scatter(pc1,pc3)
 # label all the points on the scatterplot in accordance with the columns of 'table'
 ax.annotate('k4fwd', xy=(pc1[0], pc3[0]))
@@ -112,5 +111,3 @@ ax.annotate('IL2_IL2Rb_gc', xy=(pc1[11], pc3[11]))
 ax.annotate('IL2_IL2Ra_IL2Rb_gc', xy=(pc1[12], pc3[12]))
 # show the plot that was just created
 plt.show()
-
-
