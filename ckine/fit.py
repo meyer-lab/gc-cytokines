@@ -114,7 +114,11 @@ class build_model:
             step = pm.Metropolis()
             self.trace = pm.sample(5000, step, start=start) # original value should be 5 to shorten time
             
+
+M = build_model()
+M.build()
+M.sampling()
         
 _ = plt.hist(build_model.trace['k4fwd'],100) # no longer need the 'self' because I am executing this line outside of the class
 
-store_data(build_model, "model_results")
+store_data(M.build(), "model_results")
