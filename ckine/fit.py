@@ -86,7 +86,8 @@ class IL2_sum_squared_dist:
         return np.squeeze(diff_data)
         
 def store_data(class_name, fit_results):
-    pk.dump(class_name, bz2.BZ2File(fit_results + '.pkl', 'wb'))
+    x = pk.dump(class_name, bz2.BZ2File(fit_results + '.pkl', 'wb'))
+    return x
 
 class build_model:
     
@@ -121,4 +122,5 @@ M.sampling()
         
 _ = plt.hist(build_model.trace['k4fwd'],100) # no longer need the 'self' because I am executing this line outside of the class
 
-store_data(M.build(), "model_results")
+store_data(M.build(), "build_results")
+store_data(M.sampling(), "sampling_results")
