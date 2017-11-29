@@ -1,6 +1,15 @@
 import numpy as np
 
+try:
+    from numba import jit
+except ImportError:
+    print('Numba not available, so no JIT compile.')
 
+    def jit(ob):
+        return ob
+
+
+@jit
 def dy_dt(y, t, IL2, IL15, IL7, IL9, k4fwd, k5rev, k6rev, k13fwd, k15rev, k17rev, k18rev, k22rev, k23rev, k25rev, k26rev, k27rev, k29rev, k30rev, k31rev):
     # IL2 in nM
     IL2Ra = y[0]
@@ -138,6 +147,7 @@ def dy_dt(y, t, IL2, IL15, IL7, IL9, k4fwd, k5rev, k6rev, k13fwd, k15rev, k17rev
     return dydt
 
 
+@jit
 def dy_dt_IL2_wrapper(y, t, IL2, k4fwd, k5rev, k6rev):
     ''' Wrapper for dy_dt that is specific to IL2 '''
     ys = np.zeros(26)
@@ -146,6 +156,7 @@ def dy_dt_IL2_wrapper(y, t, IL2, k4fwd, k5rev, k6rev):
     return ret_val[0:10]
 
 
+@jit
 def dy_dt_IL15_wrapper(y,t, IL15, k13fwd, k15rev, k17rev, k18rev, k22rev, k23rev):
     ''' Wrapper function for dy_dt that is for IL15'''
     # set the values of the receptor concentrations of IL2, IL7, and IL9 to zero in y for dy_dt
@@ -158,6 +169,7 @@ def dy_dt_IL15_wrapper(y,t, IL15, k13fwd, k15rev, k17rev, k18rev, k22rev, k23rev
     return ret_values
 
 
+@jit
 def dy_dt_IL9_wrapper(y, t, IL9, k29rev, k30rev, k31rev):
     ''' Wrapper function for dy_dt that is for IL9'''
     ys = np.zeros(26)
@@ -168,6 +180,7 @@ def dy_dt_IL9_wrapper(y, t, IL9, k29rev, k30rev, k31rev):
     return ret_values
 
 
+@jit
 def dy_dt_IL7_wrapper(y, t, IL7, k25rev, k26rev, k27rev):
     ''' Wrapper function for dy_dt that is for IL7'''
     ys = np.zeros(26)
