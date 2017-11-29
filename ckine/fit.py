@@ -86,7 +86,8 @@ class IL2_sum_squared_dist:
         return np.squeeze(diff_data)
         
 def store_data(class_name, fit_results):
-    pk.dump(class_name, bz2.BZ2File(fit_results + '.pkl', 'wb'))
+    x = pk.dump(class_name, bz2.BZ2File(fit_results + '.pkl', 'wb'))
+    return x
 
 class build_model:
     
@@ -114,7 +115,11 @@ class build_model:
             step = pm.Metropolis()
             self.trace = pm.sample(5000, step, start=start) # original value should be 5 to shorten time
             
-        
-_ = plt.hist(build_model.trace['k4fwd'],100) # no longer need the 'self' because I am executing this line outside of the class
 
-store_data(build_model, "model_results")
+M = build_model()
+M.build()
+M.sampling()
+        
+# _ = plt.hist(build_model.M.trace['k4fwd'],100) # no longer need the 'self' because I am executing this line outside of the class
+
+store_data(M, "IL2_model_results")
