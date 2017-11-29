@@ -8,7 +8,7 @@ def read_data(name):
     return data
 
 def generate_plot(rate):
-    sampling_data = read_data("sampling_results")
+    sampling_data = read_data("IL2_model_results")
     plot = plt.hist(sampling_data.M.trace[rate],100)
     return plot
 
