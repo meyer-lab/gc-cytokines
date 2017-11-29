@@ -120,7 +120,7 @@ M = build_model()
 M.build()
 M.sampling()
         
-_ = plt.hist(build_model.trace['k4fwd'],100) # no longer need the 'self' because I am executing this line outside of the class
+# _ = plt.hist(build_model.M.trace['k4fwd'],100) # no longer need the 'self' because I am executing this line outside of the class
 
 store_data(M.build(), "build_results")
 store_data(M.sampling(), "sampling_results")
