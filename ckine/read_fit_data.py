@@ -3,7 +3,7 @@ import bz2
 import matplotlib.pyplot as plt
 
 def read_data(name):
-    filename = './type-I-ckine_model/ckine/' + name + '.pkl'
+    filename = '/home/adamw/type-I-ckine-model/ckine/' + name + '.pkl'
     data = pk.load(bz2.BZ2File(filename, 'rb'))
     return data
 
