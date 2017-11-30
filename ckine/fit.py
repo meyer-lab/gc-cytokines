@@ -116,10 +116,10 @@ class build_model:
             self.trace = pm.sample(5000, step, start=start) # original value should be 5 to shorten time
             
 
-M = build_model()
-M.build()
-M.sampling()
+#M = build_model()
+#M.build()
+#M.sampling()
         
 # _ = plt.hist(build_model.M.trace['k4fwd'],100) # no longer need the 'self' because I am executing this line outside of the class
 
-store_data(M, "IL2_model_results")
+#store_data(M, "IL2_model_results")
