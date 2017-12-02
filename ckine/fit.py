@@ -7,8 +7,6 @@ import pandas as pds
 from theano.compile.ops import as_op
 import theano.tensor as T
 import pymc3 as pm
-import pickle as pk
-import bz2
 import concurrent.futures
 
 
@@ -84,10 +82,7 @@ class IL2_sum_squared_dist:
         activity_table = IL2_percent_activity(k4fwd, k5rev, k6rev)
         diff_data = self.numpy_data[:,6] - activity_table[:,1]
         return np.squeeze(diff_data)
-        
-def store_data(class_name, fit_results):
-    x = pk.dump(class_name, bz2.BZ2File(fit_results + '.pkl', 'wb'))
-    return x
+
 
 class build_model:
     
@@ -95,7 +90,7 @@ class build_model:
         self.dst = IL2_sum_squared_dist()
         self.dst.load()
     
-    def build(self):   
+    def build(self):
         self.M = pm.Model()
         
         with self.M:
@@ -114,12 +109,10 @@ class build_model:
             start = pm.find_MAP()
             step = pm.Metropolis()
             self.trace = pm.sample(5000, step, start=start) # original value should be 5 to shorten time
-            
 
-#M = build_model()
-#M.build()
-#M.sampling()
-        
-# _ = plt.hist(build_model.M.trace['k4fwd'],100) # no longer need the 'self' because I am executing this line outside of the class
 
-#store_data(M, "IL2_model_results")
+if __name__ == "__main__":
+    M = build_model()
+    M.build()
+    M.sampling()
+    pm.backends.text.dump("IL2_model_results", M.trace)
