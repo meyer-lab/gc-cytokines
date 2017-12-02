@@ -10,8 +10,6 @@ import pymc3 as pm
 import concurrent.futures
 
 
-pool = concurrent.futures.ProcessPoolExecutor()
-
 # this just takes the output of odeint (y values) and determines pSTAT activity
 def IL2_pSTAT_activity(ys):
     # pSTAT activation is based on sum of IL2_IL2Rb_gc and IL2_IL2Ra_IL2Rb_gc at long time points
@@ -36,11 +34,15 @@ def IL2_activity_values(k4fwd, k5rev, k6rev):
     table = np.zeros((8, 2))
     output = list()
 
-    for ii in range(len(IL2s)):
-        output.append(pool.submit(IL2_activity_input, y0, t, IL2s[ii], k4fwd, k5rev, k6rev))
+    if 'pool' in globals():
+        for ii in range(len(IL2s)):
+            output.append(pool.submit(IL2_activity_input, y0, t, IL2s[ii], k4fwd, k5rev, k6rev))
 
-    for ii in range(len(IL2s)):
-        table[ii, 1] = output[ii].result()
+        for ii in range(len(IL2s)):
+            table[ii, 1] = output[ii].result()
+    else:
+        for ii in range(len(IL2s)):
+            table[ii, 1] = IL2_activity_input(y0, t, IL2s[ii], k4fwd, k5rev, k6rev)
     
     table[:, 0] = IL2s
 
@@ -112,6 +114,8 @@ class build_model:
 
 
 if __name__ == "__main__":
+    pool = concurrent.futures.ProcessPoolExecutor()
+
     M = build_model()
     M.build()
     M.sampling()
