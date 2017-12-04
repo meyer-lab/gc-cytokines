@@ -102,6 +102,8 @@ class build_model:
             
             Y = self.dst.calc(k4fwd, k5rev, k6rev)
             
+            pm.Deterministic('Y', Y)
+            
             Y_obs = pm.Normal('fitD', mu=0, sd=T.std(Y), observed=Y)
         
         return Y_obs
