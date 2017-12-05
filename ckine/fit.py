@@ -104,9 +104,11 @@ class build_model:
             
             pm.Deterministic('Y', Y)
             
-            Y_obs = pm.Normal('fitD', mu=0, sd=T.std(Y), observed=Y)
-        
-        return Y_obs
+            pm.Normal('fitD', mu=0, sd=T.std(Y), observed=Y)
+            pm.Normal('fitD2', mu=0, sd=T.std(Y), observed=Y)
+            pm.Normal('fitD3', mu=0, sd=T.std(Y), observed=Y)
+
+            pm.Deterministic('logp', self.M.logpt)
     
     def sampling(self):
         with self.M:
