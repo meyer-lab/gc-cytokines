@@ -21,13 +21,13 @@ def generate_plot(sampling_data, rate):
 M = build_model()
 M.build()
 
-sampling_data = pm.backends.text.load("IL2_model_results", model=M.M)
+sampling_data = pm.backends.text.load("IL2_model_results", model=M.M) # loads the results from running fit.py... we are not unpickling here
 
 #generate_plot(sampling_data, 'k4fwd')
 #generate_plot(sampling_data, 'k5rev')
 #generate_plot(sampling_data, 'k6rev')
 
-pm.plots.traceplot(sampling_data)
+pm.plots.traceplot(sampling_data) # this generates the traceplots so that we can track Y and other variables during the fitting process
 plt.show()
 
 # plot a scatter plot of k5rev against k6rev

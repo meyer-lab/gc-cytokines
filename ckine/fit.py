@@ -26,6 +26,7 @@ def IL2_activity_input(y0, t, IL2, k4fwd, k5rev, k6rev):
 
 # this takes all the desired IL2 values we want to test and gives us the maximum activity value
 # IL2 values pretty much ranged from 5 x 10**-4 to 500 nm with 8 points in between
+# need the theano decorator to get around the fact that there are if-else statements when running odeint but we don't necessarily know the values for the rxn rates when we call our model
 @as_op(itypes=[T.dscalar, T.dscalar, T.dscalar], otypes=[T.dmatrix])
 def IL2_activity_values(k4fwd, k5rev, k6rev):
     y0 = np.array([1000.,1000.,1000.,0.,0.,0.,0.,0.,0.,0.])
@@ -59,7 +60,7 @@ def IL2_percent_activity(k4fwd, k5rev, k6rev):
     
     return new_table
 
-
+#can call this function to get a graph similar to that which was published
 def plot_IL2_percent_activity(y0, t, k4fwd, k5rev, k6rev):
     new_table = IL2_percent_activity(k4fwd, k5rev, k6rev)
 
@@ -82,15 +83,16 @@ class IL2_sum_squared_dist:
         
     def calc(self, k4fwd, k5rev, k6rev):
         activity_table = IL2_percent_activity(k4fwd, k5rev, k6rev)
-        diff_data = self.numpy_data[:,6] - activity_table[:,1]
+        diff_data = self.numpy_data[:,6] - activity_table[:,1] # value we're trying to minimize is the distance between the y-values on points of the graph that correspond to the same IL2 values
         return np.squeeze(diff_data)
 
 
 class build_model:
     
+    # going to load the data from the CSV file at the very beginning of when build_model is called... needs to be separate member function to avoid uploading file thousands of times
     def __init__(self):
         self.dst = IL2_sum_squared_dist()
-        self.dst.load()
+        self.dst.load() 
     
     def build(self):
         self.M = pm.Model()
@@ -100,9 +102,9 @@ class build_model:
             k5rev = pm.Lognormal('k5rev', mu=0, sd=3)
             k6rev = pm.Lognormal('k6rev', mu=0, sd=3)
             
-            Y = self.dst.calc(k4fwd, k5rev, k6rev)
+            Y = self.dst.calc(k4fwd, k5rev, k6rev) # fitting the data based on dst.calc for the given parameters
             
-            pm.Deterministic('Y', Y)
+            pm.Deterministic('Y', Y) # this line allows us to see the traceplots in read_fit_data.py... it lets us know if the fitting process is working
             
             pm.Normal('fitD', mu=0, sd=T.std(Y), observed=Y)
             pm.Normal('fitD2', mu=0, sd=T.std(Y), observed=Y)
@@ -114,13 +116,13 @@ class build_model:
         with self.M:
             start = pm.find_MAP()
             step = pm.Metropolis()
-            self.trace = pm.sample(5000, step, start=start) # original value should be 5 to shorten time
+            self.trace = pm.sample(5000, step, start=start) # 5000 represents the number of steps taken in the walking process
 
 
-if __name__ == "__main__":
+if __name__ == "__main__": #only go into this loop if you're running fit.py directly instead of running a file that calls fit.py
     pool = concurrent.futures.ProcessPoolExecutor()
 
     M = build_model()
     M.build()
     M.sampling()
-    pm.backends.text.dump("IL2_model_results", M.trace)
+    pm.backends.text.dump("IL2_model_results", M.trace) #instead of pickling data we dump it into file that can be accessed by read_fit_data.py
