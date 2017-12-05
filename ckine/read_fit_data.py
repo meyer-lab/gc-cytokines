@@ -1,18 +1,42 @@
-import pickle as pk
-import bz2
 import matplotlib.pyplot as plt
+from fit import build_model
+import pymc3 as pm
+import numpy as np
 
-def read_data(name):
-    filename = './type-I-ckine_model/ckine/' + name + '.pkl'
-    data = pk.load(bz2.BZ2File(filename, 'rb'))
-    return data
+def generate_plot(sampling_data, rate):
+#    plt.hist(sampling_data[rate], bins=np.logspace(-3.3, 2.7, 8))
+    plt.hist(np.log(sampling_data[rate]), bins=20)
+#    plt.gca().set_xscale("log")
+    plt.tick_params(
+        axis='x',          # changes apply to the x-axis
+        which='minor',      # only minor ticks are affected, major ticks left alone
+        bottom='off',      # ticks along the bottom edge are off
+        top='off',         # ticks along the top edge are off
+        labelbottom='on') # labels along the bottom edge are on
+    plt.title(rate)
+    plt.xlabel(rate + ' value (log distribution)')
+    plt.ylabel('relative probability')
+    plt.show()
 
-def generate_plot(rate):
-    sampling_data = read_data("IL2_model_results")
-    plot = plt.hist(sampling_data.M.trace[rate],100)
-    return plot
+M = build_model()
+M.build()
 
-generate_plot('k4fwd')
-generate_plot('k5rev')
-generate_plot('k6rev')
-        
+sampling_data = pm.backends.text.load("IL2_model_results", model=M.M) # loads the results from running fit.py... we are not unpickling here
+
+#generate_plot(sampling_data, 'k4fwd')
+#generate_plot(sampling_data, 'k5rev')
+#generate_plot(sampling_data, 'k6rev')
+
+pm.plots.traceplot(sampling_data) # this generates the traceplots so that we can track Y and other variables during the fitting process
+plt.show()
+
+# plot a scatter plot of k5rev against k6rev
+def scatter_plot(sampling_data, rate1, rate2):
+    plt.scatter(np.log(sampling_data[rate1]), np.log(sampling_data[rate2]))
+    plt.xlabel(rate1 + ' (log distribution)')
+    plt.ylabel(rate2 + ' (log distribution)')
+    plt.title(rate2 + ' vs. ' + rate1)
+    plt.show()
+
+#scatter_plot(sampling_data, 'k5rev', 'k6rev')
+#scatter_plot(sampling_data, 'k4fwd', 'k6rev')
