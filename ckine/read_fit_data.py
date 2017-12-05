@@ -28,7 +28,7 @@ sampling_data = pm.backends.text.load("IL2_model_results", model=M.M)
 #generate_plot(sampling_data, 'k6rev')
 
 pm.plots.traceplot(sampling_data)
-    
+plt.show()
 
 # plot a scatter plot of k5rev against k6rev
 def scatter_plot(sampling_data, rate1, rate2):
@@ -38,5 +38,5 @@ def scatter_plot(sampling_data, rate1, rate2):
     plt.title(rate2 + ' vs. ' + rate1)
     plt.show()
 
-scatter_plot(sampling_data, 'k5rev', 'k6rev')
-scatter_plot(sampling_data, 'k4fwd', 'k6rev')
+#scatter_plot(sampling_data, 'k5rev', 'k6rev')
+#scatter_plot(sampling_data, 'k4fwd', 'k6rev')
