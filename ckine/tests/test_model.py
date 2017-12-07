@@ -9,7 +9,7 @@ class TestModel(unittest.TestCase):
     def setUp(self):
         self.ts = np.array([0.0, 100000.0])
         self.y0 = np.random.lognormal(0., 1., 26)
-        self.args1 = list(np.random.lognormal(0., 1., 19))
+        self.args1 = list(np.random.lognormal(0., 1., 18))
         self.args = tuple(self.args1)
         # need to convert args from an array to a tuple of numbers
 
@@ -62,4 +62,4 @@ class TestModel(unittest.TestCase):
         mat = np.full((1, 6), 1E-2)
         args = (1., mat[0,0], mat[0,1], mat[0,2], mat[0,3], mat[0,4], mat[0,5])
         temp = odeint(dy_dt_IL15_wrapper, y0, ts, args, mxstep = 6000)
-        self.assertEqual(len(temp[1]),10)
+        self.assertEqual(len(temp[1]), 10)
