@@ -3,13 +3,16 @@ from ..model import dy_dt
 import numpy as np
 from scipy.integrate import odeint
 from ..model import dy_dt_IL2_wrapper, dy_dt_IL15_wrapper
+from hypothesis import given
+from hypothesis.strategies import floats
+from hypothesis.extra.numpy import arrays as harrays
 
 
 class TestModel(unittest.TestCase):
     def setUp(self):
         self.ts = np.array([0.0, 100000.0])
         self.y0 = np.random.lognormal(0., 1., 26)
-        self.args1 = list(np.random.lognormal(0., 1., 19))
+        self.args1 = list(np.random.lognormal(0., 1., 17))
         self.args = tuple(self.args1)
         # need to convert args from an array to a tuple of numbers
 
@@ -45,16 +48,16 @@ class TestModel(unittest.TestCase):
         self.assertAlmostEqual(np.sum(species_delta[IL7Ra_species]), 0.0)
         #Check for Conservation of IL9R
         self.assertAlmostEqual(np.sum(species_delta[IL9R_species]), 0.0)
-        
-    def test_IL2_wrapper(self):
+    
+    @given(y0=harrays(np.float, 10, elements=floats(0, 1000)), args=harrays(np.float, 4, elements=floats(0.01, 10)))
+    def test_IL2_wrapper(self, y0, args):
         # run odeint on some of the values... make sure they compile correctly and then check the length of the output
         ts = np.array([0.0, 50.0])
-        y0 = np.array([1000.,1000.,1000.,0.,0.,0.,0.,0.,0.,0.])
 
-        args = (1., 1., 1., 1.)
-        temp = odeint(dy_dt_IL2_wrapper, y0, ts, args, mxstep = 6000)
+        temp = odeint(dy_dt_IL2_wrapper, y0, ts, tuple(args), mxstep = 6000)
 
         self.assertEqual(len(temp[1]), 10)
+        # TODO: Add mass balance checks here.
         
     def test_IL15_wrapper(self):
         ts = np.array([0.0, 50.0])
@@ -62,4 +65,4 @@ class TestModel(unittest.TestCase):
         mat = np.full((1, 6), 1E-2)
         args = (1., mat[0,0], mat[0,1], mat[0,2], mat[0,3], mat[0,4], mat[0,5])
         temp = odeint(dy_dt_IL15_wrapper, y0, ts, args, mxstep = 6000)
-        self.assertEqual(len(temp[1]),10)
+        self.assertEqual(len(temp[1]), 10)
