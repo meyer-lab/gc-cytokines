@@ -87,7 +87,7 @@ def dy_dt(y, t, IL2, IL15, IL7, IL9, kfwd, k5rev, k6rev, k15rev, k17rev, k18rev,
     k32rev = k29rev * k31rev * kfwd * kfbnd / kfbnd / kfwd / k30rev
     k28rev = k25rev * k27rev * kfwd * kfbnd / kfbnd / kfwd / k26rev
 
-    dydt = np.zeros(y.shape, dtype = np.float64)
+    dydt = y.copy()
     
     # IL2
     dydt[0] = -kfbnd * IL2Ra * IL2 + k1rev * IL2_IL2Ra - kfwd * IL2Ra * IL2_gc + k6rev * IL2_IL2Ra_gc - kfwd * IL2Ra * IL2_IL2Rb_gc + k8rev * IL2_IL2Ra_IL2Rb_gc - kfwd * IL2Ra * IL2_IL2Rb + k12rev * IL2_IL2Ra_IL2Rb
