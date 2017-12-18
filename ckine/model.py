@@ -9,44 +9,20 @@ except ImportError:
         return ob
 
 
-@jit
+@jit(nopython=True)
 def dy_dt(y, t, IL2, IL15, IL7, IL9, kfwd, k5rev, k6rev, k15rev, k17rev, k18rev, k22rev, k23rev, k26rev, k27rev, k29rev, k30rev, k31rev):
     # IL2 in nM
-    IL2Ra = y[0]
-    IL2Rb = y[1]
-    gc = y[2]
-    IL2_IL2Ra = y[3]
-    IL2_IL2Rb = y[4]
-    IL2_gc = y[5]
-    IL2_IL2Ra_IL2Rb = y[6]
-    IL2_IL2Ra_gc = y[7]
-    IL2_IL2Rb_gc = y[8]
-    IL2_IL2Ra_IL2Rb_gc = y[9]
+    IL2Ra, IL2Rb, gc, IL2_IL2Ra, IL2_IL2Rb, IL2_gc, IL2_IL2Ra_IL2Rb, IL2_IL2Ra_gc, IL2_IL2Rb_gc, IL2_IL2Ra_IL2Rb_gc = y[0:10]
     
     # IL15 in nM
-    IL15Ra = y[10]
-    IL15_IL15Ra = y[11]
-    IL15_IL2Rb = y[12]
-    IL15_gc = y[13]
-    IL15_IL15Ra_IL2Rb = y[14]
-    IL15_IL15Ra_gc = y[15]
-    IL15_IL2Rb_gc = y[16]
-    IL15_IL15Ra_IL2Rb_gc = y[17]
+    IL15Ra, IL15_IL15Ra, IL15_IL2Rb, IL15_gc, IL15_IL15Ra_IL2Rb, IL15_IL15Ra_gc, IL15_IL2Rb_gc, IL15_IL15Ra_IL2Rb_gc = y[10:18]
     
     #IL7 in nM
-    IL7Ra = y[18]
-    IL7Ra_IL7 = y[19]
-    gc_IL7 = y[20]
-    IL7Ra_gc_IL7 = y[21]
-    # k25 - k28
+    IL7Ra, IL7Ra_IL7, gc_IL7, IL7Ra_gc_IL7 = y[18:22] # k25 - k28
 
     #IL9 in nM
-    IL9R = y[22]
-    IL9R_IL9 = y[23]
-    gc_IL9 = y[24]
-    IL9R_gc_IL9 = y[25]
-    # k29 - k32
-
+    IL9R, IL9R_IL9, gc_IL9, IL9R_gc_IL9 = y[22:26] # k29 - k32
+    
     # These are probably measured in the literature
     kfbnd = 0.01 # Assuming on rate of 10^7 M-1 sec-1
     k1rev = kfbnd * 10 # doi:10.1016/j.jmb.2004.04.038, 10 nM
@@ -54,8 +30,8 @@ def dy_dt(y, t, IL2, IL15, IL7, IL9, kfwd, k5rev, k6rev, k15rev, k17rev, k18rev,
     k2rev = kfbnd * 144 # doi:10.1016/j.jmb.2004.04.038, 144 nM
     k3fwd = kfbnd / 10.0 # Very weak, > 50 uM. Voss, et al (1993). PNAS. 90, 2428–2432.
     k3rev = 50000 * k3fwd
-    k10rev = 12.0 * k5rev * kfwd / 1.5 / kfwd # doi:10.1016/j.jmb.2004.04.038
-    k11rev = 63.0 * k5rev * kfwd / 1.5 / kfwd # doi:10.1016/j.jmb.2004.04.038
+    k10rev = 12.0 * k5rev / 1.5 # doi:10.1016/j.jmb.2004.04.038
+    k11rev = 63.0 * k5rev / 1.5 # doi:10.1016/j.jmb.2004.04.038
     
     # Literature values for k values for IL-15
     k13rev = kfbnd * 0.065 #based on the multiple papers suggesting 30-100 pM
@@ -80,12 +56,12 @@ def dy_dt(y, t, IL2, IL15, IL7, IL9, kfwd, k5rev, k6rev, k15rev, k17rev, k18rev,
     k19rev = kfbnd * kfwd * k14rev * k17rev / kfbnd / kfbnd / k15rev
     k24rev = kfbnd * kfwd * k13rev * k23rev / kfwd / kfbnd / k14rev
     # _Based on formation of full complex
-    k21rev = k14rev * k22rev * k24rev / kfbnd / kfwd / kfwd / k15rev / k18rev * kfbnd * kfbnd * kfwd
-    k20rev = k14rev * k22rev * k24rev / kfbnd / kfwd / kfwd / k19rev / k15rev * kfbnd * kfwd * kfwd
+    k21rev = k14rev * k22rev * k24rev / kfbnd / kfwd / k15rev / k18rev * kfbnd * kfbnd
+    k20rev = k14rev * k22rev * k24rev / kfbnd / k19rev / k15rev * kfbnd
 
     # _One detailed balance IL7/9 loop
-    k32rev = k29rev * k31rev * kfwd * kfbnd / kfbnd / kfwd / k30rev
-    k28rev = k25rev * k27rev * kfwd * kfbnd / kfbnd / kfwd / k26rev
+    k32rev = k29rev * k31rev * kfbnd / kfbnd / k30rev
+    k28rev = k25rev * k27rev * kfbnd / kfbnd / k26rev
 
     dydt = y.copy()
     
