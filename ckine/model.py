@@ -1,16 +1,24 @@
 import numpy as np
 from scipy.integrate import odeint
+import copy
 
 try:
-    from numba import jit
+    from numba import jit, float64, boolean as numbabool
 except ImportError:
     print('Numba not available, so no JIT compile.')
 
     def jit(ob):
         return ob
 
+    float64 = None
+    numbabool = None
 
-@jit(nopython=True)
+
+__active_species_IDX = np.zeros(26, dtype=np.bool)
+__active_species_IDX[np.array([8, 9, 16, 17, 21, 25])] = 1
+
+
+@jit(float64[26](float64[26], float64, float64, float64, float64, float64, float64, float64, float64, float64, float64, float64, float64, float64, float64, float64, float64, float64, float64), nopython=True, cache=True, nogil=True)
 def dy_dt(y, t, IL2, IL15, IL7, IL9, kfwd, k5rev, k6rev, k15rev, k17rev, k18rev, k22rev, k23rev, k26rev, k27rev, k29rev, k30rev, k31rev):
     # IL2 in nM
     IL2Ra, IL2Rb, gc, IL2_IL2Ra, IL2_IL2Rb, IL2_gc, IL2_IL2Ra_IL2Rb, IL2_IL2Ra_gc, IL2_IL2Rb_gc, IL2_IL2Ra_IL2Rb_gc = y[0:10]
@@ -106,7 +114,7 @@ def dy_dt(y, t, IL2, IL15, IL7, IL9, kfwd, k5rev, k6rev, k15rev, k17rev, k18rev,
     return dydt
 
 
-@jit(nopython=True)
+@jit(float64[4](float64[26]), nopython=True, cache=True, nogil=True)
 def findLigConsume(dydt):
     """ Calculate the ligand consumption. """
     internalV = 623.0 # Same as that used in TAM model
@@ -114,15 +122,13 @@ def findLigConsume(dydt):
     return -np.array([np.sum(dydt[3:10]), np.sum(dydt[11:18]), np.sum(dydt[19:22]), np.sum(dydt[23:26])]) / internalV
 
 
-#@jit(nopython=True)
-def trafficking(y, endo, activeEndo, sortF, activeSortF, kRec, kDeg, exprV):
+@jit(float64[52](float64[52], numbabool[26], float64, float64, float64, float64, float64, float64, float64[6]), nopython=True, cache=True, nogil=True)
+def trafficking(y, activeV, endo, activeEndo, sortF, activeSortF, kRec, kDeg, exprV):
     """Implement trafficking."""
 
     dydt = np.empty_like(y)
 
     halfLen = len(y) // 2
-
-    activeV = getActiveSpecies()
 
     # Reconstruct a vector of active and inactive trafficking for vectorization
     endoV = np.full_like(activeV, endo)
@@ -146,26 +152,26 @@ def trafficking(y, endo, activeEndo, sortF, activeSortF, kRec, kDeg, exprV):
     return dydt
 
 
-def fullModel(y, t, rxnRates, trafRates):
+def fullModel(y, t, r, trafRates):
     """Implement full model."""
 
     # Initialize vector
-    dydt = np.zeros_like(y)
+    dydt = np.empty_like(y)
 
     rxnL = 26
 
     # Calculate cell surface reactions
-    dydt[0:rxnL] = dy_dt(y[0:rxnL], t, **rxnRates)
-
-    # Make cytokines present at endosomal concentrations
-    rxnRates['IL2'], rxnRates['IL15'], rxnRates['IL9'], rxnRates['IL7'] = y[rxnL*2::]
+    dydt[0:rxnL] = dy_dt(y[0:rxnL], t, **r)
 
     # Calculate endosomal reactions
-    dydt[rxnL:rxnL*2] = dy_dt(y[rxnL:rxnL*2], t, **rxnRates)
+    dydt[rxnL:rxnL*2] = dy_dt(y[rxnL:rxnL*2], t, y[rxnL*2], y[rxnL*2+1], y[rxnL*2+2], y[rxnL*2+3],
+                              r['kfwd'], r['k5rev'], r['k6rev'], r['k15rev'], r['k17rev'],
+                              r['k18rev'], r['k22rev'], r['k23rev'], r['k26rev'],
+                              r['k27rev'], r['k29rev'], r['k30rev'], r['k31rev'])
 
     # Handle trafficking
     # _Leave off the ligands on the end
-    dydt[0:rxnL*2] = dydt[0:rxnL*2] + trafficking(y[0:rxnL*2], **trafRates)
+    dydt[0:rxnL*2] = dydt[0:rxnL*2] + trafficking(y[0:rxnL*2], getActiveSpecies(), **trafRates)
 
     # Handle endosomal ligand balance.
     dydt[rxnL*2::] = findLigConsume(dydt[rxnL:rxnL*2])
@@ -174,6 +180,7 @@ def fullModel(y, t, rxnRates, trafRates):
 
 
 def solveAutocrine(rxnRates, trafRates):
+    rxnRates = copy.deepcopy(rxnRates)
     autocrineT = np.array([0.0, 100000.0])
 
     y0 = np.zeros(26*2 + 4, np.float64)
@@ -191,11 +198,7 @@ def solveAutocrine(rxnRates, trafRates):
 
 def getActiveSpecies():
     """ Return a vector that indicates which species are active. """
-    outVal = np.zeros(26, dtype=np.bool)
-
-    outVal[np.array([8, 9, 16, 17, 21, 25])] = 1
-
-    return outVal
+    return __active_species_IDX
 
 
 def getCytokineSpecies():
