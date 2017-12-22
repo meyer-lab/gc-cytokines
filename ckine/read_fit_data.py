@@ -40,3 +40,15 @@ def scatter_plot(sampling_data, rate1, rate2):
 
 #scatter_plot(sampling_data, 'k5rev', 'k6rev')
 #scatter_plot(sampling_data, 'k4fwd', 'k6rev')
+
+#can call this function to get a graph similar to that which was published
+def plot_IL2_percent_activity(y0, t, k4fwd, k5rev, k6rev):
+    new_table = IL2_percent_activity(k4fwd, k5rev, k6rev)
+
+    x = math.log10(new_table[:, 0]) # changing the x values to the log10(nM) values that were in the published graph
+
+    plt.rcParams.update({'font.size': 8})
+    plt.xlabel("IL2 concentration (log(nm))")
+    plt.ylabel("percent activation of pSTAT")
+    plt.scatter(x[:], new_table[:,1])
+    plt.show()
