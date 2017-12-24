@@ -55,8 +55,8 @@ class IL2_sum_squared_dist:
         tfR2[5] = 0.0
 
         # Find autocrine state
-        yAutocrine = solveAutocrine(rxnRates, tfR)
-        yAutocrine2 = solveAutocrine(rxnRates, tfR2)
+        yAutocrine = solveAutocrine(tfR)
+        yAutocrine2 = solveAutocrine(tfR2)
 
         # Loop over concentrations of IL2
         if pool is None:

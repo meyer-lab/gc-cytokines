@@ -1,10 +1,12 @@
 import unittest
-from ..model import dy_dt, fullModel, solveAutocrine, getTotalActiveCytokine, getActiveSpecies
+from ..model import dy_dt, fullModel, solveAutocrine, getTotalActiveCytokine, getActiveSpecies, solveAutocrineComplete
 import numpy as np
 from hypothesis import given, settings
 from hypothesis.strategies import floats
 from hypothesis.extra.numpy import arrays as harrays
 import copy
+
+np.random.seed(seed=1)
 
 
 class TestModel(unittest.TestCase):
@@ -28,6 +30,9 @@ class TestModel(unittest.TestCase):
         self.tfargs = np.random.lognormal(0., 1., 11)
         self.active = getActiveSpecies()
         # need to convert args from an array to a tuple of numbers
+
+        if (self.tfargs[2] > 1.):
+            self.tfargs[2] = self.tfargs[2] - np.floor(self.tfargs[2])
 
     def test_length(self):                        
         self.assertEqual(len(dy_dt(self.y0, 0, self.args)), self.y0.size)
@@ -85,16 +90,21 @@ class TestModel(unittest.TestCase):
         self.assertConservation(dy, 0.0, np.array([22, 23, 25]) + 26)
 
     def test_fullModel(self):
-        yOut = solveAutocrine(self.args, self.tfargs)
+        yOut = solveAutocrine(self.tfargs)
+
+        yOut2 = solveAutocrineComplete(self.args, self.tfargs)
 
         kw = self.args.copy()
 
         kw[0:4] = 0.
 
-        self.assertPosEquilibrium(yOut, lambda y: fullModel(y, 0.0, kw, self.tfargs, self.active))
-
         # Autocrine condition assumes no cytokine present, and so no activity
         self.assertAlmostEqual(getTotalActiveCytokine(0, yOut), 0.0, places=5)
+
+        # Autocrine condition assumes no cytokine present, and so no activity
+        self.assertAlmostEqual(getTotalActiveCytokine(0, yOut2), 0.0, places=5)
+
+        self.assertPosEquilibrium(yOut, lambda y: fullModel(y, 0.0, kw, self.tfargs, self.active))
 
     @settings(deadline=None)
     @given(y0=harrays(np.float, 2*26 + 4, elements=floats(0, 10)))
