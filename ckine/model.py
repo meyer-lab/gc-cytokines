@@ -18,8 +18,11 @@ __active_species_IDX = np.zeros(26, dtype=np.bool)
 __active_species_IDX[np.array([8, 9, 16, 17, 21, 25])] = 1
 
 
-@jit(float64[26](float64[26], float64, float64, float64, float64, float64, float64, float64, float64, float64, float64, float64, float64, float64, float64, float64, float64, float64, float64), nopython=True, cache=True, nogil=True)
-def dy_dt(y, t, IL2, IL15, IL7, IL9, kfwd, k5rev, k6rev, k15rev, k17rev, k18rev, k22rev, k23rev, k26rev, k27rev, k29rev, k30rev, k31rev):
+@jit(float64[26](float64[26], float64, float64[17]), nopython=True, cache=True, nogil=True)
+def dy_dt(y, t, rxn):
+    # Set the constant inputs
+    IL2, IL15, IL7, IL9, kfwd, k5rev, k6rev, k15rev, k17rev, k18rev, k22rev, k23rev, k26rev, k27rev, k29rev, k30rev, k31rev = rxn
+
     # IL2 in nM
     IL2Ra, IL2Rb, gc, IL2_IL2Ra, IL2_IL2Rb, IL2_gc, IL2_IL2Ra_IL2Rb, IL2_IL2Ra_gc, IL2_IL2Rb_gc, IL2_IL2Ra_IL2Rb_gc = y[0:10]
     
@@ -122,9 +125,12 @@ def findLigConsume(dydt):
     return -np.array([np.sum(dydt[3:10]), np.sum(dydt[11:18]), np.sum(dydt[19:22]), np.sum(dydt[23:26])]) / internalV
 
 
-@jit(float64[52](float64[52], numbabool[26], float64, float64, float64, float64, float64, float64, float64[6]), nopython=True, cache=True, nogil=True)
-def trafficking(y, activeV, endo, activeEndo, sortF, activeSortF, kRec, kDeg, exprV):
+@jit(float64[52](float64[52], numbabool[26], float64[5], float64[6]), nopython=True, cache=True, nogil=True)
+def trafficking(y, activeV, tfR, exprV):
     """Implement trafficking."""
+
+    # Set the rates
+    endo, activeEndo, sortF, kRec, kDeg = tfR
 
     dydt = np.empty_like(y)
 
@@ -134,8 +140,8 @@ def trafficking(y, activeV, endo, activeEndo, sortF, activeSortF, kRec, kDeg, ex
     endoV = np.full_like(activeV, endo)
     sortV = np.full_like(activeV, sortF)
 
-    endoV[activeV == 1] = activeEndo
-    sortV[activeV == 1] = activeSortF
+    endoV[activeV == 1] = activeEndo + endo
+    sortV[activeV == 1] = 1.0 # Assume all active receptor is degraded
 
     internalFrac = 0.5 # Same as that used in TAM model
 
@@ -152,7 +158,8 @@ def trafficking(y, activeV, endo, activeEndo, sortF, activeSortF, kRec, kDeg, ex
     return dydt
 
 
-def fullModel(y, t, r, trafRates):
+@jit(float64[52](float64[52], float64, float64[17], float64[11], numbabool[26]), nopython=True, cache=True, nogil=True)
+def fullModel(y, t, r, tfR, active_species_IDX):
     """Implement full model."""
 
     # Initialize vector
@@ -161,17 +168,17 @@ def fullModel(y, t, r, trafRates):
     rxnL = 26
 
     # Calculate cell surface reactions
-    dydt[0:rxnL] = dy_dt(y[0:rxnL], t, **r)
+    dydt[0:rxnL] = dy_dt(y[0:rxnL], t, r)
+
+    rr = r.copy()
+    rr[0:4] = y[rxnL*2:rxnL*2+4]
 
     # Calculate endosomal reactions
-    dydt[rxnL:rxnL*2] = dy_dt(y[rxnL:rxnL*2], t, y[rxnL*2], y[rxnL*2+1], y[rxnL*2+2], y[rxnL*2+3],
-                              r['kfwd'], r['k5rev'], r['k6rev'], r['k15rev'], r['k17rev'],
-                              r['k18rev'], r['k22rev'], r['k23rev'], r['k26rev'],
-                              r['k27rev'], r['k29rev'], r['k30rev'], r['k31rev'])
+    dydt[rxnL:rxnL*2] = dy_dt(y[rxnL:rxnL*2], t, rr)
 
     # Handle trafficking
     # _Leave off the ligands on the end
-    dydt[0:rxnL*2] = dydt[0:rxnL*2] + trafficking(y[0:rxnL*2], getActiveSpecies(), **trafRates)
+    dydt[0:rxnL*2] = dydt[0:rxnL*2] + trafficking(y[0:rxnL*2], active_species_IDX, tfR[0:5], tfR[5:11])
 
     # Handle endosomal ligand balance.
     dydt[rxnL*2::] = findLigConsume(dydt[rxnL:rxnL*2])
@@ -180,16 +187,16 @@ def fullModel(y, t, r, trafRates):
 
 
 def solveAutocrine(rxnRates, trafRates):
-    rxnRates = copy.deepcopy(rxnRates)
+    rxnRates = rxnRates.copy()
     autocrineT = np.array([0.0, 100000.0])
 
     y0 = np.zeros(26*2 + 4, np.float64)
 
     # For now assume 0 autocrine ligand
     # TODO: Consider handling autocrine ligand more gracefully
-    rxnRates['IL2'] = rxnRates['IL15'] = rxnRates['IL9'] = rxnRates['IL7'] = 0.0
+    rxnRates[0:4] = 0.0
 
-    full_lambda = lambda y, t: fullModel(y, t, rxnRates, trafRates)
+    full_lambda = lambda y, t: fullModel(y, t, rxnRates, trafRates, __active_species_IDX)
 
     yOut = odeint(full_lambda, y0, autocrineT, mxstep=int(1E5))
 

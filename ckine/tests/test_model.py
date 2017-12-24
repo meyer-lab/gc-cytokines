@@ -1,5 +1,5 @@
 import unittest
-from ..model import dy_dt, fullModel, solveAutocrine, getTotalActiveCytokine
+from ..model import dy_dt, fullModel, solveAutocrine, getTotalActiveCytokine, getActiveSpecies
 import numpy as np
 from hypothesis import given, settings
 from hypothesis.strategies import floats
@@ -24,24 +24,18 @@ class TestModel(unittest.TestCase):
     def setUp(self):
         self.ts = np.array([0.0, 100000.0])
         self.y0 = np.random.lognormal(0., 1., 26)
-        self.argnames = ('IL2', 'IL15', 'IL7', 'IL9', 'kfwd', 'k5rev', 'k6rev', 'k15rev',
-                         'k17rev', 'k18rev', 'k22rev', 'k23rev', 'k26rev', 'k27rev',
-                         'k29rev', 'k30rev', 'k31rev')
-        self.trafnames = ('endo', 'activeEndo', 'sortF', 'activeSortF', 'kRec', 'kDeg')
-        self.args = tuple(list(np.random.lognormal(0., 1., len(self.argnames))))
-        self.kwargs = dict(zip(self.argnames, self.args))
-        self.endoargs = tuple(list(np.random.lognormal(0., 1., len(self.argnames))))
-        self.kwendo = dict(zip(self.trafnames, self.endoargs))
-        self.kwendo['exprV'] = np.random.lognormal(0., 1., 6)
+        self.args = np.random.lognormal(0., 1., 17)
+        self.tfargs = np.random.lognormal(0., 1., 11)
+        self.active = getActiveSpecies()
         # need to convert args from an array to a tuple of numbers
 
     def test_length(self):                        
-        self.assertEqual(len(dy_dt(self.y0, 0, *self.args)), self.y0.size)
+        self.assertEqual(len(dy_dt(self.y0, 0, self.args)), self.y0.size)
     
     @settings(deadline=None)
     @given(y0=harrays(np.float, 26, elements=floats(0, 10)))
     def test_conservation(self, y0):
-        dy = dy_dt(y0, 0.0, *self.args)
+        dy = dy_dt(y0, 0.0, self.args)
         
         #Check for conservation of gc
         self.assertConservation(dy, 0.0, np.array([2, 5, 7, 8, 9, 13, 15, 16, 17, 20, 24, 21, 25]))
@@ -60,13 +54,9 @@ class TestModel(unittest.TestCase):
     @given(y0=harrays(np.float, 2*26 + 4, elements=floats(0, 10)))
     def test_conservation_full(self, y0):
         """In the absence of trafficking, mass balance should hold in both compartments."""
-        kw = self.kwendo.copy()
-        kw['endo'] = kw['activeEndo'] = 0
-        kw['kRec'] = 0
-        kw['kDeg'] = 0
-        kw['exprV'] = np.zeros(6, dtype=np.float64)
+        kw = np.zeros(11, dtype=np.float64)
 
-        dy = fullModel(y0, 0.0, self.kwargs, kw)
+        dy = fullModel(y0, 0.0, self.args, kw, self.active)
         
         #Check for conservation of gc
         self.assertConservation(dy, 0.0, np.array([2, 5, 7, 8, 9, 13, 15, 16, 17, 20, 24, 21, 25]))
@@ -95,16 +85,13 @@ class TestModel(unittest.TestCase):
         self.assertConservation(dy, 0.0, np.array([22, 23, 25]) + 26)
 
     def test_fullModel(self):
-        yOut = solveAutocrine(self.kwargs, self.kwendo)
+        yOut = solveAutocrine(self.args, self.tfargs)
 
-        kw = copy.deepcopy(self.kwargs)
+        kw = self.args.copy()
 
-        kw['IL2'] = 0.
-        kw['IL15'] = 0.
-        kw['IL7'] = 0.
-        kw['IL9'] = 0.
+        kw[0:4] = 0.
 
-        self.assertPosEquilibrium(yOut, lambda y: fullModel(y, 0.0, kw, self.kwendo))
+        self.assertPosEquilibrium(yOut, lambda y: fullModel(y, 0.0, kw, self.tfargs, self.active))
 
         # Autocrine condition assumes no cytokine present, and so no activity
         self.assertAlmostEqual(getTotalActiveCytokine(0, yOut), 0.0, places=5)
@@ -113,11 +100,11 @@ class TestModel(unittest.TestCase):
     @given(y0=harrays(np.float, 2*26 + 4, elements=floats(0, 10)))
     def test_reproducible(self, y0):
 
-        dy1 = fullModel(y0, 0.0, self.kwargs, self.kwendo)
+        dy1 = fullModel(y0, 0.0, self.args, self.tfargs, self.active)
 
-        dy2 = fullModel(y0, 1.0, self.kwargs, self.kwendo)
+        dy2 = fullModel(y0, 1.0, self.args, self.tfargs, self.active)
 
-        dy3 = fullModel(y0, 2.0, self.kwargs, self.kwendo)
+        dy3 = fullModel(y0, 2.0, self.args, self.tfargs, self.active)
 
         # Test that there's no difference
         self.assertLess(np.linalg.norm(dy1 - dy2), 1E-8)
