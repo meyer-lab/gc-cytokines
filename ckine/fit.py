@@ -1,4 +1,4 @@
-from .model import solveAutocrine, fullModel, getTotalActiveCytokine, __active_species_IDX
+from .model import solveAutocrine, fullModel, getTotalActiveCytokine, __active_species_IDX, printModel
 from scipy.integrate import odeint
 import numpy as np, pandas as pds
 from .differencing_op import centralDiff
@@ -16,7 +16,8 @@ def IL2_activity_input(y0, IL2, rxnRates, trafRates):
     ys, infodict = odeint(ddfunc, y0, ts, mxstep=6000, full_output=True)
 
     if infodict['tcur'] < np.max(ts):
-        print(IL2)
+        print("IL2 conc: " + str(IL2))
+        printModel(rxnRates, trafRates)
         return -100
 
     return getTotalActiveCytokine(0, ys[1, :])
@@ -100,14 +101,14 @@ class build_model:
         self.M = pm.Model()
         
         with self.M:
-            rxnrates = pm.Lognormal('rxn', mu=0, sd=3, shape=3) # do we need to add a standard deviation? Yes, and they're all based on a lognormal scale
-            endo = pm.Lognormal('endo', mu=0, sd=1)
-            kRec = pm.Lognormal('kRec', mu=1, sd=2)
-            kDeg = pm.Lognormal('kDeg', mu=1, sd=2)
-            activeEndo = pm.Lognormal('activeEndo', mu=1, sd=1)
+            rxnrates = pm.Lognormal('rxn', mu=0, sd=2, shape=3) # do we need to add a standard deviation? Yes, and they're all based on a lognormal scale
+            endo = pm.Lognormal('endo', mu=np.log(0.1), sd=1)
+            kRec = pm.Lognormal('kRec', mu=np.log(0.1), sd=1)
+            kDeg = pm.Lognormal('kDeg', mu=np.log(0.1), sd=1)
+            activeEndo = pm.Lognormal('activeEndo', mu=np.log(0.1), sd=1)
             
-            Rexpr = pm.Lognormal('IL2Raexpr', mu=-1, sd=2, shape=3)
-            sortF = pm.Beta('sortF', alpha=2, beta=5)
+            Rexpr = pm.Lognormal('IL2Raexpr', mu=np.log(10), sd=1, shape=3)
+            sortF = pm.Beta('sortF', alpha=2, beta=7)
 
             unkVec = T.concatenate((rxnrates, T.stack((endo, activeEndo, sortF, kRec, kDeg)), Rexpr))
             
