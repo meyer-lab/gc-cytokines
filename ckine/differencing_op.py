@@ -45,25 +45,21 @@ class centralDiffGrad(T.Op):
     def perform(self, node, inputs, outputs):
         # Find our current point
         x0 = inputs[0]
-        f0 = self.M.calc(x0)
+        f0 = self.M.calc(x0, self.pool)
         epsilon = 1.0E-7
 
         output = list()
 
-        jac = np.zeros((len(x0), len(f0)), dtype=np.float64)
+        jac = np.zeros((x0.size, f0.size), dtype=np.float64)
 
-        if self.pool is not None:
-            for i in range(len(x0)):
-                dx = x0.copy()
-                dx[i] = dx[i] + epsilon
-                output.append(self.pool.submit(self.M.calc, dx))
+        # Schedule all the calculations
+        for i in range(x0.size):
+            dx = x0.copy()
+            dx[i] = dx[i] + epsilon
+            output.append(self.M.calc_schedule(dx, self.pool))
 
-            for i, item in enumerate(output):
-                jac[i] = (item.result() - f0)/epsilon
-        else:
-            for i in range(len(x0)):
-                dx = x0.copy()
-                dx[i] = dx[i] + epsilon
-                jac[i] = (self.M.calc(dx) - f0)/epsilon
+        # Process all the results
+        for i, item in enumerate(output):
+            jac[i] = (self.M.calc_reduce(item) - f0)/epsilon
 
         outputs[0][0] = np.transpose(jac)

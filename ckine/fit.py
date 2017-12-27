@@ -47,7 +47,7 @@ class IL2_sum_squared_dist:
         self.concs = len(self.IL2s)
         self.fit_data = np.concatenate((self.numpy_data[:, 6], self.numpy_data[:, 2]))
         
-    def calc(self, unkVec, pool=None):
+    def calc_schedule(self, unkVec, pool):
         # Convert the vector of values to dicts
         rxnRates, tfR = IL2_convertRates(unkVec)
 
@@ -60,34 +60,33 @@ class IL2_sum_squared_dist:
         yAutocrine2 = solveAutocrine(tfR2)
 
         # Loop over concentrations of IL2
-        if pool is None:
-            actVec = np.fromiter((IL2_activity_input(yAutocrine, ILc, rxnRates.copy(), tfR) for ILc in self.IL2s),
-                                 np.float64, count=self.concs)
+        output = list()
+        output2 = list()
 
-            actVec2 = np.fromiter((IL2_activity_input(yAutocrine2, ILc, rxnRates.copy(), tfR2) for ILc in self.IL2s),
-                                  np.float64, count=self.concs)
-        else:
-            output = list()
-            output2 = list()
+        for _, ILc in enumerate(self.IL2s):
+            output.append(pool.submit(IL2_activity_input, yAutocrine, ILc, rxnRates.copy(), tfR))
 
-            for _, ILc in enumerate(self.IL2s):
-                output.append(pool.submit(IL2_activity_input, yAutocrine, ILc, rxnRates.copy(), tfR))
+        for _, ILc in enumerate(self.IL2s):
+            output2.append(pool.submit(IL2_activity_input, yAutocrine2, ILc, rxnRates.copy(), tfR2))
 
-            for _, ILc in enumerate(self.IL2s):
-                output2.append(pool.submit(IL2_activity_input, yAutocrine2, ILc, rxnRates.copy(), tfR2))
+        return (output, output2)
 
-            actVec = np.fromiter((item.result() for item in output), np.float64, count=self.concs)
-            actVec2 = np.fromiter((item.result() for item in output2), np.float64, count=self.concs)
+    def calc_reduce(self, inT):
+        output, output2 = inT
 
-        # Normalize to the maximal activity
-        actVec = actVec / np.max(actVec)
-        actVec2 = actVec2 / np.max(actVec2)
+        actVec = np.fromiter((item.result() for item in output), np.float64, count=self.concs)
+        actVec2 = np.fromiter((item.result() for item in output2), np.float64, count=self.concs)
 
-        # Put together into one vector
-        actVec = np.concatenate((actVec, actVec2))
+        # Normalize to the maximal activity, put together into one vector
+        actVec = np.concatenate((actVec / np.max(actVec), actVec2 / np.max(actVec2)))
 
         # value we're trying to minimize is the distance between the y-values on points of the graph that correspond to the same IL2 values
-        return np.squeeze(self.fit_data - actVec)
+        return self.fit_data - actVec
+
+    def calc(self, unkVec, pool):
+        """ Just get the solution in one pass. """
+        inT = self.calc_schedule(unkVec, pool)
+        return self.calc_reduce(inT)
 
 
 class build_model:
