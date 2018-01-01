@@ -3,7 +3,9 @@ from scipy.integrate import odeint
 import numpy as np, pandas as pds
 from .differencing_op import centralDiff
 import pymc3 as pm, theano.tensor as T
+from theano.ifelse import ifelse
 import os
+from theano import printing
 
 
 # this takes the values of input parameters and calls odeint, then puts the odeint output into IL2_pSTAT_activity
@@ -117,7 +119,11 @@ class build_model:
 
             pm.Normal('fitD', mu=0, sd=T.std(Y), observed=Y)
 
+            unkVecp = printing.Print('u-print')(unkVec)
+            unkVecc = ifelse(T.isnan(self.M.logpt), unkVecp, unkVec)
+
             pm.Deterministic('logp', self.M.logpt)
+            pm.Deterministic('unkVec', unkVecc)
     
     def sampling(self):
         with self.M:
