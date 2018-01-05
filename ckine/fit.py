@@ -2,10 +2,7 @@ from .model import solveAutocrine, fullModel, getTotalActiveCytokine, __active_s
 from scipy.integrate import odeint
 import numpy as np, pandas as pds
 from .differencing_op import centralDiff
-import pymc3 as pm, theano.tensor as T
-from theano.ifelse import ifelse
-import os
-from theano import printing
+import pymc3 as pm, theano.tensor as T, os
 
 
 # this takes the values of input parameters and calls odeint, then puts the odeint output into IL2_pSTAT_activity
@@ -15,11 +12,12 @@ def IL2_activity_input(y0, IL2, rxnRates, trafRates):
     ddfunc = lambda y, t: fullModel(y, t, rxnRates, trafRates, __active_species_IDX)
     ts = np.linspace(0., 500, 2)
 
-    ys, infodict = odeint(ddfunc, y0, ts, mxstep=6000, full_output=True)
+    ys, infodict = odeint(ddfunc, y0, ts, mxstep=12000, full_output=True, rtol=1.0E-5, atol=1.0E-3)
 
     if infodict['tcur'] < np.max(ts):
         print("IL2 conc: " + str(IL2))
         printModel(rxnRates, trafRates)
+        print(infodict)
         return -100
 
     return getTotalActiveCytokine(0, ys[1, :])
@@ -102,29 +100,36 @@ class build_model:
         self.M = pm.Model()
         
         with self.M:
-            rxnrates = pm.Lognormal('rxn', mu=0, sd=2, shape=3) # do we need to add a standard deviation? Yes, and they're all based on a lognormal scale
-            endo = pm.Lognormal('endo', mu=np.log(0.1), sd=1)
-            kRec = pm.Lognormal('kRec', mu=np.log(0.1), sd=1)
-            kDeg = pm.Lognormal('kDeg', mu=np.log(0.1), sd=1)
-            activeEndo = pm.Lognormal('activeEndo', mu=np.log(0.1), sd=1)
-            
-            Rexpr = pm.Lognormal('IL2Raexpr', mu=np.log(10), sd=1, shape=3)
-            sortF = pm.Beta('sortF', alpha=2, beta=7)
+            rxnrates = pm.Lognormal('rxn', sd=2., shape=3) # do we need to add a standard deviation? Yes, and they're all based on a lognormal scale
+            endo_activeEndo = pm.Lognormal('endo', mu=np.log(0.1), sd=1., shape=2)
+            kRec_kDeg = pm.Lognormal('kRec_kDeg', mu=np.log(0.1), sd=1., shape=2)
+            Rexpr = pm.Lognormal('IL2Raexpr', sd=1., shape=3)
+            sortF = T.as_tensor_variable(0.1) # pm.Beta('sortF', alpha=2, beta=7)
 
-            unkVec = T.concatenate((rxnrates, T.stack((endo, activeEndo, sortF, kRec, kDeg)), Rexpr))
+            unkVec = T.concatenate((rxnrates, endo_activeEndo, T.stack(sortF), kRec_kDeg, Rexpr))
             
             Y = centralDiff(self.dst)(unkVec) # fitting the data based on dst.calc for the given parameters
             
             pm.Deterministic('Y', Y) # this line allows us to see the traceplots in read_fit_data.py... it lets us know if the fitting process is working
 
-            pm.Normal('fitD', mu=0, sd=T.std(Y), observed=Y)
+            pm.Normal('fitD', sd=0.1, observed=Y) # TODO: Find an empirical value for the SEM
 
-            unkVecp = printing.Print('u-print')(unkVec)
-            unkVecc = ifelse(T.isnan(self.M.logpt), unkVecp, unkVec)
-
+            # Save likelihood
             pm.Deterministic('logp', self.M.logpt)
-            pm.Deterministic('unkVec', unkVecc)
     
     def sampling(self):
         with self.M:
-            self.trace = pm.sample(500) # 500 represents the number of steps taken in the walking process
+            try:
+                self.trace = pm.sample()
+            except ValueError:
+                # Something went wrong, so print out the variables.
+                print("Test point:")
+                point = self.M.test_point
+                logp = self.M.logp
+                dlogp = self.M.dlogp()
+
+                print(point)
+                print(logp(point))
+                print(dlogp(point))
+
+                raise

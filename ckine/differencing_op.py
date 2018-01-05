@@ -1,6 +1,34 @@
-import theano.tensor as T
-import numpy as np
-from concurrent.futures import ProcessPoolExecutor
+import numpy as np, theano.tensor as T
+from concurrent.futures import ProcessPoolExecutor, Future, Executor
+from threading import Lock
+
+
+class DummyExecutor(Executor):
+    """
+    Dummy executor to allow futures even when we're not running in parallel.
+    """
+    def __init__(self):
+        self._shutdown = False
+        self._shutdownLock = Lock()
+
+    def submit(self, fn, *args, **kwargs):
+        with self._shutdownLock:
+            if self._shutdown:
+                raise RuntimeError('cannot schedule new futures after shutdown')
+
+            f = Future()
+            try:
+                result = fn(*args, **kwargs)
+            except BaseException as e:
+                f.set_exception(e)
+            else:
+                f.set_result(result)
+
+            return f
+
+    def shutdown(self, wait=True):
+        with self._shutdownLock:
+            self._shutdown = True
 
 
 class centralDiff(T.Op):
@@ -15,7 +43,7 @@ class centralDiff(T.Op):
             self.pool = ProcessPoolExecutor()
         else:
             self.parallel = False
-            self.pool = None
+            self.pool = DummyExecutor()
 
         self.dg = centralDiffGrad(calcModel, self.pool)
 
@@ -25,6 +53,9 @@ class centralDiff(T.Op):
     def perform(self, node, inputs, outputs):
         vec, = inputs
         mu = self.M.calc(vec, pool=self.pool)
+
+        if np.any(np.isclose(mu, -100.)):
+            raise RuntimeError("Activity calculation failed.")
 
         outputs[0][0] = np.array(mu)
 
@@ -40,17 +71,26 @@ class centralDiffGrad(T.Op):
 
     def __init__(self, calcModel, pool=None):
         self.M = calcModel
-        self.pool = pool
+
+        # Handle no pool being passed
+        if pool is None:
+            self.pool = DummyExecutor()
+        else:
+            self.pool = pool
 
     def perform(self, node, inputs, outputs):
         # Find our current point
         x0 = inputs[0]
         f0 = self.M.calc(x0, self.pool)
+
+        if np.any(np.isclose(f0, -100.)):
+            raise RuntimeError("Activity calculation failed so not able to evaluate gradient.")
+
         epsilon = 1.0E-7
 
         output = list()
 
-        jac = np.zeros((x0.size, f0.size), dtype=np.float64)
+        jac = np.empty((x0.size, f0.size), dtype=np.float64)
 
         # Schedule all the calculations
         for i in range(x0.size):
