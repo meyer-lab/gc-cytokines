@@ -8,7 +8,6 @@ from ..fit import IL2_sum_squared_dist
 class TestOp(unittest.TestCase):
     def test_grad(self):
         mdl = IL2_sum_squared_dist()
-        mdl.load()
 
         Opp = centralDiff(mdl, parallel=False)
 
