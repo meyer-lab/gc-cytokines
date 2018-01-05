@@ -39,14 +39,14 @@ def IL2_convertRates(unkVec):
 # need the theano decorator to get around the fact that there are if-else statements when running odeint but
 #  we don't necessarily know the values for the rxn rates when we call our model
 class IL2_sum_squared_dist:
-    def load(self):
+    def __init__(self):
         path = os.path.dirname(os.path.abspath(__file__))
         data = pds.read_csv(os.path.join(path, "./data/IL2_IL15_extracted_data.csv")) # imports csv file into pandas array
         self.numpy_data = data.as_matrix() #the IL2_IL2Ra- data is within the 3rd column (index 2)
         self.IL2s = np.logspace(-3.3, 2.7, 8) # 8 log-spaced values between our two endpoints
         self.concs = len(self.IL2s)
         self.fit_data = np.concatenate((self.numpy_data[:, 6], self.numpy_data[:, 2]))
-        
+
     def calc_schedule(self, unkVec, pool):
         # Convert the vector of values to dicts
         rxnRates, tfR = IL2_convertRates(unkVec)
@@ -94,17 +94,17 @@ class build_model:
     # going to load the data from the CSV file at the very beginning of when build_model is called... needs to be separate member function to avoid uploading file thousands of times
     def __init__(self):
         self.dst = IL2_sum_squared_dist()
-        self.dst.load() 
+        self.M = self.build()
     
     def build(self):
-        self.M = pm.Model()
-        
-        with self.M:
-            rxnrates = pm.Lognormal('rxn', sd=2., shape=3) # do we need to add a standard deviation? Yes, and they're all based on a lognormal scale
-            endo_activeEndo = pm.Lognormal('endo', mu=np.log(0.1), sd=1., shape=2)
-            kRec_kDeg = pm.Lognormal('kRec_kDeg', mu=np.log(0.1), sd=1., shape=2)
-            Rexpr = pm.Lognormal('IL2Raexpr', sd=1., shape=3)
-            sortF = T.as_tensor_variable(0.1) # pm.Beta('sortF', alpha=2, beta=7)
+        M = pm.Model()
+
+        with M:
+            rxnrates = pm.Lognormal('rxn', sd=1., shape=3, testval=[0.1, 0.1, 0.1]) # do we need to add a standard deviation? Yes, and they're all based on a lognormal scale
+            endo_activeEndo = pm.Lognormal('endo', mu=np.log(0.1), sd=1., shape=2, testval=[0.1, 0.1])
+            kRec_kDeg = pm.Lognormal('kRec_kDeg', mu=np.log(0.1), sd=1., shape=2, testval=[0.1, 0.1])
+            Rexpr = pm.Lognormal('IL2Raexpr', sd=1., shape=3, testval=[1., 1., 1.])
+            sortF = pm.Beta('sortF', alpha=2, beta=7, testval=0.1)
 
             unkVec = T.concatenate((rxnrates, endo_activeEndo, T.stack(sortF), kRec_kDeg, Rexpr))
             
@@ -115,7 +115,9 @@ class build_model:
             pm.Normal('fitD', sd=0.1, observed=Y) # TODO: Find an empirical value for the SEM
 
             # Save likelihood
-            pm.Deterministic('logp', self.M.logpt)
+            pm.Deterministic('logp', M.logpt)
+
+        return M
     
     def sampling(self):
         with self.M:
@@ -133,3 +135,7 @@ class build_model:
                 print(dlogp(point))
 
                 raise
+
+    def profile(self):
+        """ Profile the gradient calculation. """
+        self.M.profile(pm.theanof.gradient(self.M.logpt, None)).summary()

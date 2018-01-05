@@ -2,7 +2,7 @@ fdir = ./Manuscript/Figures
 tdir = ./Manuscript/Templates
 pan_common = -F pandoc-crossref -F pandoc-citeproc --filter=$(tdir)/figure-filter.py -f markdown ./Manuscript/Text/*.md
 
-.PHONY: clean test all
+.PHONY: clean test all testprofile testcover
 
 all: Manuscript/index.html Manuscript/Manuscript.pdf Manuscript/Manuscript.docx Manuscript/CoverLetter.docx
 
@@ -48,3 +48,9 @@ test:
 
 testcover:
 	nosetests3 --with-xunit --with-xcoverage --cover-package=ckine -s --with-timer --timer-top-n 5
+
+stats.dat:
+	nosetests3 -s --with-cprofile
+
+testprofile: stats.dat
+	echo "Running profile"
