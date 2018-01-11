@@ -1,178 +1,270 @@
 import numpy as np
+from scipy.integrate import odeint
+
+try:
+    from numba import jit, float64, boolean as numbabool
+except ImportError:
+    print('Numba not available, so no JIT compile.')
+
+    def jit(ob):
+        return ob
+
+    float64 = None
+    numbabool = None
 
 
-def dy_dt(y, t, IL2, IL15, IL7, IL9, k4fwd, k5rev, k6rev, k13fwd, k15rev, k17rev, k18rev, k22rev, k23rev, k25rev, k26rev, k27rev, k29rev, k30rev, k31rev):
+__active_species_IDX = np.zeros(26, dtype=np.bool)
+__active_species_IDX[np.array([8, 9, 16, 17, 21, 25])] = 1
+
+
+@jit(float64[26](float64[26], float64, float64[17]), nopython=True, cache=True, nogil=True)
+def dy_dt(y, t, rxn):
+    # Set the constant inputs
+    IL2, IL15, IL7, IL9, kfwd, k5rev, k6rev, k15rev, k17rev, k18rev, k22rev, k23rev, k26rev, k27rev, k29rev, k30rev, k31rev = rxn
+
     # IL2 in nM
-    IL2Ra = y[0]
-    IL2Rb = y[1]
-    gc = y[2]
-    IL2_IL2Ra = y[3]
-    IL2_IL2Rb = y[4]
-    IL2_gc = y[5]
-    IL2_IL2Ra_IL2Rb = y[6]
-    IL2_IL2Ra_gc = y[7]
-    IL2_IL2Rb_gc = y[8]
-    IL2_IL2Ra_IL2Rb_gc = y[9]
+    IL2Ra, IL2Rb, gc, IL2_IL2Ra, IL2_IL2Rb, IL2_gc, IL2_IL2Ra_IL2Rb, IL2_IL2Ra_gc, IL2_IL2Rb_gc, IL2_IL2Ra_IL2Rb_gc = y[0:10]
     
     # IL15 in nM
-    IL15Ra = y[10]
-    IL15_IL15Ra = y[11]
-    IL15_IL2Rb = y[12]
-    IL15_gc = y[13]
-    IL15_IL15Ra_IL2Rb = y[14]
-    IL15_IL15Ra_gc = y[15]
-    IL15_IL2Rb_gc = y[16]
-    IL15_IL15Ra_IL2Rb_gc = y[17]
+    IL15Ra, IL15_IL15Ra, IL15_IL2Rb, IL15_gc, IL15_IL15Ra_IL2Rb, IL15_IL15Ra_gc, IL15_IL2Rb_gc, IL15_IL15Ra_IL2Rb_gc = y[10:18]
     
-    #IL7 in nM
-    IL7Ra = y[18]
-    IL7Ra_IL7 = y[19]
-    gc_IL7 = y[20]
-    IL7Ra_gc_IL7 = y[21]
-    # k25 - k28
-
-    #IL9 in nM
-    IL9R = y[22]
-    IL9R_IL9 = y[23]
-    gc_IL9 = y[24]
-    IL9R_gc_IL9 = y[25]
-    # k29 - k32
-    
-    # The R-R fwd rate is largely going to be determined by p.m. diff so assume it's shared
-    k5fwd = k6fwd = k7fwd = k8fwd = k9fwd = k10fwd = k11fwd = k12fwd = k4fwd
-    k17fwd = k18fwd = k19fwd = k20fwd = k21fwd = k22fwd = k23fwd = k24fwd = k16fwd = k4fwd
-    k27fwd = k28fwd = k31fwd = k32fwd = k4fwd # IL7/9
+    #IL7, IL9 in nM
+    IL7Ra, IL7Ra_IL7, gc_IL7, IL7Ra_gc_IL7, IL9R, IL9R_IL9, gc_IL9, IL9R_gc_IL9 = y[18:26] # k25 - k32
 
     # These are probably measured in the literature
-    k1fwd = 0.01 # Assuming on rate of 10^7 M-1 sec-1
-    k1rev = k1fwd * 10 # doi:10.1016/j.jmb.2004.04.038, 10 nM
+    kfbnd = 0.01 # Assuming on rate of 10^7 M-1 sec-1
+    k1rev = kfbnd * 10 # doi:10.1016/j.jmb.2004.04.038, 10 nM
 
-    k2fwd = k1fwd
-    k2rev = k2fwd * 144 # doi:10.1016/j.jmb.2004.04.038, 144 nM
-    k3fwd = k1fwd / 10.0 # Very weak, > 50 uM. Voss, et al (1993). PNAS. 90, 2428–2432.
+    k2rev = kfbnd * 144 # doi:10.1016/j.jmb.2004.04.038, 144 nM
+    k3fwd = kfbnd / 10.0 # Very weak, > 50 uM. Voss, et al (1993). PNAS. 90, 2428–2432.
     k3rev = 50000 * k3fwd
-    k10rev = 12.0 * k5rev * k10fwd / 1.5 / k5fwd # doi:10.1016/j.jmb.2004.04.038
-    k11rev = 63.0 * k5rev * k11fwd / 1.5 / k5fwd # doi:10.1016/j.jmb.2004.04.038
-    
-    
+    k10rev = 12.0 * k5rev / 1.5 # doi:10.1016/j.jmb.2004.04.038
+    k11rev = 63.0 * k5rev / 1.5 # doi:10.1016/j.jmb.2004.04.038
     
     # Literature values for k values for IL-15
-    # TODO: Find actual literature values for these
-    k13rev = k13fwd * 0.065 #based on the multiple papers suggesting 30-100 pM
-    k14fwd = k13fwd
-    k14rev = k14fwd * 438 # doi:10.1038/ni.2449, 438 nM
-    
-    k15fwd = k1fwd
-    k17fwd = k18fwd = k1fwd
-    k13fwd = k14fwd = k1fwd
-    k25fwd = k26fwd = k1fwd
-    k29fwd = k30fwd = k1fwd
+    k13rev = kfbnd * 0.065 #based on the multiple papers suggesting 30-100 pM
+    k14rev = kfbnd * 438 # doi:10.1038/ni.2449, 438 nM
     
     # Literature values for IL-7
-    k25rev = k25fwd * 59. # DOI:10.1111/j.1600-065X.2012.01160.x, 59 nM
+    k25rev = kfbnd * 59. # DOI:10.1111/j.1600-065X.2012.01160.x, 59 nM
     
     # To satisfy detailed balance these relationships should hold
     # _Based on initial assembly steps
-    k4rev = k1fwd * k4fwd * k6rev * k3rev / k1rev / k6fwd / k3fwd
-    k7rev = k3fwd * k7fwd * k2rev * k5rev / k2fwd / k5fwd / k3rev
-    k12rev = k2fwd * k12fwd * k1rev * k11rev / k11fwd / k1fwd / k2rev
+    k4rev = kfbnd * k6rev * k3rev / k1rev / k3fwd
+    k7rev = k3fwd * k2rev * k5rev / kfbnd / k3rev
+    k12rev = k1rev * k11rev / k2rev
     # _Based on formation of full complex
-    k9rev = k2rev * k10rev * k12rev / k2fwd / k10fwd / k12fwd / k3rev / k6rev * k3fwd * k6fwd * k9fwd
-    k8rev = k2rev * k10rev * k12rev / k2fwd / k10fwd / k12fwd / k7rev / k3rev * k3fwd * k7fwd * k8fwd
+    k9rev = k2rev * k10rev * k12rev / kfbnd / k3rev / k6rev * k3fwd
+    k8rev = k2rev * k10rev * k12rev / kfbnd / k7rev / k3rev * k3fwd
 
     # IL15
     # To satisfy detailed balance these relationships should hold
     # _Based on initial assembly steps
-    k16rev = k13fwd * k16fwd * k18rev * k15rev / k13rev / k18fwd / k15fwd
-    k19rev = k15fwd * k19fwd * k14rev * k17rev / k14fwd / k17fwd / k15rev
-    k24rev = k14fwd * k24fwd * k13rev * k23rev / k23fwd / k13fwd / k14rev
+    k16rev = kfwd * k18rev * k15rev / k13rev / kfbnd
+    k19rev = kfwd * k14rev * k17rev / kfbnd / k15rev
+    k24rev = k13rev * k23rev / k14rev
     # _Based on formation of full complex
-    k21rev = k14rev * k22rev * k24rev / k14fwd / k22fwd / k24fwd / k15rev / k18rev * k15fwd * k18fwd * k21fwd
-    k20rev = k14rev * k22rev * k24rev / k14fwd / k22fwd / k24fwd / k19rev / k15rev * k15fwd * k19fwd * k20fwd
+
+    k21rev = k14rev * k22rev * k24rev / kfwd / k15rev / k18rev * kfbnd
+    k20rev = k14rev * k22rev * k24rev / k19rev / k15rev
 
     # _One detailed balance IL7/9 loop
-    k32rev = k29rev * k31rev * k32fwd * k30fwd / k29fwd / k31fwd / k30rev
-    k28rev = k25rev * k27rev * k28fwd * k26fwd / k25fwd / k27fwd / k26rev
+    k32rev = k29rev * k31rev / k30rev
+    k28rev = k25rev * k27rev / k26rev
 
-    dydt = np.zeros(y.shape, dtype = np.float64)
+    dydt = y.copy()
     
     # IL2
-    dydt[0] = -k1fwd * IL2Ra * IL2 + k1rev * IL2_IL2Ra - k6fwd * IL2Ra * IL2_gc + k6rev * IL2_IL2Ra_gc - k8fwd * IL2Ra * IL2_IL2Rb_gc + k8rev * IL2_IL2Ra_IL2Rb_gc - k12fwd * IL2Ra * IL2_IL2Rb + k12rev * IL2_IL2Ra_IL2Rb
-    dydt[1] = -k2fwd * IL2Rb * IL2 + k2rev * IL2_IL2Rb - k7fwd * IL2Rb * IL2_gc + k7rev * IL2_IL2Rb_gc - k9fwd * IL2Rb * IL2_IL2Ra_gc + k9rev * IL2_IL2Ra_IL2Rb_gc - k11fwd * IL2Rb * IL2_IL2Ra + k11rev * IL2_IL2Ra_IL2Rb
-    dydt[2] = -k3fwd * IL2 * gc + k3rev * IL2_gc - k5fwd * IL2_IL2Rb * gc + k5rev * IL2_IL2Rb_gc - k4fwd * IL2_IL2Ra * gc + k4rev * IL2_IL2Ra_gc - k10fwd * IL2_IL2Ra_IL2Rb * gc + k10rev * IL2_IL2Ra_IL2Rb_gc
-    dydt[3] = -k11fwd * IL2_IL2Ra * IL2Rb + k11rev * IL2_IL2Ra_IL2Rb - k4fwd * IL2_IL2Ra * gc + k4rev * IL2_IL2Ra_gc + k1fwd * IL2 * IL2Ra - k1rev * IL2_IL2Ra
-    dydt[4] = -k12fwd * IL2_IL2Rb * IL2Ra + k12rev * IL2_IL2Ra_IL2Rb - k5fwd * IL2_IL2Rb * gc + k5rev * IL2_IL2Rb_gc + k2fwd * IL2 * IL2Rb - k2rev * IL2_IL2Rb
-    dydt[5] = -k6fwd *IL2_gc * IL2Ra + k6rev * IL2_IL2Ra_gc - k7fwd * IL2_gc * IL2Rb + k7rev * IL2_IL2Rb_gc + k3fwd * IL2 * gc - k3rev * IL2_gc
-    dydt[6] = -k10fwd * IL2_IL2Ra_IL2Rb * gc + k10rev * IL2_IL2Ra_IL2Rb_gc + k11fwd * IL2_IL2Ra * IL2Rb - k11rev * IL2_IL2Ra_IL2Rb + k12fwd * IL2_IL2Rb * IL2Ra - k12rev * IL2_IL2Ra_IL2Rb
-    dydt[7] = -k9fwd * IL2_IL2Ra_gc * IL2Rb + k9rev * IL2_IL2Ra_IL2Rb_gc + k4fwd * IL2_IL2Ra * gc - k4rev * IL2_IL2Ra_gc + k6fwd * IL2_gc * IL2Ra - k6rev * IL2_IL2Ra_gc
-    dydt[8] = -k8fwd * IL2_IL2Rb_gc * IL2Ra + k8rev * IL2_IL2Ra_IL2Rb_gc + k5fwd * gc * IL2_IL2Rb - k5rev * IL2_IL2Rb_gc + k7fwd * IL2_gc * IL2Rb - k7rev * IL2_IL2Rb_gc
-    dydt[9] = k8fwd * IL2_IL2Rb_gc * IL2Ra - k8rev * IL2_IL2Ra_IL2Rb_gc + k9fwd * IL2_IL2Ra_gc * IL2Rb - k9rev * IL2_IL2Ra_IL2Rb_gc + k10fwd * IL2_IL2Ra_IL2Rb * gc - k10rev * IL2_IL2Ra_IL2Rb_gc
+    dydt[0] = -kfbnd * IL2Ra * IL2 + k1rev * IL2_IL2Ra - kfwd * IL2Ra * IL2_gc + k6rev * IL2_IL2Ra_gc - kfwd * IL2Ra * IL2_IL2Rb_gc + k8rev * IL2_IL2Ra_IL2Rb_gc - kfwd * IL2Ra * IL2_IL2Rb + k12rev * IL2_IL2Ra_IL2Rb
+    dydt[1] = -kfbnd * IL2Rb * IL2 + k2rev * IL2_IL2Rb - kfwd * IL2Rb * IL2_gc + k7rev * IL2_IL2Rb_gc - kfwd * IL2Rb * IL2_IL2Ra_gc + k9rev * IL2_IL2Ra_IL2Rb_gc - kfwd * IL2Rb * IL2_IL2Ra + k11rev * IL2_IL2Ra_IL2Rb
+    dydt[2] = -k3fwd * IL2 * gc + k3rev * IL2_gc - kfwd * IL2_IL2Rb * gc + k5rev * IL2_IL2Rb_gc - kfwd * IL2_IL2Ra * gc + k4rev * IL2_IL2Ra_gc - kfwd * IL2_IL2Ra_IL2Rb * gc + k10rev * IL2_IL2Ra_IL2Rb_gc
+    dydt[3] = -kfwd * IL2_IL2Ra * IL2Rb + k11rev * IL2_IL2Ra_IL2Rb - kfwd * IL2_IL2Ra * gc + k4rev * IL2_IL2Ra_gc + kfbnd * IL2 * IL2Ra - k1rev * IL2_IL2Ra
+    dydt[4] = -kfwd * IL2_IL2Rb * IL2Ra + k12rev * IL2_IL2Ra_IL2Rb - kfwd * IL2_IL2Rb * gc + k5rev * IL2_IL2Rb_gc + kfbnd * IL2 * IL2Rb - k2rev * IL2_IL2Rb
+    dydt[5] = -kfwd *IL2_gc * IL2Ra + k6rev * IL2_IL2Ra_gc - kfwd * IL2_gc * IL2Rb + k7rev * IL2_IL2Rb_gc + k3fwd * IL2 * gc - k3rev * IL2_gc
+    dydt[6] = -kfwd * IL2_IL2Ra_IL2Rb * gc + k10rev * IL2_IL2Ra_IL2Rb_gc + kfwd * IL2_IL2Ra * IL2Rb - k11rev * IL2_IL2Ra_IL2Rb + kfwd * IL2_IL2Rb * IL2Ra - k12rev * IL2_IL2Ra_IL2Rb
+    dydt[7] = -kfwd * IL2_IL2Ra_gc * IL2Rb + k9rev * IL2_IL2Ra_IL2Rb_gc + kfwd * IL2_IL2Ra * gc - k4rev * IL2_IL2Ra_gc + kfwd * IL2_gc * IL2Ra - k6rev * IL2_IL2Ra_gc
+    dydt[8] = -kfwd * IL2_IL2Rb_gc * IL2Ra + k8rev * IL2_IL2Ra_IL2Rb_gc + kfwd * gc * IL2_IL2Rb - k5rev * IL2_IL2Rb_gc + kfwd * IL2_gc * IL2Rb - k7rev * IL2_IL2Rb_gc
+    dydt[9] = kfwd * IL2_IL2Rb_gc * IL2Ra - k8rev * IL2_IL2Ra_IL2Rb_gc + kfwd * IL2_IL2Ra_gc * IL2Rb - k9rev * IL2_IL2Ra_IL2Rb_gc + kfwd * IL2_IL2Ra_IL2Rb * gc - k10rev * IL2_IL2Ra_IL2Rb_gc
 
     # IL15
-    dydt[10] = -k13fwd * IL15Ra * IL15 + k13rev * IL15_IL15Ra - k18fwd * IL15Ra * IL15_gc + k18rev * IL15_IL15Ra_gc - k20fwd * IL15Ra * IL15_IL2Rb_gc + k20rev * IL15_IL15Ra_IL2Rb_gc - k24fwd * IL15Ra * IL15_IL2Rb + k24rev * IL15_IL15Ra_IL2Rb
-    dydt[11] = -k23fwd * IL15_IL15Ra * IL2Rb + k23rev * IL15_IL15Ra_IL2Rb - k16fwd * IL15_IL15Ra * gc + k16rev * IL15_IL15Ra_gc + k13fwd * IL15 * IL15Ra - k13rev * IL15_IL15Ra
-    dydt[12] = -k24fwd * IL15_IL2Rb * IL15Ra + k24rev * IL15_IL15Ra_IL2Rb - k17fwd * IL15_IL2Rb * gc + k17rev * IL15_IL2Rb_gc + k14fwd * IL15 * IL2Rb - k14rev * IL15_IL2Rb 
-    dydt[13] = -k18fwd * IL15_gc * IL15Ra + k18rev * IL15_IL15Ra_gc - k19fwd * IL15_gc * IL2Rb + k19rev * IL15_IL2Rb_gc + k15fwd * IL15 * gc - k15rev * IL15_gc
-    dydt[14] = -k22fwd * IL15_IL15Ra_IL2Rb * gc + k22rev * IL15_IL15Ra_IL2Rb_gc + k23fwd * IL15_IL15Ra * IL2Rb - k23rev * IL15_IL15Ra_IL2Rb + k24fwd * IL15_IL2Rb * IL15Ra - k24rev * IL15_IL15Ra_IL2Rb   
-    dydt[15] = -k21fwd * IL15_IL15Ra_gc * IL2Rb + k21rev * IL15_IL15Ra_IL2Rb_gc + k16fwd * IL15_IL15Ra * gc - k16rev * IL15_IL15Ra_gc + k18fwd * IL15_gc * IL15Ra - k18rev * IL15_IL15Ra_gc
-    dydt[16] = -k20fwd * IL15_IL2Rb_gc * IL15Ra + k20rev * IL15_IL15Ra_IL2Rb_gc + k17fwd * gc * IL15_IL2Rb - k17rev * IL15_IL2Rb_gc + k19fwd * IL15_gc * IL2Rb - k19rev * IL15_IL2Rb_gc
-    dydt[17] =  k20fwd * IL15_IL2Rb_gc * IL15Ra - k20rev * IL15_IL15Ra_IL2Rb_gc + k21fwd * IL15_IL15Ra_gc * IL2Rb - k21rev * IL15_IL15Ra_IL2Rb_gc + k22fwd * IL15_IL15Ra_IL2Rb * gc - k22rev * IL15_IL15Ra_IL2Rb_gc
+    dydt[10] = -kfbnd * IL15Ra * IL15 + k13rev * IL15_IL15Ra - kfbnd * IL15Ra * IL15_gc + k18rev * IL15_IL15Ra_gc - kfwd * IL15Ra * IL15_IL2Rb_gc + k20rev * IL15_IL15Ra_IL2Rb_gc - kfwd * IL15Ra * IL15_IL2Rb + k24rev * IL15_IL15Ra_IL2Rb
+    dydt[11] = -kfwd * IL15_IL15Ra * IL2Rb + k23rev * IL15_IL15Ra_IL2Rb - kfwd * IL15_IL15Ra * gc + k16rev * IL15_IL15Ra_gc + kfbnd * IL15 * IL15Ra - k13rev * IL15_IL15Ra
+    dydt[12] = -kfwd * IL15_IL2Rb * IL15Ra + k24rev * IL15_IL15Ra_IL2Rb - kfbnd * IL15_IL2Rb * gc + k17rev * IL15_IL2Rb_gc + kfbnd * IL15 * IL2Rb - k14rev * IL15_IL2Rb 
+    dydt[13] = -kfbnd * IL15_gc * IL15Ra + k18rev * IL15_IL15Ra_gc - kfwd * IL15_gc * IL2Rb + k19rev * IL15_IL2Rb_gc + kfbnd * IL15 * gc - k15rev * IL15_gc
+    dydt[14] = -kfwd * IL15_IL15Ra_IL2Rb * gc + k22rev * IL15_IL15Ra_IL2Rb_gc + kfwd * IL15_IL15Ra * IL2Rb - k23rev * IL15_IL15Ra_IL2Rb + kfwd * IL15_IL2Rb * IL15Ra - k24rev * IL15_IL15Ra_IL2Rb   
+    dydt[15] = -kfwd * IL15_IL15Ra_gc * IL2Rb + k21rev * IL15_IL15Ra_IL2Rb_gc + kfwd * IL15_IL15Ra * gc - k16rev * IL15_IL15Ra_gc + kfbnd * IL15_gc * IL15Ra - k18rev * IL15_IL15Ra_gc
+    dydt[16] = -kfwd * IL15_IL2Rb_gc * IL15Ra + k20rev * IL15_IL15Ra_IL2Rb_gc + kfbnd * gc * IL15_IL2Rb - k17rev * IL15_IL2Rb_gc + kfwd * IL15_gc * IL2Rb - k19rev * IL15_IL2Rb_gc
+    dydt[17] =  kfwd * IL15_IL2Rb_gc * IL15Ra - k20rev * IL15_IL15Ra_IL2Rb_gc + kfwd * IL15_IL15Ra_gc * IL2Rb - k21rev * IL15_IL15Ra_IL2Rb_gc + kfwd * IL15_IL15Ra_IL2Rb * gc - k22rev * IL15_IL15Ra_IL2Rb_gc
     
-    dydt[1] = dydt[1] - k14fwd * IL2Rb * IL15 + k14rev * IL15_IL2Rb - k19fwd * IL2Rb * IL15_gc + k19rev * IL15_IL2Rb_gc - k21fwd * IL2Rb * IL15_IL15Ra_gc + k21rev * IL15_IL15Ra_IL2Rb_gc - k23fwd * IL2Rb * IL15_IL15Ra + k23rev * IL15_IL15Ra_IL2Rb
-    dydt[2] = dydt[2] - k15fwd * IL15 * gc + k15rev * IL15_gc - k17fwd * IL15_IL2Rb * gc + k17rev * IL15_IL2Rb_gc - k16fwd * IL15_IL15Ra * gc + k16rev * IL15_IL15Ra_gc - k22fwd * IL15_IL15Ra_IL2Rb * gc + k22rev * IL15_IL15Ra_IL2Rb_gc
+    dydt[1] = dydt[1] - kfbnd * IL2Rb * IL15 + k14rev * IL15_IL2Rb - kfwd * IL2Rb * IL15_gc + k19rev * IL15_IL2Rb_gc - kfwd * IL2Rb * IL15_IL15Ra_gc + k21rev * IL15_IL15Ra_IL2Rb_gc - kfwd * IL2Rb * IL15_IL15Ra + k23rev * IL15_IL15Ra_IL2Rb
+    dydt[2] = dydt[2] - kfbnd * IL15 * gc + k15rev * IL15_gc - kfbnd * IL15_IL2Rb * gc + k17rev * IL15_IL2Rb_gc - kfwd * IL15_IL15Ra * gc + k16rev * IL15_IL15Ra_gc - kfwd * IL15_IL15Ra_IL2Rb * gc + k22rev * IL15_IL15Ra_IL2Rb_gc
     
     # IL7
-    dydt[2] = dydt[2] - k26fwd * IL7 * gc + k26rev * gc_IL7 - k27fwd * gc * IL7Ra_IL7 + k27rev * IL7Ra_gc_IL7
-    dydt[18] = -k25fwd * IL7Ra * IL7 + k25rev * IL7Ra_IL7 - k28fwd * IL7Ra * gc_IL7 + k28rev * IL7Ra_gc_IL7
-    dydt[19] = k25fwd * IL7Ra * IL7 - k25rev * IL7Ra_IL7 - k27fwd * gc * IL7Ra_IL7 + k27rev * IL7Ra_gc_IL7
-    dydt[20] = -k28fwd * IL7Ra * gc_IL7 + k28rev * IL7Ra_gc_IL7 + k26fwd * IL7 * gc - k26rev * gc_IL7
-    dydt[21] = k28fwd * IL7Ra * gc_IL7 - k28rev * IL7Ra_gc_IL7 + k27fwd * gc * IL7Ra_IL7 - k27rev * IL7Ra_gc_IL7
+    dydt[2] = dydt[2] - kfbnd * IL7 * gc + k26rev * gc_IL7 - kfwd * gc * IL7Ra_IL7 + k27rev * IL7Ra_gc_IL7
+    dydt[18] = -kfbnd * IL7Ra * IL7 + k25rev * IL7Ra_IL7 - kfwd * IL7Ra * gc_IL7 + k28rev * IL7Ra_gc_IL7
+    dydt[19] = kfbnd * IL7Ra * IL7 - k25rev * IL7Ra_IL7 - kfwd * gc * IL7Ra_IL7 + k27rev * IL7Ra_gc_IL7
+    dydt[20] = -kfwd * IL7Ra * gc_IL7 + k28rev * IL7Ra_gc_IL7 + kfbnd * IL7 * gc - k26rev * gc_IL7
+    dydt[21] = kfwd * IL7Ra * gc_IL7 - k28rev * IL7Ra_gc_IL7 + kfwd * gc * IL7Ra_IL7 - k27rev * IL7Ra_gc_IL7
 
     # IL9
-    dydt[2] = dydt[2] - k30fwd * IL9 * gc + k30rev * gc_IL9 - k31fwd * gc * IL9R_IL9 + k31rev * IL9R_gc_IL9
-    dydt[22] = -k29fwd * IL9R * IL9 + k29rev * IL9R_IL9 - k32fwd * IL9R * gc_IL9 + k32rev * IL9R_gc_IL9
-    dydt[23] = k29fwd * IL9R * IL9 - k29rev * IL9R_IL9 - k31fwd * gc * IL9R_IL9 + k31rev * IL9R_gc_IL9
-    dydt[24] = -k32fwd * IL9R * gc_IL9 + k32rev * IL9R_gc_IL9 + k30fwd * IL9 * gc - k30rev * gc_IL9
-    dydt[25] = k32fwd * IL9R * gc_IL9 - k32rev * IL9R_gc_IL9 + k31fwd * gc * IL9R_IL9 - k31rev * IL9R_gc_IL9
+    dydt[2] = dydt[2] - kfbnd * IL9 * gc + k30rev * gc_IL9 - kfwd * gc * IL9R_IL9 + k31rev * IL9R_gc_IL9
+    dydt[22] = -kfbnd * IL9R * IL9 + k29rev * IL9R_IL9 - kfwd * IL9R * gc_IL9 + k32rev * IL9R_gc_IL9
+    dydt[23] = kfbnd * IL9R * IL9 - k29rev * IL9R_IL9 - kfwd * gc * IL9R_IL9 + k31rev * IL9R_gc_IL9
+    dydt[24] = -kfwd * IL9R * gc_IL9 + k32rev * IL9R_gc_IL9 + kfbnd * IL9 * gc - k30rev * gc_IL9
+    dydt[25] = kfwd * IL9R * gc_IL9 - k32rev * IL9R_gc_IL9 + kfwd * gc * IL9R_IL9 - k31rev * IL9R_gc_IL9
 
     return dydt
 
 
-def dy_dt_IL2_wrapper(y, t, IL2, k4fwd, k5rev, k6rev):
-    ''' Wrapper for dy_dt that is specific to IL2 '''
-    ys = np.zeros(26)
-    ys[0:10] = y[0:10] # set the first value in y to be IL2Ra
-    ret_val = dy_dt(ys, t, IL2, 0., 0., 0., k4fwd, k5rev, k6rev, 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1.) # set the IL15, IL7 and IL9 reaction rates to 1
-    return ret_val[0:10]
+@jit(float64[4](float64[26]), nopython=True, cache=True, nogil=True)
+def findLigConsume(dydt):
+    """ Calculate the ligand consumption. """
+    internalV = 623.0 # Same as that used in TAM model
+
+    return -np.array([np.sum(dydt[3:10]), np.sum(dydt[11:18]), np.sum(dydt[19:22]), np.sum(dydt[23:26])]) / internalV
 
 
-def dy_dt_IL15_wrapper(y,t, IL15, k13fwd, k15rev, k17rev, k18rev, k22rev, k23rev):
-    ''' Wrapper function for dy_dt that is for IL15'''
-    # set the values of the receptor concentrations of IL2, IL7, and IL9 to zero in y for dy_dt
-    ys = np.zeros(26)
-    ys[1] = y[0] #Set the first value in y to be equal to IL2Rb
-    ys[2] = y[1] #Set the second value in y to be equal to gc
-    ys[10:18]= y[2:10] #Set the third value in y to be equal to IL15Ra
-    ret_value = dy_dt(ys, t, 0., IL15, 0., 0., 1., 1., 1., k13fwd, k15rev, k17rev, k18rev, k22rev, k23rev, 1., 1., 1., 1., 1., 1.) # set the IL2, IL7 and IL9 reaction rates to 1
-    ret_values = np.concatenate((ret_value[1:3], ret_value[10:18]), axis=0) #Need to use [2:3] to ensure storing as an array instead of a float number
-    return ret_values
+@jit(float64[52](float64[52], numbabool[26], float64[5], float64[6]), nopython=True, cache=True, nogil=True)
+def trafficking(y, activeV, tfR, exprV):
+    """Implement trafficking."""
+
+    # Set the rates
+    endo, activeEndo, sortF, kRec, kDeg = tfR
+
+    dydt = np.empty_like(y)
+
+    halfLen = len(y) // 2
+
+    # Reconstruct a vector of active and inactive trafficking for vectorization
+    endoV = np.full(activeV.shape, endo, dtype=np.float64)
+    sortV = np.full(activeV.shape, sortF, dtype=np.float64)
+
+    endoV[activeV == 1] = activeEndo + endo
+    sortV[activeV == 1] = 1.0 # Assume all active receptor is degraded
+    recV = kRec * (1.0 - sortV)
+    degV = kDeg * sortV
+
+    R = y[0:halfLen]
+    Ri = y[halfLen::]
+
+    internalFrac = 0.5 # Same as that used in TAM model
+
+    # Actually calculate the trafficking
+    dydt[0:halfLen] = -R*endoV + recV*Ri*internalFrac # Endocytosis, recycling
+    dydt[halfLen::] = R*endoV/internalFrac - recV*Ri - degV*Ri # Endocytosis, recycling, degradation
+
+    # Expression
+    dydt[np.array([0, 1, 2, 10, 18, 22])] += exprV # IL2Ra, IL2Rb, gc, IL15Ra, IL7Ra, IL9R
+
+    return dydt
 
 
-def dy_dt_IL9_wrapper(y, t, IL9, k29rev, k30rev, k31rev):
-    ''' Wrapper function for dy_dt that is for IL9'''
-    ys = np.zeros(26)
-    ys[2] = y[0] # set the first value of y to be the gamma chain
-    ys[22:26] = y[1:5]
-    ret_val = dy_dt(ys, t, 0., 0., 0., IL9, 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., k29rev, k30rev, k31rev)
-    ret_values = np.concatenate((ret_val[2:3], ret_val[22:26]), axis=0) # need to use notation [2:3] so that value is stored in array instead of float
-    return ret_values
+@jit(float64[52](float64[52], float64, float64[17], float64[11], numbabool[26]), nopython=True, cache=True, nogil=True)
+def fullModel(y, t, r, tfR, active_species_IDX):
+    """Implement full model."""
+
+    # Initialize vector
+    dydt = np.empty_like(y)
+
+    rxnL = 26
+
+    # Calculate cell surface reactions
+    dydt[0:rxnL] = dy_dt(y[0:rxnL], t, r)
+
+    rr = r.copy()
+    rr[0:4] = y[rxnL*2:rxnL*2+4]
+
+    # Calculate endosomal reactions
+    dydt[rxnL:rxnL*2] = dy_dt(y[rxnL:rxnL*2], t, rr)
+
+    # Handle trafficking
+    # _Leave off the ligands on the end
+    dydt[0:rxnL*2] += trafficking(y[0:rxnL*2], active_species_IDX, tfR[0:5], tfR[5:11])
+
+    # Handle endosomal ligand balance.
+    dydt[rxnL*2::] = findLigConsume(dydt[rxnL:rxnL*2])
+
+    return dydt
 
 
-def dy_dt_IL7_wrapper(y, t, IL7, k25rev, k26rev, k27rev):
-    ''' Wrapper function for dy_dt that is for IL7'''
-    ys = np.zeros(26)
-    ys[2] = y[0] # set the first value of y to be the gamma chain
-    ys[18:22] = y[1:5] 
-    ret_val = dy_dt(ys, t, 0., 0., IL7, 0., 1., 1., 1., 1., 1., 1., 1., 1., 1., k25rev, k26rev, k27rev, 1., 1., 1.)
-    ret_values = np.concatenate((ret_val[2:3], ret_val[18:22]), axis=0)
-    return ret_values
+def printModel(rxnRates, trafRates):
+    # endo, activeEndo, sortF, kRec, kDeg
+    print("Endocytosis: " + str(trafRates[0]))
+    print("activeEndo: " + str(trafRates[1]))
+    print("sortF: " + str(trafRates[2]))
+    print("kRec: " + str(trafRates[3]))
+    print("kDeg: " + str(trafRates[4]))
+    print("Receptor expression: " + str(trafRates[5:11]))
+    print(".....Reaction rates.....")
+    print("IL2: " + str(rxnRates[0]))
+    print("IL15: " + str(rxnRates[1]))
+    print("IL7: " + str(rxnRates[2]))
+    print("IL9: " + str(rxnRates[3]))
+    print("kfwd: " + str(rxnRates[4]))
+    print("k5rev: " + str(rxnRates[5]))
+    print("k6rev: " + str(rxnRates[6]))
+    print(rxnRates[7::])
+
+
+@jit(float64[52](float64[11]))
+def solveAutocrine(trafRates):
+    y0 = np.zeros(26*2 + 4, np.float64)
+
+    recIDX = np.array([0, 1, 2, 10, 18, 22], np.int)
+
+    # Expr
+    expr = trafRates[5:11]
+
+    internalFrac = 0.5 # Same as that used in TAM model
+
+    # Expand out trafficking terms
+    endo, sortF, kRec, kDeg = trafRates[np.array([0, 2, 3, 4])]
+
+    # Correct for sorting fraction
+    kRec = kRec*(1-sortF)
+    kDeg = kDeg*sortF
+
+    # Assuming no autocrine ligand, so can solve steady state
+    # Add the species
+    y0[recIDX + 26] = expr / kDeg / internalFrac
+    y0[recIDX] = (expr + kRec*y0[recIDX + 26]*internalFrac)/endo
+
+    return y0
+
+
+def solveAutocrineComplete(rxnRates, trafRates):
+    rxnRates = rxnRates.copy()
+    autocrineT = np.array([0.0, 100000.0])
+
+    y0 = np.zeros(26*2 + 4, np.float64)
+
+    # For now assume 0 autocrine ligand
+    # TODO: Consider handling autocrine ligand more gracefully
+    rxnRates[0:4] = 0.0
+
+    full_lambda = lambda y, t: fullModel(y, t, rxnRates, trafRates, __active_species_IDX)
+
+    yOut = odeint(full_lambda, y0, autocrineT, mxstep=int(1E5))
+
+    return yOut[1, :]
+
+
+def getActiveSpecies():
+    """ Return a vector that indicates which species are active. """
+    return __active_species_IDX
+
+
+def getCytokineSpecies():
+    """ Returns a list of vectors for which species are bound to which cytokines. """
+    return list((np.arange(3, 10), np.arange(11, 18), np.arange(19, 22), np.arange(23, 26)))
+
+
+def getActiveCytokine(cytokineIDX, yVec):
+    """ Get amount of active species. """
+    assert(len(yVec) == 26)
+    return np.sum((yVec * getActiveSpecies())[getCytokineSpecies()[cytokineIDX]])
+
+
+def getTotalActiveCytokine(cytokineIDX, yVec):
+    """ Get amount of surface and endosomal active species. """
+    return getActiveCytokine(cytokineIDX, yVec[0:26]) + getActiveCytokine(cytokineIDX, yVec[26:26*2])
