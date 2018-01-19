@@ -1,20 +1,24 @@
-from .model import fullModel, __active_species_IDX, printModel
+from ckine.model import fullModel, __active_species_IDX, printModel, solveAutocrine
 from scipy.integrate import odeint
 import numpy as np, pandas as pds
-from .differencing_op import centralDiff
+from ckine.differencing_op import centralDiff
 import pymc3 as pm, theano.tensor as T, os
+from ckine.fit import IL2_convertRates
 
 class IL2Rb_trafficking:
     def __init__(self):
         path = os.path.dirname(os.path.abspath(__file__))
-        data = pds.read_csv(os.path.join(path, "./data/IL2Ra+_surface_IL2RB_datasets.csv")) # imports csv file into pandas array
+        data = pds.read_csv(os.path.join(path, "ckine/data/IL2Ra+_surface_IL2RB_datasets.csv")) # imports csv file into pandas array
         self.numpy_data = data.as_matrix() # all of the IL2Rb trafficking data with IL2Ra+... first row contains headers... 9 columns and 8 rows... first column is time
-        data2 = pds.read_csv(os.path.join(path, "./data/IL2Ra-_surface_IL2RB_datasets.csv"))
+        data2 = pds.read_csv(os.path.join(path, "ckine/data/IL2Ra-_surface_IL2RB_datasets.csv"))
         self.numpy_data2 = data2.as_matrix() # all of the IL2Rb trafficking data with IL2Ra-... first row contains headers... 9 columns and 8 rows... first column is time
           
     # find the percent of initial IL2Rb at the cell surface for the time points mentioned in the figure and compare to observed values
     # this function handles the case of IL2 = 1 nM and IL2Ra+
-    def surf_IL2Rb_1(self, y0, rxnRates, trafRates):
+    def surf_IL2Rb_1(self, unkVec):
+        rxnRates, trafRates = IL2_convertRates(unkVec) # this function splits up unkVec into rxnRates and trafRates
+        y0 = solveAutocrine(trafRates) # solveAutocrine in model.py gives us the y0 values based on trafRates
+        
         rxnRates[0] = 1. # the concentration of IL2 = 1 nM
         
         ddfunc = lambda y, t: fullModel(y, t, rxnRates, trafRates, __active_species_IDX)
@@ -38,7 +42,10 @@ class IL2Rb_trafficking:
         return percent_surface_IL2Rb - self.numpy_data[1:8, 1] # the second column of numpy_data has all the 1nM IL2 data
         
     # this function handles the case of IL2 = 500 nM and IL2Ra+
-    def surf_IL2Rb_2(self, y0, rxnRates, trafRates):
+    def surf_IL2Rb_2(self, unkVec):
+        rxnRates, trafRates = IL2_convertRates(unkVec) # this function splits up unkVec into rxnRates and trafRates
+        y0 = solveAutocrine(trafRates) # solveAutocrine in model.py gives us the y0 values based on trafRates
+        
         rxnRates[0] = 500. # the concentration of IL2 = 1 nM
         
         ddfunc = lambda y, t: fullModel(y, t, rxnRates, trafRates, __active_species_IDX)
@@ -62,7 +69,10 @@ class IL2Rb_trafficking:
         return percent_surface_IL2Rb - self.numpy_data[1:8, 5] # the sixth column of numpy_data has all the 500 nM IL2 data
 
 # this function handles the case of IL2 = 1 nM and IL2Ra-
-    def surf_IL2Rb_3(self, y0, rxnRates, trafRates):
+    def surf_IL2Rb_3(self, unkVec):
+        rxnRates, trafRates = IL2_convertRates(unkVec) # this function splits up unkVec into rxnRates and trafRates
+        y0 = solveAutocrine(trafRates) # solveAutocrine in model.py gives us the y0 values based on trafRates
+        
         rxnRates[0] = 1. # the concentration of IL2 = 1 nM
         
         ddfunc = lambda y, t: fullModel(y, t, rxnRates, trafRates, __active_species_IDX)
@@ -86,7 +96,10 @@ class IL2Rb_trafficking:
         return percent_surface_IL2Rb - self.numpy_data2[1:8, 1] # the second column of numpy_data has all the 1nM IL2 data
 
     # this function handles the case of IL2 = 500 nM and IL2Ra-
-    def surf_IL2Rb_4(self, y0, rxnRates, trafRates):
+    def surf_IL2Rb_4(self, unkVec):
+        rxnRates, trafRates = IL2_convertRates(unkVec) # this function splits up unkVec into rxnRates and trafRates
+        y0 = solveAutocrine(trafRates) # solveAutocrine in model.py gives us the y0 values based on trafRates
+        
         rxnRates[0] = 500. # the concentration of IL2 = 1 nM
         
         ddfunc = lambda y, t: fullModel(y, t, rxnRates, trafRates, __active_species_IDX)
@@ -109,7 +122,37 @@ class IL2Rb_trafficking:
         percent_surface_IL2Rb = 10. * (surface_IL2Rb / initial_surface_IL2Rb) # percent of surface IL2Rb is relative to the initial amount of receptor
         return percent_surface_IL2Rb - self.numpy_data2[1:8, 5] # the sixth column of numpy_data has all the 500 nM IL2 data
 
-
+    def calc_schedule(self, unkVec, pool):
+        # Loop over concentrations of IL2
+        output = list()
+        output2 = list()
+        output3 = list()
+        output4 = list()
+        
+        for _, ILc in enumerate(self.IL2s):
+            output.append(pool.submit(surf_IL2Rb_1, self, unkVec))
+        
+        for _, ILc in enumerate(self.IL2s):
+            output2.append(pool.submit(surf_IL2Rb_2, self, unkVec))
+            
+        for _, ILc in enumerate(self.IL2s):
+            output3.append(pool.submit(surf_IL2Rb_3, self, unkVec))
+            
+        for _, ILc in enumerate(self.IL2s):
+            output4.append(pool.submit(surf_IL2Rb_4, self, unkVec))
+        
+        return (output, output2, output3, output4)
+    
+    
+    def calc_reduce(self, inT):
+        output, output2, output3, output4 = inT
+        # might need to compare to self.numpy_data here instead of in the surf_IL2Rb_n functions
+        
+        
+    def calc(self, unkVec, pool):
+        """ Just get the solution in one pass. """
+        inT = self.calc_schedule(unkVec, pool)
+        return self.calc_reduce(inT)
 
 class build_model:
     
@@ -161,3 +204,5 @@ class build_model:
     def profile(self):
         """ Profile the gradient calculation. """
         self.M.profile(pm.theanof.gradient(self.M.logpt, None)).summary()
+        
+build_model()
