@@ -80,7 +80,7 @@ class centralDiffGrad(T.Op):
         x0 = inputs[0]
         f0 = self.M.calc(x0, self.pool)
 
-        epsilon = 1.0E-4
+        epsilon = 1.0E-7
 
         output = list()
 
