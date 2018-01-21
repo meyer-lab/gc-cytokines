@@ -12,7 +12,10 @@ class IL2Rb_trafficking:
         self.numpy_data = data.as_matrix() # all of the IL2Rb trafficking data with IL2Ra+... first row contains headers... 9 columns and 8 rows... first column is time
         data2 = pds.read_csv(os.path.join(path, "ckine/data/IL2Ra-_surface_IL2RB_datasets.csv"))
         self.numpy_data2 = data2.as_matrix() # all of the IL2Rb trafficking data with IL2Ra-... first row contains headers... 9 columns and 8 rows... first column is time
-          
+        self.ts = self.numpy_data[1:8, 0]
+        self.ts2 = self.numpy_data2[1:8, 0]
+        self.times = len(self.ts)
+        
     # find the percent of initial IL2Rb at the cell surface for the time points mentioned in the figure and compare to observed values
     # this function handles the case of IL2 = 1 nM and IL2Ra+
     def surf_IL2Rb_1(self, unkVec):
@@ -22,14 +25,13 @@ class IL2Rb_trafficking:
         rxnRates[0] = 1. # the concentration of IL2 = 1 nM
         
         ddfunc = lambda y, t: fullModel(y, t, rxnRates, trafRates, __active_species_IDX)
-        ts = self.numpy_data[1:8, 0] # the first column has the time data... might have a problem with the header being a string
         ys = np.zeros(8, 52) 
         
         for ii in range(0,8):
             
-            ys[ii, :], infodict = odeint(ddfunc, y0, ts[ii], mxstep=12000, full_output=True, rtol=1.0E-5, atol=1.0E-3)
+            ys[ii, :], infodict = odeint(ddfunc, y0, self.ts[ii], mxstep=12000, full_output=True, rtol=1.0E-5, atol=1.0E-3)
         
-            if infodict['tcur'] < np.max(ts):
+            if infodict['tcur'] < np.max(self.ts):
                 # print("IL2 conc: " + str(IL2))
                 printModel(rxnRates, trafRates)
                 print(infodict)
@@ -39,7 +41,7 @@ class IL2Rb_trafficking:
         initial_surface_IL2Rb = surface_IL2Rb[0] # find the total amount of IL2Rb in the system at the first time point
         
         percent_surface_IL2Rb = 10. * (surface_IL2Rb / initial_surface_IL2Rb) # percent of surface IL2Rb is relative to the initial amount of receptor
-        return percent_surface_IL2Rb - self.numpy_data[1:8, 1] # the second column of numpy_data has all the 1nM IL2 data
+        return percent_surface_IL2Rb 
         
     # this function handles the case of IL2 = 500 nM and IL2Ra+
     def surf_IL2Rb_2(self, unkVec):
@@ -49,14 +51,13 @@ class IL2Rb_trafficking:
         rxnRates[0] = 500. # the concentration of IL2 = 1 nM
         
         ddfunc = lambda y, t: fullModel(y, t, rxnRates, trafRates, __active_species_IDX)
-        ts = self.numpy_data[1:8, 0] # the first column has the time data... might have a problem with the header being a string
         ys = np.zeros(8, 52) 
         
         for ii in range(0,8):
             
-            ys[ii, :], infodict = odeint(ddfunc, y0, ts[ii], mxstep=12000, full_output=True, rtol=1.0E-5, atol=1.0E-3)
+            ys[ii, :], infodict = odeint(ddfunc, y0, self.ts[ii], mxstep=12000, full_output=True, rtol=1.0E-5, atol=1.0E-3)
         
-            if infodict['tcur'] < np.max(ts):
+            if infodict['tcur'] < np.max(self.ts):
                 # print("IL2 conc: " + str(IL2))
                 printModel(rxnRates, trafRates)
                 print(infodict)
@@ -66,7 +67,7 @@ class IL2Rb_trafficking:
         initial_surface_IL2Rb = surface_IL2Rb[0] # find the total amount of IL2Rb in the system at the first time point
         
         percent_surface_IL2Rb = 10. * (surface_IL2Rb / initial_surface_IL2Rb) # percent of surface IL2Rb is relative to the initial amount of receptor
-        return percent_surface_IL2Rb - self.numpy_data[1:8, 5] # the sixth column of numpy_data has all the 500 nM IL2 data
+        return percent_surface_IL2Rb 
 
 # this function handles the case of IL2 = 1 nM and IL2Ra-
     def surf_IL2Rb_3(self, unkVec):
@@ -76,14 +77,13 @@ class IL2Rb_trafficking:
         rxnRates[0] = 1. # the concentration of IL2 = 1 nM
         
         ddfunc = lambda y, t: fullModel(y, t, rxnRates, trafRates, __active_species_IDX)
-        ts = self.numpy_data2[1:8, 0] # the first column has the time data
         ys = np.zeros(8, 52) 
         
         for ii in range(0,8):
             
-            ys[ii, :], infodict = odeint(ddfunc, y0, ts[ii], mxstep=12000, full_output=True, rtol=1.0E-5, atol=1.0E-3)
+            ys[ii, :], infodict = odeint(ddfunc, y0, self.ts2[ii], mxstep=12000, full_output=True, rtol=1.0E-5, atol=1.0E-3)
         
-            if infodict['tcur'] < np.max(ts):
+            if infodict['tcur'] < np.max(self.ts2):
                 # print("IL2 conc: " + str(IL2))
                 printModel(rxnRates, trafRates)
                 print(infodict)
@@ -93,7 +93,7 @@ class IL2Rb_trafficking:
         initial_surface_IL2Rb = surface_IL2Rb[0] # find the total amount of IL2Rb in the system at the first time point
         
         percent_surface_IL2Rb = 10. * (surface_IL2Rb / initial_surface_IL2Rb) # percent of surface IL2Rb is relative to the initial amount of receptor
-        return percent_surface_IL2Rb - self.numpy_data2[1:8, 1] # the second column of numpy_data has all the 1nM IL2 data
+        return percent_surface_IL2Rb 
 
     # this function handles the case of IL2 = 500 nM and IL2Ra-
     def surf_IL2Rb_4(self, unkVec):
@@ -103,14 +103,13 @@ class IL2Rb_trafficking:
         rxnRates[0] = 500. # the concentration of IL2 = 1 nM
         
         ddfunc = lambda y, t: fullModel(y, t, rxnRates, trafRates, __active_species_IDX)
-        ts = self.numpy_data2[1:8, 0] # the first column has the time data... might have a problem with the header being a string
         ys = np.zeros(8, 52) 
         
         for ii in range(0,8):
             
-            ys[ii, :], infodict = odeint(ddfunc, y0, ts[ii], mxstep=12000, full_output=True, rtol=1.0E-5, atol=1.0E-3)
+            ys[ii, :], infodict = odeint(ddfunc, y0, self.ts2[ii], mxstep=12000, full_output=True, rtol=1.0E-5, atol=1.0E-3)
         
-            if infodict['tcur'] < np.max(ts):
+            if infodict['tcur'] < np.max(self.ts2):
                 # print("IL2 conc: " + str(IL2))
                 printModel(rxnRates, trafRates)
                 print(infodict)
@@ -120,7 +119,7 @@ class IL2Rb_trafficking:
         initial_surface_IL2Rb = surface_IL2Rb[0] # find the total amount of IL2Rb in the system at the first time point
         
         percent_surface_IL2Rb = 10. * (surface_IL2Rb / initial_surface_IL2Rb) # percent of surface IL2Rb is relative to the initial amount of receptor
-        return percent_surface_IL2Rb - self.numpy_data2[1:8, 5] # the sixth column of numpy_data has all the 500 nM IL2 data
+        return percent_surface_IL2Rb
 
     def calc_schedule(self, unkVec, pool):
         # Loop over concentrations of IL2
@@ -129,24 +128,37 @@ class IL2Rb_trafficking:
         output3 = list()
         output4 = list()
         
-        for _, ILc in enumerate(self.IL2s):
-            output.append(pool.submit(surf_IL2Rb_1, self, unkVec))
+        for _, ILc in enumerate(self.ts):                 # do I need to change the ILc variable too? I already changed the self.IL2s to self.ts
+            output.append(pool.submit(self.surf_IL2Rb_1, self, unkVec))
         
-        for _, ILc in enumerate(self.IL2s):
-            output2.append(pool.submit(surf_IL2Rb_2, self, unkVec))
+        for _, ILc in enumerate(self.ts):
+            output2.append(pool.submit(self.surf_IL2Rb_2, self, unkVec))
             
-        for _, ILc in enumerate(self.IL2s):
-            output3.append(pool.submit(surf_IL2Rb_3, self, unkVec))
+        for _, ILc in enumerate(self.ts2):
+            output3.append(pool.submit(self.surf_IL2Rb_3, self, unkVec))
             
-        for _, ILc in enumerate(self.IL2s):
-            output4.append(pool.submit(surf_IL2Rb_4, self, unkVec))
+        for _, ILc in enumerate(self.ts2):
+            output4.append(pool.submit(self.surf_IL2Rb_4, self, unkVec))
         
         return (output, output2, output3, output4)
     
     
     def calc_reduce(self, inT):
         output, output2, output3, output4 = inT
-        # might need to compare to self.numpy_data here instead of in the surf_IL2Rb_n functions
+        
+        actVec = np.fromiter((item.result() for item in output), np.float64, count=self.times) # changed count to self.times
+        actVec2 = np.fromiter((item.result() for item in output2), np.float64, count=self.times)
+        actVec3 = np.fromiter((item.result() for item in output3), np.float64, count=self.times)
+        actVec4 = np.fromiter((item.result() for item in output4), np.float64, count=self.times)
+        
+        diff = actVec - self.numpy_data[1:8, 1] # the second column of numpy_data has all the 1nM IL2 data
+        diff2 = actVec2 - self.numpy_data[1:8, 5] # the sixth column of numpy_data has all the 500 nM IL2 data
+        diff3 = actVec3 - self.numpy_data2[1:8, 1] # the second column of numpy_data has all the 1nM IL2 data
+        diff4 = actVec4 - self.numpy_data2[1:8, 5] # the sixth column of numpy_data has all the 500 nM IL2 data
+        
+        all_diffs = np.concatenate(diff, diff2, diff3, diff4)
+        
+        return all_diffs
         
         
     def calc(self, unkVec, pool):
