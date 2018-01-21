@@ -9,10 +9,10 @@ import pymc3 as pm, theano.tensor as T, os
 def IL2_activity_input(y0, IL2, rxnRates, trafRates):
     rxnRates[0] = IL2
 
-    ddfunc = lambda y, t: wrapper(y, t, rxnRates, trafRates, __IL2_assoc)
     ts = np.linspace(0., 500, 2)
 
-    ys, infodict = odeint(ddfunc, y0[__IL2_assoc], ts, mxstep=12000, full_output=True, rtol=1.0E-5, atol=1.0E-3)
+    ys, infodict = odeint(wrapper, y0[__IL2_assoc], ts, mxstep=12000, full_output=True, rtol=1.0E-5, atol=1.0E-3,
+                          args=(rxnRates, trafRates, __IL2_assoc))
 
     ysOut = np.zeros(56, dtype=np.float64)
 
