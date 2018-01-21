@@ -4,7 +4,7 @@ pan_common = -F pandoc-crossref -F pandoc-citeproc --filter=$(tdir)/figure-filte
 
 .PHONY: clean test all testprofile testcover
 
-all: Manuscript/index.html Manuscript/Manuscript.pdf Manuscript/Manuscript.docx Manuscript/CoverLetter.docx
+all: ckine/ckine.so Manuscript/index.html Manuscript/Manuscript.pdf Manuscript/Manuscript.docx Manuscript/CoverLetter.docx
 
 $(fdir)/Figure%.svg: genFigures.py
 	mkdir -p ./Manuscript/Figures
@@ -19,6 +19,9 @@ $(fdir)/Figure%eps: $(fdir)/Figure%svg
 Manuscript/Manuscript.pdf: Manuscript/Manuscript.tex
 	(cd ./Manuscript && latexmk -xelatex -f -quiet)
 	rm -f ./Manuscript/Manuscript.b* ./Manuscript/Manuscript.aux ./Manuscript/Manuscript.fls
+
+ckine/ckine.so: ckine/model.cpp
+	g++ ckine/model.cpp -O3 --shared -fPIC -o ckine/ckine.so
 
 Manuscript/index.html: Manuscript/Text/*.md
 	pandoc -s $(pan_common) -t html5 --mathjax -c ./Templates/kultiad.css --template=$(tdir)/html.template -o $@
@@ -40,16 +43,16 @@ Manuscript/CoverLetter.pdf: Manuscript/CoverLetter.md
 
 clean:
 	rm -f ./Manuscript/Manuscript.* ./Manuscript/index.html Manuscript/CoverLetter.docx Manuscript/CoverLetter.pdf
-	rm -f $(fdir)/Figure*
+	rm -f $(fdir)/Figure* ckine/ckine.so
 	rm -f profile.p* stats.dat .coverage nosetests.xml coverage.xml
 
-test:
+test: ckine/ckine.so
 	nosetests3 -s --with-timer --timer-top-n 5
 
-testcover:
+testcover: ckine/ckine.so
 	nosetests3 --with-xunit --with-xcoverage --cover-package=ckine -s --with-timer --timer-top-n 5
 
-stats.dat:
+stats.dat: ckine/ckine.so
 	nosetests3 -s --with-cprofile
 
 testprofile: stats.dat
