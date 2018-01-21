@@ -1,0 +1,315 @@
+#include <array>
+#include <algorithm>
+#include <numeric>
+
+using std::array;
+using std::fill;
+using std::accumulate;
+using std::copy;
+using std::copy_n;
+
+
+const double internalV = 623.0; // Same as that used in TAM model
+const double internalFrac = 0.5; // Same as that used in TAM model
+
+
+array<bool, 26> __active_species_IDX() {
+	array<bool, 26> __active_species_IDX;
+	fill(__active_species_IDX.begin(), __active_species_IDX.end(), false);
+
+	__active_species_IDX[8] = true;
+	__active_species_IDX[9] = true;
+	__active_species_IDX[16] = true;
+	__active_species_IDX[17] = true;
+	__active_species_IDX[21] = true;
+	__active_species_IDX[25] = true;
+
+	return __active_species_IDX;
+}
+
+
+array<double, 26> dy_dt(array<double, 26> y, double t, array<double, 17> rxn) {
+	// Set the constant inputs
+	double IL2 = rxn[0];
+	double IL15 = rxn[1];
+	double IL7 = rxn[2];
+	double IL9 = rxn[3];
+	double kfwd = rxn[4];
+	double k5rev = rxn[5];
+	double k6rev = rxn[6];
+	double k15rev = rxn[7];
+	double k17rev = rxn[8];
+	double k18rev = rxn[9];
+	double k22rev = rxn[10];
+	double k23rev = rxn[11];
+	double k26rev = rxn[12];
+	double k27rev = rxn[13];
+	double k29rev = rxn[14];
+	double k30rev = rxn[15];
+	double k31rev = rxn[16];
+
+	// IL2 in nM
+	double IL2Ra = y[0];
+	double IL2Rb = y[1];
+	double gc = y[2];
+	double IL2_IL2Ra = y[3];
+	double IL2_IL2Rb = y[4];
+	double IL2_gc = y[5];
+	double IL2_IL2Ra_IL2Rb = y[6];
+	double IL2_IL2Ra_gc = y[7];
+	double IL2_IL2Rb_gc = y[8];
+	double IL2_IL2Ra_IL2Rb_gc = y[9];
+	
+	// IL15 in nM
+	double IL15Ra = y[10];
+	double IL15_IL15Ra = y[11];
+	double IL15_IL2Rb = y[12];
+	double IL15_gc = y[13];
+	double IL15_IL15Ra_IL2Rb = y[14];
+	double IL15_IL15Ra_gc = y[15];
+	double IL15_IL2Rb_gc = y[16];
+	double IL15_IL15Ra_IL2Rb_gc = y[17];
+	
+	// IL7, IL9 in nM
+	double IL7Ra = y[18];
+	double IL7Ra_IL7 = y[19];
+	double gc_IL7 = y[20];
+	double IL7Ra_gc_IL7 = y[21];
+	double IL9R = y[22];
+	double IL9R_IL9 = y[23];
+	double gc_IL9 = y[24];
+	double IL9R_gc_IL9 = y[25];
+
+	// These are probably measured in the literature
+	double kfbnd = 0.01; // Assuming on rate of 10^7 M-1 sec-1
+	double k1rev = kfbnd * 10; // doi:10.1016/j.jmb.2004.04.038, 10 nM
+
+	double k2rev = kfbnd * 144; // doi:10.1016/j.jmb.2004.04.038, 144 nM
+	double k3fwd = kfbnd / 10.0; // Very weak, > 50 uM. Voss, et al (1993). PNAS. 90, 2428–2432.
+	double k3rev = 50000 * k3fwd;
+	double k10rev = 12.0 * k5rev / 1.5; // doi:10.1016/j.jmb.2004.04.038
+	double k11rev = 63.0 * k5rev / 1.5; // doi:10.1016/j.jmb.2004.04.038
+	
+	// Literature values for k values for IL-15
+	double k13rev = kfbnd * 0.065; // based on the multiple papers suggesting 30-100 pM
+	double k14rev = kfbnd * 438; // doi:10.1038/ni.2449, 438 nM
+	
+	// Literature values for IL-7
+	double k25rev = kfbnd * 59; // DOI:10.1111/j.1600-065X.2012.01160.x, 59 nM
+	
+	// To satisfy detailed balance these relationships should hold
+	// _Based on initial assembly steps
+	double k4rev = kfbnd * k6rev * k3rev / k1rev / k3fwd;
+	double k7rev = k3fwd * k2rev * k5rev / kfbnd / k3rev;
+	double k12rev = k1rev * k11rev / k2rev;
+	// _Based on formation of full complex
+	double k9rev = k2rev * k10rev * k12rev / kfbnd / k3rev / k6rev * k3fwd;
+	double k8rev = k2rev * k10rev * k12rev / kfbnd / k7rev / k3rev * k3fwd;
+
+	// IL15
+	// To satisfy detailed balance these relationships should hold
+	// _Based on initial assembly steps
+	double k16rev = kfwd * k18rev * k15rev / k13rev / kfbnd;
+	double k19rev = kfwd * k14rev * k17rev / kfbnd / k15rev;
+	double k24rev = k13rev * k23rev / k14rev;
+	// _Based on formation of full complex
+
+	double k21rev = k14rev * k22rev * k24rev / kfwd / k15rev / k18rev * kfbnd;
+	double k20rev = k14rev * k22rev * k24rev / k19rev / k15rev;
+
+	// _One detailed balance IL7/9 loop
+	double k32rev = k29rev * k31rev / k30rev;
+	double k28rev = k25rev * k27rev / k26rev;
+
+	array<double, 26> dydt;
+	
+	// IL2
+	dydt[0] = -kfbnd * IL2Ra * IL2 + k1rev * IL2_IL2Ra - kfwd * IL2Ra * IL2_gc + k6rev * IL2_IL2Ra_gc - kfwd * IL2Ra * IL2_IL2Rb_gc + k8rev * IL2_IL2Ra_IL2Rb_gc - kfwd * IL2Ra * IL2_IL2Rb + k12rev * IL2_IL2Ra_IL2Rb;
+	dydt[1] = -kfbnd * IL2Rb * IL2 + k2rev * IL2_IL2Rb - kfwd * IL2Rb * IL2_gc + k7rev * IL2_IL2Rb_gc - kfwd * IL2Rb * IL2_IL2Ra_gc + k9rev * IL2_IL2Ra_IL2Rb_gc - kfwd * IL2Rb * IL2_IL2Ra + k11rev * IL2_IL2Ra_IL2Rb;
+	dydt[2] = -k3fwd * IL2 * gc + k3rev * IL2_gc - kfwd * IL2_IL2Rb * gc + k5rev * IL2_IL2Rb_gc - kfwd * IL2_IL2Ra * gc + k4rev * IL2_IL2Ra_gc - kfwd * IL2_IL2Ra_IL2Rb * gc + k10rev * IL2_IL2Ra_IL2Rb_gc;
+	dydt[3] = -kfwd * IL2_IL2Ra * IL2Rb + k11rev * IL2_IL2Ra_IL2Rb - kfwd * IL2_IL2Ra * gc + k4rev * IL2_IL2Ra_gc + kfbnd * IL2 * IL2Ra - k1rev * IL2_IL2Ra;
+	dydt[4] = -kfwd * IL2_IL2Rb * IL2Ra + k12rev * IL2_IL2Ra_IL2Rb - kfwd * IL2_IL2Rb * gc + k5rev * IL2_IL2Rb_gc + kfbnd * IL2 * IL2Rb - k2rev * IL2_IL2Rb;
+	dydt[5] = -kfwd *IL2_gc * IL2Ra + k6rev * IL2_IL2Ra_gc - kfwd * IL2_gc * IL2Rb + k7rev * IL2_IL2Rb_gc + k3fwd * IL2 * gc - k3rev * IL2_gc;
+	dydt[6] = -kfwd * IL2_IL2Ra_IL2Rb * gc + k10rev * IL2_IL2Ra_IL2Rb_gc + kfwd * IL2_IL2Ra * IL2Rb - k11rev * IL2_IL2Ra_IL2Rb + kfwd * IL2_IL2Rb * IL2Ra - k12rev * IL2_IL2Ra_IL2Rb;
+	dydt[7] = -kfwd * IL2_IL2Ra_gc * IL2Rb + k9rev * IL2_IL2Ra_IL2Rb_gc + kfwd * IL2_IL2Ra * gc - k4rev * IL2_IL2Ra_gc + kfwd * IL2_gc * IL2Ra - k6rev * IL2_IL2Ra_gc;
+	dydt[8] = -kfwd * IL2_IL2Rb_gc * IL2Ra + k8rev * IL2_IL2Ra_IL2Rb_gc + kfwd * gc * IL2_IL2Rb - k5rev * IL2_IL2Rb_gc + kfwd * IL2_gc * IL2Rb - k7rev * IL2_IL2Rb_gc;
+	dydt[9] = kfwd * IL2_IL2Rb_gc * IL2Ra - k8rev * IL2_IL2Ra_IL2Rb_gc + kfwd * IL2_IL2Ra_gc * IL2Rb - k9rev * IL2_IL2Ra_IL2Rb_gc + kfwd * IL2_IL2Ra_IL2Rb * gc - k10rev * IL2_IL2Ra_IL2Rb_gc;
+
+	// IL15
+	dydt[10] = -kfbnd * IL15Ra * IL15 + k13rev * IL15_IL15Ra - kfbnd * IL15Ra * IL15_gc + k18rev * IL15_IL15Ra_gc - kfwd * IL15Ra * IL15_IL2Rb_gc + k20rev * IL15_IL15Ra_IL2Rb_gc - kfwd * IL15Ra * IL15_IL2Rb + k24rev * IL15_IL15Ra_IL2Rb;
+	dydt[11] = -kfwd * IL15_IL15Ra * IL2Rb + k23rev * IL15_IL15Ra_IL2Rb - kfwd * IL15_IL15Ra * gc + k16rev * IL15_IL15Ra_gc + kfbnd * IL15 * IL15Ra - k13rev * IL15_IL15Ra;
+	dydt[12] = -kfwd * IL15_IL2Rb * IL15Ra + k24rev * IL15_IL15Ra_IL2Rb - kfbnd * IL15_IL2Rb * gc + k17rev * IL15_IL2Rb_gc + kfbnd * IL15 * IL2Rb - k14rev * IL15_IL2Rb;
+	dydt[13] = -kfbnd * IL15_gc * IL15Ra + k18rev * IL15_IL15Ra_gc - kfwd * IL15_gc * IL2Rb + k19rev * IL15_IL2Rb_gc + kfbnd * IL15 * gc - k15rev * IL15_gc;
+	dydt[14] = -kfwd * IL15_IL15Ra_IL2Rb * gc + k22rev * IL15_IL15Ra_IL2Rb_gc + kfwd * IL15_IL15Ra * IL2Rb - k23rev * IL15_IL15Ra_IL2Rb + kfwd * IL15_IL2Rb * IL15Ra - k24rev * IL15_IL15Ra_IL2Rb;
+	dydt[15] = -kfwd * IL15_IL15Ra_gc * IL2Rb + k21rev * IL15_IL15Ra_IL2Rb_gc + kfwd * IL15_IL15Ra * gc - k16rev * IL15_IL15Ra_gc + kfbnd * IL15_gc * IL15Ra - k18rev * IL15_IL15Ra_gc;
+	dydt[16] = -kfwd * IL15_IL2Rb_gc * IL15Ra + k20rev * IL15_IL15Ra_IL2Rb_gc + kfbnd * gc * IL15_IL2Rb - k17rev * IL15_IL2Rb_gc + kfwd * IL15_gc * IL2Rb - k19rev * IL15_IL2Rb_gc;
+	dydt[17] =  kfwd * IL15_IL2Rb_gc * IL15Ra - k20rev * IL15_IL15Ra_IL2Rb_gc + kfwd * IL15_IL15Ra_gc * IL2Rb - k21rev * IL15_IL15Ra_IL2Rb_gc + kfwd * IL15_IL15Ra_IL2Rb * gc - k22rev * IL15_IL15Ra_IL2Rb_gc;
+	
+	dydt[1] = dydt[1] - kfbnd * IL2Rb * IL15 + k14rev * IL15_IL2Rb - kfwd * IL2Rb * IL15_gc + k19rev * IL15_IL2Rb_gc - kfwd * IL2Rb * IL15_IL15Ra_gc + k21rev * IL15_IL15Ra_IL2Rb_gc - kfwd * IL2Rb * IL15_IL15Ra + k23rev * IL15_IL15Ra_IL2Rb;
+	dydt[2] = dydt[2] - kfbnd * IL15 * gc + k15rev * IL15_gc - kfbnd * IL15_IL2Rb * gc + k17rev * IL15_IL2Rb_gc - kfwd * IL15_IL15Ra * gc + k16rev * IL15_IL15Ra_gc - kfwd * IL15_IL15Ra_IL2Rb * gc + k22rev * IL15_IL15Ra_IL2Rb_gc;
+	
+	// IL7
+	dydt[2] = dydt[2] - kfbnd * IL7 * gc + k26rev * gc_IL7 - kfwd * gc * IL7Ra_IL7 + k27rev * IL7Ra_gc_IL7;
+	dydt[18] = -kfbnd * IL7Ra * IL7 + k25rev * IL7Ra_IL7 - kfwd * IL7Ra * gc_IL7 + k28rev * IL7Ra_gc_IL7;
+	dydt[19] = kfbnd * IL7Ra * IL7 - k25rev * IL7Ra_IL7 - kfwd * gc * IL7Ra_IL7 + k27rev * IL7Ra_gc_IL7;
+	dydt[20] = -kfwd * IL7Ra * gc_IL7 + k28rev * IL7Ra_gc_IL7 + kfbnd * IL7 * gc - k26rev * gc_IL7;
+	dydt[21] = kfwd * IL7Ra * gc_IL7 - k28rev * IL7Ra_gc_IL7 + kfwd * gc * IL7Ra_IL7 - k27rev * IL7Ra_gc_IL7;
+
+	// IL9
+	dydt[2] = dydt[2] - kfbnd * IL9 * gc + k30rev * gc_IL9 - kfwd * gc * IL9R_IL9 + k31rev * IL9R_gc_IL9;
+	dydt[22] = -kfbnd * IL9R * IL9 + k29rev * IL9R_IL9 - kfwd * IL9R * gc_IL9 + k32rev * IL9R_gc_IL9;
+	dydt[23] = kfbnd * IL9R * IL9 - k29rev * IL9R_IL9 - kfwd * gc * IL9R_IL9 + k31rev * IL9R_gc_IL9;
+	dydt[24] = -kfwd * IL9R * gc_IL9 + k32rev * IL9R_gc_IL9 + kfbnd * IL9 * gc - k30rev * gc_IL9;
+	dydt[25] = kfwd * IL9R * gc_IL9 - k32rev * IL9R_gc_IL9 + kfwd * gc * IL9R_IL9 - k31rev * IL9R_gc_IL9;
+
+	return dydt;
+}
+
+
+array<double, 4> findLigConsume(const array<double, 26> dydt) {
+	// Calculate the ligand consumption.
+	array<double, 4> outt;
+
+	outt[0] = accumulate(dydt.begin()+3, dydt.begin()+10, 0) / internalV;
+	outt[1] = accumulate(dydt.begin()+11, dydt.begin()+18, 0) / internalV;
+	outt[2] = accumulate(dydt.begin()+19, dydt.begin()+22, 0) / internalV;
+	outt[3] = accumulate(dydt.begin()+23, dydt.begin()+26, 0) / internalV;
+
+	return outt;
+}
+
+
+array<double, 52> trafficking(array<double, 56> y, array<double, 11> tfR) {
+	// Implement trafficking.
+
+	// Set the rates
+	double endo = tfR[0];
+	double activeEndo = tfR[1];
+	double sortF = tfR[2];
+	double kRec = tfR[3];
+	double kDeg = tfR[4];
+
+	array<bool, 26> activeV = __active_species_IDX();
+
+	array<double, 52> dydt;
+
+	size_t halfLen = y.size() / 2;
+
+	// Actually calculate the trafficking
+	for (size_t ii = 0; ii < halfLen; ii++) {
+		if (activeV[ii]) {
+			dydt[ii] = -y[ii]*(endo + activeEndo); // Endocytosis
+			dydt[ii+halfLen] = y[ii]*(endo + activeEndo)/internalFrac - kDeg*y[ii+halfLen]; // Endocytosis, degradation
+		} else {
+			dydt[ii] = -y[ii]*endo + kRec*(1.0-sortF)*y[ii+halfLen]*internalFrac; // Endocytosis, recycling
+			dydt[ii+halfLen] = y[ii]*endo/internalFrac - kRec*(1.0-sortF)*y[ii+halfLen] - (kDeg*sortF)*y[ii+halfLen]; // Endocytosis, recycling, degradation
+		}
+	}
+
+	// Expression: IL2Ra, IL2Rb, gc, IL15Ra, IL7Ra, IL9R
+	dydt[0] += tfR[5];
+	dydt[1] += tfR[6];
+	dydt[2] += tfR[7];
+	dydt[10] += tfR[8];
+	dydt[18] += tfR[9];
+	dydt[22] += tfR[10];
+
+	return dydt;
+}
+
+
+array<double, 56> fullModel(array<double, 56> y, double t, const array<double, 17> r, array<double, 11> tfR) {
+	// Implement full model.
+
+	// Initialize vector
+	array<double, 56> dydt;
+
+	array<double, 26> ySurf;
+	array<double, 26> yInt;
+	copy_n(y.begin(), 26, ySurf.begin());
+	copy_n(y.begin()+26, 26, yInt.begin());
+
+	// Calculate cell surface reactions
+	array<double, 26> dydt_surf = dy_dt(ySurf, t, r);
+
+	array<double, 17> rr = r;
+	copy_n(y.begin()+52, 4, rr.begin());
+
+	// Calculate endosomal reactions
+	array<double, 26> dydt_int = dy_dt(yInt, t, rr);
+
+	// Handle trafficking
+	// _Leave off the ligands on the end
+	array<double, 52> traf = trafficking(y, tfR);
+
+	// Handle endosomal ligand balance.
+	array<double, 4> ligConsume = findLigConsume(yInt);
+
+	copy(traf.begin(), traf.end(), dydt.begin());
+
+	for (size_t ii = 0; ii < ySurf.size(); ii++) {
+		dydt[ii] += dydt_surf[ii];
+		dydt[ii+26] += dydt_int[ii];
+	}
+
+	copy(ligConsume.begin(), ligConsume.end(), dydt.begin()+52);
+
+	return dydt;
+}
+
+
+extern "C" void wrapper(double *y, double t, double *dydt_out, double *r_in, double *tfR_in, bool *wrapIDX) {
+	// Bring back the wrapper!
+
+	array<double, 56> yInt;
+	fill(yInt.begin(), yInt.end(), 0.0);
+
+	array<double, 17> r;
+	array<double, 11> tfR;
+
+	copy_n(r_in, r.size(), r.begin());
+	copy_n(tfR_in, tfR.size(), tfR.begin());
+
+	size_t curIDX = 0;
+	for (size_t ii = 0; ii < yInt.size(); ii++) {
+		if (wrapIDX[ii]) {
+			yInt[ii] = y[curIDX];
+			curIDX++;
+		}
+	}
+
+	array<double, 56> dydt = fullModel(yInt, t, r, tfR);
+
+	curIDX = 0;
+	for (size_t ii = 0; ii < yInt.size(); ii++) {
+		if (wrapIDX[ii]) {
+			dydt_out[curIDX] = dydt[ii];
+			curIDX++;
+		}
+	}
+}
+
+
+array<double, 56> solveAutocrine(array<double, 11> trafRates) {
+	array<double, 56> y0;
+	fill(y0.begin(), y0.end(), 0.0);
+
+	array<size_t, 6> recIDX = {{0, 1, 2, 10, 18, 22}};
+
+	double internalFrac = 0.5; // Same as that used in TAM model
+
+	// Expand out trafficking terms
+	double endo = trafRates[0];
+	double sortF = trafRates[2];
+	double kRec = trafRates[3]*(1-sortF);
+	double kDeg = trafRates[4]*sortF;
+
+	// Assuming no autocrine ligand, so can solve steady state
+	// Add the species
+	for (size_t ii = 0; ii < recIDX.size(); ii++) {
+		y0[recIDX[ii] + 26] = trafRates[5 + ii] / kDeg / internalFrac;
+		y0[recIDX[ii]] = (trafRates[5 + ii] + kRec*y0[recIDX[ii] + 26]*internalFrac)/endo;
+	}
+
+	return y0;
+}
