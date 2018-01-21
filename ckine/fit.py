@@ -1,4 +1,4 @@
-from .model import solveAutocrine, fullModel, getTotalActiveCytokine, __active_species_IDX, printModel
+from .model import solveAutocrine, getTotalActiveCytokine, printModel, __IL2_assoc, wrapper
 from scipy.integrate import odeint
 import numpy as np, pandas as pds
 from .differencing_op import centralDiff
@@ -9,10 +9,14 @@ import pymc3 as pm, theano.tensor as T, os
 def IL2_activity_input(y0, IL2, rxnRates, trafRates):
     rxnRates[0] = IL2
 
-    ddfunc = lambda y, t: fullModel(y, t, rxnRates, trafRates, __active_species_IDX)
+    ddfunc = lambda y, t: wrapper(y, t, rxnRates, trafRates, __IL2_assoc)
     ts = np.linspace(0., 500, 2)
 
-    ys, infodict = odeint(ddfunc, y0, ts, mxstep=12000, full_output=True, rtol=1.0E-5, atol=1.0E-3)
+    ys, infodict = odeint(ddfunc, y0[__IL2_assoc], ts, mxstep=12000, full_output=True, rtol=1.0E-5, atol=1.0E-3)
+
+    ysOut = np.zeros(56, dtype=np.float64)
+
+    ysOut[__IL2_assoc] = ys[1, :]
 
     if infodict['tcur'] < np.max(ts):
         print("IL2 conc: " + str(IL2))
@@ -20,7 +24,7 @@ def IL2_activity_input(y0, IL2, rxnRates, trafRates):
         print(infodict)
         return -100
 
-    return getTotalActiveCytokine(0, ys[1, :])
+    return getTotalActiveCytokine(0, ysOut)
 
 
 def IL2_convertRates(unkVec):
