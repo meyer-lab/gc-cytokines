@@ -7,6 +7,11 @@ libb = ct.cdll.LoadLibrary(filename)
 libb.wrapper.argtypes = (ct.POINTER(ct.c_double), ct.c_double,
                          ct.POINTER(ct.c_double), ct.POINTER(ct.c_double),
                          ct.POINTER(ct.c_double), ct.POINTER(ct.c_bool))
+libb.dydt_C.argtypes = (ct.POINTER(ct.c_double), ct.c_double,
+                        ct.POINTER(ct.c_double), ct.POINTER(ct.c_double))
+libb.fullModel_C.argtypes = (ct.POINTER(ct.c_double), ct.c_double,
+                             ct.POINTER(ct.c_double), ct.POINTER(ct.c_double),
+                             ct.POINTER(ct.c_double))
 
 
 def wrapper(y, t, rxn, tfr, wrapIDX):
@@ -18,7 +23,30 @@ def wrapper(y, t, rxn, tfr, wrapIDX):
 
     libb.wrapper(y.ctypes.data_as(ct.POINTER(ct.c_double)), t,
                  yOut.ctypes.data_as(ct.POINTER(ct.c_double)), rxn.ctypes.data_as(ct.POINTER(ct.c_double)),
-                 tfr.ctypes.data_as(ct.POINTER(ct.c_double)), wrapIDX.ctypes.data_as(ct.POINTER(ct.c_double)))
+                 tfr.ctypes.data_as(ct.POINTER(ct.c_double)), wrapIDX.ctypes.data_as(ct.POINTER(ct.c_bool)))
+    
+    return yOut
+
+
+def dy_dt(y, t, rxn):
+    global libb
+
+    yOut = np.zeros_like(y)
+
+    libb.dydt_C(y.ctypes.data_as(ct.POINTER(ct.c_double)), t,
+                yOut.ctypes.data_as(ct.POINTER(ct.c_double)), rxn.ctypes.data_as(ct.POINTER(ct.c_double)))
+    
+    return yOut
+
+
+def fullModel(y, t, rxn, tfr):
+    global libb
+
+    yOut = np.zeros_like(y)
+
+    libb.fullModel_C(y.ctypes.data_as(ct.POINTER(ct.c_double)), t,
+                     yOut.ctypes.data_as(ct.POINTER(ct.c_double)), rxn.ctypes.data_as(ct.POINTER(ct.c_double)),
+                     tfr.ctypes.data_as(ct.POINTER(ct.c_double)))
     
     return yOut
 
@@ -77,7 +105,6 @@ def solveAutocrine(trafRates):
     return y0
 
 
-"""
 def solveAutocrineComplete(rxnRates, trafRates):
     rxnRates = rxnRates.copy()
     autocrineT = np.array([0.0, 100000.0])
@@ -88,12 +115,11 @@ def solveAutocrineComplete(rxnRates, trafRates):
     # TODO: Consider handling autocrine ligand more gracefully
     rxnRates[0:4] = 0.0
 
-    full_lambda = lambda y, t: fullModel(y, t, rxnRates, trafRates, __active_species_IDX)
+    full_lambda = lambda y, t: fullModel(y, t, rxnRates, trafRates)
 
     yOut = odeint(full_lambda, y0, autocrineT, mxstep=int(1E5))
 
     return yOut[1, :]
-"""
 
 
 def getActiveSpecies():

@@ -1,4 +1,4 @@
-from .model import solveAutocrine, getTotalActiveCytokine, printModel, __IL2_assoc, wrapper
+from .model import solveAutocrine, getTotalActiveCytokine, printModel, wrapper, __IL2_assoc
 from scipy.integrate import odeint
 import numpy as np, pandas as pds
 from .differencing_op import centralDiff

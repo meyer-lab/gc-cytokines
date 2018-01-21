@@ -166,6 +166,21 @@ array<double, 26> dy_dt(array<double, 26> y, double t, array<double, 17> rxn) {
 }
 
 
+extern "C" void dydt_C(double *y_in, double t, double *dydt_out, double *rxn_in) {
+	// Bring back the wrapper!
+
+	array<double, 26> y;
+	array<double, 17> r;
+
+	copy_n(rxn_in, r.size(), r.begin());
+	copy_n(y_in, y.size(), y.begin());
+
+	array<double, 26> dydt = dy_dt(y, t, r);
+
+	copy_n(dydt.begin(), y.size(), dydt_out);
+}
+
+
 array<double, 4> findLigConsume(const array<double, 26> dydt) {
 	// Calculate the ligand consumption.
 	array<double, 4> outt;
@@ -193,16 +208,16 @@ array<double, 52> trafficking(array<double, 56> y, array<double, 11> tfR) {
 
 	array<double, 52> dydt;
 
-	size_t halfLen = y.size() / 2;
+	size_t halfL = activeV.size();
 
 	// Actually calculate the trafficking
-	for (size_t ii = 0; ii < halfLen; ii++) {
+	for (size_t ii = 0; ii < halfL; ii++) {
 		if (activeV[ii]) {
 			dydt[ii] = -y[ii]*(endo + activeEndo); // Endocytosis
-			dydt[ii+halfLen] = y[ii]*(endo + activeEndo)/internalFrac - kDeg*y[ii+halfLen]; // Endocytosis, degradation
+			dydt[ii+halfL] = y[ii]*(endo + activeEndo)/internalFrac - kDeg*y[ii+halfL]; // Endocytosis, degradation
 		} else {
-			dydt[ii] = -y[ii]*endo + kRec*(1.0-sortF)*y[ii+halfLen]*internalFrac; // Endocytosis, recycling
-			dydt[ii+halfLen] = y[ii]*endo/internalFrac - kRec*(1.0-sortF)*y[ii+halfLen] - (kDeg*sortF)*y[ii+halfLen]; // Endocytosis, recycling, degradation
+			dydt[ii] = -y[ii]*endo + kRec*(1.0-sortF)*y[ii+halfL]*internalFrac; // Endocytosis, recycling
+			dydt[ii+halfL] = y[ii]*endo/internalFrac - kRec*(1.0-sortF)*y[ii+halfL] - (kDeg*sortF)*y[ii+halfL]; // Endocytosis, recycling, degradation
 		}
 	}
 
@@ -255,6 +270,23 @@ array<double, 56> fullModel(array<double, 56> y, double t, const array<double, 1
 	copy(ligConsume.begin(), ligConsume.end(), dydt.begin()+52);
 
 	return dydt;
+}
+
+
+extern "C" void fullModel_C(double *y_in, double t, double *dydt_out, double *rxn_in, double *tfr_in) {
+	// Bring back the wrapper!
+
+	array<double, 56> y;
+	array<double, 17> r;
+	array<double, 11> tf;
+
+	copy_n(rxn_in, r.size(), r.begin());
+	copy_n(tfr_in, tf.size(), tf.begin());
+	copy_n(y_in, y.size(), y.begin());
+
+	array<double, 56> dydt = fullModel(y, t, r, tf);
+
+	copy_n(dydt.begin(), y.size(), dydt_out);
 }
 
 
