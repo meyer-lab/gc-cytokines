@@ -126,7 +126,7 @@ class build_model:
     def sampling(self):
         with self.M:
             try:
-                self.trace = pm.sample()
+                self.trace = pm.sample(init='advi')
             except ValueError:
                 # Something went wrong, so print out the variables.
                 print("Test point:")
