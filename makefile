@@ -56,4 +56,4 @@ stats.dat: ckine/ckine.so
 	nosetests3 -s --with-cprofile
 
 testprofile: stats.dat
-	echo "Running profile"
+	pyprof2calltree -i stats.dat -k
