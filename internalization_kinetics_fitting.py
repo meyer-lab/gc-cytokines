@@ -12,9 +12,11 @@ class IL2Rb_trafficking:
         self.numpy_data = data.as_matrix() # all of the IL2Rb trafficking data with IL2Ra+... first row contains headers... 9 columns and 8 rows... first column is time
         data2 = pds.read_csv(os.path.join(path, "ckine/data/IL2Ra-_surface_IL2RB_datasets.csv"))
         self.numpy_data2 = data2.as_matrix() # all of the IL2Rb trafficking data with IL2Ra-... first row contains headers... 9 columns and 8 rows... first column is time
-        self.ts = self.numpy_data[1:8, 0]
-        self.ts2 = self.numpy_data2[1:8, 0]
+        self.ts = self.numpy_data[:, 0]
+        self.ts2 = self.numpy_data2[:, 0]
         self.times = len(self.ts)
+#        print(self.ts.shape)
+#        print(self.numpy_data[0,0])
         
     # find the percent of initial IL2Rb at the cell surface for the time points mentioned in the figure and compare to observed values
     # this function handles the case of IL2 = 1 nM and IL2Ra+
@@ -25,9 +27,11 @@ class IL2Rb_trafficking:
         rxnRates[0] = 1. # the concentration of IL2 = 1 nM
         
         ddfunc = lambda y, t: fullModel(y, t, rxnRates, trafRates, __active_species_IDX)
-        ys = np.zeros(8, 52) 
-        
-        for ii in range(0,8):
+        ys = np.zeros((7, 56)) 
+#        print(ys.shape)
+#        
+#        print(self.ts.shape)
+        for ii in range(0,7):
             
             ys[ii, :], infodict = odeint(ddfunc, y0, self.ts[ii], mxstep=12000, full_output=True, rtol=1.0E-5, atol=1.0E-3)
         
@@ -51,9 +55,9 @@ class IL2Rb_trafficking:
         rxnRates[0] = 500. # the concentration of IL2 = 1 nM
         
         ddfunc = lambda y, t: fullModel(y, t, rxnRates, trafRates, __active_species_IDX)
-        ys = np.zeros(8, 52) 
+        ys = np.zeros((7, 56)) 
         
-        for ii in range(0,8):
+        for ii in range(0,7):
             
             ys[ii, :], infodict = odeint(ddfunc, y0, self.ts[ii], mxstep=12000, full_output=True, rtol=1.0E-5, atol=1.0E-3)
         
@@ -77,9 +81,9 @@ class IL2Rb_trafficking:
         rxnRates[0] = 1. # the concentration of IL2 = 1 nM
         
         ddfunc = lambda y, t: fullModel(y, t, rxnRates, trafRates, __active_species_IDX)
-        ys = np.zeros(8, 52) 
+        ys = np.zeros((7, 56)) 
         
-        for ii in range(0,8):
+        for ii in range(0,7):
             
             ys[ii, :], infodict = odeint(ddfunc, y0, self.ts2[ii], mxstep=12000, full_output=True, rtol=1.0E-5, atol=1.0E-3)
         
@@ -103,9 +107,9 @@ class IL2Rb_trafficking:
         rxnRates[0] = 500. # the concentration of IL2 = 1 nM
         
         ddfunc = lambda y, t: fullModel(y, t, rxnRates, trafRates, __active_species_IDX)
-        ys = np.zeros(8, 52) 
+        ys = np.zeros((7, 56)) 
         
-        for ii in range(0,8):
+        for ii in range(0,7):
             
             ys[ii, :], infodict = odeint(ddfunc, y0, self.ts2[ii], mxstep=12000, full_output=True, rtol=1.0E-5, atol=1.0E-3)
         
@@ -124,39 +128,35 @@ class IL2Rb_trafficking:
     def calc_schedule(self, unkVec, pool):
         # Loop over concentrations of IL2
         output = list()
-        output2 = list()
-        output3 = list()
-        output4 = list()
+
         
-        for _, ILc in enumerate(self.ts):                 # do I need to change the ILc variable too? I already changed the self.IL2s to self.ts
-            output.append(pool.submit(self.surf_IL2Rb_1, self, unkVec))
+                       # do I need to change the ILc variable too? I already changed the self.IL2s to self.ts
+        output.append(pool.submit(self.surf_IL2Rb_1, unkVec))
         
-        for _, ILc in enumerate(self.ts):
-            output2.append(pool.submit(self.surf_IL2Rb_2, self, unkVec))
+        
+        output.append(pool.submit(self.surf_IL2Rb_2, unkVec))
             
-        for _, ILc in enumerate(self.ts2):
-            output3.append(pool.submit(self.surf_IL2Rb_3, self, unkVec))
-            
-        for _, ILc in enumerate(self.ts2):
-            output4.append(pool.submit(self.surf_IL2Rb_4, self, unkVec))
         
-        return (output, output2, output3, output4)
+        output.append(pool.submit(self.surf_IL2Rb_3, unkVec))
+            
+        
+        output.append(pool.submit(self.surf_IL2Rb_4, unkVec))
+        
+        return output
     
     
     def calc_reduce(self, inT):
-        output, output2, output3, output4 = inT
+        output = inT
         
-        actVec = np.fromiter((item.result() for item in output), np.float64, count=self.times) # changed count to self.times
-        actVec2 = np.fromiter((item.result() for item in output2), np.float64, count=self.times)
-        actVec3 = np.fromiter((item.result() for item in output3), np.float64, count=self.times)
-        actVec4 = np.fromiter((item.result() for item in output4), np.float64, count=self.times)
+        actVec = list(item.result() for item in output) # changed count to self.times
+
         
-        diff = actVec - self.numpy_data[1:8, 1] # the second column of numpy_data has all the 1nM IL2 data
-        diff2 = actVec2 - self.numpy_data[1:8, 5] # the sixth column of numpy_data has all the 500 nM IL2 data
-        diff3 = actVec3 - self.numpy_data2[1:8, 1] # the second column of numpy_data has all the 1nM IL2 data
-        diff4 = actVec4 - self.numpy_data2[1:8, 5] # the sixth column of numpy_data has all the 500 nM IL2 data
+        diff = actVec[0] - self.numpy_data[:, 1] # the second column of numpy_data has all the 1nM IL2 data
+        diff2 = actVec[1] - self.numpy_data[:, 5] # the sixth column of numpy_data has all the 500 nM IL2 data
+        diff3 = actVec[2] - self.numpy_data2[:, 1] # the second column of numpy_data has all the 1nM IL2 data
+        diff4 = actVec[3] - self.numpy_data2[:, 5] # the sixth column of numpy_data has all the 500 nM IL2 data
         
-        all_diffs = np.concatenate(diff, diff2, diff3, diff4)
+        all_diffs = np.concatenate((diff, diff2, diff3, diff4))
         
         return all_diffs
         
@@ -177,15 +177,15 @@ class build_model:
         M = pm.Model()
 
         with M:
-            rxnrates = pm.Lognormal('rxn', sd=1., shape=3, testval=[0.1, 0.1, 0.1]) 
+            rxnrates = pm.Lognormal('rxn', sd=1., shape=3, testval=[0.1, 0.1, 0.1]) # number of unknowns reaction rates
             endo_activeEndo = pm.Lognormal('endo', mu=np.log(0.1), sd=1., shape=2, testval=[0.1, 0.1])
             kRec_kDeg = pm.Lognormal('kRec_kDeg', mu=np.log(0.1), sd=1., shape=2, testval=[0.1, 0.1])
-            Rexpr = pm.Lognormal('IL2Raexpr', sd=1., shape=3, testval=[1., 1., 1.])
+            Rexpr = pm.Lognormal('IL2Raexpr', sd=1., shape=3, testval=[1., 1., 1.]) # IL2Ra, IL2Rb, gc (shape of 3)
             sortF = pm.Beta('sortF', alpha=2, beta=7, testval=0.1)
 
             unkVec = T.concatenate((rxnrates, endo_activeEndo, T.stack(sortF), kRec_kDeg, Rexpr))
             
-            Y = centralDiff(self.IL2Rb)(unkVec) # fitting the data based on dst.calc for the given parameters
+            Y = centralDiff(self.IL2Rb)(unkVec) # fitting the data based on IL2Rb_trafficking class
             
             pm.Deterministic('Y', Y) # this line allows us to see the traceplots in read_fit_data.py... it lets us know if the fitting process is working
 
