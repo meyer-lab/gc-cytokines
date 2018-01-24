@@ -51,18 +51,15 @@ class centralDiff(T.Op):
         return [(self.M.concs*2, )]
 
     def perform(self, node, inputs, outputs):
-        vec, = inputs
-        mu = self.M.calc(vec, pool=self.pool)
-
-        if np.any(np.isclose(mu, -100.)):
-            raise RuntimeError("Activity calculation failed.")
+        if np.any(np.greater(inputs[0], 1.0E4)):
+            mu = np.full((self.M.concs*2, ), -np.inf, dtype=np.float64)
+        else:
+            mu = self.M.calc(inputs[0], pool=self.pool)
 
         outputs[0][0] = np.array(mu)
 
     def grad(self, inputs, g):
-        graddf = self.dg(inputs[0])
-
-        return [T.dot(g[0], graddf)]
+        return [T.dot(g[0], self.dg(inputs[0]))]
 
 
 class centralDiffGrad(T.Op):
@@ -83,23 +80,23 @@ class centralDiffGrad(T.Op):
         x0 = inputs[0]
         f0 = self.M.calc(x0, self.pool)
 
-        if np.any(np.isclose(f0, -100.)):
-            raise RuntimeError("Activity calculation failed so not able to evaluate gradient.")
-
-        epsilon = 1.0E-7
+        epsilon = 1.0E-4
 
         output = list()
 
         jac = np.empty((x0.size, f0.size), dtype=np.float64)
 
-        # Schedule all the calculations
-        for i in range(x0.size):
-            dx = x0.copy()
-            dx[i] = dx[i] + epsilon
-            output.append(self.M.calc_schedule(dx, self.pool))
+        if np.any(np.greater(inputs[0], 1.0E4)):
+            jac.fill(-np.inf)
+        else:
+            # Schedule all the calculations
+            for i in range(x0.size):
+                dx = x0.copy()
+                dx[i] = dx[i] + epsilon
+                output.append(self.M.calc_schedule(dx, self.pool))
 
-        # Process all the results
-        for i, item in enumerate(output):
-            jac[i] = (self.M.calc_reduce(item) - f0)/epsilon
+            # Process all the results
+            for i, item in enumerate(output):
+                jac[i] = (self.M.calc_reduce(item) - f0)/epsilon
 
         outputs[0][0] = np.transpose(jac)
