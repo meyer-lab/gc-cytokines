@@ -128,18 +128,14 @@ class IL2Rb_trafficking:
     def calc_schedule(self, unkVec, pool):
         # Loop over concentrations of IL2
         output = list()
-
         
-                       # do I need to change the ILc variable too? I already changed the self.IL2s to self.ts
+        # do I need to change the ILc variable too? I already changed the self.IL2s to self.ts
         output.append(pool.submit(self.surf_IL2Rb_1, unkVec))
-        
-        
+
         output.append(pool.submit(self.surf_IL2Rb_2, unkVec))
-            
-        
+
         output.append(pool.submit(self.surf_IL2Rb_3, unkVec))
-            
-        
+
         output.append(pool.submit(self.surf_IL2Rb_4, unkVec))
         
         return output
