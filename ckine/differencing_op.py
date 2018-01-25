@@ -35,7 +35,7 @@ class centralDiff(T.Op):
     itypes = [T.dvector]
     otypes = [T.dvector]
 
-    def __init__(self, calcModel, parallel=True):
+    def __init__(self, calcModel, parallel=False): # changed this line for debugging purposes
         self.M = calcModel
 
         if parallel:

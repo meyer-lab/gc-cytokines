@@ -24,16 +24,22 @@ class IL2Rb_trafficking:
         rxnRates, trafRates = IL2_convertRates(unkVec) # this function splits up unkVec into rxnRates and trafRates
         y0 = solveAutocrine(trafRates) # solveAutocrine in model.py gives us the y0 values based on trafRates
         
+        rxnRates500 = rxnRates.copy()
         rxnRates[0] = 1. # the concentration of IL2 = 1 nM
+        rxnRates500[0] = 500. # the concentration of IL2 = 500 nM
         
         ddfunc = lambda y, t: fullModel(y, t, rxnRates, trafRates, __active_species_IDX)
+        ddfunc500 = lambda y, t: fullModel(y, t, rxnRates500, trafRates, __active_species_IDX)
+        
         ys = np.zeros((7, 56)) 
+        ys500 = ys.copy()
 #        print(ys.shape)
 #        
 #        print(self.ts.shape)
         for ii in range(0,7):
             
             ys[ii, :], infodict = odeint(ddfunc, y0, self.ts[ii], mxstep=12000, full_output=True, rtol=1.0E-5, atol=1.0E-3)
+            ys500[ii, :], infodict = odeint(ddfunc500, y0, self.ts[ii], mxstep=12000, full_output=True, rtol=1.0E-5, atol=1.0E-3)
         
             if infodict['tcur'] < np.max(self.ts):
                 # print("IL2 conc: " + str(IL2))
@@ -44,99 +50,111 @@ class IL2Rb_trafficking:
         surface_IL2Rb = ys[:,1] # y[:,1] represents the surface IL2Rb value in fullModel for all 8 time points
         initial_surface_IL2Rb = surface_IL2Rb[0] # find the total amount of IL2Rb in the system at the first time point
         
-        percent_surface_IL2Rb = 10. * (surface_IL2Rb / initial_surface_IL2Rb) # percent of surface IL2Rb is relative to the initial amount of receptor
-        return percent_surface_IL2Rb 
+        surface_IL2Rb_500 = ys500[:,1]
+        initial_surface_IL2Rb_500 = surface_IL2Rb_500[0]
         
-    # this function handles the case of IL2 = 500 nM and IL2Ra+
-    def surf_IL2Rb_2(self, unkVec):
-        rxnRates, trafRates = IL2_convertRates(unkVec) # this function splits up unkVec into rxnRates and trafRates
-        y0 = solveAutocrine(trafRates) # solveAutocrine in model.py gives us the y0 values based on trafRates
-        
-        rxnRates[0] = 500. # the concentration of IL2 = 1 nM
-        
-        ddfunc = lambda y, t: fullModel(y, t, rxnRates, trafRates, __active_species_IDX)
-        ys = np.zeros((7, 56)) 
-        
-        for ii in range(0,7):
-            
-            ys[ii, :], infodict = odeint(ddfunc, y0, self.ts[ii], mxstep=12000, full_output=True, rtol=1.0E-5, atol=1.0E-3)
-        
-            if infodict['tcur'] < np.max(self.ts):
-                # print("IL2 conc: " + str(IL2))
-                printModel(rxnRates, trafRates)
-                print(infodict)
-                return -100
-        
-        surface_IL2Rb = ys[:,1] # y[:,1] represents the surface IL2Rb value in fullModel for all 8 time points
-        initial_surface_IL2Rb = surface_IL2Rb[0] # find the total amount of IL2Rb in the system at the first time point
         
         percent_surface_IL2Rb = 10. * (surface_IL2Rb / initial_surface_IL2Rb) # percent of surface IL2Rb is relative to the initial amount of receptor
-        return percent_surface_IL2Rb 
-
-# this function handles the case of IL2 = 1 nM and IL2Ra-
-    def surf_IL2Rb_3(self, unkVec):
-        rxnRates, trafRates = IL2_convertRates(unkVec) # this function splits up unkVec into rxnRates and trafRates
-        y0 = solveAutocrine(trafRates) # solveAutocrine in model.py gives us the y0 values based on trafRates
+        percent_surface_IL2Rb_500 = 10. * (surface_IL2Rb_500 / initial_surface_IL2Rb_500)
         
-        rxnRates[0] = 1. # the concentration of IL2 = 1 nM
+        percent_surface_IL2Rb_total = np.concatenate((percent_surface_IL2Rb, percent_surface_IL2Rb_500))
         
-        ddfunc = lambda y, t: fullModel(y, t, rxnRates, trafRates, __active_species_IDX)
-        ys = np.zeros((7, 56)) 
+        return percent_surface_IL2Rb_total
         
-        for ii in range(0,7):
-            
-            ys[ii, :], infodict = odeint(ddfunc, y0, self.ts2[ii], mxstep=12000, full_output=True, rtol=1.0E-5, atol=1.0E-3)
-        
-            if infodict['tcur'] < np.max(self.ts2):
-                # print("IL2 conc: " + str(IL2))
-                printModel(rxnRates, trafRates)
-                print(infodict)
-                return -100
-        
-        surface_IL2Rb = ys[:,1] # y[:,1] represents the surface IL2Rb value in fullModel for all 8 time points
-        initial_surface_IL2Rb = surface_IL2Rb[0] # find the total amount of IL2Rb in the system at the first time point
-        
-        percent_surface_IL2Rb = 10. * (surface_IL2Rb / initial_surface_IL2Rb) # percent of surface IL2Rb is relative to the initial amount of receptor
-        return percent_surface_IL2Rb 
-
-    # this function handles the case of IL2 = 500 nM and IL2Ra-
-    def surf_IL2Rb_4(self, unkVec):
-        rxnRates, trafRates = IL2_convertRates(unkVec) # this function splits up unkVec into rxnRates and trafRates
-        y0 = solveAutocrine(trafRates) # solveAutocrine in model.py gives us the y0 values based on trafRates
-        
-        rxnRates[0] = 500. # the concentration of IL2 = 1 nM
-        
-        ddfunc = lambda y, t: fullModel(y, t, rxnRates, trafRates, __active_species_IDX)
-        ys = np.zeros((7, 56)) 
-        
-        for ii in range(0,7):
-            
-            ys[ii, :], infodict = odeint(ddfunc, y0, self.ts2[ii], mxstep=12000, full_output=True, rtol=1.0E-5, atol=1.0E-3)
-        
-            if infodict['tcur'] < np.max(self.ts2):
-                # print("IL2 conc: " + str(IL2))
-                printModel(rxnRates, trafRates)
-                print(infodict)
-                return -100
-        
-        surface_IL2Rb = ys[:,1] # y[:,1] represents the surface IL2Rb value in fullModel for all 8 time points
-        initial_surface_IL2Rb = surface_IL2Rb[0] # find the total amount of IL2Rb in the system at the first time point
-        
-        percent_surface_IL2Rb = 10. * (surface_IL2Rb / initial_surface_IL2Rb) # percent of surface IL2Rb is relative to the initial amount of receptor
-        return percent_surface_IL2Rb
+#    # this function handles the case of IL2 = 500 nM and IL2Ra+
+#    def surf_IL2Rb_2(self, unkVec):
+#        rxnRates, trafRates = IL2_convertRates(unkVec) # this function splits up unkVec into rxnRates and trafRates
+#        y0 = solveAutocrine(trafRates) # solveAutocrine in model.py gives us the y0 values based on trafRates
+#        
+#        rxnRates[0] = 500. # the concentration of IL2 = 1 nM
+#        
+#        ddfunc = lambda y, t: fullModel(y, t, rxnRates, trafRates, __active_species_IDX)
+#        ys = np.zeros((7, 56)) 
+#        
+#        for ii in range(0,7):
+#            
+#            ys[ii, :], infodict = odeint(ddfunc, y0, self.ts[ii], mxstep=12000, full_output=True, rtol=1.0E-5, atol=1.0E-3)
+#        
+#            if infodict['tcur'] < np.max(self.ts):
+#                # print("IL2 conc: " + str(IL2))
+#                printModel(rxnRates, trafRates)
+#                print(infodict)
+#                return -100
+#        
+#        surface_IL2Rb = ys[:,1] # y[:,1] represents the surface IL2Rb value in fullModel for all 8 time points
+#        initial_surface_IL2Rb = surface_IL2Rb[0] # find the total amount of IL2Rb in the system at the first time point
+#        
+#        percent_surface_IL2Rb = 10. * (surface_IL2Rb / initial_surface_IL2Rb) # percent of surface IL2Rb is relative to the initial amount of receptor
+#        return percent_surface_IL2Rb 
+#
+## this function handles the case of IL2 = 1 nM and IL2Ra-
+#    def surf_IL2Rb_3(self, unkVec):
+#        rxnRates, trafRates = IL2_convertRates(unkVec) # this function splits up unkVec into rxnRates and trafRates
+#        y0 = solveAutocrine(trafRates) # solveAutocrine in model.py gives us the y0 values based on trafRates
+#        
+#        rxnRates[0] = 1. # the concentration of IL2 = 1 nM
+#        
+#        ddfunc = lambda y, t: fullModel(y, t, rxnRates, trafRates, __active_species_IDX)
+#        ys = np.zeros((7, 56)) 
+#        
+#        for ii in range(0,7):
+#            
+#            ys[ii, :], infodict = odeint(ddfunc, y0, self.ts2[ii], mxstep=12000, full_output=True, rtol=1.0E-5, atol=1.0E-3)
+#        
+#            if infodict['tcur'] < np.max(self.ts2):
+#                # print("IL2 conc: " + str(IL2))
+#                printModel(rxnRates, trafRates)
+#                print(infodict)
+#                return -100
+#        
+#        surface_IL2Rb = ys[:,1] # y[:,1] represents the surface IL2Rb value in fullModel for all 8 time points
+#        initial_surface_IL2Rb = surface_IL2Rb[0] # find the total amount of IL2Rb in the system at the first time point
+#        
+#        percent_surface_IL2Rb = 10. * (surface_IL2Rb / initial_surface_IL2Rb) # percent of surface IL2Rb is relative to the initial amount of receptor
+#        return percent_surface_IL2Rb 
+#
+#    # this function handles the case of IL2 = 500 nM and IL2Ra-
+#    def surf_IL2Rb_4(self, unkVec):
+#        rxnRates, trafRates = IL2_convertRates(unkVec) # this function splits up unkVec into rxnRates and trafRates
+#        y0 = solveAutocrine(trafRates) # solveAutocrine in model.py gives us the y0 values based on trafRates
+#        
+#        rxnRates[0] = 500. # the concentration of IL2 = 1 nM
+#        
+#        ddfunc = lambda y, t: fullModel(y, t, rxnRates, trafRates, __active_species_IDX)
+#        ys = np.zeros((7, 56)) 
+#        
+#        for ii in range(0,7):
+#            
+#            ys[ii, :], infodict = odeint(ddfunc, y0, self.ts2[ii], mxstep=12000, full_output=True, rtol=1.0E-5, atol=1.0E-3)
+#        
+#            if infodict['tcur'] < np.max(self.ts2):
+#                # print("IL2 conc: " + str(IL2))
+#                printModel(rxnRates, trafRates)
+#                print(infodict)
+#                return -100
+#        
+#        surface_IL2Rb = ys[:,1] # y[:,1] represents the surface IL2Rb value in fullModel for all 8 time points
+#        initial_surface_IL2Rb = surface_IL2Rb[0] # find the total amount of IL2Rb in the system at the first time point
+#        
+#        percent_surface_IL2Rb = 10. * (surface_IL2Rb / initial_surface_IL2Rb) # percent of surface IL2Rb is relative to the initial amount of receptor
+#        return percent_surface_IL2Rb
 
     def calc_schedule(self, unkVec, pool):
+        # Convert the vector of values to dicts
+        rxnRates, tfR = IL2_convertRates(unkVec)
+
+        # IL2Ra- cells
+        tfR2 = tfR.copy()
+        tfR2[5] = 0.0
+
+        unkVec2 = np.concatenate((rxnRates, tfR2))
         # Loop over concentrations of IL2
         output = list()
         
         # do I need to change the ILc variable too? I already changed the self.IL2s to self.ts
-        output.append(pool.submit(self.surf_IL2Rb_1, unkVec))
+        output.append(pool.submit(self.surf_IL2Rb_1, unkVec)) # handle the IL2Ra+ case
 
-        output.append(pool.submit(self.surf_IL2Rb_2, unkVec))
-
-        output.append(pool.submit(self.surf_IL2Rb_3, unkVec))
-
-        output.append(pool.submit(self.surf_IL2Rb_4, unkVec))
+        output.append(pool.submit(self.surf_IL2Rb_1, unkVec2)) # then handle the IL2Ra- case
         
         return output
     
@@ -145,12 +163,17 @@ class IL2Rb_trafficking:
         output = inT
         
         actVec = list(item.result() for item in output) # changed count to self.times
-
         
-        diff = actVec[0] - self.numpy_data[:, 1] # the second column of numpy_data has all the 1nM IL2 data
-        diff2 = actVec[1] - self.numpy_data[:, 5] # the sixth column of numpy_data has all the 500 nM IL2 data
-        diff3 = actVec[2] - self.numpy_data2[:, 1] # the second column of numpy_data has all the 1nM IL2 data
-        diff4 = actVec[3] - self.numpy_data2[:, 5] # the sixth column of numpy_data has all the 500 nM IL2 data
+        print(actVec) # for some reason I'm getting "nan" for all 14 of my values corresponding to the IL2Ra- case
+
+        # actVec[0:7] represents the IL2Ra+ and 1nM case
+        # actVec[7:14] represents the IL2Ra+ and 500nM case
+        # actVec[14:21] represents the IL2Ra- and 1nM case
+        # actVec[21:28] represents the IL2Ra- and 500nM case
+        diff = actVec[0:7] - self.numpy_data[:, 1] # the second column of numpy_data has all the 1nM IL2Ra= data
+        diff2 = actVec[7:14] - self.numpy_data[:, 5] # the sixth column of numpy_data has all the 500 nM IL2Ra+ data
+        diff3 = actVec[14:21] - self.numpy_data2[:, 1] # the second column of numpy_data has all the 1nM IL2Ra- data
+        diff4 = actVec[21:28] - self.numpy_data2[:, 5] # the sixth column of numpy_data has all the 500 nM IL2Ra- data
         
         all_diffs = np.concatenate((diff, diff2, diff3, diff4))
         
