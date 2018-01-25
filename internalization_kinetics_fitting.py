@@ -36,6 +36,7 @@ class IL2Rb_trafficking:
 #        print(ys.shape)
 #        
 #        print(self.ts.shape)
+#        print(self.ts) # shows correct time values
         for ii in range(0,7):
             
             ys[ii, :], infodict = odeint(ddfunc, y0, self.ts[ii], mxstep=12000, full_output=True, rtol=1.0E-5, atol=1.0E-3)
@@ -58,6 +59,10 @@ class IL2Rb_trafficking:
         percent_surface_IL2Rb_500 = 10. * (surface_IL2Rb_500 / initial_surface_IL2Rb_500)
         
         percent_surface_IL2Rb_total = np.concatenate((percent_surface_IL2Rb, percent_surface_IL2Rb_500))
+        
+        print(percent_surface_IL2Rb_total)
+        # the first time this function is called in calc_schedule (unkVec) it produces all 10's
+        # the second time this function is called (unkVec2) it produces all 'nan's
         
         return percent_surface_IL2Rb_total
         
@@ -164,8 +169,11 @@ class IL2Rb_trafficking:
         
         actVec = list(item.result() for item in output) # changed count to self.times
         
-        print(actVec) # for some reason I'm getting "nan" for all 14 of my values corresponding to the IL2Ra- case
-
+        print(actVec) 
+        # for some reason I'm getting "nan" for all 14 of my values corresponding to the IL2Ra- case
+        # also every value for the IL2Ra+ cases is 10 which might be a problem because they're supposed to be time-series values run by odeint
+        
+        
         # actVec[0:7] represents the IL2Ra+ and 1nM case
         # actVec[7:14] represents the IL2Ra+ and 500nM case
         # actVec[14:21] represents the IL2Ra- and 1nM case
