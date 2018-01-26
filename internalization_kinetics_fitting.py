@@ -5,49 +5,33 @@ from ckine.differencing_op import centralDiff
 import pymc3 as pm, theano.tensor as T, os
 from ckine.fit import IL2_convertRates
 
-class IL2Rb_trafficking:
-    def __init__(self):
-        path = os.path.dirname(os.path.abspath(__file__))
-        data = pds.read_csv(os.path.join(path, "ckine/data/IL2Ra+_surface_IL2RB_datasets.csv")) # imports csv file into pandas array
-        self.numpy_data = data.as_matrix() # all of the IL2Rb trafficking data with IL2Ra+... first row contains headers... 9 columns and 8 rows... first column is time
-        data2 = pds.read_csv(os.path.join(path, "ckine/data/IL2Ra-_surface_IL2RB_datasets.csv"))
-        self.numpy_data2 = data2.as_matrix() # all of the IL2Rb trafficking data with IL2Ra-... first row contains headers... 9 columns and 8 rows... first column is time
-        self.ts = self.numpy_data[:, 0]
-        self.ts2 = self.numpy_data2[:, 0]
-        self.times = len(self.ts)
-#        print(self.ts.shape)
-#        print(self.numpy_data[0,0])
-        
-    # find the percent of initial IL2Rb at the cell surface for the time points mentioned in the figure and compare to observed values
-    # this function handles the case of IL2 = 1 nM and IL2Ra+
-    def surf_IL2Rb_1(self, unkVec):
+def surf_IL2Rb_1(unkVec):
         rxnRates, trafRates = IL2_convertRates(unkVec) # this function splits up unkVec into rxnRates and trafRates
         y0 = solveAutocrine(trafRates) # solveAutocrine in model.py gives us the y0 values based on trafRates
         
         rxnRates500 = rxnRates.copy()
         rxnRates[0] = 1. # the concentration of IL2 = 1 nM
         rxnRates500[0] = 500. # the concentration of IL2 = 500 nM
-        
+               
         ddfunc = lambda y, t: fullModel(y, t, rxnRates, trafRates, __active_species_IDX)
         ddfunc500 = lambda y, t: fullModel(y, t, rxnRates500, trafRates, __active_species_IDX)
         
         ys = np.zeros((7, 56)) 
         ys500 = ys.copy()
-#        print(ys.shape)
-#        
-#        print(self.ts.shape)
-#        print(self.ts) # shows correct time values
-        for ii in range(0,7):
-            
-            ys[ii, :], infodict = odeint(ddfunc, y0, self.ts[ii], mxstep=12000, full_output=True, rtol=1.0E-5, atol=1.0E-3)
-            ys500[ii, :], infodict = odeint(ddfunc500, y0, self.ts[ii], mxstep=12000, full_output=True, rtol=1.0E-5, atol=1.0E-3)
+
+        # times from experiment are hard-coded into this function      
+        ts = np.array(([4.26260000e-02, 2.14613600e+00, 5.00755700e+00, 1.52723300e+01, 3.07401000e+01, 6.14266000e+01, 9.21962300e+01]))
         
-            if infodict['tcur'] < np.max(self.ts):
-                # print("IL2 conc: " + str(IL2))
-                printModel(rxnRates, trafRates)
-                print(infodict)
-                return -100
+        ys[:,:], infodict = odeint(ddfunc, y0, ts, mxstep=12000, full_output=True, rtol=1.0E-5, atol=1.0E-3)
+        ys500[:,:], infodict = odeint(ddfunc500, y0, ts, mxstep=12000, full_output=True, rtol=1.0E-5, atol=1.0E-3)
         
+#        if infodict['tcur'] < np.max(self.ts):
+#            # print("IL2 conc: " + str(IL2))
+#            printModel(rxnRates, trafRates)
+#            print(infodict)
+#            return -100
+        
+#        print(ys) # there's no time variance in ys both time that the function is called (all IL2Rb and other values are same for all times we call odeint)
         surface_IL2Rb = ys[:,1] # y[:,1] represents the surface IL2Rb value in fullModel for all 8 time points
         initial_surface_IL2Rb = surface_IL2Rb[0] # find the total amount of IL2Rb in the system at the first time point
         
@@ -60,11 +44,25 @@ class IL2Rb_trafficking:
         
         percent_surface_IL2Rb_total = np.concatenate((percent_surface_IL2Rb, percent_surface_IL2Rb_500))
         
-        print(percent_surface_IL2Rb_total)
+#        print(percent_surface_IL2Rb_total)
         # the first time this function is called in calc_schedule (unkVec) it produces all 10's
         # the second time this function is called (unkVec2) it produces all 'nan's
         
         return percent_surface_IL2Rb_total
+
+
+class IL2Rb_trafficking:
+    def __init__(self):
+        path = os.path.dirname(os.path.abspath(__file__))
+        data = pds.read_csv(os.path.join(path, "ckine/data/IL2Ra+_surface_IL2RB_datasets.csv")) # imports csv file into pandas array
+        self.numpy_data = data.as_matrix() # all of the IL2Rb trafficking data with IL2Ra+... first row contains headers... 9 columns and 8 rows... first column is time
+        data2 = pds.read_csv(os.path.join(path, "ckine/data/IL2Ra-_surface_IL2RB_datasets.csv"))
+        self.numpy_data2 = data2.as_matrix() # all of the IL2Rb trafficking data with IL2Ra-... first row contains headers... 9 columns and 8 rows... first column is time
+        self.ts = self.numpy_data[:, 0]
+        self.ts2 = self.numpy_data2[:, 0]
+        self.times = len(self.ts)
+
+    
         
 #    # this function handles the case of IL2 = 500 nM and IL2Ra+
 #    def surf_IL2Rb_2(self, unkVec):
@@ -157,9 +155,9 @@ class IL2Rb_trafficking:
         output = list()
         
         # do I need to change the ILc variable too? I already changed the self.IL2s to self.ts
-        output.append(pool.submit(self.surf_IL2Rb_1, unkVec)) # handle the IL2Ra+ case
+        output.append(pool.submit(surf_IL2Rb_1, unkVec)) # handle the IL2Ra+ case
 
-        output.append(pool.submit(self.surf_IL2Rb_1, unkVec2)) # then handle the IL2Ra- case
+        output.append(pool.submit(surf_IL2Rb_1, unkVec2)) # then handle the IL2Ra- case
         
         return output
     
@@ -169,7 +167,7 @@ class IL2Rb_trafficking:
         
         actVec = list(item.result() for item in output) # changed count to self.times
         
-        print(actVec) 
+        #print(actVec) 
         # for some reason I'm getting "nan" for all 14 of my values corresponding to the IL2Ra- case
         # also every value for the IL2Ra+ cases is 10 which might be a problem because they're supposed to be time-series values run by odeint
         
