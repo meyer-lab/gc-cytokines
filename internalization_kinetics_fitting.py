@@ -5,22 +5,25 @@ from ckine.differencing_op import centralDiff
 import pymc3 as pm, theano.tensor as T, os
 from ckine.fit import IL2_convertRates
 
-def surf_IL2Rb(unkVec, IL2_conc):
-        rxnRates, trafRates = IL2_convertRates(unkVec) # this function splits up unkVec into rxnRates and trafRates
+def surf_IL2Rb(rxnRates, trafRates, IL2_conc):
+        # times from experiment are hard-coded into this function      
+        ts = np.array(([4.26e-02, 2.15e+00, 5.01e+00, 1.53e+01, 3.07e+01, 6.14e+01, 9.22e+01]))
+
+        # If any of the unknowns are unreasonably high, let's just return inf.
+        if (np.max(rxnRates) > 1.0E4 or np.max(trafRates) > 1.0E4):
+            return np.full(ts.shape, np.inf)
+
         y0 = solveAutocrine(trafRates) # solveAutocrine in model.py gives us the y0 values based on trafRates
         
         rxnRates[0] = IL2_conc # the concentration of IL2 is rxnRates[0]
                
         ddfunc = lambda y, t: fullModel(y, t, rxnRates, trafRates, __active_species_IDX)
-        
-        ys = np.zeros((7, 56)) 
 
-        # times from experiment are hard-coded into this function      
-        ts = np.array(([4.26260000e-02, 2.14613600e+00, 5.00755700e+00, 1.52723300e+01, 3.07401000e+01, 6.14266000e+01, 9.21962300e+01]))
+        
         
         ys, infodict = odeint(ddfunc, y0, ts, mxstep=12000, full_output=True, rtol=1.0E-5, atol=1.0E-3)
         
-        if np.any(infodict['tcur'] < np.max(ts)):
+        if infodict['message'] != 'Integration successful.':
             print("IL2 conc: " + str(IL2_conc))
             printModel(rxnRates, trafRates)
             print(infodict)
@@ -52,23 +55,19 @@ class IL2Rb_trafficking:
         tfR2 = tfR.copy()
         tfR2[5] = 0.0
 
-        unkVec2 = np.concatenate((rxnRates[4:7], tfR2[0:8])) #only the 4:7 elements of rxnRates and 0:8 elements of tfR are kept in IL2_convertRates
-
         # Loop over concentrations of IL2
         output = list()
         
-        output.append(pool.submit(surf_IL2Rb, unkVec, 1)) # handle the IL2Ra+ and 1nM case
-        output.append(pool.submit(surf_IL2Rb, unkVec, 500)) # handle the IL2Ra+ and 500nM case
-        output.append(pool.submit(surf_IL2Rb, unkVec2, 1)) # handle the IL2Ra- and 1nM case
-        output.append(pool.submit(surf_IL2Rb, unkVec2, 500)) # handle the IL2Ra- and 500nM case
+        output.append(pool.submit(surf_IL2Rb, rxnRates, tfR, 1)) # handle the IL2Ra+ and 1nM case
+        output.append(pool.submit(surf_IL2Rb, rxnRates, tfR, 500)) # handle the IL2Ra+ and 500nM case
+        output.append(pool.submit(surf_IL2Rb, rxnRates, tfR2, 1)) # handle the IL2Ra- and 1nM case
+        output.append(pool.submit(surf_IL2Rb, rxnRates, tfR2, 500)) # handle the IL2Ra- and 500nM case
         
         return output
    
     
     def calc_reduce(self, inT):
-        output = inT
-        
-        actVec = list(item.result() for item in output) 
+        actVec = list(item.result() for item in inT) 
         
         # actVec[0] represents the IL2Ra+ and 1nM case
         # actVec[1] represents the IL2Ra+ and 500nM case
@@ -140,4 +139,6 @@ class build_model:
         """ Profile the gradient calculation. """
         self.M.profile(pm.theanof.gradient(self.M.logpt, None)).summary()
         
-build_model()
+M = build_model()
+
+M.sampling()
