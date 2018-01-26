@@ -7,7 +7,7 @@ from ckine.fit import IL2_convertRates
 
 def surf_IL2Rb(rxnRates, trafRates, IL2_conc):
         # times from experiment are hard-coded into this function      
-        ts = np.array(([4.26e-02, 2.15e+00, 5.01e+00, 1.53e+01, 3.07e+01, 6.14e+01, 9.22e+01]))
+        ts = np.array(([0., 2., 5., 15., 30., 60., 90.]))
 
         # If any of the unknowns are unreasonably high, let's just return inf.
         if (np.max(rxnRates) > 1.0E4 or np.max(trafRates) > 1.0E4):
