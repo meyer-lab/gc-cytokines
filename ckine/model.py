@@ -288,3 +288,10 @@ def getTotalActiveCytokine(cytokineIDX, yVec):
     """ Get amount of surface and endosomal active species. """
     return getActiveCytokine(cytokineIDX, yVec[0:26]) + getActiveCytokine(cytokineIDX, yVec[26:26*2])
 
+def surface_Receptors(yVec):
+    """This function takes in a vector y of 56 elements and returns the amounts of the 6 surface receptors"""
+    IL2Ra = np.sum(yVec[np.array([0, 3, 6, 7, 9])])
+    IL2Rb = np.sum(yVec[np.array([1, 4, 6, 8, 9, 12, 14, 16, 17])])
+    gc = np.sum(yVec[np.array([2, 5, 7, 8, 9, 13, 15, 16, 17, 20, 21, 24, 25])])
+    
+
