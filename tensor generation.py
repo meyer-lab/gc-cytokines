@@ -2,7 +2,7 @@ from ckine.model import solveAutocrine, fullModel, getTotalActiveCytokine, __act
 import numpy as np
 from scipy.integrate import odeint
 
-t = 100000. # let's let the system run for 100000
+t = 60. * 4 # let's let the system run for 100000
 ts = np.linspace(0.0, t, 100)
 
 #Different indices of important values
@@ -20,15 +20,18 @@ y_of_combos = np.zeros((len(mat), 100,56))
 #Set some given parameters already determined from fitting
 r = np.zeros(17)
 r[4:17] = np.ones(13) * (5*10**-1)   #I am supposed to have these values
-tfR = np.ones(17) * (5* 10**-2)     #I am also supposed to know these values
+#tfR = np.ones(17) * (5* 10**-2)     #I am also supposed to know these values
+
+trafRates = np.zeros(11)
+trafRates[0:5] = (5* 10**-2)
 
 #Iterate through every combination of values and store odeint values in a y matrix
-for ii in range(len(mat)+1):
-    y0 = np.zeros(56)
-    
-    y0[0:3], y0[10], y0[18], y0[22] = mat[ii,4:7], mat[ii,7], mat[ii,8], mat[ii,9] 
+for ii in range(len(mat)):
+    #y0 = np.zeros(56)
+    trafRates[5:8], trafRates[8], trafRates[9], trafRates[10] = mat[ii,4:7], mat[ii,7], mat[ii,8], mat[ii,9]
+    y0 = solveAutocrine(trafRates)
     r[0:4] = mat[ii,0:4]
-    ddfunc = lambda y, t: fullModel(y, t, r, tfR, __active_species_IDX)
+    ddfunc = lambda y, t: fullModel(y, t, r, trafRates, __active_species_IDX)
     
     temp, d = odeint(ddfunc, y0, ts, mxstep=12000, full_output=True, rtol=1.0E-5, atol=1.0E-3)
     #temp, d = odeint(fullModel, y0, ts, r, tfR, __active_species_IDX, mxstep=12000, full_output=True, rtol=1.0E-5, atol=1.0E-3)
@@ -43,11 +46,11 @@ def activ_surf_tot(y_of_combos):
     lig_activity = np.zeros((len(mat), 100,4))
     surface_receptors = np.zeros((len(mat), 100,6))
 
-    for i in range(len(mat) +1):
-        for j in range(7):
-            for k in range(len(ts)+1):
+    for i in range(len(mat)):
+        for j in range(6):
+            for k in range(len(ts)):
                 if j <= 3:
-                    lig_activity[i][:,j][k] = getActiveCytokine(j, y_of_combos[i][k])
+                    lig_activity[i][:,j][k] = getTotalActiveCytokine(j, y_of_combos[i][k])
                     surface_receptors[i][:,j][k] = sum_surface_recep
                     
                     #####
