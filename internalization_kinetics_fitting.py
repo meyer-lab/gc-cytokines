@@ -5,45 +5,33 @@ from ckine.differencing_op import centralDiff
 import pymc3 as pm, theano.tensor as T, os
 from ckine.fit import IL2_convertRates
 
-def surf_IL2Rb_1(unkVec):
+def surf_IL2Rb(unkVec, IL2_conc):
         rxnRates, trafRates = IL2_convertRates(unkVec) # this function splits up unkVec into rxnRates and trafRates
         y0 = solveAutocrine(trafRates) # solveAutocrine in model.py gives us the y0 values based on trafRates
         
-        rxnRates500 = rxnRates.copy()
-        rxnRates[0] = 1. # the concentration of IL2 = 1 nM
-        rxnRates500[0] = 500. # the concentration of IL2 = 500 nM
+        rxnRates[0] = IL2_conc # the concentration of IL2 is rxnRates[0]
                
         ddfunc = lambda y, t: fullModel(y, t, rxnRates, trafRates, __active_species_IDX)
-        ddfunc500 = lambda y, t: fullModel(y, t, rxnRates500, trafRates, __active_species_IDX)
         
         ys = np.zeros((7, 56)) 
-        ys500 = ys.copy()
 
         # times from experiment are hard-coded into this function      
         ts = np.array(([4.26260000e-02, 2.14613600e+00, 5.00755700e+00, 1.52723300e+01, 3.07401000e+01, 6.14266000e+01, 9.21962300e+01]))
         
-        ys[:,:], infodict = odeint(ddfunc, y0, ts, mxstep=12000, full_output=True, rtol=1.0E-5, atol=1.0E-3)
-        ys500[:,:], infodict = odeint(ddfunc500, y0, ts, mxstep=12000, full_output=True, rtol=1.0E-5, atol=1.0E-3)
+        ys, infodict = odeint(ddfunc, y0, ts, mxstep=12000, full_output=True, rtol=1.0E-5, atol=1.0E-3)
         
-#        if infodict['tcur'] < np.max(ts):
-#            # print("IL2 conc: " + str(IL2))
-#            printModel(rxnRates, trafRates)
-#            print(infodict)
-#            return -100
+        if np.any(infodict['tcur'] < np.max(ts)):
+            print("IL2 conc: " + str(IL2_conc))
+            printModel(rxnRates, trafRates)
+            print(infodict)
+            return -100
         
         surface_IL2Rb = ys[:,1] # y[:,1] represents the surface IL2Rb value in fullModel for all 8 time points
         initial_surface_IL2Rb = surface_IL2Rb[0] # find the total amount of IL2Rb in the system at the first time point
-        
-        surface_IL2Rb_500 = ys500[:,1]
-        initial_surface_IL2Rb_500 = surface_IL2Rb_500[0]
-        
-        
+            
         percent_surface_IL2Rb = 10. * (surface_IL2Rb / initial_surface_IL2Rb) # percent of surface IL2Rb is relative to the initial amount of receptor
-        percent_surface_IL2Rb_500 = 10. * (surface_IL2Rb_500 / initial_surface_IL2Rb_500)
         
-        percent_surface_IL2Rb_total = np.concatenate((percent_surface_IL2Rb, percent_surface_IL2Rb_500))
-        
-        return percent_surface_IL2Rb_total
+        return percent_surface_IL2Rb
 
 
 class IL2Rb_trafficking:
@@ -69,8 +57,10 @@ class IL2Rb_trafficking:
         # Loop over concentrations of IL2
         output = list()
         
-        output.append(pool.submit(surf_IL2Rb_1, unkVec)) # handle the IL2Ra+ case
-        output.append(pool.submit(surf_IL2Rb_1, unkVec2)) # then handle the IL2Ra- case
+        output.append(pool.submit(surf_IL2Rb, unkVec, 1)) # handle the IL2Ra+ and 1nM case
+        output.append(pool.submit(surf_IL2Rb, unkVec, 500)) # handle the IL2Ra+ and 500nM case
+        output.append(pool.submit(surf_IL2Rb, unkVec2, 1)) # handle the IL2Ra- and 1nM case
+        output.append(pool.submit(surf_IL2Rb, unkVec2, 500)) # handle the IL2Ra- and 500nM case
         
         return output
    
@@ -80,15 +70,15 @@ class IL2Rb_trafficking:
         
         actVec = list(item.result() for item in output) 
         
-        # actVec[0][0:7] represents the IL2Ra+ and 1nM case
-        # actVec[0][7:14] represents the IL2Ra+ and 500nM case
-        # actVec[1][0:7] represents the IL2Ra- and 1nM case
-        # actVec[1][7:14] represents the IL2Ra- and 500nM case
-        diff = actVec[0][0:7] - self.numpy_data[:, 1] # the second column of numpy_data has all the 1nM IL2Ra= data
-        diff2 = actVec[0][7:14] - self.numpy_data[:, 5] # the sixth column of numpy_data has all the 500 nM IL2Ra+ data
-        diff3 = actVec[1][0:7] - self.numpy_data2[:, 1] # the second column of numpy_data has all the 1nM IL2Ra- data
-        diff4 = actVec[1][7:14] - self.numpy_data2[:, 5] # the sixth column of numpy_data has all the 500 nM IL2Ra- data
-        
+        # actVec[0] represents the IL2Ra+ and 1nM case
+        # actVec[1] represents the IL2Ra+ and 500nM case
+        # actVec[2] represents the IL2Ra- and 1nM case
+        # actVec[3] represents the IL2Ra- and 500nM case
+        diff = actVec[0] - self.numpy_data[:, 1] # the second column of numpy_data has all the 1nM IL2Ra= data
+        diff2 = actVec[1] - self.numpy_data[:, 5] # the sixth column of numpy_data has all the 500 nM IL2Ra+ data
+        diff3 = actVec[2] - self.numpy_data2[:, 1] # the second column of numpy_data2 has all the 1nM IL2Ra- data
+        diff4 = actVec[3] - self.numpy_data2[:, 5] # the sixth column of numpy_data2 has all the 500 nM IL2Ra- data
+         
         all_diffs = np.concatenate((diff, diff2, diff3, diff4))
         
         return all_diffs
