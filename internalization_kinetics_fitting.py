@@ -25,7 +25,7 @@ def surf_IL2Rb_1(unkVec):
         ys[:,:], infodict = odeint(ddfunc, y0, ts, mxstep=12000, full_output=True, rtol=1.0E-5, atol=1.0E-3)
         ys500[:,:], infodict = odeint(ddfunc500, y0, ts, mxstep=12000, full_output=True, rtol=1.0E-5, atol=1.0E-3)
         
-#        if infodict['tcur'] < np.max(self.ts):
+#        if infodict['tcur'] < np.max(ts):
 #            # print("IL2 conc: " + str(IL2))
 #            printModel(rxnRates, trafRates)
 #            print(infodict)
@@ -44,11 +44,6 @@ def surf_IL2Rb_1(unkVec):
         
         percent_surface_IL2Rb_total = np.concatenate((percent_surface_IL2Rb, percent_surface_IL2Rb_500))
         
-#        print(percent_surface_IL2Rb_total)
-        # the first time this function is called in calc_schedule (unkVec) it produces all 10's
-        # the second time this function is called (unkVec2) it produces all 'nan's
-        print(percent_surface_IL2Rb_total) # works for IL2Ra+ cases but breaks down for both IL2Ra- cases
-        
         return percent_surface_IL2Rb_total
 
 
@@ -61,9 +56,7 @@ class IL2Rb_trafficking:
         self.numpy_data2 = data2.as_matrix() # all of the IL2Rb trafficking data with IL2Ra-... first row contains headers... 9 columns and 8 rows... first column is time
         self.ts = self.numpy_data[:, 0]
         self.ts2 = self.numpy_data2[:, 0]
-        self.times = len(self.ts)
-
-
+        
     def calc_schedule(self, unkVec, pool):
         # Convert the vector of values to dicts
         rxnRates, tfR = IL2_convertRates(unkVec)
@@ -72,36 +65,30 @@ class IL2Rb_trafficking:
         tfR2 = tfR.copy()
         tfR2[5] = 0.0
 
-        unkVec2 = np.concatenate((rxnRates, tfR2))
+        unkVec2 = np.concatenate((rxnRates[4:7], tfR2[0:8])) #only the 4:7 elements of rxnRates and 0:8 elements of tfR are kept in IL2_convertRates
+
         # Loop over concentrations of IL2
         output = list()
         
-        # do I need to change the ILc variable too? I already changed the self.IL2s to self.ts
         output.append(pool.submit(surf_IL2Rb_1, unkVec)) # handle the IL2Ra+ case
-
         output.append(pool.submit(surf_IL2Rb_1, unkVec2)) # then handle the IL2Ra- case
         
         return output
-    
+   
     
     def calc_reduce(self, inT):
         output = inT
         
-        actVec = list(item.result() for item in output) # changed count to self.times
+        actVec = list(item.result() for item in output) 
         
-        print('actVec: ' + str(actVec))
-        # for some reason I'm getting "nan" for all 14 of my values corresponding to the IL2Ra- case
-        # also every value for the IL2Ra+ cases is 10 which might be a problem because they're supposed to be time-series values run by odeint
-        
-        
-        # actVec[0:7] represents the IL2Ra+ and 1nM case
-        # actVec[7:14] represents the IL2Ra+ and 500nM case
-        # actVec[14:21] represents the IL2Ra- and 1nM case
-        # actVec[21:28] represents the IL2Ra- and 500nM case
-        diff = actVec[0:7] - self.numpy_data[:, 1] # the second column of numpy_data has all the 1nM IL2Ra= data
-        diff2 = actVec[7:14] - self.numpy_data[:, 5] # the sixth column of numpy_data has all the 500 nM IL2Ra+ data
-        diff3 = actVec[14:21] - self.numpy_data2[:, 1] # the second column of numpy_data has all the 1nM IL2Ra- data
-        diff4 = actVec[21:28] - self.numpy_data2[:, 5] # the sixth column of numpy_data has all the 500 nM IL2Ra- data
+        # actVec[0][0:7] represents the IL2Ra+ and 1nM case
+        # actVec[0][7:14] represents the IL2Ra+ and 500nM case
+        # actVec[1][0:7] represents the IL2Ra- and 1nM case
+        # actVec[1][7:14] represents the IL2Ra- and 500nM case
+        diff = actVec[0][0:7] - self.numpy_data[:, 1] # the second column of numpy_data has all the 1nM IL2Ra= data
+        diff2 = actVec[0][7:14] - self.numpy_data[:, 5] # the sixth column of numpy_data has all the 500 nM IL2Ra+ data
+        diff3 = actVec[1][0:7] - self.numpy_data2[:, 1] # the second column of numpy_data has all the 1nM IL2Ra- data
+        diff4 = actVec[1][7:14] - self.numpy_data2[:, 5] # the sixth column of numpy_data has all the 500 nM IL2Ra- data
         
         all_diffs = np.concatenate((diff, diff2, diff3, diff4))
         
