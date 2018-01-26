@@ -31,7 +31,7 @@ def surf_IL2Rb_1(unkVec):
 #            print(infodict)
 #            return -100
         
-#        print(ys) # there's no time variance in ys both time that the function is called (all IL2Rb and other values are same for all times we call odeint)
+        print(ys[:,1]) # getting inf and nan as first two outputs of IL2Ra- case; IL2Ra+ cases make sense
         surface_IL2Rb = ys[:,1] # y[:,1] represents the surface IL2Rb value in fullModel for all 8 time points
         initial_surface_IL2Rb = surface_IL2Rb[0] # find the total amount of IL2Rb in the system at the first time point
         
@@ -47,6 +47,7 @@ def surf_IL2Rb_1(unkVec):
 #        print(percent_surface_IL2Rb_total)
         # the first time this function is called in calc_schedule (unkVec) it produces all 10's
         # the second time this function is called (unkVec2) it produces all 'nan's
+        print(percent_surface_IL2Rb_total) # works for IL2Ra+ cases but breaks down for both IL2Ra- cases
         
         return percent_surface_IL2Rb_total
 
@@ -167,7 +168,7 @@ class IL2Rb_trafficking:
         
         actVec = list(item.result() for item in output) # changed count to self.times
         
-        #print(actVec) 
+        print('actVec: ' + str(actVec))
         # for some reason I'm getting "nan" for all 14 of my values corresponding to the IL2Ra- case
         # also every value for the IL2Ra+ cases is 10 which might be a problem because they're supposed to be time-series values run by odeint
         
