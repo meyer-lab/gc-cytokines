@@ -18,8 +18,6 @@ def surf_IL2Rb(rxnRates, trafRates, IL2_conc):
         rxnRates[0] = IL2_conc # the concentration of IL2 is rxnRates[0]
                
         ddfunc = lambda y, t: fullModel(y, t, rxnRates, trafRates, __active_species_IDX)
-
-        
         
         ys, infodict = odeint(ddfunc, y0, ts, mxstep=12000, full_output=True, rtol=1.0E-5, atol=1.0E-3)
         
