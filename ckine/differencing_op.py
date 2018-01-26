@@ -35,7 +35,7 @@ class centralDiff(T.Op):
     itypes = [T.dvector]
     otypes = [T.dvector]
 
-    def __init__(self, calcModel, parallel=False): # changed this line for debugging purposes
+    def __init__(self, calcModel, parallel=False): # internalization_kinetics_fitting.py only runs when parallel=False
         self.M = calcModel
 
         if parallel:
