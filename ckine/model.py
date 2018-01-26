@@ -17,7 +17,7 @@ __active_species_IDX = np.zeros(26, dtype=np.bool)
 __active_species_IDX[np.array([8, 9, 16, 17, 21, 25])] = 1
 
 
-#@jit(float64[26](float64[26], float64, float64[17]), nopython=True, cache=True, nogil=True)
+@jit(float64[26](float64[26], float64, float64[17]), nopython=True, cache=True, nogil=True)
 def dy_dt(y, t, rxn):
     # Set the constant inputs
     IL2, IL15, IL7, IL9, kfwd, k5rev, k6rev, k15rev, k17rev, k18rev, k22rev, k23rev, k26rev, k27rev, k29rev, k30rev, k31rev = rxn
@@ -116,7 +116,7 @@ def dy_dt(y, t, rxn):
     return dydt
 
 
-#@jit(float64[4](float64[26]), nopython=True, cache=True, nogil=True)
+@jit(float64[4](float64[26]), nopython=True, cache=True, nogil=True)
 def findLigConsume(dydt):
     """ Calculate the ligand consumption. """
     internalV = 623.0 # Same as that used in TAM model
@@ -124,7 +124,7 @@ def findLigConsume(dydt):
     return -np.array([np.sum(dydt[3:10]), np.sum(dydt[11:18]), np.sum(dydt[19:22]), np.sum(dydt[23:26])]) / internalV
 
 
-#@jit(float64[52](float64[52], numbabool[26], float64[5], float64[6]), nopython=True, cache=True, nogil=True)
+@jit(float64[52](float64[52], numbabool[26], float64[5], float64[6]), nopython=True, cache=True, nogil=True)
 def trafficking(y, activeV, tfR, exprV):
     """Implement trafficking."""
 
@@ -159,7 +159,7 @@ def trafficking(y, activeV, tfR, exprV):
     return dydt
 
 
-#@jit(float64[52](float64[52], float64, float64[17], float64[11], numbabool[26]), nopython=True, cache=True, nogil=True)
+@jit(float64[52](float64[52], float64, float64[17], float64[11], numbabool[26]), nopython=True, cache=True, nogil=True)
 def fullModel(y, t, r, tfR, active_species_IDX):
     """Implement full model."""
 

@@ -31,7 +31,6 @@ def surf_IL2Rb_1(unkVec):
 #            print(infodict)
 #            return -100
         
-        print(ys[:,1]) # getting inf and nan as first two outputs of IL2Ra- case; IL2Ra+ cases make sense
         surface_IL2Rb = ys[:,1] # y[:,1] represents the surface IL2Rb value in fullModel for all 8 time points
         initial_surface_IL2Rb = surface_IL2Rb[0] # find the total amount of IL2Rb in the system at the first time point
         
