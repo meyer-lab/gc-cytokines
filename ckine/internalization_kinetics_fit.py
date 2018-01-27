@@ -42,8 +42,6 @@ class IL2Rb_trafficking:
         self.numpy_data = data.as_matrix() # all of the IL2Rb trafficking data with IL2Ra+... first row contains headers... 9 columns and 8 rows... first column is time
         data2 = pds.read_csv(os.path.join(path, "ckine/data/IL2Ra-_surface_IL2RB_datasets.csv"))
         self.numpy_data2 = data2.as_matrix() # all of the IL2Rb trafficking data with IL2Ra-... first row contains headers... 9 columns and 8 rows... first column is time
-        self.ts = self.numpy_data[:, 0]
-        self.ts2 = self.numpy_data2[:, 0]
         
     def calc_schedule(self, unkVec, pool):
         # Convert the vector of values to dicts
