@@ -290,20 +290,18 @@ def getTotalActiveCytokine(cytokineIDX, yVec):
 
 def surfaceReceptors(yVec):
     """This function takes in a vector y and returns the amounts of the 6 surface receptors"""
-    IL2Ra = np.sum(yVec[np.array([0, 3, 6, 7, 9])])
-    IL2Rb = np.sum(yVec[np.array([1, 4, 6, 8, 9, 12, 14, 16, 17])])
-    gc = np.sum(yVec[np.array([2, 5, 7, 8, 9, 13, 15, 16, 17, 20, 21, 24, 25])])
-    IL15Ra = np.sum(yVec[np.array([10, 11, 14, 15, 17])])
-    IL7Ra = np.sum(yVec[np.array([18, 19, 21])])
-    IL9R = np.sum(yVec[np.array([22, 23, 25])])
+    y = yVec[0:26]
+    IL2Ra = np.sum(y[np.array([0, 3, 6, 7, 9])])
+    IL2Rb = np.sum(y[np.array([1, 4, 6, 8, 9, 12, 14, 16, 17])])
+    gc = np.sum(y[np.array([2, 5, 7, 8, 9, 13, 15, 16, 17, 20, 21, 24, 25])])
+    IL15Ra = np.sum(y[np.array([10, 11, 14, 15, 17])])
+    IL7Ra = np.sum(y[np.array([18, 19, 21])])
+    IL9R = np.sum(y[np.array([22, 23, 25])])
     return np.array([IL2Ra, IL2Rb, gc, IL15Ra, IL7Ra, IL9R])
 
 def totalReceptors(yVec):
     """This function takes in a vector y and returns the amounts of all 6 receptors in both cell conpartments"""
-    IL2Ra = surfaceReceptors(yVec)[0] + np.sum(yVec[np.array([0, 3, 6, 7, 9]) + 26])
-    IL2Rb = surfaceReceptors(yVec)[1] + np.sum(yVec[np.array([1, 4, 6, 8, 9, 12, 14, 16, 17]) + 26])
-    gc = surfaceReceptors(yVec)[2] + np.sum(yVec[np.array([2, 5, 7, 8, 9, 13, 15, 16, 17, 20, 24, 21, 25]) + 26])
-    IL15Ra = surfaceReceptors(yVec)[3] + np.sum(yVec[np.array([10, 11, 14, 15, 17]) + 26])
-    IL7Ra = surfaceReceptors(yVec)[4] + np.sum(yVec[np.array([18, 19, 21]) + 26])
-    IL9R = surfaceReceptors(yVec)[5] + np.sum(yVec[np.array([22, 23, 25]) + 26])
-    return np.array([IL2Ra, IL2Rb, gc, IL15Ra, IL7Ra, IL9R])
+    xs1 = surfaceReceptors(yVec)
+    ys = yVec[26:52]
+    xs2 = surfaceReceptors(ys)
+    return xs1 + xs2
