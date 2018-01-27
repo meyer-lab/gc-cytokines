@@ -41,7 +41,7 @@ Manuscript/CoverLetter.pdf: Manuscript/CoverLetter.md
 clean:
 	rm -f ./Manuscript/Manuscript.* ./Manuscript/index.html Manuscript/CoverLetter.docx Manuscript/CoverLetter.pdf
 	rm -f $(fdir)/Figure*
-	rm -f profile.p* stats.dat .coverage nosetests.xml
+	rm -f profile.p* stats.dat .coverage nosetests.xml coverage.xml
 
 test:
 	nosetests3 -s --with-timer --timer-top-n 5

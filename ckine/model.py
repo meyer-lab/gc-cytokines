@@ -17,6 +17,12 @@ __active_species_IDX = np.zeros(26, dtype=np.bool)
 __active_species_IDX[np.array([8, 9, 16, 17, 21, 25])] = 1
 
 
+__IL2_assoc = np.zeros(56, dtype=np.bool)
+__IL2_assoc[0:10] = 1
+__IL2_assoc[26:36] = 1
+__IL2_assoc[52] = 1
+
+
 @jit(float64[26](float64[26], float64, float64[17]), nopython=True, cache=True, nogil=True)
 def dy_dt(y, t, rxn):
     # Set the constant inputs
@@ -159,7 +165,7 @@ def trafficking(y, activeV, tfR, exprV):
     return dydt
 
 
-@jit(float64[52](float64[52], float64, float64[17], float64[11], numbabool[26]), nopython=True, cache=True, nogil=True)
+@jit(float64[56](float64[56], float64, float64[17], float64[11], numbabool[26]), nopython=True, cache=True, nogil=True)
 def fullModel(y, t, r, tfR, active_species_IDX):
     """Implement full model."""
 
@@ -182,9 +188,22 @@ def fullModel(y, t, r, tfR, active_species_IDX):
     dydt[0:rxnL*2] += trafficking(y[0:rxnL*2], active_species_IDX, tfR[0:5], tfR[5:11])
 
     # Handle endosomal ligand balance.
-    dydt[rxnL*2::] = findLigConsume(dydt[rxnL:rxnL*2])
+    dydt[rxnL*2:(rxnL*2+4)] = findLigConsume(dydt[rxnL:rxnL*2])
 
     return dydt
+
+
+def wrapper(y, t, r, tfR, wrapIDX):
+    """ Bring back the wrapper! """
+    assert(y.size == np.sum(wrapIDX))
+
+    yInt = np.zeros(56, dtype = np.float64)
+
+    yInt[wrapIDX] = y
+
+    dydt = fullModel(yInt, t, r, tfR, __active_species_IDX)
+
+    return dydt[wrapIDX]
 
 
 def printModel(rxnRates, trafRates):
@@ -206,7 +225,7 @@ def printModel(rxnRates, trafRates):
     print(rxnRates[7::])
 
 
-@jit(float64[52](float64[11]))
+@jit(float64[56](float64[11]))
 def solveAutocrine(trafRates):
     y0 = np.zeros(26*2 + 4, np.float64)
 
