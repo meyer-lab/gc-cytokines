@@ -1,5 +1,6 @@
 from ckine.model import solveAutocrine, fullModel, getTotalActiveCytokine, __active_species_IDX, surfaceReceptors, totalReceptors
 import numpy as np
+from tqdm import tqdm
 from scipy.integrate import odeint
 
 t = 60. * 4 # let's let the system run for 4 hours
@@ -21,7 +22,7 @@ trafRates = np.zeros(11)
 trafRates[0:5] = (5* 10**-2)
 
 #Iterate through every combination of values and store odeint values in a y matrix
-for ii in range(len(mat)):
+for ii in tqdm(range(len(mat))):
     #Create a new y0 everytime odeint is run per combination of values.
     trafRates[5:8], trafRates[8], trafRates[9], trafRates[10] = mat[ii,4:7], mat[ii,7], mat[ii,8], mat[ii,9]
     y0 = solveAutocrine(trafRates)
