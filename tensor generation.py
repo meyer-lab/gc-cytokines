@@ -1,4 +1,4 @@
-from ckine.model import solveAutocrine, fullModel, getTotalActiveCytokine, __active_species_IDX, printModel, getActiveCytokine, surfaceReceptors, totalReceptors
+from ckine.model import solveAutocrine, fullModel, getTotalActiveCytokine, __active_species_IDX, surfaceReceptors, totalReceptors
 import numpy as np
 from scipy.integrate import odeint
 
@@ -16,7 +16,6 @@ y_of_combos = np.zeros((len(mat), 100,56))
 #Set some given parameters already determined from fitting
 r = np.zeros(17)
 r[4:17] = np.ones(13) * (5*10**-1)   #I am supposed to have these values
-#tfR = np.ones(17) * (5* 10**-2)     #I am also supposed to know these values
 
 trafRates = np.zeros(11)
 trafRates[0:5] = (5* 10**-2)
