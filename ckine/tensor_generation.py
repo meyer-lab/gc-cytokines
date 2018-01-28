@@ -1,7 +1,8 @@
-from .model import solveAutocrine, fullModel, getTotalActiveCytokine, __active_species_IDX, surfaceReceptors, totalReceptors
 import numpy as np
 from tqdm import tqdm
 from scipy.integrate import odeint
+from .model import solveAutocrine, fullModel, getTotalActiveCytokine, __active_species_IDX, surfaceReceptors, totalReceptors
+
 
 def findy():
     t = 60. * 4 # let's let the system run for 4 hours
@@ -10,16 +11,16 @@ def findy():
     IL2Ra = IL2Rb = gc = IL15Ra = IL7Ra = IL9R = np.logspace(-3, 2, num=2)
     mat = np.array(np.meshgrid(IL2,IL15,IL7,IL9,IL2Ra, IL2Rb, gc, IL15Ra, IL7Ra, IL9R)).T.reshape(-1, 10)
     #print (mat.shape[0]) gives 1024 for the above values; Need to update according to choice
-                
+
     y_of_combos = np.zeros((len(mat), 100,56))
-                
+
     #Set some given parameters already determined from fitting
     r = np.zeros(17)
     r[4:17] = np.ones(13) * (5*10**-1)   #I am supposed to have these values
-                
+
     trafRates = np.zeros(11)
     trafRates[0:5] = (5* 10**-2)
-                
+
     #Iterate through every combination of values and store odeint values in a y matrix
     for ii in tqdm(range(len(mat))):
         #Create a new y0 everytime odeint is run per combination of values.
@@ -46,7 +47,7 @@ def activity_surf_tot(y_of_combos):
     """This function returns the activity and amounts of receptors both on the surface and total for every timepoint per combination of values"""
     values = np.zeros((len(y_of_combos), 100,16))
 
-    for i in range(len(y_of_combos)):
+    for i, _ in enumerate(y_of_combos):
         for j in range(100):
             values[i][j] = activity_surface_total(y_of_combos[i][j])
     return values
