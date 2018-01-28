@@ -35,7 +35,7 @@ class centralDiff(T.Op):
     itypes = [T.dvector]
     otypes = [T.dvector]
 
-    def __init__(self, calcModel, parallel=True):
+    def __init__(self, calcModel, parallel=False): # internalization_kinetics_fitting.py only runs when parallel=False
         self.M = calcModel
 
         if parallel:
@@ -46,9 +46,6 @@ class centralDiff(T.Op):
             self.pool = DummyExecutor()
 
         self.dg = centralDiffGrad(calcModel, self.pool)
-
-    def infer_shape(self, node, i0_shapes):
-        return [(self.M.concs*2, )]
 
     def perform(self, node, inputs, outputs):
         if np.any(np.greater(inputs[0], 1.0E4)):
