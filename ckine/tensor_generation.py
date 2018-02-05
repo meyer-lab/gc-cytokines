@@ -1,3 +1,6 @@
+"""
+Generate a tensor for the different y-values that arise at different timepoints during the model and with various initial conditions. The initial conditions vary the concentrations of the ligands and the expression rates of the receptors to simulate different cell lines.
+"""
 import numpy as np
 from tqdm import tqdm
 from scipy.integrate import odeint
@@ -5,6 +8,7 @@ from .model import solveAutocrine, fullModel, getTotalActiveCytokine, __active_s
 
 
 def findy():
+    """A function to find the different values of y at different timepoints and different initial conditions."""
     t = 60. * 4 # let's let the system run for 4 hours
     ts = np.linspace(0.0, t, 100) #generate 100 evenly spaced timepoints
     IL2 = IL15 = IL7 = IL9 = np.logspace(-3, 3, num=2)
@@ -27,7 +31,7 @@ def findy():
         trafRates[5:8], trafRates[8], trafRates[9], trafRates[10] = mat[ii,4:7], mat[ii,7], mat[ii,8], mat[ii,9]
         y0 = solveAutocrine(trafRates)
         r[0:4] = mat[ii,0:4]
-        #Running odeint gives y for each of the 100 timepoints. 
+        #Running odeint gives y for each of the 100 timepoints.
         ddfunc = lambda y, t: fullModel(y, t, r, trafRates, __active_species_IDX)
         temp, d = odeint(ddfunc, y0, ts, mxstep=12000, full_output=True, rtol=1.0E-5, atol=1.0E-3)
         if d['message'] == "Integration successful.":
@@ -53,8 +57,8 @@ def activity_surf_tot(y_of_combos):
     return values
 
 #Actually Return the 16 values per timepoint per combination
-y_of_combos = findy()
-values = activity_surf_tot(y_of_combos)
+y_of_combinations = findy()
+values = activity_surf_tot(y_of_combinations)
 
 """Important Notes:
     y_of_combos is a multidimentional matrix of size (length mesh x 100 timeponts x 56 values of y)
