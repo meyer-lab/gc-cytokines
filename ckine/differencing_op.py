@@ -1,6 +1,6 @@
+from threading import Lock
 import numpy as np, theano.tensor as T
 from concurrent.futures import ProcessPoolExecutor, Future, Executor
-from threading import Lock
 
 
 class DummyExecutor(Executor):
