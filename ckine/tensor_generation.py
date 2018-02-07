@@ -11,8 +11,8 @@ def findy():
     """A function to find the different values of y at different timepoints and different initial conditions."""
     t = 60. * 4 # let's let the system run for 4 hours
     ts = np.linspace(0.0, t, 100) #generate 100 evenly spaced timepoints
-    IL2 = IL15 = IL7 = IL9 = np.logspace(-3, 3, num=2)
-    IL2Ra = IL2Rb = gc = IL15Ra = IL7Ra = IL9R = np.logspace(-3, 2, num=2)
+    IL2 = IL15 = IL7 = IL9 = np.logspace(-3, 3, num=3)
+    IL2Ra = IL2Rb = gc = IL15Ra = IL7Ra = IL9R = np.logspace(-3, 2, num=3)
     mat = np.array(np.meshgrid(IL2,IL15,IL7,IL9,IL2Ra, IL2Rb, gc, IL15Ra, IL7Ra, IL9R)).T.reshape(-1, 10)
     #print (mat.shape[0]) gives 1024 for the above values; Need to update according to choice
 
@@ -57,8 +57,8 @@ def activity_surf_tot(y_of_combos):
     return values
 
 #Actually Return the 16 values per timepoint per combination
-y_of_combinations = findy()
-values = activity_surf_tot(y_of_combinations)
+#y_of_combinations = findy()
+#values = activity_surf_tot(y_of_combinations)
 
 """Important Notes:
     y_of_combos is a multidimentional matrix of size (length mesh x 100 timeponts x 56 values of y)
