@@ -1,21 +1,33 @@
 #include <array>
 #include <algorithm>
 #include <numeric>
+#include <stdio.h>
+#include <nvector/nvector_serial.h>  /* serial N_Vector types, fcts., macros */
+#include <cvode/cvode.h>            /* prototypes for CVODE fcts., consts. */
+#include <string>
+#include <sundials/sundials_dense.h>
+#include <sunmatrix/sunmatrix_dense.h>
+#include <sunlinsol/sunlinsol_dense.h>
+#include <cvode/cvode_direct.h>
+#include <sstream>
+#include <iostream>
 
 using std::array;
-using std::fill;
-using std::accumulate;
 using std::copy;
 using std::copy_n;
+using std::vector;
+using std::string;
+using std::runtime_error;
 
-
+const double abstolIn = 1E-5;
+const double reltolIn = 1E-9;
 const double internalV = 623.0; // Same as that used in TAM model
 const double internalFrac = 0.5; // Same as that used in TAM model
 
 
 array<bool, 26> __active_species_IDX() {
 	array<bool, 26> __active_species_IDX;
-	fill(__active_species_IDX.begin(), __active_species_IDX.end(), false);
+	std::fill(__active_species_IDX.begin(), __active_species_IDX.end(), false);
 
 	__active_species_IDX[8] = true;
 	__active_species_IDX[9] = true;
@@ -28,7 +40,7 @@ array<bool, 26> __active_species_IDX() {
 }
 
 
-array<double, 26> dy_dt(array<double, 26> y, double t, array<double, 17> rxn) {
+array<double, 26> dy_dt(array<double, 26> y, array<double, 17> rxn) {
 	// Set the constant inputs
 	double IL2 = rxn[0];
 	double IL15 = rxn[1];
@@ -175,7 +187,7 @@ extern "C" void dydt_C(double *y_in, double t, double *dydt_out, double *rxn_in)
 	copy_n(rxn_in, r.size(), r.begin());
 	copy_n(y_in, y.size(), y.begin());
 
-	array<double, 26> dydt = dy_dt(y, t, r);
+	array<double, 26> dydt = dy_dt(y, r);
 
 	copy_n(dydt.begin(), y.size(), dydt_out);
 }
@@ -185,10 +197,10 @@ array<double, 4> findLigConsume(const array<double, 26> dydt) {
 	// Calculate the ligand consumption.
 	array<double, 4> outt;
 
-	outt[0] = accumulate(dydt.begin()+3, dydt.begin()+10, 0) / internalV;
-	outt[1] = accumulate(dydt.begin()+11, dydt.begin()+18, 0) / internalV;
-	outt[2] = accumulate(dydt.begin()+19, dydt.begin()+22, 0) / internalV;
-	outt[3] = accumulate(dydt.begin()+23, dydt.begin()+26, 0) / internalV;
+	outt[0] = std::accumulate(dydt.begin()+3, dydt.begin()+10, 0) / internalV;
+	outt[1] = std::accumulate(dydt.begin()+11, dydt.begin()+18, 0) / internalV;
+	outt[2] = std::accumulate(dydt.begin()+19, dydt.begin()+22, 0) / internalV;
+	outt[3] = std::accumulate(dydt.begin()+23, dydt.begin()+26, 0) / internalV;
 
 	return outt;
 }
@@ -233,6 +245,12 @@ array<double, 52> trafficking(array<double, 56> y, array<double, 11> tfR) {
 }
 
 
+struct ratesS {
+	array<double, 11> trafRates;
+	array<double, 17> rxn;
+};
+
+
 array<double, 56> fullModel(array<double, 56> y, double t, const array<double, 17> r, array<double, 11> tfR) {
 	// Implement full model.
 
@@ -245,13 +263,13 @@ array<double, 56> fullModel(array<double, 56> y, double t, const array<double, 1
 	copy_n(y.begin()+26, 26, yInt.begin());
 
 	// Calculate cell surface reactions
-	array<double, 26> dydt_surf = dy_dt(ySurf, t, r);
+	array<double, 26> dydt_surf = dy_dt(ySurf, r);
 
 	array<double, 17> rr = r;
 	copy_n(y.begin()+52, 4, rr.begin());
 
 	// Calculate endosomal reactions
-	array<double, 26> dydt_int = dy_dt(yInt, t, rr);
+	array<double, 26> dydt_int = dy_dt(yInt, rr);
 
 	// Handle trafficking
 	// _Leave off the ligands on the end
@@ -270,6 +288,20 @@ array<double, 56> fullModel(array<double, 56> y, double t, const array<double, 1
 	copy(ligConsume.begin(), ligConsume.end(), dydt.begin()+52);
 
 	return dydt;
+}
+
+
+int fullModelCVode (const double, const N_Vector xx, N_Vector dxxdt, void *user_data) {
+	ratesS *rIn = static_cast<ratesS *>(user_data);
+
+	array<double, 56> xxArr;
+	copy_n(xxArr.begin(), xxArr.size(), NV_DATA_S(xx));
+
+	array<double, 56> dydt = fullModel(xxArr, 0.0, rIn->rxn, rIn->trafRates);
+
+	copy_n(NV_DATA_S(dxxdt), dydt.size(), dydt.begin());
+
+	return 0;
 }
 
 
@@ -294,7 +326,7 @@ extern "C" void wrapper(double *y, double t, double *dydt_out, double *r_in, dou
 	// Bring back the wrapper!
 
 	array<double, 56> yInt;
-	fill(yInt.begin(), yInt.end(), 0.0);
+	std::fill(yInt.begin(), yInt.end(), 0.0);
 
 	array<double, 17> r;
 	array<double, 11> tfR;
@@ -324,7 +356,7 @@ extern "C" void wrapper(double *y, double t, double *dydt_out, double *r_in, dou
 
 array<double, 56> solveAutocrine(array<double, 11> trafRates) {
 	array<double, 56> y0;
-	fill(y0.begin(), y0.end(), 0.0);
+	std::fill(y0.begin(), y0.end(), 0.0);
 
 	array<size_t, 6> recIDX = {{0, 1, 2, 10, 18, 22}};
 
@@ -344,4 +376,120 @@ array<double, 56> solveAutocrine(array<double, 11> trafRates) {
 	}
 
 	return y0;
+}
+
+
+static void errorHandler(int error_code, const char *module, const char *function, char *msg, void *user_data) {
+    if (error_code == CV_WARNING) return;
+    
+    std::stringstream OutMesg;
+
+    OutMesg << "Internal CVode error in " << function << std::endl;
+    OutMesg << msg << std::endl;
+    OutMesg << "In module: " << module << std::endl;
+    OutMesg << "Error code: " << error_code << std::endl;
+
+    std::cout << OutMesg.str() << std::endl;
+}
+
+void* solver_setup(N_Vector init, void *params) {
+    /* Call CVodeCreate to create the solver memory and specify the
+     * Backward Differentiation Formula and the use of a Newton iteration */
+    void *cvode_mem = CVodeCreate(CV_BDF, CV_NEWTON);
+    if (cvode_mem == NULL) {
+        CVodeFree(&cvode_mem);
+        N_VDestroy_Serial(init);
+        throw runtime_error(string("Error calling CVodeCreate in solver_setup."));
+    }
+    
+    CVodeSetErrHandlerFn(cvode_mem, &errorHandler, params);
+
+    /* Call CVodeInit to initialize the integrator memory and specify the
+     * user's right hand side function in y'=f(t,y), the inital time T0, and
+     * the initial dependent variable vector y. */
+    if (CVodeInit(cvode_mem, fullModelCVode, 0.0, init) < 0) {
+        CVodeFree(&cvode_mem);
+        N_VDestroy_Serial(init);
+        throw runtime_error(string("Error calling CVodeInit in solver_setup."));
+    }
+    
+    N_Vector abbstol = N_VNew_Serial(NV_LENGTH_S(init));
+    N_VConst(abstolIn, abbstol);
+    
+    /* Call CVodeSVtolerances to specify the scalar relative tolerance
+     * and vector absolute tolerances */
+    if (CVodeSVtolerances(cvode_mem, reltolIn, abbstol) < 0) {
+        N_VDestroy_Serial(abbstol);
+        CVodeFree(&cvode_mem);
+        N_VDestroy_Serial(init);
+        throw runtime_error(string("Error calling CVodeSVtolerances in solver_setup."));
+    }
+    N_VDestroy_Serial(abbstol);
+
+    SUNMatrix A = SUNDenseMatrix((int) NV_LENGTH_S(init), (int) NV_LENGTH_S(init));
+
+    SUNLinearSolver LS = SUNDenseLinearSolver(init, A);
+    
+    // Call CVDense to specify the CVDENSE dense linear solver
+    if (CVDlsSetLinearSolver(cvode_mem, LS, A) < 0) {
+        CVodeFree(&cvode_mem);
+        N_VDestroy_Serial(init);
+        throw runtime_error(string("Error calling CVDense in solver_setup."));
+    }
+    
+    // Pass along the parameter structure to the differential equations
+    if (CVodeSetUserData(cvode_mem, params) < 0) {
+        CVodeFree(&cvode_mem);
+        N_VDestroy_Serial(init);
+        throw runtime_error(string("Error calling CVodeSetUserData in solver_setup."));
+    }
+
+    CVodeSetMaxNumSteps(cvode_mem, 2000000);
+
+    N_VDestroy_Serial(init);
+    
+    return cvode_mem;
+}
+
+
+int runCkine (double *tps, size_t ntps, double *out, double *rxnRatesIn, double *trafRatesIn) {
+	ratesS rattes;
+	
+	copy_n(rxnRatesIn, rattes.rxn.size(), rattes.rxn.begin());
+	copy_n(trafRatesIn, rattes.trafRates.size(), rattes.trafRates.begin());
+
+	array<double, 56> y0 = solveAutocrine(rattes.trafRates);
+
+	N_Vector state = N_VMake_Serial((long) y0.size(), y0.data());
+
+	void *cvode_mem = solver_setup(state, (void *) &rattes);
+
+	int retVal;
+	double *tret;
+	*tret = 0;
+
+	for (size_t itps = 0; itps < ntps; itps++) {
+		if (tps[itps] < *tret) {
+			std::cout << "Can't go backwards." << std::endl;
+	        N_VDestroy_Serial(state);
+	        CVodeFree(&cvode_mem);
+	        return -1;
+		}
+
+	    int returnVal = CVode(cvode_mem, tps[itps], state, tret, CV_NORMAL);
+	    
+	    if (returnVal < 0) {
+	        std::cout << "CVode error in CVode. Code: " << returnVal << std::endl;
+	        N_VDestroy_Serial(state);
+	        CVodeFree(&cvode_mem);
+	        return -1;
+	    }
+
+	    // Copy out result
+	    copy_n(NV_DATA_S(state), y0.size(), out + y0.size()*itps);
+	}
+
+	N_VDestroy_Serial(state);
+	CVodeFree(&cvode_mem);
+	return 0;
 }
