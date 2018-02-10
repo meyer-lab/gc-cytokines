@@ -1,4 +1,4 @@
-from .model import solveAutocrine, getTotalActiveCytokine, printModel, runCkine
+from .model import getTotalActiveCytokine, printModel, runCkine
 import numpy as np, pandas as pds
 from .differencing_op import centralDiff
 import pymc3 as pm, theano.tensor as T, os
