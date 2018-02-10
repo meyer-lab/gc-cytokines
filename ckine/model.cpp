@@ -251,7 +251,7 @@ struct ratesS {
 };
 
 
-array<double, 56> fullModel(array<double, 56> y, double t, const array<double, 17> r, array<double, 11> tfR) {
+array<double, 56> fullModel(array<double, 56> y, const array<double, 17> r, array<double, 11> tfR) {
 	// Implement full model.
 
 	// Initialize vector
@@ -297,7 +297,7 @@ int fullModelCVode (const double, const N_Vector xx, N_Vector dxxdt, void *user_
 	array<double, 56> xxArr;
 	copy_n(xxArr.begin(), xxArr.size(), NV_DATA_S(xx));
 
-	array<double, 56> dydt = fullModel(xxArr, 0.0, rIn->rxn, rIn->trafRates);
+	array<double, 56> dydt = fullModel(xxArr, rIn->rxn, rIn->trafRates);
 
 	copy_n(NV_DATA_S(dxxdt), dydt.size(), dydt.begin());
 
@@ -316,7 +316,7 @@ extern "C" void fullModel_C(double *y_in, double t, double *dydt_out, double *rx
 	copy_n(tfr_in, tf.size(), tf.begin());
 	copy_n(y_in, y.size(), y.begin());
 
-	array<double, 56> dydt = fullModel(y, t, r, tf);
+	array<double, 56> dydt = fullModel(y, r, tf);
 
 	copy_n(dydt.begin(), y.size(), dydt_out);
 }
@@ -342,7 +342,7 @@ extern "C" void wrapper(double *y, double t, double *dydt_out, double *r_in, dou
 		}
 	}
 
-	array<double, 56> dydt = fullModel(yInt, t, r, tfR);
+	array<double, 56> dydt = fullModel(yInt, r, tfR);
 
 	curIDX = 0;
 	for (size_t ii = 0; ii < yInt.size(); ii++) {
@@ -464,19 +464,17 @@ int runCkine (double *tps, size_t ntps, double *out, double *rxnRatesIn, double 
 
 	void *cvode_mem = solver_setup(state, (void *) &rattes);
 
-	int retVal;
-	double *tret;
-	*tret = 0;
+	double tret = 0;
 
 	for (size_t itps = 0; itps < ntps; itps++) {
-		if (tps[itps] < *tret) {
+		if (tps[itps] < tret) {
 			std::cout << "Can't go backwards." << std::endl;
 	        N_VDestroy_Serial(state);
 	        CVodeFree(&cvode_mem);
 	        return -1;
 		}
 
-	    int returnVal = CVode(cvode_mem, tps[itps], state, tret, CV_NORMAL);
+	    int returnVal = CVode(cvode_mem, tps[itps], state, &tret, CV_NORMAL);
 	    
 	    if (returnVal < 0) {
 	        std::cout << "CVode error in CVode. Code: " << returnVal << std::endl;
