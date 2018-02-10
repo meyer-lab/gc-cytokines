@@ -12,6 +12,24 @@ libb.dydt_C.argtypes = (ct.POINTER(ct.c_double), ct.c_double,
 libb.fullModel_C.argtypes = (ct.POINTER(ct.c_double), ct.c_double,
                              ct.POINTER(ct.c_double), ct.POINTER(ct.c_double),
                              ct.POINTER(ct.c_double))
+libb.runCkine.argtypes = (ct.POINTER(ct.c_double), ct.c_uint,
+                          ct.POINTER(ct.c_double), ct.POINTER(ct.c_double),
+                          ct.POINTER(ct.c_double))
+
+
+def runCkine (tps, rxn, tfr):
+    global libb
+
+    yOut = np.zeros((tps.size, 56), dtype=np.float64)
+
+
+    retVal = libb.runCkine(tps.ctypes.data_as(ct.POINTER(ct.c_double)),
+                           tps.size,
+                           yOut.ctypes.data_as(ct.POINTER(ct.c_double)),
+                           rxn.ctypes.data_as(ct.POINTER(ct.c_double)),
+                           tfr.ctypes.data_as(ct.POINTER(ct.c_double)))
+
+    return (yOut, retVal)
 
 
 def wrapper(y, t, rxn, tfr, wrapIDX):

@@ -19,7 +19,7 @@ using std::vector;
 using std::string;
 using std::runtime_error;
 
-const double abstolIn = 1E-5;
+const double abstolIn = 1E-6;
 const double reltolIn = 1E-9;
 const double internalV = 623.0; // Same as that used in TAM model
 const double internalFrac = 0.5; // Same as that used in TAM model
@@ -295,11 +295,11 @@ int fullModelCVode (const double, const N_Vector xx, N_Vector dxxdt, void *user_
 	ratesS *rIn = static_cast<ratesS *>(user_data);
 
 	array<double, 56> xxArr;
-	copy_n(xxArr.begin(), xxArr.size(), NV_DATA_S(xx));
+	copy_n(NV_DATA_S(xx), xxArr.size(), xxArr.begin());
 
 	array<double, 56> dydt = fullModel(xxArr, rIn->rxn, rIn->trafRates);
 
-	copy_n(NV_DATA_S(dxxdt), dydt.size(), dydt.begin());
+	copy_n(dydt.begin(), NV_LENGTH_S(dxxdt), NV_DATA_S(dxxdt));
 
 	return 0;
 }
@@ -392,13 +392,12 @@ static void errorHandler(int error_code, const char *module, const char *functio
     std::cout << OutMesg.str() << std::endl;
 }
 
-void* solver_setup(N_Vector init, void *params) {
+void* solver_setup(N_Vector init, void * params) {
     /* Call CVodeCreate to create the solver memory and specify the
      * Backward Differentiation Formula and the use of a Newton iteration */
     void *cvode_mem = CVodeCreate(CV_BDF, CV_NEWTON);
     if (cvode_mem == NULL) {
         CVodeFree(&cvode_mem);
-        N_VDestroy_Serial(init);
         throw runtime_error(string("Error calling CVodeCreate in solver_setup."));
     }
     
@@ -409,7 +408,6 @@ void* solver_setup(N_Vector init, void *params) {
      * the initial dependent variable vector y. */
     if (CVodeInit(cvode_mem, fullModelCVode, 0.0, init) < 0) {
         CVodeFree(&cvode_mem);
-        N_VDestroy_Serial(init);
         throw runtime_error(string("Error calling CVodeInit in solver_setup."));
     }
     
@@ -421,7 +419,6 @@ void* solver_setup(N_Vector init, void *params) {
     if (CVodeSVtolerances(cvode_mem, reltolIn, abbstol) < 0) {
         N_VDestroy_Serial(abbstol);
         CVodeFree(&cvode_mem);
-        N_VDestroy_Serial(init);
         throw runtime_error(string("Error calling CVodeSVtolerances in solver_setup."));
     }
     N_VDestroy_Serial(abbstol);
@@ -433,26 +430,22 @@ void* solver_setup(N_Vector init, void *params) {
     // Call CVDense to specify the CVDENSE dense linear solver
     if (CVDlsSetLinearSolver(cvode_mem, LS, A) < 0) {
         CVodeFree(&cvode_mem);
-        N_VDestroy_Serial(init);
         throw runtime_error(string("Error calling CVDense in solver_setup."));
     }
     
     // Pass along the parameter structure to the differential equations
     if (CVodeSetUserData(cvode_mem, params) < 0) {
         CVodeFree(&cvode_mem);
-        N_VDestroy_Serial(init);
         throw runtime_error(string("Error calling CVodeSetUserData in solver_setup."));
     }
 
     CVodeSetMaxNumSteps(cvode_mem, 2000000);
-
-    N_VDestroy_Serial(init);
     
     return cvode_mem;
 }
 
 
-int runCkine (double *tps, size_t ntps, double *out, double *rxnRatesIn, double *trafRatesIn) {
+extern "C" int runCkine (double *tps, size_t ntps, double *out, double *rxnRatesIn, double *trafRatesIn) {
 	ratesS rattes;
 	
 	copy_n(rxnRatesIn, rattes.rxn.size(), rattes.rxn.begin());
