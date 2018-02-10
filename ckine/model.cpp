@@ -2,6 +2,7 @@
 #include <algorithm>
 #include <numeric>
 #include <stdio.h>
+#include <vector>
 #include <nvector/nvector_serial.h>  /* serial N_Vector types, fcts., macros */
 #include <cvode/cvode.h>            /* prototypes for CVODE fcts., consts. */
 #include <string>
