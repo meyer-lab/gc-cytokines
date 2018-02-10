@@ -1,30 +1,23 @@
-from .model import solveAutocrine, getTotalActiveCytokine, printModel, wrapper, __IL2_assoc
-from scipy.integrate import odeint
+from .model import solveAutocrine, getTotalActiveCytokine, printModel, runCkine
 import numpy as np, pandas as pds
 from .differencing_op import centralDiff
 import pymc3 as pm, theano.tensor as T, os
 
 
 # this takes the values of input parameters and calls odeint, then puts the odeint output into IL2_pSTAT_activity
-def IL2_activity_input(y0, IL2, rxnRates, trafRates):
+def IL2_activity_input(IL2, rxnRates, trafRates):
     rxnRates[0] = IL2
 
-    ts = np.linspace(0., 500, 2)
+    ts = np.linspace(1., 500, 2)
 
-    ys, infodict = odeint(wrapper, y0[__IL2_assoc], ts, mxstep=12000, full_output=True, rtol=1.0E-5, atol=1.0E-3,
-                          args=(rxnRates, trafRates, __IL2_assoc))
+    ys, retVal = runCkine(ts, rxnRates, trafRates)
 
-    ysOut = np.zeros(56, dtype=np.float64)
-
-    ysOut[__IL2_assoc] = ys[1, :]
-
-    if infodict['tcur'] < np.max(ts):
-        print("IL2 conc: " + str(IL2))
+    if retVal < 0:
+        print("Model run failed")
         printModel(rxnRates, trafRates)
-        print(infodict)
         return -100
 
-    return getTotalActiveCytokine(0, ysOut)
+    return getTotalActiveCytokine(0, ys[1, :])
 
 
 def IL2_convertRates(unkVec):
@@ -59,19 +52,15 @@ class IL2_sum_squared_dist:
         tfR2 = tfR.copy()
         tfR2[5] = 0.0
 
-        # Find autocrine state
-        yAutocrine = solveAutocrine(tfR)
-        yAutocrine2 = solveAutocrine(tfR2)
-
         # Loop over concentrations of IL2
         output = list()
         output2 = list()
 
         for _, ILc in enumerate(self.IL2s):
-            output.append(pool.submit(IL2_activity_input, yAutocrine, ILc, rxnRates.copy(), tfR))
+            output.append(pool.submit(IL2_activity_input, ILc, rxnRates.copy(), tfR))
 
         for _, ILc in enumerate(self.IL2s):
-            output2.append(pool.submit(IL2_activity_input, yAutocrine2, ILc, rxnRates.copy(), tfR2))
+            output2.append(pool.submit(IL2_activity_input, ILc, rxnRates.copy(), tfR2))
 
         return (output, output2)
 
