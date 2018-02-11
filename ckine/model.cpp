@@ -1,6 +1,7 @@
 #include <algorithm>
 #include <cstdio>
 #include <numeric>
+#include <array>
 #include <vector>
 #include <nvector/nvector_serial.h>  /* serial N_Vector types, fcts., macros */
 #include <cvode/cvode.h>            /* prototypes for CVODE fcts., consts. */
