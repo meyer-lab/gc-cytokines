@@ -73,10 +73,6 @@ class IL15_sum_squared_dist:
         # value we're trying to minimize is the distance between the y-values on points of the graph that correspond to the same IL2 values
         return self.fit_data - actVec
 
-    def calc(self, unkVec, pool):
-        """ Just get the solution in one pass. """
-        inT = self.calc_schedule(unkVec, pool)
-        return self.calc_reduce(inT)
 
 class build_model:
     """Going to load the data from the CSV file at the very beginning of when build_model is called... needs to be separate member function to avoid uploading file thousands of times."""
