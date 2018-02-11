@@ -10,7 +10,6 @@
 #include <sunmatrix/sunmatrix_dense.h>
 #include <sunlinsol/sunlinsol_dense.h>
 #include <cvode/cvode_direct.h>
-#include <sstream>
 #include <iostream>
 #define NDEBUG
 #include <cassert>
@@ -22,6 +21,11 @@ using std::vector;
 using std::fill;
 using std::string;
 using std::runtime_error;
+
+struct ratesS {
+	std::array<double, 11> trafRates;
+	std::array<double, 17> rxn;
+};
 
 const double abstolIn = 1E-3;
 const double reltolIn = 1E-5;
@@ -389,15 +393,11 @@ array<double, 56> solveAutocrine(array<double, 11> trafRates) {
 
 static void errorHandler(int error_code, const char *module, const char *function, char *msg, void *user_data) {
     if (error_code == CV_WARNING) return;
-    
-    std::stringstream OutMesg;
 
-    OutMesg << "Internal CVode error in " << function << std::endl;
-    OutMesg << msg << std::endl;
-    OutMesg << "In module: " << module << std::endl;
-    OutMesg << "Error code: " << error_code << std::endl;
-
-    std::cout << OutMesg.str() << std::endl;
+    std::cout << "Internal CVode error in " << function << std::endl;
+    std::cout << msg << std::endl;
+    std::cout << "In module: " << module << std::endl;
+    std::cout << "Error code: " << error_code << std::endl;
 }
 
 void* solver_setup(N_Vector init, void * params) {
