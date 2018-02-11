@@ -3,7 +3,7 @@ This file includes the classes and functions necessary to fit the IL2 model to t
 """
 import pymc3 as pm, theano.tensor as T, os
 import numpy as np, pandas as pds
-from .model import getTotalActiveCytokine, printModel, runCkine
+from .model import getTotalActiveCytokine, runCkine
 from .differencing_op import centralDiff
 
 
@@ -42,15 +42,11 @@ def surf_IL2Rb(rxnRates, trafRates, IL2_conc):
     ys, retVal = runCkine(ts, rxnRates, trafRates)
 
     if retVal < 0:
-        print("Model run failed")
-        printModel(rxnRates, trafRates)
         return -100
 
-    surface_IL2Rb = ys[:,1] # y[:,1] represents the surface IL2Rb value in fullModel for all 8 time points
+    sIL2Rb = ys[:,1] # y[:,1] represents the surface IL2Rb value in fullModel
 
-    percent_surface_IL2Rb = 10. * (surface_IL2Rb / surface_IL2Rb[0]) # percent of surface IL2Rb is relative to the initial amount of receptor
-
-    return percent_surface_IL2Rb
+    return 10. * (sIL2Rb / sIL2Rb[0]) # % sIL2Rb relative to initial amount
 
 
 class IL2Rb_trafficking:
@@ -93,11 +89,6 @@ class IL2Rb_trafficking:
         all_diffs = np.concatenate((diff, diff2, diff3, diff4))
 
         return all_diffs
-    def calc(self, unkVec, pool):
-        """ Just get the solution in one pass. """
-        inT = self.calc_schedule(unkVec, pool)
-        return self.calc_reduce(inT)
-
 
 
 # this takes all the desired IL2 values we want to test and gives us the maximum activity value
@@ -147,11 +138,6 @@ class IL2_sum_squared_dist:
 
         # value we're trying to minimize is the distance between the y-values on points of the graph that correspond to the same IL2 values
         return self.fit_data - actVec
-
-    def calc(self, unkVec, pool):
-        """ Just get the solution in one pass. """
-        inT = self.calc_schedule(unkVec, pool)
-        return self.calc_reduce(inT)
 
 
 class build_model:

@@ -54,7 +54,7 @@ class centralDiff(T.Op):
         if np.any(np.greater(inputs[0], 1.0E4)):
             mu = np.full((self.M.concs*2, ), -np.inf, dtype=np.float64)
         else:
-            mu = self.M.calc(inputs[0], pool=self.pool)
+            mu = self.M.calc_reduce(self.M.calc_schedule(inputs[0], pool=self.pool))
 
         outputs[0][0] = np.array(mu)
 
@@ -89,7 +89,7 @@ class centralDiffGrad(T.Op):
         if np.any(np.greater(inputs[0], 1.0E4)):
             jac.fill(-np.inf)
         else:
-            f0 = self.M.calc(x0, self.pool)
+            f0 = self.M.calc_reduce(self.M.calc_schedule(x0, pool=self.pool))
 
             # Schedule all the calculations
             for i in range(x0.size):
