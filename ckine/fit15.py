@@ -48,25 +48,17 @@ class IL15_sum_squared_dist:
         self.concs = len(self.IL15s)
         self.fit_data = np.concatenate((self.numpy_data[:, 7], self.numpy_data[:, 3]))
 
-    def calc_schedule(self, unkVec, pool):
+    def calc(self, unkVec):
         """Simulate the experiment with IL15. It is making a list of promises which will be calculated and returned as output."""
         # Convert the vector of values to dicts
         rxnRates, tfR = IL15_convertRates(unkVec)
 
         # IL2Ra- cells have same IL15 activity, so we can just reuse same solution
+        actVec = np.zeros(self.concs, dtype=np.float64)
 
-        # Loop over concentrations of IL2
-        output = list()
-
-        for _, ILc in enumerate(self.IL15s):
-            output.append(pool.submit(IL15_activity_input, ILc, rxnRates.copy(), tfR))
-
-        return output
-
-
-    def calc_reduce(self, inT):
-        """After getting all of the promises first, calc_reduce is going to convert all those promises into actual values and return the difference between the measurements and the simulation."""
-        actVec = np.fromiter((item.result() for item in inT), np.float64, count=self.concs)
+        # Loop over concentrations of IL15
+        for ii, ILc in enumerate(self.IL15s):
+            actVec[ii] = IL15_activity_input(ILc, rxnRates.copy(), tfR)
 
         # Normalize to the maximal activity, put together into one vector
         actVec = np.concatenate((actVec / np.max(actVec), actVec / np.max(actVec)))

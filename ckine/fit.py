@@ -59,7 +59,7 @@ class IL2Rb_trafficking:
 
         self.concs = 14
 
-    def calc_schedule(self, unkVec, pool):
+    def calc(self, unkVec):
         # Convert the vector of values to dicts
         rxnRates, tfR = IL2_convertRates(unkVec)
 
@@ -67,26 +67,12 @@ class IL2Rb_trafficking:
         tfR2 = tfR.copy()
         tfR2[5] = 0.0
 
-        # Loop over concentrations of IL2
-        output = list()
+        diff1 = surf_IL2Rb(rxnRates, tfR, 1) - self.numpy_data[:, 1] # the second column of numpy_data has all the 1nM IL2Ra+ data
+        diff2 = surf_IL2Rb(rxnRates, tfR, 500) - self.numpy_data[:, 5] # the sixth column of numpy_data has all the 500 nM IL2Ra+ data
+        diff3 = surf_IL2Rb(rxnRates, tfR2, 1) - self.numpy_data2[:, 1] # the second column of numpy_data2 has all the 1nM IL2Ra- data
+        diff4 = surf_IL2Rb(rxnRates, tfR2, 500) - self.numpy_data2[:, 5] # the sixth column of numpy_data2 has all the 500 nM IL2Ra- data
 
-        output.append(pool.submit(surf_IL2Rb, rxnRates, tfR, 1)) # handle the IL2Ra+ and 1nM case
-        output.append(pool.submit(surf_IL2Rb, rxnRates, tfR, 500)) # handle the IL2Ra+ and 500nM case
-        output.append(pool.submit(surf_IL2Rb, rxnRates, tfR2, 1)) # handle the IL2Ra- and 1nM case
-        output.append(pool.submit(surf_IL2Rb, rxnRates, tfR2, 500)) # handle the IL2Ra- and 500nM case
-
-        return output
-
-
-    def calc_reduce(self, inT):
-        actVec = list(item.result() for item in inT)
-
-        diff = actVec[0] - self.numpy_data[:, 1] # the second column of numpy_data has all the 1nM IL2Ra+ data
-        diff2 = actVec[1] - self.numpy_data[:, 5] # the sixth column of numpy_data has all the 500 nM IL2Ra+ data
-        diff3 = actVec[2] - self.numpy_data2[:, 1] # the second column of numpy_data2 has all the 1nM IL2Ra- data
-        diff4 = actVec[3] - self.numpy_data2[:, 5] # the sixth column of numpy_data2 has all the 500 nM IL2Ra- data
-
-        all_diffs = np.concatenate((diff, diff2, diff3, diff4))
+        all_diffs = np.concatenate((diff1, diff2, diff3, diff4))
 
         return all_diffs
 
@@ -105,7 +91,7 @@ class IL2_sum_squared_dist:
         self.concs = len(self.IL2s)
         self.fit_data = np.concatenate((self.numpy_data[:, 6], self.numpy_data[:, 2]))
 
-    def calc_schedule(self, unkVec, pool):
+    def calc(self, unkVec):
         """Simulate the 2 experiments: one w/ IL2Ra and one without it. It is making a list of promises which will be calculated and returned as output."""
         # Convert the vector of values to dicts
         rxnRates, tfR = IL2_convertRates(unkVec)
@@ -114,24 +100,13 @@ class IL2_sum_squared_dist:
         tfR2 = tfR.copy()
         tfR2[5] = 0.0
 
+        actVec = np.zeros(self.concs, dtype=np.float64)
+        actVec2 = np.zeros(self.concs, dtype=np.float64)
+
         # Loop over concentrations of IL2
-        output = list()
-        output2 = list()
-
-        for _, ILc in enumerate(self.IL2s):
-            output.append(pool.submit(IL2_activity_input, ILc, rxnRates.copy(), tfR))
-
-        for _, ILc in enumerate(self.IL2s):
-            output2.append(pool.submit(IL2_activity_input, ILc, rxnRates.copy(), tfR2))
-
-        return (output, output2)
-
-    def calc_reduce(self, inT):
-        """After getting all of the promises first, calc_reduce is going to convert all those promises into actual values and return the difference between the measurements and the simulation."""
-        output, output2 = inT
-
-        actVec = np.fromiter((item.result() for item in output), np.float64, count=self.concs)
-        actVec2 = np.fromiter((item.result() for item in output2), np.float64, count=self.concs)
+        for ii, ILc in enumerate(self.IL2s):
+            actVec[ii] = IL2_activity_input(ILc, rxnRates.copy(), tfR)
+            actVec2[ii] = IL2_activity_input(ILc, rxnRates.copy(), tfR2)
 
         # Normalize to the maximal activity, put together into one vector
         actVec = np.concatenate((actVec / np.max(actVec), actVec2 / np.max(actVec2)))
