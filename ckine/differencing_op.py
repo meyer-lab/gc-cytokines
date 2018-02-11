@@ -1,3 +1,6 @@
+"""
+Theano Op for using differencing for Jacobian calculation.
+"""
 from threading import Lock
 import numpy as np, theano.tensor as T
 from concurrent.futures import ProcessPoolExecutor, Future, Executor
