@@ -85,11 +85,7 @@ class IL2Rb_trafficking:
     def calc_reduce(self, inT):
         actVec = list(item.result() for item in inT)
 
-        # actVec[0] represents the IL2Ra+ and 1nM case
-        # actVec[1] represents the IL2Ra+ and 500nM case
-        # actVec[2] represents the IL2Ra- and 1nM case
-        # actVec[3] represents the IL2Ra- and 500nM case
-        diff = actVec[0] - self.numpy_data[:, 1] # the second column of numpy_data has all the 1nM IL2Ra= data
+        diff = actVec[0] - self.numpy_data[:, 1] # the second column of numpy_data has all the 1nM IL2Ra+ data
         diff2 = actVec[1] - self.numpy_data[:, 5] # the sixth column of numpy_data has all the 500 nM IL2Ra+ data
         diff3 = actVec[2] - self.numpy_data2[:, 1] # the second column of numpy_data2 has all the 1nM IL2Ra- data
         diff4 = actVec[3] - self.numpy_data2[:, 5] # the sixth column of numpy_data2 has all the 500 nM IL2Ra- data
