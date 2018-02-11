@@ -79,17 +79,18 @@ class centralDiffGrad(T.Op):
     def perform(self, node, inputs, outputs):
         # Find our current point
         x0 = inputs[0]
-        f0 = self.M.calc(x0, self.pool)
 
         epsilon = 1.0E-7
 
         output = list()
 
-        jac = np.empty((x0.size, f0.size), dtype=np.float64)
+        jac = np.empty((x0.size, self.M.concs*2), dtype=np.float64)
 
         if np.any(np.greater(inputs[0], 1.0E4)):
             jac.fill(-np.inf)
         else:
+            f0 = self.M.calc(x0, self.pool)
+
             # Schedule all the calculations
             for i in range(x0.size):
                 dx = x0.copy()
