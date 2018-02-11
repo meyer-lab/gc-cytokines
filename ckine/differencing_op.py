@@ -59,6 +59,7 @@ class centralDiff(T.Op):
         outputs[0][0] = np.array(mu)
 
     def grad(self, inputs, g):
+        """ Calculate the centralDiff gradient. """
         return [T.dot(g[0], self.dg(inputs[0]))]
 
 
