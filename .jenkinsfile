@@ -7,13 +7,23 @@ pipeline {
         sh 'make clean'
       }
     }
+    stage('PyLint') {
+      steps {
+        sh '(pylint3 --rcfile=.pylintrc ckine > pylint.log || echo "pylint3 exited with $?")'
+        step([
+          $class                     : 'WarningsPublisher',
+          parserConfigurations       : [[parserName: 'PYLint', pattern: 'pylint.log']],
+          unstableTotalAll           : '1000',
+          usePreviousBuildAsReference: true
+          ])
+      }
+    }
     stage('Build') {
       steps { sh 'make -j 8' }
     }
     stage('Test'){
       steps {
         sh 'make testcover'
-        sh '(pylint3 --rcfile=.pylintrc ckine > pylint.log || echo "pylint3 exited with $?")'
       }
     }
     stage('Report') {
@@ -27,15 +37,6 @@ pipeline {
           reportFiles: 'index.html',
           reportName: 'Manuscript',
           reportTitles: ''])
-        step([
-          $class                     : 'WarningsPublisher',
-          parserConfigurations       : [[
-          parserName: 'PYLint',
-          pattern   : 'pylint.log'
-          ]],
-          unstableTotalAll           : '1000',
-          usePreviousBuildAsReference: true
-          ])
         step([
           $class: 'CoberturaPublisher',
           autoUpdateHealth: true,
