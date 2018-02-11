@@ -4,9 +4,6 @@ from scipy.integrate import odeint
 
 filename = os.path.join(os.path.dirname(os.path.abspath(__file__)), "./ckine.so")
 libb = ct.cdll.LoadLibrary(filename)
-libb.wrapper.argtypes = (ct.POINTER(ct.c_double), ct.c_double,
-                         ct.POINTER(ct.c_double), ct.POINTER(ct.c_double),
-                         ct.POINTER(ct.c_double), ct.POINTER(ct.c_bool))
 libb.dydt_C.argtypes = (ct.POINTER(ct.c_double), ct.c_double,
                         ct.POINTER(ct.c_double), ct.POINTER(ct.c_double))
 libb.fullModel_C.argtypes = (ct.POINTER(ct.c_double), ct.c_double,
@@ -30,20 +27,6 @@ def runCkine (tps, rxn, tfr):
                            tfr.ctypes.data_as(ct.POINTER(ct.c_double)))
 
     return (yOut, retVal)
-
-
-def wrapper(y, t, rxn, tfr, wrapIDX):
-    global libb
-
-    assert(len(y) == np.sum(wrapIDX))
-
-    yOut = np.zeros_like(y)
-
-    libb.wrapper(y.ctypes.data_as(ct.POINTER(ct.c_double)), t,
-                 yOut.ctypes.data_as(ct.POINTER(ct.c_double)), rxn.ctypes.data_as(ct.POINTER(ct.c_double)),
-                 tfr.ctypes.data_as(ct.POINTER(ct.c_double)), wrapIDX.ctypes.data_as(ct.POINTER(ct.c_bool)))
-    
-    return yOut
 
 
 def dy_dt(y, t, rxn):
@@ -71,12 +54,6 @@ def fullModel(y, t, rxn, tfr):
 
 __active_species_IDX = np.zeros(26, dtype=np.bool)
 __active_species_IDX[np.array([8, 9, 16, 17, 21, 25])] = 1
-
-
-__IL2_assoc = np.zeros(56, dtype=np.bool)
-__IL2_assoc[0:10] = 1
-__IL2_assoc[26:36] = 1
-__IL2_assoc[52] = 1
 
 
 def printModel(rxnRates, trafRates):

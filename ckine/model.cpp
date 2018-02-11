@@ -1,7 +1,5 @@
-#include <array>
 #include <algorithm>
 #include <numeric>
-#include <stdio.h>
 #include <vector>
 #include <nvector/nvector_serial.h>  /* serial N_Vector types, fcts., macros */
 #include <cvode/cvode.h>            /* prototypes for CVODE fcts., consts. */
@@ -12,23 +10,27 @@
 #include <cvode/cvode_direct.h>
 #include <sstream>
 #include <iostream>
+#define NDEBUG
+#include <cassert>
+#include "model.hpp"
 
 using std::array;
 using std::copy;
 using std::copy_n;
 using std::vector;
+using std::fill;
 using std::string;
 using std::runtime_error;
 
-const double abstolIn = 1E-6;
-const double reltolIn = 1E-9;
+const double abstolIn = 1E-5;
+const double reltolIn = 1E-6;
 const double internalV = 623.0; // Same as that used in TAM model
 const double internalFrac = 0.5; // Same as that used in TAM model
 
 
 array<bool, 26> __active_species_IDX() {
 	array<bool, 26> __active_species_IDX;
-	std::fill(__active_species_IDX.begin(), __active_species_IDX.end(), false);
+	fill(__active_species_IDX.begin(), __active_species_IDX.end(), false);
 
 	__active_species_IDX[8] = true;
 	__active_species_IDX[9] = true;
@@ -41,7 +43,7 @@ array<bool, 26> __active_species_IDX() {
 }
 
 
-array<double, 26> dy_dt(array<double, 26> y, array<double, 17> rxn) {
+array<double, 26> dy_dt(const double * const y, const double * const rxn) {
 	// Set the constant inputs
 	double IL2 = rxn[0];
 	double IL15 = rxn[1];
@@ -180,17 +182,9 @@ array<double, 26> dy_dt(array<double, 26> y, array<double, 17> rxn) {
 
 
 extern "C" void dydt_C(double *y_in, double t, double *dydt_out, double *rxn_in) {
-	// Bring back the wrapper!
+	array<double, 26> dydt = dy_dt(y_in, rxn_in);
 
-	array<double, 26> y;
-	array<double, 17> r;
-
-	copy_n(rxn_in, r.size(), r.begin());
-	copy_n(y_in, y.size(), y.begin());
-
-	array<double, 26> dydt = dy_dt(y, r);
-
-	copy_n(dydt.begin(), y.size(), dydt_out);
+	copy_n(dydt.begin(), dydt.size(), dydt_out);
 }
 
 
@@ -198,16 +192,16 @@ array<double, 4> findLigConsume(const array<double, 26> dydt) {
 	// Calculate the ligand consumption.
 	array<double, 4> outt;
 
-	outt[0] = std::accumulate(dydt.begin()+3, dydt.begin()+10, 0) / internalV;
-	outt[1] = std::accumulate(dydt.begin()+11, dydt.begin()+18, 0) / internalV;
-	outt[2] = std::accumulate(dydt.begin()+19, dydt.begin()+22, 0) / internalV;
-	outt[3] = std::accumulate(dydt.begin()+23, dydt.begin()+26, 0) / internalV;
+	outt[0] = -std::accumulate(dydt.begin()+3, dydt.begin()+10, 0) / internalV;
+	outt[1] = -std::accumulate(dydt.begin()+11, dydt.begin()+18, 0) / internalV;
+	outt[2] = -std::accumulate(dydt.begin()+19, dydt.begin()+22, 0) / internalV;
+	outt[3] = -std::accumulate(dydt.begin()+23, dydt.begin()+26, 0) / internalV;
 
 	return outt;
 }
 
 
-array<double, 52> trafficking(array<double, 56> y, array<double, 11> tfR) {
+array<double, 52> trafficking(const double * const y, array<double, 11> tfR) {
 	// Implement trafficking.
 
 	// Set the rates
@@ -246,42 +240,31 @@ array<double, 52> trafficking(array<double, 56> y, array<double, 11> tfR) {
 }
 
 
-struct ratesS {
-	array<double, 11> trafRates;
-	array<double, 17> rxn;
-};
-
-
-array<double, 56> fullModel(array<double, 56> y, const array<double, 17> r, array<double, 11> tfR) {
+array<double, 56> fullModel(const double * const y, const array<double, 17> r, array<double, 11> tfR) {
 	// Implement full model.
 
 	// Initialize vector
 	array<double, 56> dydt;
 
-	array<double, 26> ySurf;
-	array<double, 26> yInt;
-	copy_n(y.begin(), 26, ySurf.begin());
-	copy_n(y.begin()+26, 26, yInt.begin());
-
 	// Calculate cell surface reactions
-	array<double, 26> dydt_surf = dy_dt(ySurf, r);
+	array<double, 26> dydt_surf = dy_dt(y, r.data());
 
 	array<double, 17> rr = r;
-	copy_n(y.begin()+52, 4, rr.begin());
+	copy_n(y + 52, 4, rr.begin());
 
 	// Calculate endosomal reactions
-	array<double, 26> dydt_int = dy_dt(yInt, rr);
+	array<double, 26> dydt_int = dy_dt(y + 26, rr.data());
 
 	// Handle trafficking
 	// _Leave off the ligands on the end
 	array<double, 52> traf = trafficking(y, tfR);
 
 	// Handle endosomal ligand balance.
-	array<double, 4> ligConsume = findLigConsume(yInt);
+	array<double, 4> ligConsume = findLigConsume(dydt_int);
 
 	copy(traf.begin(), traf.end(), dydt.begin());
 
-	for (size_t ii = 0; ii < ySurf.size(); ii++) {
+	for (size_t ii = 0; ii < dydt_surf.size(); ii++) {
 		dydt[ii] += dydt_surf[ii];
 		dydt[ii+26] += dydt_int[ii];
 	}
@@ -292,72 +275,95 @@ array<double, 56> fullModel(array<double, 56> y, const array<double, 17> r, arra
 }
 
 
+array<bool, 56> IL2_assoc() {
+	array<bool, 56> IL2_assoc;
+
+	fill(IL2_assoc.begin(), IL2_assoc.end(), false);
+
+	for (size_t i = 0; i < 10; i++) {
+		IL2_assoc[i] = true;
+		IL2_assoc[i + 26] = true;
+	}
+
+	IL2_assoc[52] = true;
+
+	return IL2_assoc;
+}
+
+size_t IL2_nassoc() {
+	array<bool, 56> x = IL2_assoc();
+
+	return std::count(x.begin(), x.end(), true);
+}
+
 int fullModelCVode (const double, const N_Vector xx, N_Vector dxxdt, void *user_data) {
 	ratesS *rIn = static_cast<ratesS *>(user_data);
 
 	array<double, 56> xxArr;
-	copy_n(NV_DATA_S(xx), xxArr.size(), xxArr.begin());
+	size_t curIDX = 0;
+	array<bool, 56> wrapIDX;
 
-	array<double, 56> dydt = fullModel(xxArr, rIn->rxn, rIn->trafRates);
+	// Get the data in the right form
+	if (NV_LENGTH_S(xx) == xxArr.size()) { // If we're using the full model
+		copy_n(NV_DATA_S(xx), xxArr.size(), xxArr.begin());
+	} else if (NV_LENGTH_S(xx) == IL2_nassoc()) { // If it looks like we're using the IL2 model
+		wrapIDX = IL2_assoc();
 
-	copy_n(dydt.begin(), NV_LENGTH_S(dxxdt), NV_DATA_S(dxxdt));
+		for (size_t ii = 0; ii < xxArr.size(); ii++) {
+			if (wrapIDX[ii]) {
+				xxArr[ii] = NV_Ith_S(xx, curIDX);
+				curIDX++;
+			} else {
+				xxArr[ii] = 0.0;
+			}
+		}
+
+		assert(curIDX == IL2_nassoc());
+	} else {
+		throw runtime_error(string("Failed to find the right wrapper."));
+	}
+
+	array<double, 56> dydt = fullModel(xxArr.data(), rIn->rxn, rIn->trafRates);
+
+	// Now get the data back out
+	if (NV_LENGTH_S(xx) == xxArr.size()) { // If we're using the full model
+		copy_n(dydt.begin(), NV_LENGTH_S(dxxdt), NV_DATA_S(dxxdt));
+	} else if (NV_LENGTH_S(xx) == IL2_nassoc()) {
+		curIDX = 0;
+		for (size_t ii = 0; ii < xxArr.size(); ii++) {
+			if (wrapIDX[ii]) {
+				NV_Ith_S(dxxdt, curIDX) = dydt[ii];
+				curIDX++;
+			}
+		}
+
+		assert(curIDX == IL2_nassoc());
+	} else {
+		throw runtime_error(string("Failed to find the right wrapper on return."));
+	}
 
 	return 0;
 }
 
 
-extern "C" void fullModel_C(double *y_in, double t, double *dydt_out, double *rxn_in, double *tfr_in) {
+extern "C" void fullModel_C(const double * const y_in, double t, double *dydt_out, double *rxn_in, double *tfr_in) {
 	// Bring back the wrapper!
 
-	array<double, 56> y;
 	array<double, 17> r;
 	array<double, 11> tf;
 
 	copy_n(rxn_in, r.size(), r.begin());
 	copy_n(tfr_in, tf.size(), tf.begin());
-	copy_n(y_in, y.size(), y.begin());
 
-	array<double, 56> dydt = fullModel(y, r, tf);
+	array<double, 56> dydt = fullModel(y_in, r, tf);
 
-	copy_n(dydt.begin(), y.size(), dydt_out);
-}
-
-
-extern "C" void wrapper(double *y, double t, double *dydt_out, double *r_in, double *tfR_in, bool *wrapIDX) {
-	// Bring back the wrapper!
-
-	array<double, 56> yInt;
-	std::fill(yInt.begin(), yInt.end(), 0.0);
-
-	array<double, 17> r;
-	array<double, 11> tfR;
-
-	copy_n(r_in, r.size(), r.begin());
-	copy_n(tfR_in, tfR.size(), tfR.begin());
-
-	size_t curIDX = 0;
-	for (size_t ii = 0; ii < yInt.size(); ii++) {
-		if (wrapIDX[ii]) {
-			yInt[ii] = y[curIDX];
-			curIDX++;
-		}
-	}
-
-	array<double, 56> dydt = fullModel(yInt, r, tfR);
-
-	curIDX = 0;
-	for (size_t ii = 0; ii < yInt.size(); ii++) {
-		if (wrapIDX[ii]) {
-			dydt_out[curIDX] = dydt[ii];
-			curIDX++;
-		}
-	}
+	copy_n(dydt.begin(), dydt.size(), dydt_out);
 }
 
 
 array<double, 56> solveAutocrine(array<double, 11> trafRates) {
 	array<double, 56> y0;
-	std::fill(y0.begin(), y0.end(), 0.0);
+	fill(y0.begin(), y0.end(), 0.0);
 
 	array<size_t, 6> recIDX = {{0, 1, 2, 10, 18, 22}};
 
@@ -453,8 +459,27 @@ extern "C" int runCkine (double *tps, size_t ntps, double *out, double *rxnRates
 	copy_n(trafRatesIn, rattes.trafRates.size(), rattes.trafRates.begin());
 
 	array<double, 56> y0 = solveAutocrine(rattes.trafRates);
+	array<bool, 56> wrapIDX;
+	size_t curIDX = 0;
+	N_Vector state;
 
-	N_Vector state = N_VMake_Serial((long) y0.size(), y0.data());
+	// Can we use the reduced IL2 only model
+	if (rattes.trafRates[8] + rattes.trafRates[9] + rattes.trafRates[10] == 0.0) {
+		wrapIDX = IL2_assoc();
+		state = N_VNew_Serial((long) IL2_nassoc());
+
+		curIDX = 0;
+		for (size_t ii = 0; ii < wrapIDX.size(); ii++) {
+			if (wrapIDX[ii]) {
+				NV_Ith_S(state, curIDX) = y0[ii];
+				curIDX++;
+			}
+		}
+
+		assert(curIDX == IL2_nassoc());
+	} else { // Just the full model
+		state = N_VMake_Serial((long) y0.size(), y0.data());
+	}
 
 	void *cvode_mem = solver_setup(state, (void *) &rattes);
 
@@ -474,11 +499,25 @@ extern "C" int runCkine (double *tps, size_t ntps, double *out, double *rxnRates
 	        std::cout << "CVode error in CVode. Code: " << returnVal << std::endl;
 	        N_VDestroy_Serial(state);
 	        CVodeFree(&cvode_mem);
-	        return -1;
+	        return returnVal;
 	    }
 
 	    // Copy out result
-	    copy_n(NV_DATA_S(state), y0.size(), out + y0.size()*itps);
+	    if (NV_LENGTH_S(state) == y0.size()) {
+	    	copy_n(NV_DATA_S(state), y0.size(), out + y0.size()*itps);
+	    } else { // If we're dealing with a reduced model
+	    	curIDX = 0;
+	    	for (size_t ii = 0; ii < wrapIDX.size(); ii++) {
+				if (wrapIDX[ii]) {
+					out[y0.size()*itps + ii] = NV_Ith_S(state, curIDX);
+					curIDX++;
+				} else {
+					out[y0.size()*itps + ii] = 0.0;
+				}
+			}
+
+			assert(curIDX == IL2_nassoc());
+	    }
 	}
 
 	N_VDestroy_Serial(state);

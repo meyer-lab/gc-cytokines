@@ -21,7 +21,10 @@ Manuscript/Manuscript.pdf: Manuscript/Manuscript.tex
 	rm -f ./Manuscript/Manuscript.b* ./Manuscript/Manuscript.aux ./Manuscript/Manuscript.fls
 
 ckine/ckine.so: ckine/model.cpp
-	g++ ckine/model.cpp -O3 --shared -fPIC -lsundials_cvode -lsundials_nvecserial -lm -o ckine/ckine.so
+	g++ -std=c++11 ckine/model.cpp -O3 --shared -fPIC -lsundials_cvode -lsundials_nvecserial -lm -o ckine/ckine.so
+
+ckine.out: ckine/model.cpp ckine/main.cpp ckine/ckine.so
+	g++ -std=c++11 ckine/main.cpp ckine/ckine.so -fPIC -lsundials_cvode -lsundials_nvecserial -lm -o ckine.out
 
 Manuscript/index.html: Manuscript/Text/*.md
 	pandoc -s $(pan_common) -t html5 --mathjax -c ./Templates/kultiad.css --template=$(tdir)/html.template -o $@
@@ -43,8 +46,7 @@ Manuscript/CoverLetter.pdf: Manuscript/CoverLetter.md
 
 clean:
 	rm -f ./Manuscript/Manuscript.* ./Manuscript/index.html Manuscript/CoverLetter.docx Manuscript/CoverLetter.pdf
-	rm -f $(fdir)/Figure* ckine/ckine.so
-	rm -f profile.p* stats.dat .coverage nosetests.xml coverage.xml
+	rm -f $(fdir)/Figure* ckine/ckine.so profile.p* stats.dat .coverage nosetests.xml coverage.xml ckine.out
 
 test: ckine/ckine.so
 	nosetests3 -s --with-timer --timer-top-n 5
