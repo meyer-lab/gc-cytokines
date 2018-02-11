@@ -23,9 +23,6 @@ Manuscript/Manuscript.pdf: Manuscript/Manuscript.tex
 ckine/ckine.so: ckine/model.cpp
 	g++ -std=c++11 ckine/model.cpp -O3 --shared -fPIC -lsundials_cvode -lsundials_nvecserial -lm -o ckine/ckine.so
 
-ckine.out: ckine/model.cpp ckine/main.cpp ckine/ckine.so
-	g++ -std=c++11 ckine/main.cpp ckine/ckine.so -fPIC -lsundials_cvode -lsundials_nvecserial -lm -o ckine.out
-
 Manuscript/index.html: Manuscript/Text/*.md
 	pandoc -s $(pan_common) -t html5 --mathjax -c ./Templates/kultiad.css --template=$(tdir)/html.template -o $@
 
