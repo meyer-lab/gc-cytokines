@@ -35,6 +35,77 @@ def IL2_convertRates(unkVec):
     return (rxnRates, tfR)
 
 
+def surf_IL2Rb(rxnRates, trafRates, IL2_conc):
+    # times from experiment are hard-coded into this function
+    ts = np.array(([0.01, 2., 5., 15., 30., 60., 90.]))
+
+    rxnRates[0] = IL2_conc # the concentration of IL2 is rxnRates[0]
+
+    ys, retVal = runCkine(ts, rxnRates, trafRates)
+
+    if retVal < 0:
+        print("Model run failed")
+        printModel(rxnRates, trafRates)
+        return -100
+
+    surface_IL2Rb = ys[:,1] # y[:,1] represents the surface IL2Rb value in fullModel for all 8 time points
+
+    percent_surface_IL2Rb = 10. * (surface_IL2Rb / surface_IL2Rb[0]) # percent of surface IL2Rb is relative to the initial amount of receptor
+
+    return percent_surface_IL2Rb
+
+
+class IL2Rb_trafficking:
+    def __init__(self):
+        path = os.path.dirname(os.path.abspath(__file__))
+        data = pds.read_csv(os.path.join(path, 'data/IL2Ra+_surface_IL2RB_datasets.csv')) # imports csv file into pandas array
+        self.numpy_data = data.as_matrix() # all of the IL2Rb trafficking data with IL2Ra+... first row contains headers... 9 columns and 8 rows... first column is time
+        data2 = pds.read_csv(os.path.join(path, "data/IL2Ra-_surface_IL2RB_datasets.csv"))
+        self.numpy_data2 = data2.as_matrix() # all of the IL2Rb trafficking data with IL2Ra-... first row contains headers... 9 columns and 8 rows... first column is time
+
+        self.concs = 14
+
+    def calc_schedule(self, unkVec, pool):
+        # Convert the vector of values to dicts
+        rxnRates, tfR = IL2_convertRates(unkVec)
+
+        # IL2Ra- cells
+        tfR2 = tfR.copy()
+        tfR2[5] = 0.0
+
+        # Loop over concentrations of IL2
+        output = list()
+
+        output.append(pool.submit(surf_IL2Rb, rxnRates, tfR, 1)) # handle the IL2Ra+ and 1nM case
+        output.append(pool.submit(surf_IL2Rb, rxnRates, tfR, 500)) # handle the IL2Ra+ and 500nM case
+        output.append(pool.submit(surf_IL2Rb, rxnRates, tfR2, 1)) # handle the IL2Ra- and 1nM case
+        output.append(pool.submit(surf_IL2Rb, rxnRates, tfR2, 500)) # handle the IL2Ra- and 500nM case
+
+        return output
+
+
+    def calc_reduce(self, inT):
+        actVec = list(item.result() for item in inT)
+
+        # actVec[0] represents the IL2Ra+ and 1nM case
+        # actVec[1] represents the IL2Ra+ and 500nM case
+        # actVec[2] represents the IL2Ra- and 1nM case
+        # actVec[3] represents the IL2Ra- and 500nM case
+        diff = actVec[0] - self.numpy_data[:, 1] # the second column of numpy_data has all the 1nM IL2Ra= data
+        diff2 = actVec[1] - self.numpy_data[:, 5] # the sixth column of numpy_data has all the 500 nM IL2Ra+ data
+        diff3 = actVec[2] - self.numpy_data2[:, 1] # the second column of numpy_data2 has all the 1nM IL2Ra- data
+        diff4 = actVec[3] - self.numpy_data2[:, 5] # the sixth column of numpy_data2 has all the 500 nM IL2Ra- data
+
+        all_diffs = np.concatenate((diff, diff2, diff3, diff4))
+
+        return all_diffs
+    def calc(self, unkVec, pool):
+        """ Just get the solution in one pass. """
+        inT = self.calc_schedule(unkVec, pool)
+        return self.calc_reduce(inT)
+
+
+
 # this takes all the desired IL2 values we want to test and gives us the maximum activity value
 # IL2 values pretty much ranged from 5 x 10**-4 to 500 nm with 8 points in between
 # need the theano decorator to get around the fact that there are if-else statements when running odeint but
@@ -93,6 +164,7 @@ class build_model:
     """Going to load the data from the CSV file at the very beginning of when build_model is called... needs to be separate member function to avoid uploading file thousands of times."""
     def __init__(self):
         self.dst = IL2_sum_squared_dist()
+        self.IL2Rb = IL2Rb_trafficking()
         self.M = self.build()
 
     def build(self):
@@ -109,9 +181,15 @@ class build_model:
             unkVec = T.concatenate((rxnrates, endo_activeEndo, T.stack(sortF), kRec_kDeg, Rexpr))
 
             Y = centralDiff(self.dst)(unkVec) # fitting the data based on dst.calc for the given parameters
+
+            Y_int = centralDiff(self.IL2Rb)(unkVec) # fitting the data based on dst.calc for the given parameters
+
             pm.Deterministic('Y', Y) # this line allows us to see the traceplots in read_fit_data.py... it lets us know if the fitting process is working
 
+            pm.Deterministic('Y_int', Y_int)
+
             pm.Normal('fitD', sd=0.1, observed=Y) # TODO: Find an empirical value for the SEM
+            pm.Normal('fitD_int', sd=0.1, observed=Y_int) # TODO: Find an empirical value for the SEM
 
             # Save likelihood
             pm.Deterministic('logp', M.logpt)
