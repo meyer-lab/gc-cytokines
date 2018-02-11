@@ -1,4 +1,9 @@
-import os, numpy as np, ctypes as ct
+"""
+A file that includes the model and important helper functions.
+"""
+import os
+import numpy as np
+import ctypes as ct
 from scipy.integrate import odeint
 
 
@@ -18,7 +23,6 @@ def runCkine (tps, rxn, tfr):
     global libb
 
     yOut = np.zeros((tps.size, 56), dtype=np.float64)
-
 
     retVal = libb.runCkine(tps.ctypes.data_as(ct.POINTER(ct.c_double)),
                            tps.size,
@@ -57,6 +61,7 @@ __active_species_IDX[np.array([8, 9, 16, 17, 21, 25])] = 1
 
 
 def printModel(rxnRates, trafRates):
+    """A function to print out important values."""
     # endo, activeEndo, sortF, kRec, kDeg
     print("Endocytosis: " + str(trafRates[0]))
     print("activeEndo: " + str(trafRates[1]))
@@ -76,6 +81,7 @@ def printModel(rxnRates, trafRates):
 
 
 def solveAutocrine(trafRates):
+    """Faster approach to solve for steady state by directly calculating the starting point without needing odeint."""
     y0 = np.zeros(26*2 + 4, np.float64)
 
     recIDX = np.array([0, 1, 2, 10, 18, 22], np.int)
@@ -101,6 +107,7 @@ def solveAutocrine(trafRates):
 
 
 def solveAutocrineComplete(rxnRates, trafRates):
+    """This function determines the starting point for odeint. It runs the model for a really long time with no cytokine present to come to some steady state."""
     rxnRates = rxnRates.copy()
     autocrineT = np.array([0.0, 100000.0])
 
@@ -136,3 +143,17 @@ def getActiveCytokine(cytokineIDX, yVec):
 def getTotalActiveCytokine(cytokineIDX, yVec):
     """ Get amount of surface and endosomal active species. """
     return getActiveCytokine(cytokineIDX, yVec[0:26]) + getActiveCytokine(cytokineIDX, yVec[26:26*2])
+
+def surfaceReceptors(y):
+    """This function takes in a vector y and returns the amounts of the 6 surface receptors"""
+    IL2Ra = np.sum(y[np.array([0, 3, 6, 7, 9])])
+    IL2Rb = np.sum(y[np.array([1, 4, 6, 8, 9, 12, 14, 16, 17])])
+    gc = np.sum(y[np.array([2, 5, 7, 8, 9, 13, 15, 16, 17, 20, 21, 24, 25])])
+    IL15Ra = np.sum(y[np.array([10, 11, 14, 15, 17])])
+    IL7Ra = np.sum(y[np.array([18, 19, 21])])
+    IL9R = np.sum(y[np.array([22, 23, 25])])
+    return np.array([IL2Ra, IL2Rb, gc, IL15Ra, IL7Ra, IL9R])
+
+def totalReceptors(yVec):
+    """This function takes in a vector y and returns the amounts of all 6 receptors in both cell conpartments"""
+    return surfaceReceptors(yVec) + surfaceReceptors(yVec[26:52])
