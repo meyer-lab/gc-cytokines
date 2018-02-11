@@ -13,7 +13,6 @@
 #include <iostream>
 #define NDEBUG
 #include <cassert>
-#include "model.hpp"
 
 using std::array;
 using std::copy;
