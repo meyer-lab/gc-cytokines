@@ -1,13 +1,5 @@
 #!/usr/bin/env python3
 
-# Fix an error specific to MacOS
-if __name__ == "__main__":
-    from sys import platform
-    from multiprocessing import set_start_method
-
-    if platform == "darwin":
-        set_start_method('forkserver')
-
 # Set matplotlib backend so python remains in the background
 import matplotlib
 matplotlib.use("Agg")
