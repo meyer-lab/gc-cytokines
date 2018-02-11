@@ -2,27 +2,22 @@
 This file includes the classes and functions necessary to fit the IL15 model to the experimental data.
 """
 import pymc3 as pm, theano.tensor as T, os
-from scipy.integrate import odeint
 import numpy as np, pandas as pds
-from .model import solveAutocrine, fullModel, getTotalActiveCytokine, __active_species_IDX, printModel
+from .model import getTotalActiveCytokine, runCkine
 from .differencing_op import centralDiff
 
 
 #this takes the values of input parameters and calls odeint, then puts the odeint output into IL15_pSTAT_activity
 
-def IL15_activity_input(y0, IL15, rxnRates, trafRates):
+def IL15_activity_input(IL15, rxnRates, trafRates):
     """Takes in the reaction rates, traficking rates, and the amount of IL15 that you want to simulate with, and it runs the model odeint. """
     rxnRates[1] = IL15
 
-    ddfunc = lambda y, t: fullModel(y, t, rxnRates, trafRates, __active_species_IDX)
-    ts = np.linspace(0., 500, 2)
+    ts = np.linspace(1., 500, 2)
 
-    ys, infodict = odeint(ddfunc, y0, ts, mxstep=12000, full_output=True, rtol=1.0E-5, atol=1.0E-3)
+    ys, retVal = runCkine(ts, rxnRates, trafRates)
 
-    if infodict['tcur'] < np.max(ts):
-        print("IL15 conc: " + str(IL15))
-        printModel(rxnRates, trafRates)
-        print(infodict)
+    if retVal < 0:
         return -100
 
     return getTotalActiveCytokine(1, ys[1, :])
@@ -60,14 +55,11 @@ class IL15_sum_squared_dist:
 
         # IL2Ra- cells have same IL15 activity, so we can just reuse same solution
 
-        # Find autocrine state
-        yAutocrine = solveAutocrine(tfR)
-
         # Loop over concentrations of IL2
         output = list()
 
         for _, ILc in enumerate(self.IL15s):
-            output.append(pool.submit(IL15_activity_input, yAutocrine, ILc, rxnRates.copy(), tfR))
+            output.append(pool.submit(IL15_activity_input, ILc, rxnRates.copy(), tfR))
 
         return output
 

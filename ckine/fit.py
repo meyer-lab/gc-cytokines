@@ -16,8 +16,6 @@ def IL2_activity_input(IL2, rxnRates, trafRates):
     ys, retVal = runCkine(ts, rxnRates, trafRates)
 
     if retVal < 0:
-        print("Model run failed")
-        printModel(rxnRates, trafRates)
         return -100
 
     return getTotalActiveCytokine(0, ys[1, :])
