@@ -30,6 +30,10 @@ def runCkine (tps, rxn, tfr):
                            rxn.ctypes.data_as(ct.POINTER(ct.c_double)),
                            tfr.ctypes.data_as(ct.POINTER(ct.c_double)))
 
+    if retVal < 0:
+        print("Model run failed")
+        printModel(rxn, tfr)
+
     return (yOut, retVal)
 
 
