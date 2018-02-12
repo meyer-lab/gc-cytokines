@@ -196,7 +196,7 @@ void findLigConsume(double *dydt) {
 }
 
 
-array<double, 56> trafficking(const double * const y, array<double, 11> tfR) {
+void trafficking(const double * const y, array<double, 11> tfR, double *dydt) {
 	// Implement trafficking.
 
 	// Set the rates
@@ -208,18 +208,16 @@ array<double, 56> trafficking(const double * const y, array<double, 11> tfR) {
 
 	array<bool, 26> activeV = __active_species_IDX();
 
-	array<double, 56> dydt;
-
 	size_t halfL = activeV.size();
 
 	// Actually calculate the trafficking
 	for (size_t ii = 0; ii < halfL; ii++) {
 		if (activeV[ii]) {
-			dydt[ii] = -y[ii]*(endo + activeEndo); // Endocytosis
-			dydt[ii+halfL] = y[ii]*(endo + activeEndo)/internalFrac - kDeg*y[ii+halfL]; // Endocytosis, degradation
+			dydt[ii] += -y[ii]*(endo + activeEndo); // Endocytosis
+			dydt[ii+halfL] += y[ii]*(endo + activeEndo)/internalFrac - kDeg*y[ii+halfL]; // Endocytosis, degradation
 		} else {
-			dydt[ii] = -y[ii]*endo + kRec*(1.0-sortF)*y[ii+halfL]*internalFrac; // Endocytosis, recycling
-			dydt[ii+halfL] = y[ii]*endo/internalFrac - kRec*(1.0-sortF)*y[ii+halfL] - (kDeg*sortF)*y[ii+halfL]; // Endocytosis, recycling, degradation
+			dydt[ii] += -y[ii]*endo + kRec*(1.0-sortF)*y[ii+halfL]*internalFrac; // Endocytosis, recycling
+			dydt[ii+halfL] += y[ii]*endo/internalFrac - kRec*(1.0-sortF)*y[ii+halfL] - (kDeg*sortF)*y[ii+halfL]; // Endocytosis, recycling, degradation
 		}
 	}
 
@@ -233,39 +231,28 @@ array<double, 56> trafficking(const double * const y, array<double, 11> tfR) {
 
 	// Degradation does lead to some clearance of ligand in the endosome
 	for (size_t ii = 0; ii < 4; ii++) {
-		dydt[52 + ii] = -dydt[52 + ii] * kDeg;
+		dydt[52 + ii] -= dydt[52 + ii] * kDeg;
 	}
-
-	return dydt;
 }
 
 
-array<double, 56> fullModel(const double * const y, const array<double, 17> r, array<double, 11> tfR) {
+void fullModel(const double * const y, const array<double, 17> r, array<double, 11> tfR, double *dydt) {
 	// Implement full model.
-
-	// Initialize vector
-	array<double, 56> dydt;
-
-	fill(dydt.begin(), dydt.end(), 0.0);
+	fill(dydt, dydt + 56, 0.0);
 
 	// Calculate endosomal reactions
 	array<double, 17> rr = r;
 	copy_n(y + 52, 4, rr.begin());
 
 	// Calculate cell surface and endosomal reactions
-	dy_dt(y, r.data(), dydt.data());
-	dy_dt(y + 26, rr.data(), dydt.data() + 26);
+	dy_dt(y, r.data(), dydt);
+	dy_dt(y + 26, rr.data(), dydt + 26);
 
 	// Handle trafficking
-	array<double, 56> traf = trafficking(y, tfR);
+	trafficking(y, tfR, dydt);
 
 	// Handle endosomal ligand balance.
-	findLigConsume(dydt.data());
-
-	// Add in trafficking
-	for (size_t ii = 0; ii < traf.size(); ii++) dydt[ii] += traf[ii];
-
-	return dydt;
+	findLigConsume(dydt);
 }
 
 
@@ -299,7 +286,7 @@ int fullModelCVode (const double, const N_Vector xx, N_Vector dxxdt, void *user_
 
 	// Get the data in the right form
 	if (NV_LENGTH_S(xx) == xxArr.size()) { // If we're using the full model
-		copy_n(NV_DATA_S(xx), xxArr.size(), xxArr.begin());
+		fullModel(xxArr.data(), rIn->rxn, rIn->trafRates, NV_DATA_S(dxxdt));
 	} else if (NV_LENGTH_S(xx) == IL2_nassoc()) { // If it looks like we're using the IL2 model
 		wrapIDX = IL2_assoc();
 
@@ -313,16 +300,11 @@ int fullModelCVode (const double, const N_Vector xx, N_Vector dxxdt, void *user_
 		}
 
 		assert(curIDX == IL2_nassoc());
-	} else {
-		throw runtime_error(string("Failed to find the right wrapper."));
-	}
 
-	array<double, 56> dydt = fullModel(xxArr.data(), rIn->rxn, rIn->trafRates);
+		array<double, 56> dydt;
 
-	// Now get the data back out
-	if (NV_LENGTH_S(xx) == xxArr.size()) { // If we're using the full model
-		copy_n(dydt.begin(), NV_LENGTH_S(dxxdt), NV_DATA_S(dxxdt));
-	} else if (NV_LENGTH_S(xx) == IL2_nassoc()) {
+		fullModel(xxArr.data(), rIn->rxn, rIn->trafRates, dydt.data());
+
 		curIDX = 0;
 		for (size_t ii = 0; ii < xxArr.size(); ii++) {
 			if (wrapIDX[ii]) {
@@ -333,7 +315,7 @@ int fullModelCVode (const double, const N_Vector xx, N_Vector dxxdt, void *user_
 
 		assert(curIDX == IL2_nassoc());
 	} else {
-		throw runtime_error(string("Failed to find the right wrapper on return."));
+		throw runtime_error(string("Failed to find the right wrapper."));
 	}
 
 	return 0;
@@ -349,9 +331,7 @@ extern "C" void fullModel_C(const double * const y_in, double t, double *dydt_ou
 	copy_n(rxn_in, r.size(), r.begin());
 	copy_n(tfr_in, tf.size(), tf.begin());
 
-	array<double, 56> dydt = fullModel(y_in, r, tf);
-
-	copy_n(dydt.begin(), dydt.size(), dydt_out);
+	fullModel(y_in, r, tf, dydt_out);
 }
 
 
