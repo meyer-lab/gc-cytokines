@@ -48,7 +48,7 @@ array<bool, 26> __active_species_IDX() {
 }
 
 
-array<double, 26> dy_dt(const double * const y, const double * const rxn) {
+void dy_dt(const double * const y, const double * const rxn, double *dydt) {
 	// Set the constant inputs
 	double IL2 = rxn[0];
 	double IL15 = rxn[1];
@@ -140,8 +140,6 @@ array<double, 26> dy_dt(const double * const y, const double * const rxn) {
 	// _One detailed balance IL7/9 loop
 	double k32rev = k29rev * k31rev / k30rev;
 	double k28rev = k25rev * k27rev / k26rev;
-
-	array<double, 26> dydt;
 	
 	// IL2
 	dydt[0] = -kfbnd * IL2Ra * IL2 + k1rev * IL2_IL2Ra - kfwd * IL2Ra * IL2_gc + k6rev * IL2_IL2Ra_gc - kfwd * IL2Ra * IL2_IL2Rb_gc + k8rev * IL2_IL2Ra_IL2Rb_gc - kfwd * IL2Ra * IL2_IL2Rb + k12rev * IL2_IL2Ra_IL2Rb;
@@ -181,28 +179,20 @@ array<double, 26> dy_dt(const double * const y, const double * const rxn) {
 	dydt[23] = kfbnd * IL9R * IL9 - k29rev * IL9R_IL9 - kfwd * gc * IL9R_IL9 + k31rev * IL9R_gc_IL9;
 	dydt[24] = -kfwd * IL9R * gc_IL9 + k32rev * IL9R_gc_IL9 + kfbnd * IL9 * gc - k30rev * gc_IL9;
 	dydt[25] = kfwd * IL9R * gc_IL9 - k32rev * IL9R_gc_IL9 + kfwd * gc * IL9R_IL9 - k31rev * IL9R_gc_IL9;
-
-	return dydt;
 }
 
 
 extern "C" void dydt_C(double *y_in, double t, double *dydt_out, double *rxn_in) {
-	array<double, 26> dydt = dy_dt(y_in, rxn_in);
-
-	copy_n(dydt.begin(), dydt.size(), dydt_out);
+	dy_dt(y_in, rxn_in, dydt_out);
 }
 
 
-array<double, 4> findLigConsume(const array<double, 26> dydt) {
+void findLigConsume(double *dydt) {
 	// Calculate the ligand consumption.
-	array<double, 4> outt;
-
-	outt[0] = std::accumulate(dydt.begin()+3, dydt.begin()+10, 0) / internalV;
-	outt[1] = std::accumulate(dydt.begin()+11, dydt.begin()+18, 0) / internalV;
-	outt[2] = std::accumulate(dydt.begin()+19, dydt.begin()+22, 0) / internalV;
-	outt[3] = std::accumulate(dydt.begin()+23, dydt.begin()+26, 0) / internalV;
-
-	return outt;
+	dydt[52] -= std::accumulate(dydt+3, dydt+10, 0) / internalV;
+	dydt[53] -= std::accumulate(dydt+11, dydt+18, 0) / internalV;
+	dydt[54] -= std::accumulate(dydt+19, dydt+22, 0) / internalV;
+	dydt[55] -= std::accumulate(dydt+23, dydt+26, 0) / internalV;
 }
 
 
@@ -256,32 +246,24 @@ array<double, 56> fullModel(const double * const y, const array<double, 17> r, a
 	// Initialize vector
 	array<double, 56> dydt;
 
-	// Calculate cell surface reactions
-	array<double, 26> dydt_surf = dy_dt(y, r.data());
+	fill(dydt.begin(), dydt.end(), 0.0);
 
+	// Calculate endosomal reactions
 	array<double, 17> rr = r;
 	copy_n(y + 52, 4, rr.begin());
 
-	// Calculate endosomal reactions
-	array<double, 26> dydt_int = dy_dt(y + 26, rr.data());
+	// Calculate cell surface and endosomal reactions
+	dy_dt(y, r.data(), dydt.data());
+	dy_dt(y + 26, rr.data(), dydt.data() + 26);
 
 	// Handle trafficking
-	// _Leave off the ligands on the end
 	array<double, 56> traf = trafficking(y, tfR);
 
 	// Handle endosomal ligand balance.
-	array<double, 4> ligConsume = findLigConsume(dydt_int);
+	findLigConsume(dydt.data());
 
-	copy(traf.begin(), traf.end(), dydt.begin());
-
-	for (size_t ii = 0; ii < dydt_surf.size(); ii++) {
-		dydt[ii] += dydt_surf[ii];
-		dydt[ii+26] += dydt_int[ii];
-	}
-
-	for (size_t ii = 0; ii < 4; ii++) {
-		dydt[ii + 52] -= ligConsume[ii];
-	}
+	// Add in trafficking
+	for (size_t ii = 0; ii < traf.size(); ii++) dydt[ii] += traf[ii];
 
 	return dydt;
 }
