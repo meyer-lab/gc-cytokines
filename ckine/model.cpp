@@ -197,16 +197,16 @@ array<double, 4> findLigConsume(const array<double, 26> dydt) {
 	// Calculate the ligand consumption.
 	array<double, 4> outt;
 
-	outt[0] = -std::accumulate(dydt.begin()+3, dydt.begin()+10, 0) / internalV;
-	outt[1] = -std::accumulate(dydt.begin()+11, dydt.begin()+18, 0) / internalV;
-	outt[2] = -std::accumulate(dydt.begin()+19, dydt.begin()+22, 0) / internalV;
-	outt[3] = -std::accumulate(dydt.begin()+23, dydt.begin()+26, 0) / internalV;
+	outt[0] = std::accumulate(dydt.begin()+3, dydt.begin()+10, 0) / internalV;
+	outt[1] = std::accumulate(dydt.begin()+11, dydt.begin()+18, 0) / internalV;
+	outt[2] = std::accumulate(dydt.begin()+19, dydt.begin()+22, 0) / internalV;
+	outt[3] = std::accumulate(dydt.begin()+23, dydt.begin()+26, 0) / internalV;
 
 	return outt;
 }
 
 
-array<double, 52> trafficking(const double * const y, array<double, 11> tfR) {
+array<double, 56> trafficking(const double * const y, array<double, 11> tfR) {
 	// Implement trafficking.
 
 	// Set the rates
@@ -218,7 +218,7 @@ array<double, 52> trafficking(const double * const y, array<double, 11> tfR) {
 
 	array<bool, 26> activeV = __active_species_IDX();
 
-	array<double, 52> dydt;
+	array<double, 56> dydt;
 
 	size_t halfL = activeV.size();
 
@@ -241,6 +241,11 @@ array<double, 52> trafficking(const double * const y, array<double, 11> tfR) {
 	dydt[18] += tfR[9];
 	dydt[22] += tfR[10];
 
+	// Degradation does lead to some clearance of ligand in the endosome
+	for (size_t ii = 0; ii < 4; ii++) {
+		dydt[52 + ii] = -dydt[52 + ii] * kDeg;
+	}
+
 	return dydt;
 }
 
@@ -262,7 +267,7 @@ array<double, 56> fullModel(const double * const y, const array<double, 17> r, a
 
 	// Handle trafficking
 	// _Leave off the ligands on the end
-	array<double, 52> traf = trafficking(y, tfR);
+	array<double, 56> traf = trafficking(y, tfR);
 
 	// Handle endosomal ligand balance.
 	array<double, 4> ligConsume = findLigConsume(dydt_int);
@@ -274,7 +279,9 @@ array<double, 56> fullModel(const double * const y, const array<double, 17> r, a
 		dydt[ii+26] += dydt_int[ii];
 	}
 
-	copy(ligConsume.begin(), ligConsume.end(), dydt.begin()+52);
+	for (size_t ii = 0; ii < 4; ii++) {
+		dydt[ii + 52] -= ligConsume[ii];
+	}
 
 	return dydt;
 }
