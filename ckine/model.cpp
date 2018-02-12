@@ -48,7 +48,7 @@ array<bool, 26> __active_species_IDX() {
 }
 
 
-array<double, 26> dy_dt(const double * const y, const double * const rxn) {
+void dy_dt(const double * const y, const double * const rxn, double *dydt) {
 	// Set the constant inputs
 	double IL2 = rxn[0];
 	double IL15 = rxn[1];
@@ -140,8 +140,6 @@ array<double, 26> dy_dt(const double * const y, const double * const rxn) {
 	// _One detailed balance IL7/9 loop
 	double k32rev = k29rev * k31rev / k30rev;
 	double k28rev = k25rev * k27rev / k26rev;
-
-	array<double, 26> dydt;
 	
 	// IL2
 	dydt[0] = -kfbnd * IL2Ra * IL2 + k1rev * IL2_IL2Ra - kfwd * IL2Ra * IL2_gc + k6rev * IL2_IL2Ra_gc - kfwd * IL2Ra * IL2_IL2Rb_gc + k8rev * IL2_IL2Ra_IL2Rb_gc - kfwd * IL2Ra * IL2_IL2Rb + k12rev * IL2_IL2Ra_IL2Rb;
@@ -181,32 +179,24 @@ array<double, 26> dy_dt(const double * const y, const double * const rxn) {
 	dydt[23] = kfbnd * IL9R * IL9 - k29rev * IL9R_IL9 - kfwd * gc * IL9R_IL9 + k31rev * IL9R_gc_IL9;
 	dydt[24] = -kfwd * IL9R * gc_IL9 + k32rev * IL9R_gc_IL9 + kfbnd * IL9 * gc - k30rev * gc_IL9;
 	dydt[25] = kfwd * IL9R * gc_IL9 - k32rev * IL9R_gc_IL9 + kfwd * gc * IL9R_IL9 - k31rev * IL9R_gc_IL9;
-
-	return dydt;
 }
 
 
 extern "C" void dydt_C(double *y_in, double t, double *dydt_out, double *rxn_in) {
-	array<double, 26> dydt = dy_dt(y_in, rxn_in);
-
-	copy_n(dydt.begin(), dydt.size(), dydt_out);
+	dy_dt(y_in, rxn_in, dydt_out);
 }
 
 
-array<double, 4> findLigConsume(const array<double, 26> dydt) {
+void findLigConsume(double *dydt) {
 	// Calculate the ligand consumption.
-	array<double, 4> outt;
-
-	outt[0] = -std::accumulate(dydt.begin()+3, dydt.begin()+10, 0) / internalV;
-	outt[1] = -std::accumulate(dydt.begin()+11, dydt.begin()+18, 0) / internalV;
-	outt[2] = -std::accumulate(dydt.begin()+19, dydt.begin()+22, 0) / internalV;
-	outt[3] = -std::accumulate(dydt.begin()+23, dydt.begin()+26, 0) / internalV;
-
-	return outt;
+	dydt[52] -= std::accumulate(dydt+3, dydt+10, 0) / internalV;
+	dydt[53] -= std::accumulate(dydt+11, dydt+18, 0) / internalV;
+	dydt[54] -= std::accumulate(dydt+19, dydt+22, 0) / internalV;
+	dydt[55] -= std::accumulate(dydt+23, dydt+26, 0) / internalV;
 }
 
 
-array<double, 52> trafficking(const double * const y, array<double, 11> tfR) {
+void trafficking(const double * const y, array<double, 11> tfR, double *dydt) {
 	// Implement trafficking.
 
 	// Set the rates
@@ -218,18 +208,16 @@ array<double, 52> trafficking(const double * const y, array<double, 11> tfR) {
 
 	array<bool, 26> activeV = __active_species_IDX();
 
-	array<double, 52> dydt;
-
 	size_t halfL = activeV.size();
 
 	// Actually calculate the trafficking
 	for (size_t ii = 0; ii < halfL; ii++) {
 		if (activeV[ii]) {
-			dydt[ii] = -y[ii]*(endo + activeEndo); // Endocytosis
-			dydt[ii+halfL] = y[ii]*(endo + activeEndo)/internalFrac - kDeg*y[ii+halfL]; // Endocytosis, degradation
+			dydt[ii] += -y[ii]*(endo + activeEndo); // Endocytosis
+			dydt[ii+halfL] += y[ii]*(endo + activeEndo)/internalFrac - kDeg*y[ii+halfL]; // Endocytosis, degradation
 		} else {
-			dydt[ii] = -y[ii]*endo + kRec*(1.0-sortF)*y[ii+halfL]*internalFrac; // Endocytosis, recycling
-			dydt[ii+halfL] = y[ii]*endo/internalFrac - kRec*(1.0-sortF)*y[ii+halfL] - (kDeg*sortF)*y[ii+halfL]; // Endocytosis, recycling, degradation
+			dydt[ii] += -y[ii]*endo + kRec*(1.0-sortF)*y[ii+halfL]*internalFrac; // Endocytosis, recycling
+			dydt[ii+halfL] += y[ii]*endo/internalFrac - kRec*(1.0-sortF)*y[ii+halfL] - (kDeg*sortF)*y[ii+halfL]; // Endocytosis, recycling, degradation
 		}
 	}
 
@@ -241,42 +229,30 @@ array<double, 52> trafficking(const double * const y, array<double, 11> tfR) {
 	dydt[18] += tfR[9];
 	dydt[22] += tfR[10];
 
-	return dydt;
+	// Degradation does lead to some clearance of ligand in the endosome
+	for (size_t ii = 0; ii < 4; ii++) {
+		dydt[52 + ii] -= dydt[52 + ii] * kDeg;
+	}
 }
 
 
-array<double, 56> fullModel(const double * const y, const array<double, 17> r, array<double, 11> tfR) {
+void fullModel(const double * const y, const array<double, 17> r, array<double, 11> tfR, double *dydt) {
 	// Implement full model.
+	fill(dydt, dydt + 56, 0.0);
 
-	// Initialize vector
-	array<double, 56> dydt;
-
-	// Calculate cell surface reactions
-	array<double, 26> dydt_surf = dy_dt(y, r.data());
-
+	// Calculate endosomal reactions
 	array<double, 17> rr = r;
 	copy_n(y + 52, 4, rr.begin());
 
-	// Calculate endosomal reactions
-	array<double, 26> dydt_int = dy_dt(y + 26, rr.data());
+	// Calculate cell surface and endosomal reactions
+	dy_dt(y, r.data(), dydt);
+	dy_dt(y + 26, rr.data(), dydt + 26);
 
 	// Handle trafficking
-	// _Leave off the ligands on the end
-	array<double, 52> traf = trafficking(y, tfR);
+	trafficking(y, tfR, dydt);
 
 	// Handle endosomal ligand balance.
-	array<double, 4> ligConsume = findLigConsume(dydt_int);
-
-	copy(traf.begin(), traf.end(), dydt.begin());
-
-	for (size_t ii = 0; ii < dydt_surf.size(); ii++) {
-		dydt[ii] += dydt_surf[ii];
-		dydt[ii+26] += dydt_int[ii];
-	}
-
-	copy(ligConsume.begin(), ligConsume.end(), dydt.begin()+52);
-
-	return dydt;
+	findLigConsume(dydt);
 }
 
 
@@ -310,7 +286,7 @@ int fullModelCVode (const double, const N_Vector xx, N_Vector dxxdt, void *user_
 
 	// Get the data in the right form
 	if (NV_LENGTH_S(xx) == xxArr.size()) { // If we're using the full model
-		copy_n(NV_DATA_S(xx), xxArr.size(), xxArr.begin());
+		fullModel(xxArr.data(), rIn->rxn, rIn->trafRates, NV_DATA_S(dxxdt));
 	} else if (NV_LENGTH_S(xx) == IL2_nassoc()) { // If it looks like we're using the IL2 model
 		wrapIDX = IL2_assoc();
 
@@ -324,16 +300,11 @@ int fullModelCVode (const double, const N_Vector xx, N_Vector dxxdt, void *user_
 		}
 
 		assert(curIDX == IL2_nassoc());
-	} else {
-		throw runtime_error(string("Failed to find the right wrapper."));
-	}
 
-	array<double, 56> dydt = fullModel(xxArr.data(), rIn->rxn, rIn->trafRates);
+		array<double, 56> dydt;
 
-	// Now get the data back out
-	if (NV_LENGTH_S(xx) == xxArr.size()) { // If we're using the full model
-		copy_n(dydt.begin(), NV_LENGTH_S(dxxdt), NV_DATA_S(dxxdt));
-	} else if (NV_LENGTH_S(xx) == IL2_nassoc()) {
+		fullModel(xxArr.data(), rIn->rxn, rIn->trafRates, dydt.data());
+
 		curIDX = 0;
 		for (size_t ii = 0; ii < xxArr.size(); ii++) {
 			if (wrapIDX[ii]) {
@@ -344,7 +315,7 @@ int fullModelCVode (const double, const N_Vector xx, N_Vector dxxdt, void *user_
 
 		assert(curIDX == IL2_nassoc());
 	} else {
-		throw runtime_error(string("Failed to find the right wrapper on return."));
+		throw runtime_error(string("Failed to find the right wrapper."));
 	}
 
 	return 0;
@@ -360,9 +331,7 @@ extern "C" void fullModel_C(const double * const y_in, double t, double *dydt_ou
 	copy_n(rxn_in, r.size(), r.begin());
 	copy_n(tfr_in, tf.size(), tf.begin());
 
-	array<double, 56> dydt = fullModel(y_in, r, tf);
-
-	copy_n(dydt.begin(), dydt.size(), dydt_out);
+	fullModel(y_in, r, tf, dydt_out);
 }
 
 
