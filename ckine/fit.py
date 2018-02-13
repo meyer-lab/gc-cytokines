@@ -11,14 +11,14 @@ def IL2_activity_input(IL2, rxnRates, trafRates):
     """Takes in the reaction rates, traficking rates, and the amount of IL2 that you want to simulate with, and it runs the model."""
     rxnRates[0] = IL2
 
-    ts = np.linspace(1., 500, 2)
+    ts = np.array([500.])
 
     ys, retVal = runCkine(ts, rxnRates, trafRates)
 
     if retVal < 0:
         return -100
 
-    return getTotalActiveCytokine(0, ys[1, :])
+    return getTotalActiveCytokine(0, ys[0, :])
 
 
 def IL2_convertRates(unkVec):
@@ -155,7 +155,7 @@ class build_model:
         """This is the sampling that actually runs the model."""
         with self.M:
             try:
-                self.trace = pm.sample(init='advi')
+                self.trace = pm.sample()
             except ValueError:
                 # Something went wrong, so print out the variables.
                 print("Test point:")
