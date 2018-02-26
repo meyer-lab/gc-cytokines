@@ -21,7 +21,7 @@ Manuscript/Manuscript.pdf: Manuscript/Manuscript.tex
 	rm -f ./Manuscript/Manuscript.b* ./Manuscript/Manuscript.aux ./Manuscript/Manuscript.fls
 
 ckine/ckine.so: ckine/model.cpp
-	g++ -std=c++11 ckine/model.cpp -O3 --shared -fPIC -lsundials_cvode -lsundials_nvecserial -lm -o ckine/ckine.so
+	g++ -std=c++11 -mavx -march=native ckine/model.cpp -O3 --shared -fPIC -lsundials_cvode -lsundials_nvecserial -lm -o ckine/ckine.so
 
 Manuscript/index.html: Manuscript/Text/*.md
 	pandoc -s $(pan_common) -t html5 --mathjax -c ./Templates/kultiad.css --template=$(tdir)/html.template -o $@
