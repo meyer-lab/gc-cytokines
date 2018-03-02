@@ -28,6 +28,7 @@ pipeline {
     }
     stage('Report') {
       steps {
+        sh 'make doc'
         archiveArtifacts artifacts: 'Manuscript/Manuscript.pdf', onlyIfSuccessful: true
         publishHTML([
           allowMissing: false,
@@ -58,6 +59,15 @@ pipeline {
           normal: 'CITE',
           pattern: '**/*.py, **/*.md',
           unHealthy: ''])
+
+        publishHTML([
+          allowMissing: false,
+          alwaysLinkToLastBuild: false,
+          keepAll: true,
+          reportDir: 'docs/build',
+          reportFiles: 'index.html',
+          reportName: 'Sphinx Documentation',
+          reportTitles: ''])
       }
     }
   }
