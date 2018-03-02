@@ -13,6 +13,20 @@ with open(filename, 'rb') as file:
 
 mat, values = sample[0], sample[1]
 
+
+def z_score_values(A):
+    '''Function that takes in the values tensor and z-scores it.'''
+    B = np.zeros_like(A)
+    for i in range(A.shape[2]):
+        slice = A[:,:,i]
+        mu = np.mean(slice)
+        sigma = np.std(slice)
+        z_scored_slice = (slice - mu)/sigma
+        B[:,:,i] = z_scored_slice
+    return B
+
+values_z = z_score_values(values)
+
 #Find which combinations have low gc expression vs high gc expression
 gc_low = np.zeros(len(mat))
 IL2Ra_low = np.zeros(len(mat))
@@ -143,7 +157,7 @@ Values_high_list = [IL2Ra_high, IL2Rb_high, gc_high, IL15Ra_high, IL7Ra_high, IL
 
 
 #Perform Parafac tensor decomposition
-factors = parafac(values,rank = 2)
+factors = parafac(values_z,rank = 2)
 
 #Generate a plot for component 1 vs component 2 of the factors[2] above representing our values
 labels = ['IL2', 'IL15', 'IL7', 'IL9', 'IL2Ra', 'IL2Rb', 'gc', 'IL15Ra', 'IL7Ra', 'IL9R', 'IL2Ra', 'IL2Rb', 'gc', 'IL15Ra', 'IL7Ra', 'IL9R']
@@ -176,13 +190,13 @@ for i in range(len(factors[2])):
             plt.scatter(factors[2][:,0][i], factors[2][:,1][i], color = c)
         ax.annotate(labels[i], xy=(factors[2][:,0][i], factors[2][:,1][i]), xytext = (0, 0), textcoords = 'offset points')
 
-plt.xlabel('Component One')
-plt.ylabel('Component Two')
+plt.xlabel('Component Three')
+plt.ylabel('Component Four')
 plt.title('Values decomposition')
 plt.legend()
 plt.show()
 
-#Generate a plot for component 1 vs component 2 of the factors[1] above representing our values
+#Generate a plot for component 1 vs component 2 of the factors[1] above representing our timepoints
 fig = plt.figure()
 ax = fig.add_subplot(111)
 for i in range(len(factors[1])):
