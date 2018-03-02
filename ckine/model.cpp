@@ -6,6 +6,10 @@
 #include <nvector/nvector_serial.h>  /* serial N_Vector types, fcts., macros */
 #include <cvode/cvode.h>            /* prototypes for CVODE fcts., consts. */
 #include <string>
+#include <cvode/cvode_spils.h>           /* access to CVSpils interface       */
+#include <sunlinsol/sunlinsol_spgmr.h>   /* access to SPGMR SUNLinearSolver   */
+#include <sunlinsol/sunlinsol_spbcgs.h>  /* access to SPBCGS SUNLinearSolver  */
+#include <sunlinsol/sunlinsol_sptfqmr.h> /* access to SPTFQMR SUNLinearSolver */
 #include <sundials/sundials_dense.h>
 #include <sunmatrix/sunmatrix_dense.h>
 #include <sunlinsol/sunlinsol_dense.h>
@@ -15,7 +19,6 @@
 
 using std::array;
 using std::copy;
-using std::copy_n;
 using std::vector;
 using std::fill;
 using std::string;
@@ -89,7 +92,7 @@ ratesS param(const double * const rxn, const double * const tfR) {
 	r.kRec = tfR[3];
 	r.kDeg = tfR[4];
 
-	copy_n(tfR + 5, 6, r.Rexpr.begin());
+	std::copy_n(tfR + 5, 6, r.Rexpr.begin());
 
 	return r;
 }
@@ -331,15 +334,12 @@ void* solver_setup(N_Vector init, void * params) {
 		throw std::runtime_error(string("Error calling CVodeSVtolerances in solver_setup."));
 	}
 	N_VDestroy_Serial(abbstol);
-
-	SUNMatrix A = SUNDenseMatrix((int) NV_LENGTH_S(init), (int) NV_LENGTH_S(init));
-
-	SUNLinearSolver LS = SUNDenseLinearSolver(init, A);
 	
 	// Call CVDense to specify the CVDENSE dense linear solver
-	if (CVDlsSetLinearSolver(cvode_mem, LS, A) < 0) {
+	// Also SUNSPBCGS and SUNSPTFQMR options
+	if (CVSpilsSetLinearSolver(cvode_mem, SUNSPGMR(init, PREC_NONE, 0)) < 0) {
 		CVodeFree(&cvode_mem);
-		throw std::runtime_error(string("Error calling CVDense in solver_setup."));
+		throw std::runtime_error(string("Error calling CVSpilsSetLinearSolver in solver_setup."));
 	}
 	
 	// Pass along the parameter structure to the differential equations
@@ -396,7 +396,7 @@ extern "C" int runCkine (double *tps, size_t ntps, double *out, double *rxnRates
 
 		// Copy out result
 		if (NV_LENGTH_S(state) == y0.size()) {
-			copy_n(NV_DATA_S(state), y0.size(), out + y0.size()*itps);
+			std::copy_n(NV_DATA_S(state), y0.size(), out + y0.size()*itps);
 		} else { // If we're dealing with a reduced model
 			for (size_t ii = 0; ii < IL2_assoc.size(); ii++) {
 				out[y0.size()*itps + IL2_assoc[ii]] = NV_Ith_S(state, ii);

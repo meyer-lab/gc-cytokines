@@ -2,7 +2,7 @@ fdir = ./Manuscript/Figures
 tdir = ./Manuscript/Templates
 pan_common = -F pandoc-crossref -F pandoc-citeproc --filter=$(tdir)/figure-filter.py -f markdown ./Manuscript/Text/*.md
 
-.PHONY: clean test all testprofile testcover
+.PHONY: clean test all testprofile testcover doc
 
 all: ckine/ckine.so Manuscript/index.html Manuscript/Manuscript.pdf Manuscript/Manuscript.docx Manuscript/CoverLetter.docx
 
@@ -44,6 +44,7 @@ Manuscript/CoverLetter.pdf: Manuscript/CoverLetter.md
 clean:
 	rm -f ./Manuscript/Manuscript.* ./Manuscript/index.html Manuscript/CoverLetter.docx Manuscript/CoverLetter.pdf
 	rm -f $(fdir)/Figure* ckine/ckine.so profile.p* stats.dat .coverage nosetests.xml coverage.xml ckine.out
+	rm -rf docs/build/* docs/build/.buildinfo docs/build/.doctrees docs/build/.nojekyll docs/source/ckine* docs/source/modules.rst
 
 test: ckine/ckine.so
 	nosetests3 -s --with-timer --timer-top-n 5
@@ -56,3 +57,7 @@ stats.dat: ckine/ckine.so
 
 testprofile: stats.dat
 	pyprof2calltree -i stats.dat -k
+
+doc: ckine/ckine.so
+	sphinx-apidoc -o docs/source ckine
+	sphinx-build docs/source docs/build
