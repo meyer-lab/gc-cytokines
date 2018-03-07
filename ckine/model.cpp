@@ -356,9 +356,15 @@ void* solver_setup(N_Vector init, void * params) {
 
 extern "C" int runCkine (double *tps, size_t ntps, double *out, double *rxnRatesIn, double *trafRatesIn) {
 	ratesS rattes = param(rxnRatesIn, trafRatesIn);
+	size_t itps = 0;
 
 	array<double, 56> y0 = solveAutocrine(&rattes);
 	N_Vector state;
+
+	if (tps[0] == 0) {
+		std::copy_n(y0.begin(), y0.size(), out);
+		itps = 1;
+	}
 
 	// Fill output values with 0's
 	fill(out, out + ntps*y0.size(), 0.0);
@@ -377,7 +383,7 @@ extern "C" int runCkine (double *tps, size_t ntps, double *out, double *rxnRates
 
 	double tret = 0;
 
-	for (size_t itps = 0; itps < ntps; itps++) {
+	for (; itps < ntps; itps++) {
 		if (tps[itps] < tret) {
 			std::cout << "Can't go backwards." << std::endl;
 			N_VDestroy_Serial(state);
