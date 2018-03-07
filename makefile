@@ -33,13 +33,13 @@ Manuscript/Manuscript.docx: Manuscript/Text/*.md
 	rm -r ./Figures
 
 Manuscript/Manuscript.tex: Manuscript/Text/*.md Manuscript/index.html
-	pandoc -s $(pan_common) --template=$(tdir)/default.latex --latex-engine=xelatex -o $@
+	pandoc -s $(pan_common) --template=$(tdir)/default.latex --pdf-engine=xelatex -o $@
 
 Manuscript/CoverLetter.docx: Manuscript/CoverLetter.md
 	pandoc -f markdown $< -o $@
 
 Manuscript/CoverLetter.pdf: Manuscript/CoverLetter.md
-	pandoc --latex-engine=xelatex --template=/Users/asm/.pandoc/letter-templ.tex $< -o $@
+	pandoc --pdf-engine=xelatex --template=/Users/asm/.pandoc/letter-templ.tex $< -o $@
 
 clean:
 	rm -f ./Manuscript/Manuscript.* ./Manuscript/index.html Manuscript/CoverLetter.docx Manuscript/CoverLetter.pdf
