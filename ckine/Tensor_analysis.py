@@ -210,7 +210,7 @@ plt.ylabel('Component Two')
 plt.title('Timepoint Decomposition')
 plt.show()
 
-#Generate a plot for component 1 vs component 2 of the factors[0] above representing our values
+#Generate a plot for component 1 vs component 2 of the factors[0] above representing our combinations
 for i in range(10):
     fig = plt.figure()
     count = 0
