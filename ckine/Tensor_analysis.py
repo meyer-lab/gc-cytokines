@@ -190,8 +190,8 @@ for i in range(len(factors[2])):
             plt.scatter(factors[2][:,0][i], factors[2][:,1][i], color = c)
         ax.annotate(labels[i], xy=(factors[2][:,0][i], factors[2][:,1][i]), xytext = (0, 0), textcoords = 'offset points')
 
-plt.xlabel('Component Three')
-plt.ylabel('Component Four')
+plt.xlabel('Component One')
+plt.ylabel('Component Two')
 plt.title('Values decomposition')
 plt.legend()
 plt.show()
