@@ -56,10 +56,6 @@ def activity_surf_tot(y_of_combos):
             values[i][j] = activity_surface_total(y_of_combos[i][j])
     return values
 
-#Actually Return the 16 values per timepoint per combination
-#y_of_combinations = findy()
-#values = activity_surf_tot(y_of_combinations)
-
 """Important Notes:
     y_of_combos is a multidimentional matrix of size (length mesh x 100 timeponts x 56 values of y)
     values is also a multidementinal matrix of size (length mesh x 100 x 16 values for cytokine activity, surface receptors amount, and total receptors amount)
