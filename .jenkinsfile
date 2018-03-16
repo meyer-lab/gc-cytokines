@@ -7,17 +7,17 @@ pipeline {
         sh 'make clean'
       }
     }
-    stage('Build') {
-      steps { sh 'make -j 8' }
-    }
-    stage('Test'){
-      steps {
-        sh 'make testcover'
-        sh '(pylint3 --rcfile=.pylintrc ckine > pylint.log || echo "pylint3 exited with $?")'
+    stage('Build/Test') {
+      parallel {
+        stage('Build')     { steps { sh 'make -j 16' } }
+        stage('Lint')      { steps { sh '(pylint3 --rcfile=.pylintrc ckine > pylint.log || echo "pylint3 exited with $?")' } }
+        stage('Test')      { steps { sh 'make testcover' } }
+        stage('Doc Build') { steps { sh 'make doc' } }
       }
     }
     stage('Report') {
       steps {
+        sh 'make doc'
         archiveArtifacts artifacts: 'Manuscript/Manuscript.pdf', onlyIfSuccessful: true
         publishHTML([
           allowMissing: false,
@@ -28,15 +28,6 @@ pipeline {
           reportName: 'Manuscript',
           reportTitles: ''])
         step([
-          $class                     : 'WarningsPublisher',
-          parserConfigurations       : [[
-          parserName: 'PYLint',
-          pattern   : 'pylint.log'
-          ]],
-          unstableTotalAll           : '1000',
-          usePreviousBuildAsReference: true
-          ])
-        step([
           $class: 'CoberturaPublisher',
           autoUpdateHealth: true,
           autoUpdateStability: true,
@@ -46,17 +37,12 @@ pipeline {
           failUnstable: true,
           sourceEncoding: 'UTF_8',
           zoomCoverageChart: true])
-        step([
-          $class: 'TasksPublisher',
-          canComputeNew: false,
-          defaultEncoding: '', 
-          excludePattern: '',
-          healthy: '',
-          high: 'TODO,FIXME,XXX',
-          low: '',
-          normal: 'CITE',
-          pattern: '**/*.py, **/*.md',
-          unHealthy: ''])
+        step([$class:'TasksPublisher', canComputeNew:false, defaultEncoding:'', excludePattern:'',
+          healthy:'', high:'TODO,FIXME,XXX', low:'', normal:'CITE', pattern:'**/*.py, **/*.md', unHealthy:''])
+        step([$class:'WarningsPublisher', parserConfigurations: [[parserName:'PYLint', pattern:'pylint.log']],
+          unstableTotalAll:'1000', usePreviousBuildAsReference:true])
+        publishHTML([allowMissing:false, alwaysLinkToLastBuild:false, keepAll:true,
+          reportDir:'docs/build', reportFiles:'index.html', reportName:'Sphinx Documentation', reportTitles:''])
       }
     }
   }

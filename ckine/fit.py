@@ -2,33 +2,23 @@
 This file includes the classes and functions necessary to fit the IL2 model to the experimental data.
 """
 import pymc3 as pm, theano.tensor as T, os
-from scipy.integrate import odeint
 import numpy as np, pandas as pds
-from .model import solveAutocrine, getTotalActiveCytokine, printModel, __IL2_assoc, wrapper
+from .model import getTotalActiveCytokine, runCkine
 from .differencing_op import centralDiff
 
 
-# this takes the values of input parameters and calls odeint, then puts the odeint output into IL2_pSTAT_activity
-def IL2_activity_input(y0, IL2, rxnRates, trafRates):
-    """Takes in the reaction rates, traficking rates, and the amount of IL2 that you want to simulate with, and it runs the model odeint."""
+def IL2_activity_input(IL2, rxnRates, trafRates):
+    """Takes in the reaction rates, traficking rates, and the amount of IL2 that you want to simulate with, and it runs the model."""
     rxnRates[0] = IL2
 
-    ddfunc = lambda y, t: wrapper(y, t, rxnRates, trafRates, __IL2_assoc)
-    ts = np.linspace(0., 500, 2)
+    ts = np.array([500.])
 
-    ys, infodict = odeint(ddfunc, y0[__IL2_assoc], ts, mxstep=12000, full_output=True, rtol=1.0E-5, atol=1.0E-3)
+    ys, retVal = runCkine(ts, rxnRates, trafRates)
 
-    ysOut = np.zeros(56, dtype=np.float64)
-
-    ysOut[__IL2_assoc] = ys[1, :]
-
-    if infodict['tcur'] < np.max(ts):
-        print("IL2 conc: " + str(IL2))
-        printModel(rxnRates, trafRates)
-        print(infodict)
+    if retVal < 0:
         return -100
 
-    return getTotalActiveCytokine(0, ysOut)
+    return getTotalActiveCytokine(0, ys[0, :])
 
 
 def IL2_convertRates(unkVec):
@@ -41,6 +31,50 @@ def IL2_convertRates(unkVec):
     tfR[0:8] = unkVec[3:11]
 
     return (rxnRates, tfR)
+
+
+def surf_IL2Rb(rxnRates, trafRates, IL2_conc):
+    # times from experiment are hard-coded into this function
+    ts = np.array(([0.01, 2., 5., 15., 30., 60., 90.]))
+
+    rxnRates[0] = IL2_conc # the concentration of IL2 is rxnRates[0]
+
+    ys, retVal = runCkine(ts, rxnRates, trafRates)
+
+    if retVal < 0:
+        return -100
+
+    sIL2Rb = ys[:,1] # y[:,1] represents the surface IL2Rb value in fullModel
+
+    return 10. * (sIL2Rb / sIL2Rb[0]) # % sIL2Rb relative to initial amount
+
+
+class IL2Rb_trafficking:
+    def __init__(self):
+        path = os.path.dirname(os.path.abspath(__file__))
+        data = pds.read_csv(os.path.join(path, 'data/IL2Ra+_surface_IL2RB_datasets.csv')) # imports csv file into pandas array
+        self.numpy_data = data.as_matrix() # all of the IL2Rb trafficking data with IL2Ra+... first row contains headers... 9 columns and 8 rows... first column is time
+        data2 = pds.read_csv(os.path.join(path, "data/IL2Ra-_surface_IL2RB_datasets.csv"))
+        self.numpy_data2 = data2.as_matrix() # all of the IL2Rb trafficking data with IL2Ra-... first row contains headers... 9 columns and 8 rows... first column is time
+
+        self.concs = 14
+
+    def calc(self, unkVec):
+        # Convert the vector of values to dicts
+        rxnRates, tfR = IL2_convertRates(unkVec)
+
+        # IL2Ra- cells
+        tfR2 = tfR.copy()
+        tfR2[5] = 0.0
+
+        diff1 = surf_IL2Rb(rxnRates, tfR, 1) - self.numpy_data[:, 1] # the second column of numpy_data has all the 1nM IL2Ra+ data
+        diff2 = surf_IL2Rb(rxnRates, tfR, 500) - self.numpy_data[:, 5] # the sixth column of numpy_data has all the 500 nM IL2Ra+ data
+        diff3 = surf_IL2Rb(rxnRates, tfR2, 1) - self.numpy_data2[:, 1] # the second column of numpy_data2 has all the 1nM IL2Ra- data
+        diff4 = surf_IL2Rb(rxnRates, tfR2, 500) - self.numpy_data2[:, 5] # the sixth column of numpy_data2 has all the 500 nM IL2Ra- data
+
+        all_diffs = np.concatenate((diff1, diff2, diff3, diff4))
+
+        return all_diffs
 
 
 # this takes all the desired IL2 values we want to test and gives us the maximum activity value
@@ -57,7 +91,7 @@ class IL2_sum_squared_dist:
         self.concs = len(self.IL2s)
         self.fit_data = np.concatenate((self.numpy_data[:, 6], self.numpy_data[:, 2]))
 
-    def calc_schedule(self, unkVec, pool):
+    def calc(self, unkVec):
         """Simulate the 2 experiments: one w/ IL2Ra and one without it. It is making a list of promises which will be calculated and returned as output."""
         # Convert the vector of values to dicts
         rxnRates, tfR = IL2_convertRates(unkVec)
@@ -66,28 +100,13 @@ class IL2_sum_squared_dist:
         tfR2 = tfR.copy()
         tfR2[5] = 0.0
 
-        # Find autocrine state
-        yAutocrine = solveAutocrine(tfR)
-        yAutocrine2 = solveAutocrine(tfR2)
+        actVec = np.zeros(self.concs, dtype=np.float64)
+        actVec2 = np.zeros(self.concs, dtype=np.float64)
 
         # Loop over concentrations of IL2
-        output = list()
-        output2 = list()
-
-        for _, ILc in enumerate(self.IL2s):
-            output.append(pool.submit(IL2_activity_input, yAutocrine, ILc, rxnRates.copy(), tfR))
-
-        for _, ILc in enumerate(self.IL2s):
-            output2.append(pool.submit(IL2_activity_input, yAutocrine2, ILc, rxnRates.copy(), tfR2))
-
-        return (output, output2)
-
-    def calc_reduce(self, inT):
-        """After getting all of the promises first, calc_reduce is going to convert all those promises into actual values and return the difference between the measurements and the simulation."""
-        output, output2 = inT
-
-        actVec = np.fromiter((item.result() for item in output), np.float64, count=self.concs)
-        actVec2 = np.fromiter((item.result() for item in output2), np.float64, count=self.concs)
+        for ii, ILc in enumerate(self.IL2s):
+            actVec[ii] = IL2_activity_input(ILc, rxnRates.copy(), tfR)
+            actVec2[ii] = IL2_activity_input(ILc, rxnRates.copy(), tfR2)
 
         # Normalize to the maximal activity, put together into one vector
         actVec = np.concatenate((actVec / np.max(actVec), actVec2 / np.max(actVec2)))
@@ -95,16 +114,12 @@ class IL2_sum_squared_dist:
         # value we're trying to minimize is the distance between the y-values on points of the graph that correspond to the same IL2 values
         return self.fit_data - actVec
 
-    def calc(self, unkVec, pool):
-        """ Just get the solution in one pass. """
-        inT = self.calc_schedule(unkVec, pool)
-        return self.calc_reduce(inT)
-
 
 class build_model:
     """Going to load the data from the CSV file at the very beginning of when build_model is called... needs to be separate member function to avoid uploading file thousands of times."""
     def __init__(self):
         self.dst = IL2_sum_squared_dist()
+        self.IL2Rb = IL2Rb_trafficking()
         self.M = self.build()
 
     def build(self):
@@ -121,9 +136,15 @@ class build_model:
             unkVec = T.concatenate((rxnrates, endo_activeEndo, T.stack(sortF), kRec_kDeg, Rexpr))
 
             Y = centralDiff(self.dst)(unkVec) # fitting the data based on dst.calc for the given parameters
+
+            Y_int = centralDiff(self.IL2Rb)(unkVec) # fitting the data based on dst.calc for the given parameters
+
             pm.Deterministic('Y', Y) # this line allows us to see the traceplots in read_fit_data.py... it lets us know if the fitting process is working
 
+            pm.Deterministic('Y_int', Y_int)
+
             pm.Normal('fitD', sd=0.1, observed=Y) # TODO: Find an empirical value for the SEM
+            pm.Normal('fitD_int', sd=0.1, observed=Y_int) # TODO: Find an empirical value for the SEM
 
             # Save likelihood
             pm.Deterministic('logp', M.logpt)

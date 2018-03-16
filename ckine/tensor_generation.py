@@ -1,10 +1,13 @@
 """
 Generate a tensor for the different y-values that arise at different timepoints during the model and with various initial conditions. The initial conditions vary the concentrations of the ligands and the expression rates of the receptors to simulate different cell lines.
+
+Important Notes:
+    y_of_combos is a multidimensional matrix of size (length mesh x 100 timeponts x 56 values of y)
+    values is also a multidimensional matrix of size (length mesh x 100 x 16 values for cytokine activity, surface receptors amount, and total receptors amount)
 """
 import numpy as np
 from tqdm import tqdm
-from scipy.integrate import odeint
-from .model import solveAutocrine, fullModel, getTotalActiveCytokine, __active_species_IDX, surfaceReceptors, totalReceptors
+from .model import getTotalActiveCytokine, runCkine, surfaceReceptors, totalReceptors
 
 
 def findy(lig, exp):
@@ -29,13 +32,13 @@ def findy(lig, exp):
     for ii in tqdm(range(len(mat))):
         #Create a new y0 everytime odeint is run per combination of values.
         trafRates[5:8], trafRates[8], trafRates[9], trafRates[10] = mat[ii,4:7], mat[ii,7], mat[ii,8], mat[ii,9]
-        y0 = solveAutocrine(trafRates)
         r[0:4] = mat[ii,0:4]
-        #Running odeint gives y for each of the 100 timepoints.
-        ddfunc = lambda y, t: fullModel(y, t, r, trafRates, __active_species_IDX)
-        temp, d = odeint(ddfunc, y0, ts, mxstep=12000, full_output=True, rtol=1.0E-5, atol=1.0E-3)
-        if d['message'] == "Integration successful.":
+
+        temp, retVal = runCkine(ts, r, trafRates)
+
+        if retVal >= 0:
             y_of_combos[ii] = temp # only assign values to ys if there isn't an error message; all errors will still be 0
+
     return y_of_combos, mat
 
 
@@ -55,8 +58,3 @@ def activity_surf_tot(y_of_combos):
         for j in range(100):
             values[i][j] = activity_surface_total(y_of_combos[i][j])
     return values
-
-"""Important Notes:
-    y_of_combos is a multidimentional matrix of size (length mesh x 100 timeponts x 56 values of y)
-    values is also a multidementinal matrix of size (length mesh x 100 x 16 values for cytokine activity, surface receptors amount, and total receptors amount)
-"""
