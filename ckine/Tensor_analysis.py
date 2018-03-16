@@ -107,10 +107,10 @@ def plot_combo_decomp(factors, mat):
     titles = ['Combination Decomposition: Low IL2Ra (red) vs High IL2Ra (blue)', 'Combination Decomposition: Low IL2Rb (red) vs High IL2Rb (blue)', 'Combination Decomposition: Low gc (red) vs High gc (blue)', 'Combination Decomposition: Low IL15Ra (red) vs High IL15Ra (blue)', 'Combination Decomposition: Low IL7Ra (red) vs High IL7Ra (blue)','Combination Decomposition: Low IL9R (red) vs High IL9R (blue)', 'Combination Decomposition: Low IL2 (red) vs High IL2 (blue)', 'Combination Decomposition: Low IL15 (red) vs High IL15 (blue)', 'Combination Decomposition: Low IL7 (red) vs High IL7 (blue)', 'Combination Decomposition: Low IL9 (red) vs High IL9 (blue)' ]
     for i in range(10):
         fig = plt.figure()
-        for j in low_highs[i,:]:
+        for j in low_highs[i+10,:]:
             j = int(j)
             plt.scatter(factors[0][:,0][j], factors[0][:,1][j], color = 'r', alpha = 0.2)
-        for j in low_highs[i+10,:]:
+        for j in low_highs[i,:]:
             j = int(j)
             plt.scatter(factors[0][:,0][j], factors[0][:,1][j], color = 'b', alpha = 0.2)
         plt.xlabel('Component One')
