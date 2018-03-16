@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 """
 Run tensor_generation file.
 """
