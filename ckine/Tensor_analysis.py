@@ -36,16 +36,16 @@ def combo_low_high(mat):
     low_high = [[] for _ in range(20)]
     #fill up low receptor expression rates first. The indices in mat refer to the indices in combination
     for k in range(len(mat)):
+        for j in range(4): #low ligand
+            if mat[k,j] <= 1e-3: #Condition for low ligand concentration
+                low_high[j].append(k)
+            else: #high ligand
+                low_high[j+10].append(k)
         for i in range(4,10):
             if mat[k,i] <= 1e-3: #Condition for low receptor expression rate
                 low_high[i].append(k)
             else:
                 low_high[i+10].append(k)
-        for j in range(4):
-            if mat[k,i] <= 1e-3: #Condition for low ligand concentration
-                low_high[j].append(k)
-            else: #high ligand
-                low_high[j+10].append(k)
     new_low_high = np.array(low_high)
 
     return new_low_high
@@ -104,13 +104,13 @@ def plot_timepoint_decomp(factors):
 def plot_combo_decomp(factors, mat):
     """This function plots the combination decomposition based on high vs low receptor expression and liand concentration."""
     low_highs = combo_low_high(mat)
-    titles = ['Combination Decomposition: Low IL2Ra (red) vs High IL2Ra (blue)', 'Combination Decomposition: Low IL2Rb (red) vs High IL2Rb (blue)', 'Combination Decomposition: Low gc (red) vs High gc (blue)', 'Combination Decomposition: Low IL15Ra (red) vs High IL15Ra (blue)', 'Combination Decomposition: Low IL7Ra (red) vs High IL7Ra (blue)','Combination Decomposition: Low IL9R (red) vs High IL9R (blue)', 'Combination Decomposition: Low IL2 (red) vs High IL2 (blue)', 'Combination Decomposition: Low IL15 (red) vs High IL15 (blue)', 'Combination Decomposition: Low IL7 (red) vs High IL7 (blue)', 'Combination Decomposition: Low IL9 (red) vs High IL9 (blue)' ]
+    titles = ['Combination Decomposition: Low IL2 (red) vs High IL2 (blue)', 'Combination Decomposition: Low IL15 (red) vs High IL15 (blue)', 'Combination Decomposition: Low IL7 (red) vs High IL7 (blue)', 'Combination Decomposition: Low IL9 (red) vs High IL9 (blue)','Combination Decomposition: Low IL2Ra (red) vs High IL2Ra (blue)', 'Combination Decomposition: Low IL2Rb (red) vs High IL2Rb (blue)', 'Combination Decomposition: Low gc (red) vs High gc (blue)', 'Combination Decomposition: Low IL15Ra (red) vs High IL15Ra (blue)', 'Combination Decomposition: Low IL7Ra (red) vs High IL7Ra (blue)','Combination Decomposition: Low IL9R (red) vs High IL9R (blue)']
     for i in range(10):
         fig = plt.figure()
-        for j in low_highs[i+10,:]:
+        for j in low_highs[i,:]:
             j = int(j)
             plt.scatter(factors[0][:,0][j], factors[0][:,1][j], color = 'r', alpha = 0.2)
-        for j in low_highs[i,:]:
+        for j in low_highs[i+10,:]:
             j = int(j)
             plt.scatter(factors[0][:,0][j], factors[0][:,1][j], color = 'b', alpha = 0.2)
         plt.xlabel('Component One')
