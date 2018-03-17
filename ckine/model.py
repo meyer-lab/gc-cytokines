@@ -159,5 +159,5 @@ def surfaceReceptors(y):
     return np.array([IL2Ra, IL2Rb, gc, IL15Ra, IL7Ra, IL9R])
 
 def totalReceptors(yVec):
-    """This function takes in a vector y and returns the amounts of all 6 receptors in both cell conpartments"""
+    """This function takes in a vector y and returns the amounts of all 6 receptors in both cell compartments"""
     return surfaceReceptors(yVec) + surfaceReceptors(yVec[26:52])
