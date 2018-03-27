@@ -6,10 +6,6 @@
 #include <nvector/nvector_serial.h>  /* serial N_Vector types, fcts., macros */
 #include <cvode/cvode.h>            /* prototypes for CVODE fcts., consts. */
 #include <string>
-#include <cvode/cvode_spils.h>           /* access to CVSpils interface       */
-#include <sunlinsol/sunlinsol_spgmr.h>   /* access to SPGMR SUNLinearSolver   */
-#include <sunlinsol/sunlinsol_spbcgs.h>  /* access to SPBCGS SUNLinearSolver  */
-#include <sunlinsol/sunlinsol_sptfqmr.h> /* access to SPTFQMR SUNLinearSolver */
 #include <sundials/sundials_dense.h>
 #include <sunmatrix/sunmatrix_dense.h>
 #include <sunlinsol/sunlinsol_dense.h>
@@ -22,6 +18,22 @@ using std::copy;
 using std::vector;
 using std::fill;
 using std::string;
+
+std::array<bool, 26> __active_species_IDX() {
+	std::array<bool, 26> __active_species_IDX;
+	std::fill(__active_species_IDX.begin(), __active_species_IDX.end(), false);
+
+	__active_species_IDX[8] = true;
+	__active_species_IDX[9] = true;
+	__active_species_IDX[16] = true;
+	__active_species_IDX[17] = true;
+	__active_species_IDX[21] = true;
+	__active_species_IDX[25] = true;
+
+	return __active_species_IDX;
+}
+
+const std::array<bool, 26> activeV = __active_species_IDX();
 
 ratesS param(const double * const rxn, const double * const tfR) {
 	ratesS r;
@@ -214,7 +226,7 @@ void trafficking(const double * const y, const ratesS * const r, double * const 
 
 	// Degradation does lead to some clearance of ligand in the endosome
 	for (size_t ii = 0; ii < 4; ii++) {
-		dydt[52 + ii] -= dydt[52 + ii] * r->kDeg;
+		dydt[52 + ii] -= y[52 + ii] * r->kDeg;
 	}
 }
 
@@ -242,7 +254,7 @@ int fullModelCVode (const double, const N_Vector xx, N_Vector dxxdt, void *user_
 
 	// Get the data in the right form
 	if (NV_LENGTH_S(xx) == xxArr.size()) { // If we're using the full model
-		fullModel(xxArr.data(), rIn, NV_DATA_S(dxxdt));
+		fullModel(NV_DATA_S(xx), rIn, NV_DATA_S(dxxdt));
 	} else if (NV_LENGTH_S(xx) == IL2_assoc.size()) { // If it looks like we're using the IL2 model
 		fill(xxArr.begin(), xxArr.end(), 0.0);
 
@@ -304,53 +316,70 @@ static void errorHandler(int error_code, const char *module, const char *functio
 	std::cout << "Error code: " << error_code << std::endl;
 }
 
-void* solver_setup(N_Vector init, void * params) {
+struct solver {
+	void *cvode_mem;
+	SUNLinearSolver LS;
+	N_Vector state;
+	SUNMatrix A;
+};
+
+
+void solverFree(solver *sMem) {
+	N_VDestroy_Serial(sMem->state);
+	CVodeFree(&sMem->cvode_mem);
+	SUNLinSolFree(sMem->LS);
+	SUNMatDestroy(sMem->A);
+}
+
+
+void solver_setup(solver *sMem, void * params) {
 	/* Call CVodeCreate to create the solver memory and specify the
 	 * Backward Differentiation Formula and the use of a Newton iteration */
-	void *cvode_mem = CVodeCreate(CV_BDF, CV_NEWTON);
-	if (cvode_mem == NULL) {
-		CVodeFree(&cvode_mem);
+	sMem->cvode_mem = CVodeCreate(CV_BDF, CV_NEWTON);
+	if (sMem->cvode_mem == NULL) {
+		solverFree(sMem);
 		throw std::runtime_error(string("Error calling CVodeCreate in solver_setup."));
 	}
 	
-	CVodeSetErrHandlerFn(cvode_mem, &errorHandler, params);
+	CVodeSetErrHandlerFn(sMem->cvode_mem, &errorHandler, params);
 
 	/* Call CVodeInit to initialize the integrator memory and specify the
 	 * user's right hand side function in y'=f(t,y), the inital time T0, and
 	 * the initial dependent variable vector y. */
-	if (CVodeInit(cvode_mem, fullModelCVode, 0.0, init) < 0) {
-		CVodeFree(&cvode_mem);
+	if (CVodeInit(sMem->cvode_mem, fullModelCVode, 0.0, sMem->state) < 0) {
+		solverFree(sMem);
 		throw std::runtime_error(string("Error calling CVodeInit in solver_setup."));
 	}
 	
-	N_Vector abbstol = N_VNew_Serial(NV_LENGTH_S(init));
+	N_Vector abbstol = N_VNew_Serial(NV_LENGTH_S(sMem->state));
 	N_VConst(abstolIn, abbstol);
 	
 	/* Call CVodeSVtolerances to specify the scalar relative tolerance
 	 * and vector absolute tolerances */
-	if (CVodeSVtolerances(cvode_mem, reltolIn, abbstol) < 0) {
+	if (CVodeSVtolerances(sMem->cvode_mem, reltolIn, abbstol) < 0) {
 		N_VDestroy_Serial(abbstol);
-		CVodeFree(&cvode_mem);
+		solverFree(sMem);
 		throw std::runtime_error(string("Error calling CVodeSVtolerances in solver_setup."));
 	}
 	N_VDestroy_Serial(abbstol);
+
+	sMem->A = SUNDenseMatrix(NV_LENGTH_S(sMem->state), NV_LENGTH_S(sMem->state));
+	sMem->LS = SUNDenseLinearSolver(sMem->state, sMem->A);
 	
 	// Call CVDense to specify the CVDENSE dense linear solver
 	// Also SUNSPBCGS and SUNSPTFQMR options
-	if (CVSpilsSetLinearSolver(cvode_mem, SUNSPGMR(init, PREC_NONE, 0)) < 0) {
-		CVodeFree(&cvode_mem);
-		throw std::runtime_error(string("Error calling CVSpilsSetLinearSolver in solver_setup."));
+	if (CVDlsSetLinearSolver(sMem->cvode_mem, sMem->LS, sMem->A) < 0) {
+		solverFree(sMem);
+		throw std::runtime_error(string("Error calling CVDlsSetLinearSolver in solver_setup."));
 	}
 	
 	// Pass along the parameter structure to the differential equations
-	if (CVodeSetUserData(cvode_mem, params) < 0) {
-		CVodeFree(&cvode_mem);
+	if (CVodeSetUserData(sMem->cvode_mem, params) < 0) {
+		solverFree(sMem);
 		throw std::runtime_error(string("Error calling CVodeSetUserData in solver_setup."));
 	}
 
-	CVodeSetMaxNumSteps(cvode_mem, 2000000);
-	
-	return cvode_mem;
+	CVodeSetMaxNumSteps(sMem->cvode_mem, 2000000);
 }
 
 
@@ -359,7 +388,8 @@ extern "C" int runCkine (double *tps, size_t ntps, double *out, double *rxnRates
 	size_t itps = 0;
 
 	array<double, 56> y0 = solveAutocrine(&rattes);
-	N_Vector state;
+
+	solver sMem;
 
 	if (tps[0] == 0) {
 		std::copy_n(y0.begin(), y0.size(), out);
@@ -371,46 +401,43 @@ extern "C" int runCkine (double *tps, size_t ntps, double *out, double *rxnRates
 
 	// Can we use the reduced IL2 only model
 	if (rattes.Rexpr[3] + rattes.Rexpr[4] + rattes.Rexpr[5] == 0.0) {
-		state = N_VNew_Serial((long) IL2_assoc.size());
+		sMem.state = N_VNew_Serial((long) IL2_assoc.size());
 
 		for (size_t ii = 0; ii < IL2_assoc.size(); ii++)
-			NV_Ith_S(state, ii) = y0[IL2_assoc[ii]];
+			NV_Ith_S(sMem.state, ii) = y0[IL2_assoc[ii]];
 	} else { // Just the full model
-		state = N_VMake_Serial((long) y0.size(), y0.data());
+		sMem.state = N_VMake_Serial((long) y0.size(), y0.data());
 	}
 
-	void *cvode_mem = solver_setup(state, (void *) &rattes);
+	solver_setup(&sMem, (void *) &rattes);
 
 	double tret = 0;
 
 	for (; itps < ntps; itps++) {
 		if (tps[itps] < tret) {
 			std::cout << "Can't go backwards." << std::endl;
-			N_VDestroy_Serial(state);
-			CVodeFree(&cvode_mem);
+			solverFree(&sMem);
 			return -1;
 		}
 
-		int returnVal = CVode(cvode_mem, tps[itps], state, &tret, CV_NORMAL);
+		int returnVal = CVode(sMem.cvode_mem, tps[itps], sMem.state, &tret, CV_NORMAL);
 		
 		if (returnVal < 0) {
 			std::cout << "CVode error in CVode. Code: " << returnVal << std::endl;
-			N_VDestroy_Serial(state);
-			CVodeFree(&cvode_mem);
+			solverFree(&sMem);
 			return returnVal;
 		}
 
 		// Copy out result
-		if (NV_LENGTH_S(state) == y0.size()) {
-			std::copy_n(NV_DATA_S(state), y0.size(), out + y0.size()*itps);
+		if (NV_LENGTH_S(sMem.state) == y0.size()) {
+			std::copy_n(NV_DATA_S(sMem.state), y0.size(), out + y0.size()*itps);
 		} else { // If we're dealing with a reduced model
 			for (size_t ii = 0; ii < IL2_assoc.size(); ii++) {
-				out[y0.size()*itps + IL2_assoc[ii]] = NV_Ith_S(state, ii);
+				out[y0.size()*itps + IL2_assoc[ii]] = NV_Ith_S(sMem.state, ii);
 			}
 		}
 	}
 
-	N_VDestroy_Serial(state);
-	CVodeFree(&cvode_mem);
+	solverFree(&sMem);
 	return 0;
 }
