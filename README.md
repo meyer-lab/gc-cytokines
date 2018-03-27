@@ -1,1 +1,1 @@
-# An activation model for the type I cytokine receptors
+# An activation model for the type I cytokine receptors.
