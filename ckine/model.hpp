@@ -48,26 +48,12 @@ struct ratesS {
 	std::array<double, 6> Rexpr;
 };
 
-const double abstolIn = 1E-5;
-const double reltolIn = 1E-7;
+const double abstolIn = 1E-3;
+const double reltolIn = 1E-5;
 const double internalV = 623.0; // Same as that used in TAM model
 const double internalFrac = 0.5; // Same as that used in TAM model
 
 // The indices carried over in the reduced IL2 model
 const std::array<size_t, 21> IL2_assoc = {{0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 52}};
 
-std::array<bool, 26> __active_species_IDX() {
-	std::array<bool, 26> __active_species_IDX;
-	std::fill(__active_species_IDX.begin(), __active_species_IDX.end(), false);
-
-	__active_species_IDX[8] = true;
-	__active_species_IDX[9] = true;
-	__active_species_IDX[16] = true;
-	__active_species_IDX[17] = true;
-	__active_species_IDX[21] = true;
-	__active_species_IDX[25] = true;
-
-	return __active_species_IDX;
-}
-
-const std::array<bool, 26> activeV = __active_species_IDX();
+extern "C" int runCkine (double *, size_t, double *, double *, double *);

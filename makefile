@@ -2,9 +2,16 @@ fdir = ./Manuscript/Figures
 tdir = ./Manuscript/Templates
 pan_common = -F pandoc-crossref -F pandoc-citeproc --filter=$(tdir)/figure-filter.py -f markdown ./Manuscript/Text/*.md
 
-.PHONY: clean test all testprofile testcover doc
+.PHONY: clean test all testprofile testcover doc testcpp
 
 all: ckine/ckine.so Manuscript/index.html Manuscript/Manuscript.pdf Manuscript/Manuscript.docx Manuscript/CoverLetter.docx
+
+UNAME_S := $(shell uname -s)
+ifeq ($(UNAME_S),Linux)
+    LINKFLAG = -Wl,-rpath=./ckine
+endif
+
+CPPLINKS = -lm -lsundials_cvode -lsundials_nvecserial -lcppunit
 
 $(fdir)/Figure%.svg: genFigures.py
 	mkdir -p ./Manuscript/Figures
@@ -20,8 +27,14 @@ Manuscript/Manuscript.pdf: Manuscript/Manuscript.tex
 	(cd ./Manuscript && latexmk -xelatex -f -quiet)
 	rm -f ./Manuscript/Manuscript.b* ./Manuscript/Manuscript.aux ./Manuscript/Manuscript.fls
 
-ckine/ckine.so: ckine/model.cpp
-	g++ -std=c++11 -mavx -march=native ckine/model.cpp -O3 --shared -fPIC -lsundials_cvode -lsundials_nvecserial -lm -o ckine/ckine.so
+ckine/ckine.so: ckine/model.cpp ckine/model.hpp
+	clang++    -std=c++11 -mavx -march=native -O3 $(CPPLINKS) ckine/model.cpp --shared -fPIC -o $@
+
+ckine/libckine.debug.so: ckine/model.cpp ckine/model.hpp
+	clang++ -g -std=c++11 -mavx -march=native -O3 $(CPPLINKS) ckine/model.cpp --shared -fPIC -o $@
+
+ckine/cppcheck: ckine/libckine.debug.so ckine/model.hpp ckine/cppcheck.cpp
+	clang++ -g -std=c++11 -L./ckine ckine/cppcheck.cpp $(CPPLINKS) -lckine.debug $(LINKFLAG) -o $@
 
 Manuscript/index.html: Manuscript/Text/*.md
 	pandoc -s $(pan_common) -t html5 --mathjax -c ./Templates/kultiad.css --template=$(tdir)/html.template -o $@
@@ -43,8 +56,10 @@ Manuscript/CoverLetter.pdf: Manuscript/CoverLetter.md
 
 clean:
 	rm -f ./Manuscript/Manuscript.* ./Manuscript/index.html Manuscript/CoverLetter.docx Manuscript/CoverLetter.pdf
-	rm -f $(fdir)/Figure* ckine/ckine.so profile.p* stats.dat .coverage nosetests.xml coverage.xml ckine.out
+	rm -f $(fdir)/Figure* ckine/ckine.so profile.p* stats.dat .coverage nosetests.xml coverage.xml ckine.out ckine/cppcheck testResults.xml
 	rm -rf docs/build/* docs/build/.buildinfo docs/build/.doctrees docs/build/.nojekyll docs/source/ckine* docs/source/modules.rst
+	rm -rf ckine/*.dSYM
+	rm -f ckine/libckine.debug.so
 
 test: ckine/ckine.so
 	nosetests3 -s --with-timer --timer-top-n 5
@@ -57,6 +72,9 @@ stats.dat: ckine/ckine.so
 
 testprofile: stats.dat
 	pyprof2calltree -i stats.dat -k
+
+testcpp: ckine/cppcheck
+	ckine/cppcheck
 
 doc: ckine/ckine.so
 	sphinx-apidoc -o docs/source ckine
