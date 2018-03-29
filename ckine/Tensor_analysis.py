@@ -4,8 +4,10 @@ Analyze tensor from Sampling.pickle and plotting.
 import os
 import pickle
 import numpy as np
+import tensorly
 from tensorly.decomposition import parafac
 import matplotlib.pyplot as plt
+tensorly.set_backend('numpy')
 
 filename = os.path.join(os.path.dirname(os.path.abspath(__file__)), "./data/Tensor_results/Sampling.pickle")
 with open(filename, 'rb') as file:
@@ -24,11 +26,22 @@ def z_score_values(A):
         B[:,:,i] = z_scored_slice
     return B
 
-def perform_decomposition(tensor):
+def perform_decomposition(tensor, r):
     '''Apply z scoring and perform PARAFAC decomposition'''
     values_z = z_score_values(tensor)
-    factors = parafac(values_z,rank = 2)
+    factors = parafac(values_z,rank = r, random_state=93)
     return factors
+
+def find_R2X(values, n_comp):
+    '''Compute R2X'''
+    factors = perform_decomposition(values , n_comp)
+    values_reconstructed = tensorly.kruskal_to_tensor(factors)
+    z_values = z_score_values(values)
+    denominator = np.var(z_values)
+    numerator = np.var(values_reconstructed - z_values)
+    R2X = 1 - numerator / denominator
+    return R2X
+
 
 def combo_low_high(mat):
     """This function determines which combinations were high and low according to our condition."""
@@ -117,9 +130,3 @@ def plot_combo_decomp(factors, mat):
         plt.ylabel('Component Two')
         plt.title(titles[i])
     return fig
-
-#Actually Apply these functions and see the plots
-factors = perform_decomposition(values)
-plot_values_decomposition(factors)
-plot_timepoint_decomp(factors)
-plot_combo_decomp(factors, mat)
