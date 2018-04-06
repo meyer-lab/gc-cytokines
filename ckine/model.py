@@ -22,6 +22,8 @@ libb.runCkine.argtypes = (ct.POINTER(ct.c_double), ct.c_uint,
 def runCkine (tps, rxn, tfr):
     global libb
 
+    assert(rxn.size == 15)
+
     yOut = np.zeros((tps.size, 56), dtype=np.float64)
 
     retVal = libb.runCkine(tps.ctypes.data_as(ct.POINTER(ct.c_double)),
@@ -40,6 +42,8 @@ def runCkine (tps, rxn, tfr):
 def dy_dt(y, t, rxn):
     global libb
 
+    assert(rxn.size == 15)
+
     yOut = np.zeros_like(y)
 
     libb.dydt_C(y.ctypes.data_as(ct.POINTER(ct.c_double)), t,
@@ -50,6 +54,8 @@ def dy_dt(y, t, rxn):
 
 def fullModel(y, t, rxn, tfr):
     global libb
+
+    assert(rxn.size == 15)
 
     yOut = np.zeros_like(y)
 

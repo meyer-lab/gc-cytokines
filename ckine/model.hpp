@@ -13,21 +13,11 @@ struct ratesS {
 	double k18rev;
 	double k22rev;
 	double k23rev;
-	double k26rev;
 	double k27rev;
 	double k29rev;
-	double k30rev;
 	double k31rev;
-	double kfbnd;
-	double k1rev;
-	double k2rev;
-	double k3fwd;
-	double k3rev;
 	double k10rev;
 	double k11rev;
-	double k13rev;
-	double k14rev;
-	double k25rev;
 	double k4rev;
 	double k7rev;
 	double k12rev;
@@ -48,12 +38,28 @@ struct ratesS {
 	std::array<double, 6> Rexpr;
 };
 
-const double abstolIn = 1E-3;
-const double reltolIn = 1E-5;
-const double internalV = 623.0; // Same as that used in TAM model
-const double internalFrac = 0.5; // Same as that used in TAM model
+// These are probably measured in the literature
+constexpr double kfbnd = 0.01; // Assuming on rate of 10^7 M-1 sec-1
+constexpr double k1rev = kfbnd * 10; // doi:10.1016/j.jmb.2004.04.038, 10 nM
 
-// The indices carried over in the reduced IL2 model
-const std::array<size_t, 21> IL2_assoc = {{0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 52}};
+constexpr double k2rev = kfbnd * 144; // doi:10.1016/j.jmb.2004.04.038, 144 nM
+constexpr double k3fwd = kfbnd / 10.0; // Very weak, > 50 uM. Voss, et al (1993). PNAS. 90, 2428–2432.
+constexpr double k3rev = 50000 * k3fwd;
+
+// Literature values for k values for IL-15
+constexpr double k13rev = kfbnd * 0.065; // based on the multiple papers suggesting 30-100 pM
+constexpr double k14rev = kfbnd * 438; // doi:10.1038/ni.2449, 438 nM
+
+// Literature values for IL-7
+constexpr double k25rev = kfbnd * 59; // DOI:10.1111/j.1600-065X.2012.01160.x, 59 nM
+constexpr double k26rev = 50000 * kfbnd; // General assumption that cytokine doesn't bind to free gc
+
+// Literature values for IL-9
+constexpr double k30rev = 50000 * kfbnd; // General assumption that cytokine doesn't bind to free gc
+
+constexpr double abstolIn = 1E-3;
+constexpr double reltolIn = 1E-6;
+constexpr double internalV = 623.0; // Same as that used in TAM model
+constexpr double internalFrac = 0.5; // Same as that used in TAM model
 
 extern "C" int runCkine (double *, size_t, double *, double *, double *);

@@ -48,7 +48,7 @@ protected:
 		array<double, 7> tps = {0.1, 1.0, 10.0, 100.0, 1000.0, 10000.0, 100000.0};
 		array<double, 56*7> output;
 		array<double, 56*7> output2;
-		array<double, 17> rxnRatesIn;
+		array<double, 15> rxnRatesIn;
 		array<double, 11> trafRatesIn;
 
 		for (size_t ii = 0; ii < 1000; ii++) {

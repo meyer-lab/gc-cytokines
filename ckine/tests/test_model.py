@@ -30,7 +30,7 @@ class TestModel(unittest.TestCase):
     def setUp(self):
         self.ts = np.array([0.0, 100000.0])
         self.y0 = np.random.lognormal(0., 1., 26)
-        self.args = np.random.lognormal(0., 1., 17)
+        self.args = np.random.lognormal(0., 1., 15)
         self.tfargs = np.random.lognormal(0., 1., 11)
         # need to convert args from an array to a tuple of numbers
 
@@ -123,12 +123,12 @@ class TestModel(unittest.TestCase):
         # Test that there's no difference
         self.assertLess(np.linalg.norm(dy1 - dy3), 1E-8)
 
-    @given(vec=harrays(np.float, 27, elements=floats(0.001, 10.0)), sortF=floats(0.1, 0.9))
+    @given(vec=harrays(np.float, 25, elements=floats(0.001, 10.0)), sortF=floats(0.1, 0.9))
     def test_runCkine(self, vec, sortF):
         vec = np.insert(vec, 2, sortF)
-        # 11 trafRates and 17 rxnRates
+        # 11 trafRates and 15 rxnRates
         trafRates = vec[0:11]
-        rxnRates = vec[11:28]
+        rxnRates = vec[11:26]
 
         ys, retVal = runCkine(self.ts, rxnRates, trafRates)
         
