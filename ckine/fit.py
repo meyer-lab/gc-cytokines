@@ -23,7 +23,7 @@ def IL2_activity_input(IL2, rxnRates, trafRates):
 
 def IL2_convertRates(unkVec):
     """This takes in a vector of the values that we are fitting and it assigns them to the different reaction rates and ligand concentrations."""
-    rxnRates = np.ones(17, dtype=np.float64)
+    rxnRates = np.ones(15, dtype=np.float64)
     rxnRates[4:7] = unkVec[0:3] # kfwd, k5rev, k6rev
     rxnRates[0:4] = 0.0 # ligands
 
