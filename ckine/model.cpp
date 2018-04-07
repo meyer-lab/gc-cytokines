@@ -167,7 +167,7 @@ void dy_dt(const double * const y, const ratesS * const r, double * const dydt, 
 }
 
 
-extern "C" void dydt_C(double *y_in, double t, double *dydt_out, double *rxn_in) {
+extern "C" void dydt_C(double *y_in, double, double *dydt_out, double *rxn_in) {
 	array<double, 12> tfr;
 
 	ratesS r = param(rxn_in, tfr.data());
@@ -176,6 +176,11 @@ extern "C" void dydt_C(double *y_in, double t, double *dydt_out, double *rxn_in)
 }
 
 
+/**
+ * @brief      Solve for the ligand consumption rate in the endosome.
+ *
+ * @param      dydt  The rate of change vector solved for the receptor species.
+ */
 void findLigConsume(double *dydt) {
 	// Calculate the ligand consumption.
 	dydt[52] -= std::accumulate(dydt+3, dydt+10, 0) / internalV;
@@ -241,7 +246,7 @@ int fullModelCVode (const double, const N_Vector xx, N_Vector dxxdt, void *user_
 }
 
 
-extern "C" void fullModel_C(const double * const y_in, double t, double *dydt_out, double *rxn_in, double *tfr_in) {
+extern "C" void fullModel_C(const double * const y_in, double, double *dydt_out, double *rxn_in, double *tfr_in) {
 	ratesS r = param(rxn_in, tfr_in);
 
 	fullModel(y_in, &r, dydt_out);
@@ -253,8 +258,6 @@ array<double, 56> solveAutocrine(const ratesS * const r) {
 	fill(y0.begin(), y0.end(), 0.0);
 
 	array<size_t, 6> recIDX = {{0, 1, 2, 10, 18, 22}};
-
-	double internalFrac = 0.5; // Same as that used in TAM model
 
 	// Expand out trafficking terms
 	double kRec = r->kRec*(1-r->sortF);
@@ -271,7 +274,7 @@ array<double, 56> solveAutocrine(const ratesS * const r) {
 }
 
 
-static void errorHandler(int error_code, const char *module, const char *function, char *msg, void *user_data) {
+static void errorHandler(int error_code, const char *module, const char *function, char *msg, void *) {
 	if (error_code == CV_WARNING) return;
 
 	std::cout << "Internal CVode error in " << function << std::endl;
@@ -300,7 +303,7 @@ void solver_setup(solver *sMem, void * params) {
 	/* Call CVodeCreate to create the solver memory and specify the
 	 * Backward Differentiation Formula and the use of a Newton iteration */
 	sMem->cvode_mem = CVodeCreate(CV_BDF, CV_NEWTON);
-	if (sMem->cvode_mem == NULL) {
+	if (sMem->cvode_mem == nullptr) {
 		solverFree(sMem);
 		throw std::runtime_error(string("Error calling CVodeCreate in solver_setup."));
 	}
@@ -355,7 +358,7 @@ extern "C" int runCkine (double *tps, size_t ntps, double *out, double *rxnRates
 
 	solver sMem;
 
-	if (tps[0] == 0) {
+	if (tps[0] < std::numeric_limits<double>::epsilon()) {
 		std::copy_n(y0.begin(), y0.size(), out);
 		itps = 1;
 	}
@@ -364,9 +367,9 @@ extern "C" int runCkine (double *tps, size_t ntps, double *out, double *rxnRates
 	fill(out, out + ntps*y0.size(), 0.0);
 
 	// Just the full model
-	sMem.state = N_VMake_Serial((long) y0.size(), y0.data());
+	sMem.state = N_VMake_Serial(static_cast<long>(y0.size()), y0.data());
 
-	solver_setup(&sMem, (void *) &rattes);
+	solver_setup(&sMem, static_cast<void *>(&rattes));
 
 	double tret = 0;
 

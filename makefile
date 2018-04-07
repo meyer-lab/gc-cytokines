@@ -1,6 +1,7 @@
 fdir = ./Manuscript/Figures
 tdir = ./Manuscript/Templates
 pan_common = -F pandoc-crossref -F pandoc-citeproc --filter=$(tdir)/figure-filter.py -f markdown ./Manuscript/Text/*.md
+compile_opts = -std=c++14 -Wno-c++98-compat -Wno-missing-prototypes -Wno-weak-vtables -Wno-global-constructors -Weverything -mavx -march=native
 
 .PHONY: clean test all testprofile testcover doc testcpp
 
@@ -28,13 +29,13 @@ Manuscript/Manuscript.pdf: Manuscript/Manuscript.tex
 	rm -f ./Manuscript/Manuscript.b* ./Manuscript/Manuscript.aux ./Manuscript/Manuscript.fls
 
 ckine/ckine.so: ckine/model.cpp ckine/model.hpp
-	clang++    -std=c++11 -mavx -march=native -O3 $(CPPLINKS) ckine/model.cpp --shared -fPIC -o $@
+	clang++    $(compile_opts) -O3 $(CPPLINKS) ckine/model.cpp --shared -fPIC -o $@
 
 ckine/libckine.debug.so: ckine/model.cpp ckine/model.hpp
-	clang++ -g -std=c++11 -mavx -march=native -O3 $(CPPLINKS) ckine/model.cpp --shared -fPIC -o $@
+	clang++ -g $(compile_opts) -O3 $(CPPLINKS) ckine/model.cpp --shared -fPIC -o $@
 
 ckine/cppcheck: ckine/libckine.debug.so ckine/model.hpp ckine/cppcheck.cpp
-	clang++ -g -std=c++11 -L./ckine ckine/cppcheck.cpp $(CPPLINKS) -lckine.debug $(LINKFLAG) -o $@
+	clang++ -g $(compile_opts) -L./ckine ckine/cppcheck.cpp $(CPPLINKS) -lckine.debug $(LINKFLAG) -o $@
 
 Manuscript/index.html: Manuscript/Text/*.md
 	pandoc -s $(pan_common) -t html5 --mathjax -c ./Templates/kultiad.css --template=$(tdir)/html.template -o $@
@@ -55,11 +56,9 @@ Manuscript/CoverLetter.pdf: Manuscript/CoverLetter.md
 	pandoc --pdf-engine=xelatex --template=/Users/asm/.pandoc/letter-templ.tex $< -o $@
 
 clean:
-	rm -f ./Manuscript/Manuscript.* ./Manuscript/index.html Manuscript/CoverLetter.docx Manuscript/CoverLetter.pdf
+	rm -f ./Manuscript/Manuscript.* ./Manuscript/index.html Manuscript/CoverLetter.docx Manuscript/CoverLetter.pdf ckine/libckine.debug.so
 	rm -f $(fdir)/Figure* ckine/ckine.so profile.p* stats.dat .coverage nosetests.xml coverage.xml ckine.out ckine/cppcheck testResults.xml
-	rm -rf docs/build/* docs/build/.buildinfo docs/build/.doctrees docs/build/.nojekyll docs/source/ckine* docs/source/modules.rst
-	rm -rf ckine/*.dSYM
-	rm -f ckine/libckine.debug.so
+	rm -rf html ckine/*.dSYM
 
 test: ckine/ckine.so
 	nosetests3 -s --with-timer --timer-top-n 5
@@ -76,6 +75,5 @@ testprofile: stats.dat
 testcpp: ckine/cppcheck
 	ckine/cppcheck
 
-doc: ckine/ckine.so
-	sphinx-apidoc -o docs/source ckine
-	sphinx-build docs/source docs/build
+doc:
+	doxygen Doxyfile
