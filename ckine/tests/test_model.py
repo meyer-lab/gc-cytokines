@@ -135,3 +135,19 @@ class TestModel(unittest.TestCase):
         # test that return value of runCkine isn't negative (model run didn't fail)
         self.assertGreaterEqual(retVal, 0)
 
+    def test_initial(self):
+        #test to check that at least one nonzero is at timepoint zero
+        r = np.zeros(15)
+        r[4:15] = np.ones(11) * (5*10**-1)
+        r[0:4] = 10**-3, 10**-3, 10**-3, 10**-3
+        
+        t = 60. * 4 # let's let the system run for 4 hours
+        ts = np.linspace(0.0, t, 100) #generate 100 evenly spaced timepoints
+        
+        trafRates = np.zeros(11)
+        trafRates[0:5] = (50* 10**-2)
+        trafRates[5:11] = 0.1,0.1,0.1,0.1,0.1,0.1
+        
+        temp, retVal = runCkine(ts, r, trafRates)
+        self.assertGreater(np.count_nonzero(temp[0,:]), 0)
+        

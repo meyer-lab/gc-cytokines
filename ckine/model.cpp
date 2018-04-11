@@ -363,9 +363,6 @@ extern "C" int runCkine (double *tps, size_t ntps, double *out, double *rxnRates
 		itps = 1;
 	}
 
-	// Fill output values with 0's
-	fill(out, out + ntps*y0.size(), 0.0);
-
 	// Just the full model
 	sMem.state = N_VMake_Serial(static_cast<long>(y0.size()), y0.data());
 
