@@ -61,7 +61,7 @@ clean:
 	rm -rf html ckine/*.dSYM
 
 test: ckine/ckine.so
-	nosetests3 -s --with-timer --timer-top-n 5
+	nosetests3 -s --with-timer --timer-top-n 20
 
 testcover: ckine/ckine.so
 	nosetests3 --with-xunit --with-xcoverage --cover-package=ckine -s --with-timer --timer-top-n 5
