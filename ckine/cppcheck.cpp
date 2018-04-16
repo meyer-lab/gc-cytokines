@@ -48,30 +48,25 @@ protected:
 		array<double, 7> tps = {{0.1, 1.0, 10.0, 100.0, 1000.0, 10000.0, 100000.0}};
 		array<double, 56*7> output;
 		array<double, 56*7> output2;
-		array<double, 15> rxnRatesIn;
-		array<double, 11> trafRatesIn;
+		array<double, 26> rxnRatesIn;
+		array<double, Nparams*Nspecies*tps.size()> soutput;
+		array<double, Nparams*Nspecies*tps.size()> soutput2;
 
-		for (size_t ii = 0; ii < 1000; ii++) {
+		for (size_t ii = 0; ii < 3; ii++) {
 			generate(rxnRatesIn.begin(), rxnRatesIn.end(), [this, &dis]() { return dis(*this->gen); });
-			generate(trafRatesIn.begin(), trafRatesIn.end(), [this, &dis]() { return dis(*this->gen); });
 
-			trafRatesIn[2] /= 10.0;
+			rxnRatesIn[15 + 2] /= 10.0;
 
-			int retVal = runCkine(tps.data(), tps.size(), output.data(), rxnRatesIn.data(), trafRatesIn.data());
+			int retVal = runCkine(tps.data(), tps.size(), output.data(), rxnRatesIn.data(), true, soutput.data());
 
 			// Run a second time to make sure we get the same thing
-			int retVal2 = runCkine(tps.data(), tps.size(), output2.data(), rxnRatesIn.data(), trafRatesIn.data());
+			int retVal2 = runCkine(tps.data(), tps.size(), output2.data(), rxnRatesIn.data(), true, soutput2.data());
 
 			std::transform(output.begin(), output.end(), output2.begin(), output2.begin(), std::minus<double>());
 			double sumDiff = inner_product(output2.begin(), output2.end(), output2.begin(), 0.0);
 
 			if (retVal < 0) {
 				for (auto i = rxnRatesIn.begin(); i != rxnRatesIn.end(); ++i)
-					std::cout << *i << ' ';
-
-				cout << std::endl;
-
-				for (auto i = trafRatesIn.begin(); i != trafRatesIn.end(); ++i)
 					std::cout << *i << ' ';
 
 				cout << std::endl;

@@ -3,6 +3,7 @@ Theano Op for using differencing for Jacobian calculation.
 """
 import numpy as np
 from theano.tensor import dot, dmatrix, dvector, Op
+from .model import runCkineU, runCkineSensi
 
 
 class centralDiff(Op):
@@ -51,3 +52,51 @@ class centralDiffGrad(Op):
                 jac[i] = (self.M.calc(dx) - f0)/epsilon
 
         outputs[0][0] = np.transpose(jac)
+
+
+class runCkineOp(Op):
+    itypes = [dvector]
+    otypes = [dvector]
+
+    def __init__(self, ts):
+        if ts.size > 1:
+            raise NotImplementedError('This Op only works with a single time point.')
+
+        self.ts = ts
+
+    def infer_shape(self, node, i0_shapes):
+        assert len(i0_shapes) == 1
+        return [(56, )]
+
+    def perform(self, node, inputs, outputs):
+        yOut, retVal = runCkineU(self.ts, inputs[0])
+
+        assert yOut.size == 56
+
+        if retVal < 0:
+            yOut[:] = -np.inf
+
+        outputs[0][0] = np.squeeze(yOut.copy())
+
+    def grad(self, inputs, g):
+        """ Calculate the runCkineOp gradient. """
+        return [dot(g[0], runCkineOpDiff(self.ts)(inputs[0]))]
+
+
+class runCkineOpDiff(Op):
+    itypes = [dvector]
+    otypes = [dmatrix]
+
+    def __init__(self, ts):
+        if ts.size > 1:
+            raise NotImplementedError('This Op only works with a single time point.')
+
+        self.ts = ts
+
+    def perform(self, node, inputs, outputs):
+        _, retVal, sensi = runCkineSensi(self.ts, inputs[0])
+
+        if retVal < 0:
+            sensi[:, :] = -np.inf
+
+        outputs[0][0] = np.squeeze(sensi)
