@@ -10,7 +10,7 @@ from ..model import dy_dt, fullModel, solveAutocrine, getTotalActiveCytokine, so
 from ..Tensor_analysis import find_R2X
 
 settings.register_profile("ci", max_examples=1000)
-settings.load_profile("ci")
+#settings.load_profile("ci")
 
 class TestModel(unittest.TestCase):
     def assertPosEquilibrium(self, X, func):

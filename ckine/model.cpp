@@ -9,6 +9,7 @@
 #include <sundials/sundials_dense.h>
 #include <sunmatrix/sunmatrix_dense.h>
 #include <sunlinsol/sunlinsol_dense.h>
+#include <cvodes/cvodes.h>             /* prototypes for CVODE fcts., consts.  */
 #include <cvode/cvode_direct.h>
 #include <iostream>
 #include "model.hpp"
@@ -18,6 +19,8 @@ using std::copy;
 using std::vector;
 using std::fill;
 using std::string;
+
+const array<size_t, 6> recIDX = {{0, 1, 2, 10, 18, 22}};
 
 std::array<bool, 26> __active_species_IDX() {
 	std::array<bool, 26> __active_species_IDX;
@@ -35,60 +38,33 @@ std::array<bool, 26> __active_species_IDX() {
 
 const std::array<bool, 26> activeV = __active_species_IDX();
 
-ratesS param(const double * const rxn, const double * const tfR) {
+ratesS param(const double * const rxntfR) {
 	ratesS r;
 
-	r.IL2 = rxn[0];
-	r.IL15 = rxn[1];
-	r.IL7 = rxn[2];
-	r.IL9 = rxn[3];
-	r.kfwd = rxn[4];
-	r.k5rev = rxn[5];
-	r.k6rev = rxn[6];
-	r.k15rev = rxn[7];
-	r.k17rev = rxn[8];
-	r.k18rev = rxn[9];
-	r.k22rev = rxn[10];
-	r.k23rev = rxn[11];
-	r.k27rev = rxn[12];
-	r.k29rev = rxn[13];
-	r.k31rev = rxn[14];
-	
-	// These are probably measured in the literature
-	r.k10rev = 12.0 * r.k5rev / 1.5; // doi:10.1016/j.jmb.2004.04.038
-	r.k11rev = 63.0 * r.k5rev / 1.5; // doi:10.1016/j.jmb.2004.04.038
-	// To satisfy detailed balance these relationships should hold
-	// _Based on initial assembly steps
-	r.k4rev = kfbnd * r.k6rev * k3rev / k1rev / k3fwd;
-	r.k7rev = k3fwd * k2rev * r.k5rev / kfbnd / k3rev;
-	r.k12rev = k1rev * r.k11rev / k2rev;
-	// _Based on formation of full complex
-	r.k9rev = k2rev * r.k10rev * r.k12rev / kfbnd / k3rev / r.k6rev * k3fwd;
-	r.k8rev = k2rev * r.k10rev * r.k12rev / kfbnd / r.k7rev / k3rev * k3fwd;
-
-	// IL15
-	// To satisfy detailed balance these relationships should hold
-	// _Based on initial assembly steps
-	r.k16rev = r.kfwd * r.k18rev * r.k15rev / k13rev / kfbnd;
-	r.k19rev = r.kfwd * k14rev * r.k17rev / kfbnd / r.k15rev;
-	r.k24rev = k13rev * r.k23rev / k14rev;
-
-	// _Based on formation of full complex
-	r.k21rev = k14rev * r.k22rev * r.k24rev / r.kfwd / r.k15rev / r.k18rev * kfbnd;
-	r.k20rev = k14rev * r.k22rev * r.k24rev / r.k19rev / r.k15rev;
-
-	// _One detailed balance IL7/9 loop
-	r.k32rev = r.k29rev * r.k31rev / k30rev;
-	r.k28rev = k25rev * r.k27rev / k26rev;
+	r.IL2 = rxntfR[0];
+	r.IL15 = rxntfR[1];
+	r.IL7 = rxntfR[2];
+	r.IL9 = rxntfR[3];
+	r.kfwd = rxntfR[4];
+	r.k5rev = rxntfR[5];
+	r.k6rev = rxntfR[6];
+	r.k15rev = rxntfR[7];
+	r.k17rev = rxntfR[8];
+	r.k18rev = rxntfR[9];
+	r.k22rev = rxntfR[10];
+	r.k23rev = rxntfR[11];
+	r.k27rev = rxntfR[12];
+	r.k29rev = rxntfR[13];
+	r.k31rev = rxntfR[14];
 
 	// Set the rates
-	r.endo = tfR[0];
-	r.activeEndo = tfR[1];
-	r.sortF = tfR[2];
-	r.kRec = tfR[3];
-	r.kDeg = tfR[4];
+	r.endo = rxntfR[15];
+	r.activeEndo = rxntfR[16];
+	r.sortF = rxntfR[17];
+	r.kRec = rxntfR[18];
+	r.kDeg = rxntfR[19];
 
-	std::copy_n(tfR + 5, 6, r.Rexpr.begin());
+	std::copy_n(rxntfR + 20, 6, r.Rexpr.begin());
 
 	return r;
 }
@@ -125,52 +101,77 @@ void dy_dt(const double * const y, const ratesS * const r, double * const dydt, 
 	double IL9R_IL9 = y[23];
 	double gc_IL9 = y[24];
 	double IL9R_gc_IL9 = y[25];
-	
-	// IL2
-	dydt[0] = -kfbnd * IL2Ra * IL2 + k1rev * IL2_IL2Ra - r->kfwd * IL2Ra * IL2_gc + r->k6rev * IL2_IL2Ra_gc - r->kfwd * IL2Ra * IL2_IL2Rb_gc + r->k8rev * IL2_IL2Ra_IL2Rb_gc - r->kfwd * IL2Ra * IL2_IL2Rb + r->k12rev * IL2_IL2Ra_IL2Rb;
-	dydt[1] = -kfbnd * IL2Rb * IL2 + k2rev * IL2_IL2Rb - r->kfwd * IL2Rb * IL2_gc + r->k7rev * IL2_IL2Rb_gc - r->kfwd * IL2Rb * IL2_IL2Ra_gc + r->k9rev * IL2_IL2Ra_IL2Rb_gc - r->kfwd * IL2Rb * IL2_IL2Ra + r->k11rev * IL2_IL2Ra_IL2Rb;
-	dydt[2] = -k3fwd * IL2 * gc + k3rev * IL2_gc - r->kfwd * IL2_IL2Rb * gc + r->k5rev * IL2_IL2Rb_gc - r->kfwd * IL2_IL2Ra * gc + r->k4rev * IL2_IL2Ra_gc - r->kfwd * IL2_IL2Ra_IL2Rb * gc + r->k10rev * IL2_IL2Ra_IL2Rb_gc;
-	dydt[3] = -r->kfwd * IL2_IL2Ra * IL2Rb + r->k11rev * IL2_IL2Ra_IL2Rb - r->kfwd * IL2_IL2Ra * gc + r->k4rev * IL2_IL2Ra_gc + kfbnd * IL2 * IL2Ra - k1rev * IL2_IL2Ra;
-	dydt[4] = -r->kfwd * IL2_IL2Rb * IL2Ra + r->k12rev * IL2_IL2Ra_IL2Rb - r->kfwd * IL2_IL2Rb * gc + r->k5rev * IL2_IL2Rb_gc + kfbnd * IL2 * IL2Rb - k2rev * IL2_IL2Rb;
-	dydt[5] = -r->kfwd * IL2_gc * IL2Ra + r->k6rev * IL2_IL2Ra_gc - r->kfwd * IL2_gc * IL2Rb + r->k7rev * IL2_IL2Rb_gc + k3fwd * IL2 * gc - k3rev * IL2_gc;
-	dydt[6] = -r->kfwd * IL2_IL2Ra_IL2Rb * gc + r->k10rev * IL2_IL2Ra_IL2Rb_gc + r->kfwd * IL2_IL2Ra * IL2Rb - r->k11rev * IL2_IL2Ra_IL2Rb + r->kfwd * IL2_IL2Rb * IL2Ra - r->k12rev * IL2_IL2Ra_IL2Rb;
-	dydt[7] = -r->kfwd * IL2_IL2Ra_gc * IL2Rb + r->k9rev * IL2_IL2Ra_IL2Rb_gc + r->kfwd * IL2_IL2Ra * gc - r->k4rev * IL2_IL2Ra_gc + r->kfwd * IL2_gc * IL2Ra - r->k6rev * IL2_IL2Ra_gc;
-	dydt[8] = -r->kfwd * IL2_IL2Rb_gc * IL2Ra + r->k8rev * IL2_IL2Ra_IL2Rb_gc + r->kfwd * gc * IL2_IL2Rb - r->k5rev * IL2_IL2Rb_gc + r->kfwd * IL2_gc * IL2Rb - r->k7rev * IL2_IL2Rb_gc;
-	dydt[9] = r->kfwd * IL2_IL2Rb_gc * IL2Ra - r->k8rev * IL2_IL2Ra_IL2Rb_gc + r->kfwd * IL2_IL2Ra_gc * IL2Rb - r->k9rev * IL2_IL2Ra_IL2Rb_gc + r->kfwd * IL2_IL2Ra_IL2Rb * gc - r->k10rev * IL2_IL2Ra_IL2Rb_gc;
+
+	// These are probably measured in the literature
+	const double k10rev = 12.0 * r->k5rev / 1.5; // doi:10.1016/j.jmb.2004.04.038
+	const double k11rev = 63.0 * r->k5rev / 1.5; // doi:10.1016/j.jmb.2004.04.038
+	// To satisfy detailed balance these relationships should hold
+	// _Based on initial assembly steps
+	const double k4rev = kfbnd * r->k6rev * k3rev / k1rev / k3fwd;
+	const double k7rev = k3fwd * k2rev * r->k5rev / kfbnd / k3rev;
+	const double k12rev = k1rev * k11rev / k2rev;
+	// _Based on formation of full complex
+	const double k9rev = k2rev * k10rev * k12rev / kfbnd / k3rev / r->k6rev * k3fwd;
+	const double k8rev = k2rev * k10rev * k12rev / kfbnd / k7rev / k3rev * k3fwd;
 
 	// IL15
-	dydt[10] = -kfbnd * IL15Ra * IL15 + k13rev * IL15_IL15Ra - kfbnd * IL15Ra * IL15_gc + r->k18rev * IL15_IL15Ra_gc - r->kfwd * IL15Ra * IL15_IL2Rb_gc + r->k20rev * IL15_IL15Ra_IL2Rb_gc - r->kfwd * IL15Ra * IL15_IL2Rb + r->k24rev * IL15_IL15Ra_IL2Rb;
-	dydt[11] = -r->kfwd * IL15_IL15Ra * IL2Rb + r->k23rev * IL15_IL15Ra_IL2Rb - r->kfwd * IL15_IL15Ra * gc + r->k16rev * IL15_IL15Ra_gc + kfbnd * IL15 * IL15Ra - k13rev * IL15_IL15Ra;
-	dydt[12] = -r->kfwd * IL15_IL2Rb * IL15Ra + r->k24rev * IL15_IL15Ra_IL2Rb - kfbnd * IL15_IL2Rb * gc + r->k17rev * IL15_IL2Rb_gc + kfbnd * IL15 * IL2Rb - k14rev * IL15_IL2Rb;
-	dydt[13] = -kfbnd * IL15_gc * IL15Ra + r->k18rev * IL15_IL15Ra_gc - r->kfwd * IL15_gc * IL2Rb + r->k19rev * IL15_IL2Rb_gc + kfbnd * IL15 * gc - r->k15rev * IL15_gc;
-	dydt[14] = -r->kfwd * IL15_IL15Ra_IL2Rb * gc + r->k22rev * IL15_IL15Ra_IL2Rb_gc + r->kfwd * IL15_IL15Ra * IL2Rb - r->k23rev * IL15_IL15Ra_IL2Rb + r->kfwd * IL15_IL2Rb * IL15Ra - r->k24rev * IL15_IL15Ra_IL2Rb;
-	dydt[15] = -r->kfwd * IL15_IL15Ra_gc * IL2Rb + r->k21rev * IL15_IL15Ra_IL2Rb_gc + r->kfwd * IL15_IL15Ra * gc - r->k16rev * IL15_IL15Ra_gc + kfbnd * IL15_gc * IL15Ra - r->k18rev * IL15_IL15Ra_gc;
-	dydt[16] = -r->kfwd * IL15_IL2Rb_gc * IL15Ra + r->k20rev * IL15_IL15Ra_IL2Rb_gc + kfbnd * gc * IL15_IL2Rb - r->k17rev * IL15_IL2Rb_gc + r->kfwd * IL15_gc * IL2Rb - r->k19rev * IL15_IL2Rb_gc;
-	dydt[17] =  r->kfwd * IL15_IL2Rb_gc * IL15Ra - r->k20rev * IL15_IL15Ra_IL2Rb_gc + r->kfwd * IL15_IL15Ra_gc * IL2Rb - r->k21rev * IL15_IL15Ra_IL2Rb_gc + r->kfwd * IL15_IL15Ra_IL2Rb * gc - r->k22rev * IL15_IL15Ra_IL2Rb_gc;
+	// To satisfy detailed balance these relationships should hold
+	// _Based on initial assembly steps
+	const double k16rev = r->kfwd * r->k18rev * r->k15rev / k13rev / kfbnd;
+	const double k19rev = r->kfwd * k14rev * r->k17rev / kfbnd / r->k15rev;
+	const double k24rev = k13rev * r->k23rev / k14rev;
+
+	// _Based on formation of full complex
+	const double k21rev = k14rev * r->k22rev * k24rev / r->kfwd / r->k15rev / r->k18rev * kfbnd;
+	const double k20rev = k14rev * r->k22rev * k24rev / k19rev / r->k15rev;
+
+	// _One detailed balance IL7/9 loop
+	const double k32rev = r->k29rev * r->k31rev / k30rev;
+	const double k28rev = k25rev * r->k27rev / k26rev;
 	
-	dydt[1] = dydt[1] - kfbnd * IL2Rb * IL15 + k14rev * IL15_IL2Rb - r->kfwd * IL2Rb * IL15_gc + r->k19rev * IL15_IL2Rb_gc - r->kfwd * IL2Rb * IL15_IL15Ra_gc + r->k21rev * IL15_IL15Ra_IL2Rb_gc - r->kfwd * IL2Rb * IL15_IL15Ra + r->k23rev * IL15_IL15Ra_IL2Rb;
-	dydt[2] = dydt[2] - kfbnd * IL15 * gc + r->k15rev * IL15_gc - kfbnd * IL15_IL2Rb * gc + r->k17rev * IL15_IL2Rb_gc - r->kfwd * IL15_IL15Ra * gc + r->k16rev * IL15_IL15Ra_gc - r->kfwd * IL15_IL15Ra_IL2Rb * gc + r->k22rev * IL15_IL15Ra_IL2Rb_gc;
+	// IL2
+	dydt[0] = -kfbnd * IL2Ra * IL2 + k1rev * IL2_IL2Ra - r->kfwd * IL2Ra * IL2_gc + r->k6rev * IL2_IL2Ra_gc - r->kfwd * IL2Ra * IL2_IL2Rb_gc + k8rev * IL2_IL2Ra_IL2Rb_gc - r->kfwd * IL2Ra * IL2_IL2Rb + k12rev * IL2_IL2Ra_IL2Rb;
+	dydt[1] = -kfbnd * IL2Rb * IL2 + k2rev * IL2_IL2Rb - r->kfwd * IL2Rb * IL2_gc + k7rev * IL2_IL2Rb_gc - r->kfwd * IL2Rb * IL2_IL2Ra_gc + k9rev * IL2_IL2Ra_IL2Rb_gc - r->kfwd * IL2Rb * IL2_IL2Ra + k11rev * IL2_IL2Ra_IL2Rb;
+	dydt[2] = -k3fwd * IL2 * gc + k3rev * IL2_gc - r->kfwd * IL2_IL2Rb * gc + r->k5rev * IL2_IL2Rb_gc - r->kfwd * IL2_IL2Ra * gc + k4rev * IL2_IL2Ra_gc - r->kfwd * IL2_IL2Ra_IL2Rb * gc + k10rev * IL2_IL2Ra_IL2Rb_gc;
+	dydt[3] = -r->kfwd * IL2_IL2Ra * IL2Rb + k11rev * IL2_IL2Ra_IL2Rb - r->kfwd * IL2_IL2Ra * gc + k4rev * IL2_IL2Ra_gc + kfbnd * IL2 * IL2Ra - k1rev * IL2_IL2Ra;
+	dydt[4] = -r->kfwd * IL2_IL2Rb * IL2Ra + k12rev * IL2_IL2Ra_IL2Rb - r->kfwd * IL2_IL2Rb * gc + r->k5rev * IL2_IL2Rb_gc + kfbnd * IL2 * IL2Rb - k2rev * IL2_IL2Rb;
+	dydt[5] = -r->kfwd * IL2_gc * IL2Ra + r->k6rev * IL2_IL2Ra_gc - r->kfwd * IL2_gc * IL2Rb + k7rev * IL2_IL2Rb_gc + k3fwd * IL2 * gc - k3rev * IL2_gc;
+	dydt[6] = -r->kfwd * IL2_IL2Ra_IL2Rb * gc + k10rev * IL2_IL2Ra_IL2Rb_gc + r->kfwd * IL2_IL2Ra * IL2Rb - k11rev * IL2_IL2Ra_IL2Rb + r->kfwd * IL2_IL2Rb * IL2Ra - k12rev * IL2_IL2Ra_IL2Rb;
+	dydt[7] = -r->kfwd * IL2_IL2Ra_gc * IL2Rb + k9rev * IL2_IL2Ra_IL2Rb_gc + r->kfwd * IL2_IL2Ra * gc - k4rev * IL2_IL2Ra_gc + r->kfwd * IL2_gc * IL2Ra - r->k6rev * IL2_IL2Ra_gc;
+	dydt[8] = -r->kfwd * IL2_IL2Rb_gc * IL2Ra + k8rev * IL2_IL2Ra_IL2Rb_gc + r->kfwd * gc * IL2_IL2Rb - r->k5rev * IL2_IL2Rb_gc + r->kfwd * IL2_gc * IL2Rb - k7rev * IL2_IL2Rb_gc;
+	dydt[9] = r->kfwd * IL2_IL2Rb_gc * IL2Ra - k8rev * IL2_IL2Ra_IL2Rb_gc + r->kfwd * IL2_IL2Ra_gc * IL2Rb - k9rev * IL2_IL2Ra_IL2Rb_gc + r->kfwd * IL2_IL2Ra_IL2Rb * gc - k10rev * IL2_IL2Ra_IL2Rb_gc;
+
+	// IL15
+	dydt[10] = -kfbnd * IL15Ra * IL15 + k13rev * IL15_IL15Ra - kfbnd * IL15Ra * IL15_gc + r->k18rev * IL15_IL15Ra_gc - r->kfwd * IL15Ra * IL15_IL2Rb_gc + k20rev * IL15_IL15Ra_IL2Rb_gc - r->kfwd * IL15Ra * IL15_IL2Rb + k24rev * IL15_IL15Ra_IL2Rb;
+	dydt[11] = -r->kfwd * IL15_IL15Ra * IL2Rb + r->k23rev * IL15_IL15Ra_IL2Rb - r->kfwd * IL15_IL15Ra * gc + k16rev * IL15_IL15Ra_gc + kfbnd * IL15 * IL15Ra - k13rev * IL15_IL15Ra;
+	dydt[12] = -r->kfwd * IL15_IL2Rb * IL15Ra + k24rev * IL15_IL15Ra_IL2Rb - kfbnd * IL15_IL2Rb * gc + r->k17rev * IL15_IL2Rb_gc + kfbnd * IL15 * IL2Rb - k14rev * IL15_IL2Rb;
+	dydt[13] = -kfbnd * IL15_gc * IL15Ra + r->k18rev * IL15_IL15Ra_gc - r->kfwd * IL15_gc * IL2Rb + k19rev * IL15_IL2Rb_gc + kfbnd * IL15 * gc - r->k15rev * IL15_gc;
+	dydt[14] = -r->kfwd * IL15_IL15Ra_IL2Rb * gc + r->k22rev * IL15_IL15Ra_IL2Rb_gc + r->kfwd * IL15_IL15Ra * IL2Rb - r->k23rev * IL15_IL15Ra_IL2Rb + r->kfwd * IL15_IL2Rb * IL15Ra - k24rev * IL15_IL15Ra_IL2Rb;
+	dydt[15] = -r->kfwd * IL15_IL15Ra_gc * IL2Rb + k21rev * IL15_IL15Ra_IL2Rb_gc + r->kfwd * IL15_IL15Ra * gc - k16rev * IL15_IL15Ra_gc + kfbnd * IL15_gc * IL15Ra - r->k18rev * IL15_IL15Ra_gc;
+	dydt[16] = -r->kfwd * IL15_IL2Rb_gc * IL15Ra + k20rev * IL15_IL15Ra_IL2Rb_gc + kfbnd * gc * IL15_IL2Rb - r->k17rev * IL15_IL2Rb_gc + r->kfwd * IL15_gc * IL2Rb - k19rev * IL15_IL2Rb_gc;
+	dydt[17] =  r->kfwd * IL15_IL2Rb_gc * IL15Ra - k20rev * IL15_IL15Ra_IL2Rb_gc + r->kfwd * IL15_IL15Ra_gc * IL2Rb - k21rev * IL15_IL15Ra_IL2Rb_gc + r->kfwd * IL15_IL15Ra_IL2Rb * gc - r->k22rev * IL15_IL15Ra_IL2Rb_gc;
+	
+	dydt[1] = dydt[1] - kfbnd * IL2Rb * IL15 + k14rev * IL15_IL2Rb - r->kfwd * IL2Rb * IL15_gc + k19rev * IL15_IL2Rb_gc - r->kfwd * IL2Rb * IL15_IL15Ra_gc + k21rev * IL15_IL15Ra_IL2Rb_gc - r->kfwd * IL2Rb * IL15_IL15Ra + r->k23rev * IL15_IL15Ra_IL2Rb;
+	dydt[2] = dydt[2] - kfbnd * IL15 * gc + r->k15rev * IL15_gc - kfbnd * IL15_IL2Rb * gc + r->k17rev * IL15_IL2Rb_gc - r->kfwd * IL15_IL15Ra * gc + k16rev * IL15_IL15Ra_gc - r->kfwd * IL15_IL15Ra_IL2Rb * gc + r->k22rev * IL15_IL15Ra_IL2Rb_gc;
 	
 	// IL7
 	dydt[2] = dydt[2] - kfbnd * IL7 * gc + k26rev * gc_IL7 - r->kfwd * gc * IL7Ra_IL7 + r->k27rev * IL7Ra_gc_IL7;
-	dydt[18] = -kfbnd * IL7Ra * IL7 + k25rev * IL7Ra_IL7 - r->kfwd * IL7Ra * gc_IL7 + r->k28rev * IL7Ra_gc_IL7;
+	dydt[18] = -kfbnd * IL7Ra * IL7 + k25rev * IL7Ra_IL7 - r->kfwd * IL7Ra * gc_IL7 + k28rev * IL7Ra_gc_IL7;
 	dydt[19] = kfbnd * IL7Ra * IL7 - k25rev * IL7Ra_IL7 - r->kfwd * gc * IL7Ra_IL7 + r->k27rev * IL7Ra_gc_IL7;
-	dydt[20] = -r->kfwd * IL7Ra * gc_IL7 + r->k28rev * IL7Ra_gc_IL7 + kfbnd * IL7 * gc - k26rev * gc_IL7;
-	dydt[21] = r->kfwd * IL7Ra * gc_IL7 - r->k28rev * IL7Ra_gc_IL7 + r->kfwd * gc * IL7Ra_IL7 - r->k27rev * IL7Ra_gc_IL7;
+	dydt[20] = -r->kfwd * IL7Ra * gc_IL7 + k28rev * IL7Ra_gc_IL7 + kfbnd * IL7 * gc - k26rev * gc_IL7;
+	dydt[21] = r->kfwd * IL7Ra * gc_IL7 - k28rev * IL7Ra_gc_IL7 + r->kfwd * gc * IL7Ra_IL7 - r->k27rev * IL7Ra_gc_IL7;
 
 	// IL9
 	dydt[2] = dydt[2] - kfbnd * IL9 * gc + k30rev * gc_IL9 - r->kfwd * gc * IL9R_IL9 + r->k31rev * IL9R_gc_IL9;
-	dydt[22] = -kfbnd * IL9R * IL9 + r->k29rev * IL9R_IL9 - r->kfwd * IL9R * gc_IL9 + r->k32rev * IL9R_gc_IL9;
+	dydt[22] = -kfbnd * IL9R * IL9 + r->k29rev * IL9R_IL9 - r->kfwd * IL9R * gc_IL9 + k32rev * IL9R_gc_IL9;
 	dydt[23] = kfbnd * IL9R * IL9 - r->k29rev * IL9R_IL9 - r->kfwd * gc * IL9R_IL9 + r->k31rev * IL9R_gc_IL9;
-	dydt[24] = -r->kfwd * IL9R * gc_IL9 + r->k32rev * IL9R_gc_IL9 + kfbnd * IL9 * gc - k30rev * gc_IL9;
-	dydt[25] = r->kfwd * IL9R * gc_IL9 - r->k32rev * IL9R_gc_IL9 + r->kfwd * gc * IL9R_IL9 - r->k31rev * IL9R_gc_IL9;
+	dydt[24] = -r->kfwd * IL9R * gc_IL9 + k32rev * IL9R_gc_IL9 + kfbnd * IL9 * gc - k30rev * gc_IL9;
+	dydt[25] = r->kfwd * IL9R * gc_IL9 - k32rev * IL9R_gc_IL9 + r->kfwd * gc * IL9R_IL9 - r->k31rev * IL9R_gc_IL9;
 }
 
 
 extern "C" void dydt_C(double *y_in, double, double *dydt_out, double *rxn_in) {
-	array<double, 12> tfr;
-
-	ratesS r = param(rxn_in, tfr.data());
+	ratesS r = param(rxn_in);
 
 	dy_dt(y_in, &r, dydt_out, r.IL2, r.IL15, r.IL7, r.IL9);
 }
@@ -237,17 +238,17 @@ void fullModel(const double * const y, const ratesS * const r, double *dydt) {
 
 
 int fullModelCVode (const double, const N_Vector xx, N_Vector dxxdt, void *user_data) {
-	ratesS *rIn = static_cast<ratesS *>(user_data);
+	ratesS rattes = param(static_cast<double *>(user_data));
 
 	// Get the data in the right form
-	fullModel(NV_DATA_S(xx), rIn, NV_DATA_S(dxxdt));
+	fullModel(NV_DATA_S(xx), &rattes, NV_DATA_S(dxxdt));
 
 	return 0;
 }
 
 
-extern "C" void fullModel_C(const double * const y_in, double, double *dydt_out, double *rxn_in, double *tfr_in) {
-	ratesS r = param(rxn_in, tfr_in);
+extern "C" void fullModel_C(const double * const y_in, double, double *dydt_out, double *rxn_in) {
+	ratesS r = param(rxn_in);
 
 	fullModel(y_in, &r, dydt_out);
 }
@@ -256,8 +257,6 @@ extern "C" void fullModel_C(const double * const y_in, double, double *dydt_out,
 array<double, 56> solveAutocrine(const ratesS * const r) {
 	array<double, 56> y0;
 	fill(y0.begin(), y0.end(), 0.0);
-
-	array<size_t, 6> recIDX = {{0, 1, 2, 10, 18, 22}};
 
 	// Expand out trafficking terms
 	double kRec = r->kRec*(1-r->sortF);
@@ -274,6 +273,40 @@ array<double, 56> solveAutocrine(const ratesS * const r) {
 }
 
 
+/**
+ * @brief      Setup the autocrine state sensitivities.
+ *
+ * @param[in]  r     Rate parameters.
+ * @param      y0s   The autocrine state sensitivities.
+ */
+void solveAutocrineS (const ratesS * const r, N_Vector *y0s, array<double, 56> &y0) {
+	for (size_t is = 0; is < Nparams; is++)
+		N_VConst(0.0, y0s[is]);
+
+	for (size_t is : recIDX) {
+		// Endosomal amount doesn't depend on endo
+		NV_Ith_S(y0s[15], is) = -y0[is]/r->endo; // Endo (15)
+
+		// sortF (17)
+		NV_Ith_S(y0s[17], is + 26) = -y0[is + 26]/r->sortF;
+		NV_Ith_S(y0s[17], is) = r->kRec*internalFrac/r->endo*((1 - r->sortF)*NV_Ith_S(y0s[17], is + 26) - y0[is + 26]);
+
+		// Endosomal amount doesn't depend on kRec
+		NV_Ith_S(y0s[18], is) = (1-r->sortF)*y0[is + 26]*internalFrac/r->endo; // kRec (18)
+
+		// kDeg (19)
+		NV_Ith_S(y0s[19], is + 26) = -y0[is + 26]/r->kDeg;
+		NV_Ith_S(y0s[19], is) = r->kRec*(1-r->sortF)*NV_Ith_S(y0s[19], is + 26)*internalFrac/r->endo;
+	}
+
+	// Rexpr (20-26)
+	for (size_t ii = 0; ii < recIDX.size(); ii++) {
+		NV_Ith_S(y0s[20 + ii], recIDX[ii] + 26) = y0[recIDX[ii] + 26]/r->Rexpr[ii];
+		NV_Ith_S(y0s[20 + ii], recIDX[ii]) = 1/r->endo + NV_Ith_S(y0s[20 + ii], recIDX[ii] + 26)*r->kRec*(1-r->sortF)*internalFrac/r->endo;
+	}
+}
+
+
 static void errorHandler(int error_code, const char *module, const char *function, char *msg, void *) {
 	if (error_code == CV_WARNING) return;
 
@@ -287,11 +320,18 @@ struct solver {
 	void *cvode_mem;
 	SUNLinearSolver LS;
 	N_Vector state;
+	N_Vector *yS;
 	SUNMatrix A;
+	bool sensi;
 };
 
 
 void solverFree(solver *sMem) {
+	if (sMem->sensi) {
+		CVodeSensFree(sMem->cvode_mem);
+		N_VDestroyVectorArray(sMem->yS, Nparams);
+	}
+
 	N_VDestroy_Serial(sMem->state);
 	CVodeFree(&sMem->cvode_mem);
 	SUNLinSolFree(sMem->LS);
@@ -299,7 +339,10 @@ void solverFree(solver *sMem) {
 }
 
 
-void solver_setup(solver *sMem, void * params) {
+void solver_setup(solver *sMem, double *params) {
+	// So far we're not doing a sensitivity analysis
+	sMem->sensi = false;
+
 	/* Call CVodeCreate to create the solver memory and specify the
 	 * Backward Differentiation Formula and the use of a Newton iteration */
 	sMem->cvode_mem = CVodeCreate(CV_BDF, CV_NEWTON);
@@ -308,7 +351,7 @@ void solver_setup(solver *sMem, void * params) {
 		throw std::runtime_error(string("Error calling CVodeCreate in solver_setup."));
 	}
 	
-	CVodeSetErrHandlerFn(sMem->cvode_mem, &errorHandler, params);
+	CVodeSetErrHandlerFn(sMem->cvode_mem, &errorHandler, static_cast<void *>(params));
 
 	/* Call CVodeInit to initialize the integrator memory and specify the
 	 * user's right hand side function in y'=f(t,y), the inital time T0, and
@@ -318,30 +361,23 @@ void solver_setup(solver *sMem, void * params) {
 		throw std::runtime_error(string("Error calling CVodeInit in solver_setup."));
 	}
 	
-	N_Vector abbstol = N_VNew_Serial(NV_LENGTH_S(sMem->state));
-	N_VConst(abstolIn, abbstol);
-	
-	/* Call CVodeSVtolerances to specify the scalar relative tolerance
-	 * and vector absolute tolerances */
-	if (CVodeSVtolerances(sMem->cvode_mem, reltolIn, abbstol) < 0) {
-		N_VDestroy_Serial(abbstol);
+	// Call CVodeSVtolerances to specify the scalar relative and absolute tolerances
+	if (CVodeSStolerances(sMem->cvode_mem, reltolIn, abstolIn) < 0) {
 		solverFree(sMem);
-		throw std::runtime_error(string("Error calling CVodeSVtolerances in solver_setup."));
+		throw std::runtime_error(string("Error calling CVodeSStolerances in solver_setup."));
 	}
-	N_VDestroy_Serial(abbstol);
 
 	sMem->A = SUNDenseMatrix(NV_LENGTH_S(sMem->state), NV_LENGTH_S(sMem->state));
 	sMem->LS = SUNDenseLinearSolver(sMem->state, sMem->A);
 	
 	// Call CVDense to specify the CVDENSE dense linear solver
-	// Also SUNSPBCGS and SUNSPTFQMR options
 	if (CVDlsSetLinearSolver(sMem->cvode_mem, sMem->LS, sMem->A) < 0) {
 		solverFree(sMem);
 		throw std::runtime_error(string("Error calling CVDlsSetLinearSolver in solver_setup."));
 	}
 	
 	// Pass along the parameter structure to the differential equations
-	if (CVodeSetUserData(sMem->cvode_mem, params) < 0) {
+	if (CVodeSetUserData(sMem->cvode_mem, static_cast<void *>(params)) < 0) {
 		solverFree(sMem);
 		throw std::runtime_error(string("Error calling CVodeSetUserData in solver_setup."));
 	}
@@ -350,25 +386,83 @@ void solver_setup(solver *sMem, void * params) {
 }
 
 
-extern "C" int runCkine (double *tps, size_t ntps, double *out, double *rxnRatesIn, double *trafRatesIn) {
-	ratesS rattes = param(rxnRatesIn, trafRatesIn);
+void solver_setup_sensi(solver *sMem, const ratesS * const rr, double *params, array<double, 56> &y0) {
+	// Now we are doing a sensitivity analysis
+	sMem->sensi = true;
+
+	// Set sensitivity initial conditions
+	sMem->yS = N_VCloneVectorArray(Nparams, sMem->state);
+	solveAutocrineS(rr, sMem->yS, y0);
+
+	// Call CVodeSensInit1 to activate forward sensitivity computations
+	// and allocate internal memory for CVODES related to sensitivity
+	// calculations. Computes the right-hand sides of the sensitivity
+	// ODE, one at a time
+	if (CVodeSensInit(sMem->cvode_mem, Nparams, CV_SIMULTANEOUS, nullptr, sMem->yS) < 0) {
+		solverFree(sMem);
+		throw std::runtime_error(string("Error calling CVodeSensInit in solver_setup."));
+	}
+
+	array<double, Nparams> abs;
+	fill(abs.begin(), abs.end(), 1.0E-4);
+
+	// Call CVodeSensSStolerances to estimate tolerances for sensitivity 
+	// variables based on the rolerances supplied for states variables and 
+	// the scaling factor pbar
+	if (CVodeSensSStolerances(sMem->cvode_mem, 1.0E-4, abs.data()) < 0) {
+		solverFree(sMem);
+		throw std::runtime_error(string("Error calling CVodeSensSStolerances in solver_setup."));
+	}
+
+	array<double, Nparams> paramArr;
+	array<int, Nparams> paramList;
+	std::copy_n(params, Nparams, paramArr.begin());
+	for(size_t is = 0; is < Nparams; is++) {
+		paramList[is] = static_cast<int>(is);
+
+		if (paramArr[is] < std::numeric_limits<double>::epsilon())
+			paramArr[is] = 0.1;
+	}
+
+	// Specify problem parameter information for sensitivity calculations
+	if (CVodeSetSensParams(sMem->cvode_mem, params, paramArr.data(), paramList.data()) < 0) {
+		solverFree(sMem);
+		throw std::runtime_error(string("Error calling CVodeSetSensParams in solver_setup."));
+	}
+}
+
+
+void copyOutSensi(double *out, solver *sMem) {
+	for (size_t ii = 0; ii < Nparams; ii++) {
+		std::copy_n(NV_DATA_S(sMem->yS[ii]), Nspecies, out + ii*Nspecies);
+	}
+}
+
+
+extern "C" int runCkine (double *tps, size_t ntps, double *out, double *rxnRatesIn, bool sensi, double *sensiOut) {
+	ratesS rattes = param(rxnRatesIn);
 	size_t itps = 0;
 
-	array<double, 56> y0 = solveAutocrine(&rattes);
+	array<double, Nspecies> y0 = solveAutocrine(&rattes);
 
 	solver sMem;
 
-	if (tps[0] < std::numeric_limits<double>::epsilon()) {
-		std::copy_n(y0.begin(), y0.size(), out);
-		itps = 1;
-	}
-
 	// Just the full model
-	sMem.state = N_VMake_Serial(static_cast<long>(y0.size()), y0.data());
+	sMem.state = N_VMake_Serial(static_cast<long>(Nspecies), y0.data());
 
-	solver_setup(&sMem, static_cast<void *>(&rattes));
+	solver_setup(&sMem, rxnRatesIn);
+
+	if (sensi) solver_setup_sensi(&sMem, &rattes, rxnRatesIn, y0);
 
 	double tret = 0;
+
+	if (tps[0] < std::numeric_limits<double>::epsilon()) {
+		std::copy_n(y0.begin(), y0.size(), out);
+
+		if (sensi) copyOutSensi(sensiOut, &sMem);
+
+		itps = 1;
+	}
 
 	for (; itps < ntps; itps++) {
 		if (tps[itps] < tret) {
@@ -387,6 +481,11 @@ extern "C" int runCkine (double *tps, size_t ntps, double *out, double *rxnRates
 
 		// Copy out result
 		std::copy_n(NV_DATA_S(sMem.state), y0.size(), out + y0.size()*itps);
+
+		if (sensi) {
+			CVodeGetSens(sMem.cvode_mem, &tps[itps], sMem.yS);
+			copyOutSensi(sensiOut + Nspecies*Nparams*itps, &sMem);
+		}
 	}
 
 	solverFree(&sMem);
