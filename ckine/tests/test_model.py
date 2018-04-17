@@ -6,7 +6,8 @@ import numpy as np
 from hypothesis import given, settings
 from hypothesis.strategies import floats
 from hypothesis.extra.numpy import arrays as harrays
-from ..model import dy_dt, fullModel, solveAutocrine, getTotalActiveCytokine, solveAutocrineComplete, runCkine
+from ..model import dy_dt, fullModel, solveAutocrine, getTotalActiveCytokine, solveAutocrineComplete, runCkine, jacobian
+from ..util_analysis.Shuffle_ODE import approx_jacobian, approx_jac_dydt
 from ..Tensor_analysis import find_R2X
 
 settings.register_profile("ci", max_examples=1000)
@@ -124,17 +125,31 @@ class TestModel(unittest.TestCase):
         # Test that there's no difference
         self.assertLess(np.linalg.norm(dy1 - dy3), 1E-8)
 
-    @given(vec=harrays(np.float, 25, elements=floats(0.001, 10.0)), sortF=floats(0.1, 0.9))
-    def test_runCkine(self, vec, sortF):
-        vec = np.insert(vec, 2, sortF)
-        # 11 trafRates and 15 rxnRates
-        trafRates = vec[0:11]
-        rxnRates = vec[11:26]
+    #@given(vec=harrays(np.float, 25, elements=floats(0.001, 10.0)), sortF=floats(0.1, 0.9))
+    #def test_runCkine(self, vec, sortF):
+    #    vec = np.insert(vec, 2, sortF)
+    #    # 11 trafRates and 15 rxnRates
+    #    trafRates = vec[0:11]
+    #    rxnRates = vec[11:26]
 
-        ys, retVal = runCkine(self.ts, rxnRates, trafRates)
+    #    ys, retVal = runCkine(self.ts, rxnRates, trafRates)
         
         # test that return value of runCkine isn't negative (model run didn't fail)
-        self.assertGreaterEqual(retVal, 0)
+    #    self.assertGreaterEqual(retVal, 0)
+
+
+        
+    def test_jacobian(self):
+        '''Compares the approximate Jacobian (approx_jacobian() in Shuffle_ODE.py) with the analytical Jacobian (jacobian() of model.cpp). Both Jacobians are evaluating the partial derivatives of dydt.'''
+        rxn = np.random.sample(15)
+        t = np.random.sample(1)
+        y = np.random.sample(26)
+        
+        analytical = jacobian(y, t, rxn)
+        approx = approx_jac_dydt(y, t, rxn)
+
+        self.assertTrue(np.allclose(analytical, approx, rtol=0.1, atol=0.1))
+
 
 
     def test_tensor(self):
@@ -166,3 +181,5 @@ class TestModel(unittest.TestCase):
         
         temp, retVal = runCkine(ts, r, trafRates)
         self.assertGreater(np.count_nonzero(temp[0,:]), 0)
+
+
