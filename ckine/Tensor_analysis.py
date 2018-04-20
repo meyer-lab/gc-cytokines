@@ -4,17 +4,13 @@ Analyze tensor from Sampling.pickle and plotting.
 import os
 import pickle
 import numpy as np
+import pandas as pd
 from scipy import stats
 import tensorly
 from tensorly.decomposition import parafac
 import matplotlib.pyplot as plt
 tensorly.set_backend('numpy')
 
-filename = os.path.join(os.path.dirname(os.path.abspath(__file__)), "./data/Tensor_results/Sampling.pickle")
-with open(filename, 'rb') as file:
-    sample = pickle.load(file)
-
-mat, values = sample[0], sample[1]
 
 def z_score_values(A):
     '''Function that takes in the values tensor and z-scores it.'''
@@ -121,7 +117,7 @@ def plot_timepoint_decomp(factors, component_x, component_y):
     ax = fig.add_subplot(111)
     for i in range(len(factors[1])):
         plt.scatter(factors[1][:,component_x - 1][i], factors[1][:,component_y - 1][i], color = 'k')
-        if i == 99:
+        if i == 999:
             ax.annotate(str(i+1), xy=(factors[1][:,component_x - 1][i], factors[1][:,component_y - 1][i]), xytext = (0, 0), textcoords = 'offset points')
     plt.xlabel('Component ' + str(component_x))
     plt.ylabel('Component ' + str(component_y))
@@ -144,3 +140,18 @@ def plot_combo_decomp(factors, mat, component_x, component_y):
         plt.ylabel('Component ' + str(component_y))
         plt.title(titles[i])
     return fig
+
+def calculate_correlation(tensor,mat,r):
+    "Make a pandas dataframe for coorelation coefficients between components and input variables."
+    factors = perform_decomposition(tensor, r)
+    cols = mat.shape[1]
+    coeffs = np.zeros((factors[0].shape[1], mat.shape[1]))
+    for i in range(mat.shape[1]):
+        arr = []
+        for j in range(factors[0].shape[1]):
+            arr.append(np.corrcoef(mat[:,i], factors[0][:,j], rowvar=False)[0,1])
+        coeffs[:,i] = np.array(arr)
+    
+    df = pd.DataFrame({'Component': range(1,9),'IL2': coeffs[:,0], 'IL15': coeffs[:,1], 'IL7': coeffs[:,2], 'IL9':coeffs[:,3], 'IL2Ra':coeffs[:,4], 'IL2Rb':coeffs[:,5], 'gc':coeffs[:,6], 'IL15Ra':coeffs[:,7],'IL7Ra':coeffs[:,8], 'IL9R':coeffs[:,9]})  
+    df = df.set_index('Component')
+    return df
