@@ -1,7 +1,7 @@
 import unittest
 from theano.tests import unittest_tools as utt
 import numpy as np
-from ..differencing_op import centralDiff, runCkineOp
+from ..differencing_op import centralDiff, runCkineOp, runCkineKineticOp
 from ..fit import IL2_sum_squared_dist
 
 
@@ -26,3 +26,12 @@ class TestOp(unittest.TestCase):
         XX = np.full(26, 0.5, dtype=np.float64)
 
         utt.verify_grad(runCkineOp(ts), [XX], abs_tol=0.01, rel_tol=0.01)
+
+    @unittest.skip("The kinetic FSA Op does not currently work.")
+    def test_runCkineKineticOp(self):
+        ts = np.linspace(0, 1000, dtype=np.float64)
+        cond = np.ones(56, dtype=np.float64)
+
+        XX = np.full(26, 0.1, dtype=np.float64)
+
+        utt.verify_grad(runCkineKineticOp(ts, cond), [XX], abs_tol=0.01, rel_tol=0.01)
