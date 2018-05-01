@@ -2,14 +2,14 @@ import unittest
 from theano.tests import unittest_tools as utt
 import numpy as np
 from ..differencing_op import centralDiff, runCkineOp, runCkineKineticOp
-from ..fit import IL2_sum_squared_dist
+from ..fit import IL2Rb_trafficking
 
 
 class TestOp(unittest.TestCase):
     def test_grad(self):
-        mdl = IL2_sum_squared_dist()
+        mdl = IL2Rb_trafficking()
 
-        XX = np.full(17, 0.5, dtype=np.float64)
+        XX = np.full(26, 0.5, dtype=np.float64)
 
         utt.verify_grad(centralDiff(mdl), [XX])
 

@@ -307,15 +307,6 @@ void solveAutocrineS (const ratesS * const r, N_Vector *y0s, array<double, 56> &
 }
 
 
-static void errorHandler(int error_code, const char *module, const char *function, char *msg, void *) {
-	if (error_code == CV_WARNING) return;
-
-	std::cout << "Internal CVode error in " << function << std::endl;
-	std::cout << msg << std::endl;
-	std::cout << "In module: " << module << std::endl;
-	std::cout << "Error code: " << error_code << std::endl;
-}
-
 struct solver {
 	void *cvode_mem;
 	SUNLinearSolver LS;
@@ -323,7 +314,30 @@ struct solver {
 	N_Vector *yS;
 	SUNMatrix A;
 	bool sensi;
+	double *params;
 };
+
+
+static void errorHandler(int error_code, const char *module, const char *function, char *msg, void *ehdata) {
+	// if (error_code == CV_WARNING) return;
+	solver *sMem = static_cast<solver *>(ehdata);
+
+	std::cout << "Internal CVode error in " << function << ", module: " << module << ", error code: " << error_code << std::endl;
+	std::cout << msg << std::endl;
+	std::cout << "Parameters: ";
+
+	for (size_t ii = 0; ii < Nparams; ii++) {
+		std::cout << sMem->params[ii] << "\t";
+	}
+
+	std::cout << std::endl;
+
+	if (sMem->sensi)
+		std::cout << "Sensitivity enabled." << std::endl;
+
+	//N_VPrint_Serial(sMem->state);
+	std::cout << std::endl << std::endl;
+}
 
 
 void solverFree(solver *sMem) {
@@ -342,6 +356,7 @@ void solverFree(solver *sMem) {
 void solver_setup(solver *sMem, double *params) {
 	// So far we're not doing a sensitivity analysis
 	sMem->sensi = false;
+	sMem->params = params;
 
 	/* Call CVodeCreate to create the solver memory and specify the
 	 * Backward Differentiation Formula and the use of a Newton iteration */
@@ -351,7 +366,7 @@ void solver_setup(solver *sMem, double *params) {
 		throw std::runtime_error(string("Error calling CVodeCreate in solver_setup."));
 	}
 	
-	CVodeSetErrHandlerFn(sMem->cvode_mem, &errorHandler, static_cast<void *>(params));
+	CVodeSetErrHandlerFn(sMem->cvode_mem, &errorHandler, static_cast<void *>(sMem));
 
 	/* Call CVodeInit to initialize the integrator memory and specify the
 	 * user's right hand side function in y'=f(t,y), the inital time T0, and
