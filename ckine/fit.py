@@ -10,7 +10,7 @@ from .differencing_op import centralDiff, runCkineOp
 
 def surf_IL2Rb(rxntraf, IL2_conc):
     # times from experiment are hard-coded into this function
-    ts = np.array(([0.01, 2., 5., 15., 30., 60., 90.]))
+    ts = np.array([0.01, 2., 5., 15., 30., 60., 90.])
 
     rxntraf[0] = IL2_conc # the concentration of IL2 is rxnRates[0]
 
@@ -19,7 +19,7 @@ def surf_IL2Rb(rxntraf, IL2_conc):
     if retVal < 0:
         return -100
 
-    return 10. * (ys[:, 1] / ys[0, 1]) # % sIL2Rb relative to initial amount
+    return 10. * ys[:, 1] / ys[0, 1] # % sIL2Rb relative to initial amount
 
 
 class IL2Rb_trafficking:
@@ -35,12 +35,12 @@ class IL2Rb_trafficking:
     def calc(self, tfR):
         # IL2Ra- cells
         tfR2 = tfR.copy()
-        tfR2[20] = 0.0 # TODO: Check that idx 20 is IL2ra
+        tfR2[19] = 0.0 # TODO: Check that idx 19 is IL2ra
 
-        diff1 = surf_IL2Rb(tfR, 1) - self.numpy_data[:, 1] # the second column of numpy_data has all the 1nM IL2Ra+ data
-        diff2 = surf_IL2Rb(tfR, 500) - self.numpy_data[:, 5] # the sixth column of numpy_data has all the 500 nM IL2Ra+ data
-        diff3 = surf_IL2Rb(tfR2, 1) - self.numpy_data2[:, 1] # the second column of numpy_data2 has all the 1nM IL2Ra- data
-        diff4 = surf_IL2Rb(tfR2, 500) - self.numpy_data2[:, 5] # the sixth column of numpy_data2 has all the 500 nM IL2Ra- data
+        diff1 = surf_IL2Rb(tfR, 1) - self.numpy_data[:, 1] # col 2 of numpy_data has all the 1nM IL2Ra+ data
+        diff2 = surf_IL2Rb(tfR, 500) - self.numpy_data[:, 5] # col 6 of numpy_data has all the 500 nM IL2Ra+ data
+        diff3 = surf_IL2Rb(tfR2, 1) - self.numpy_data2[:, 1] # col 2 of numpy_data2 has all the 1nM IL2Ra- data
+        diff4 = surf_IL2Rb(tfR2, 500) - self.numpy_data2[:, 5] # col 6 of numpy_data2 has all the 500 nM IL2Ra- data
 
         all_diffs = np.concatenate((diff1, diff2, diff3, diff4))
 
@@ -75,8 +75,8 @@ class IL2_15_activity:
         # Loop over concentrations of IL2
         actVecIL2 = T.stack(list(map(lambda x: T.dot(self.activity, Op(T.set_subtensor(unkVec[0], x))), self.cytokC)))
 
-        unkVecIL2RaMinus = T.set_subtensor(unkVec[20], 0.0) # Set IL2Ra to zero
-        # TODO: Check that idx 20 is IL2ra
+        unkVecIL2RaMinus = T.set_subtensor(unkVec[19], 0.0) # Set IL2Ra to zero
+        # TODO: Check that idx 19 is IL2ra
 
         # Loop over concentrations of IL2, IL2Ra-/-
         actVecIL2RaMinus = T.stack(list(map(lambda x: T.dot(self.activity, Op(T.set_subtensor(unkVecIL2RaMinus[0], x))), self.cytokC)))
@@ -99,7 +99,7 @@ class build_model:
         M = pm.Model()
 
         with M:
-            rxnrates = pm.Lognormal('rxn', mu=np.log(0.1), sd=1., shape=11) # first 3 are IL2, second 5 are IL15, kfwd is first element (used in both 2&15)
+            rxnrates = pm.Lognormal('rxn', mu=np.log(0.1), sd=1., shape=10) # first 3 are IL2, second 5 are IL15, kfwd is first element (used in both 2&15)
             endo_activeEndo = pm.Lognormal('endo', mu=np.log(0.1), sd=1., shape=2)
             kRec_kDeg = pm.Lognormal('kRec_kDeg', mu=np.log(0.1), sd=1., shape=2)
             Rexpr = pm.Lognormal('IL2Raexpr', sd=1., shape=4) # Expression: IL2Ra, IL2Rb, gc, IL15Ra
