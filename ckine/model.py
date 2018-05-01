@@ -36,10 +36,6 @@ def runCkine (tps, rxn, tfr):
                            False,
                            ct.POINTER(ct.c_double)())
 
-    if retVal < 0:
-        print("Model run failed")
-        printModel(rxn, tfr)
-
     return (yOut, retVal)
 
 
@@ -56,10 +52,6 @@ def runCkineU (tps, rxntfr):
                            rxntfr.ctypes.data_as(ct.POINTER(ct.c_double)),
                            False,
                            ct.POINTER(ct.c_double)())
-
-    if retVal < 0:
-        print("Model run failed")
-        print(rxntfr)
 
     return (yOut, retVal)
 
@@ -79,10 +71,6 @@ def runCkineSensi (tps, rxntfr):
                            rxntfr.ctypes.data_as(ct.POINTER(ct.c_double)),
                            True,
                            sensV.ctypes.data_as(ct.POINTER(ct.c_double)))
-
-    if retVal < 0:
-        print("Model run failed")
-        print(rxntfr)
 
     return (yOut, retVal, sensV)
 
@@ -129,26 +117,6 @@ def fullModel(y, t, rxn, tfr):
 
 __active_species_IDX = np.zeros(26, dtype=np.bool)
 __active_species_IDX[np.array([8, 9, 16, 17, 21, 25])] = 1
-
-
-def printModel(rxnRates, trafRates):
-    """A function to print out important values."""
-    # endo, activeEndo, sortF, kRec, kDeg
-    print("Endocytosis: " + str(trafRates[0]))
-    print("activeEndo: " + str(trafRates[1]))
-    print("sortF: " + str(trafRates[2]))
-    print("kRec: " + str(trafRates[3]))
-    print("kDeg: " + str(trafRates[4]))
-    print("Receptor expression: " + str(trafRates[5:11]))
-    print(".....Reaction rates.....")
-    print("IL2: " + str(rxnRates[0]))
-    print("IL15: " + str(rxnRates[1]))
-    print("IL7: " + str(rxnRates[2]))
-    print("IL9: " + str(rxnRates[3]))
-    print("kfwd: " + str(rxnRates[4]))
-    print("k5rev: " + str(rxnRates[5]))
-    print("k6rev: " + str(rxnRates[6]))
-    print(rxnRates[7::])
 
 
 def solveAutocrine(trafRates):
