@@ -32,7 +32,7 @@ class TestModel(unittest.TestCase):
     def setUp(self):
         self.ts = np.array([0.0, 100000.0])
         self.y0 = np.random.lognormal(0., 1., 26)
-        self.args = np.random.lognormal(0., 1., 15)
+        self.args = np.random.lognormal(0., 1., 14)
         self.tfargs = np.random.lognormal(0., 1., 11)
         # need to convert args from an array to a tuple of numbers
 
@@ -141,7 +141,7 @@ class TestModel(unittest.TestCase):
         
     def test_jacobian(self):
         '''Compares the approximate Jacobian (approx_jacobian() in Shuffle_ODE.py) with the analytical Jacobian (jacobian() of model.cpp). Both Jacobians are evaluating the partial derivatives of dydt.'''
-        rxn = np.random.sample(15)
+        rxn = np.random.sample(14)
         t = np.random.sample(1)
         y = np.random.sample(26)
         
@@ -149,7 +149,6 @@ class TestModel(unittest.TestCase):
         approx = approx_jac_dydt(y, t, rxn)
 
         self.assertTrue(np.allclose(analytical, approx, rtol=0.1, atol=0.1))
-
 
 
     def test_tensor(self):
@@ -168,18 +167,9 @@ class TestModel(unittest.TestCase):
 
     def test_initial(self):
         #test to check that at least one nonzero is at timepoint zero
-        r = np.zeros(15)
-        r[4:15] = np.ones(11) * (5*10**-1)
-        r[0:4] = 10**-3, 10**-3, 10**-3, 10**-3
         
         t = 60. * 4 # let's let the system run for 4 hours
         ts = np.linspace(0.0, t, 100) #generate 100 evenly spaced timepoints
         
-        trafRates = np.zeros(11)
-        trafRates[0:5] = (50* 10**-2)
-        trafRates[5:11] = 0.1,0.1,0.1,0.1,0.1,0.1
-        
-        temp, retVal = runCkine(ts, r, trafRates)
+        temp, retVal = runCkine(ts, self.args, self.tfargs)
         self.assertGreater(np.count_nonzero(temp[0,:]), 0)
-
-

@@ -48,23 +48,22 @@ ratesS param(const double * const rxntfR) {
 	r.kfwd = rxntfR[4];
 	r.k5rev = rxntfR[5];
 	r.k6rev = rxntfR[6];
-	r.k15rev = rxntfR[7];
-	r.k17rev = rxntfR[8];
-	r.k18rev = rxntfR[9];
-	r.k22rev = rxntfR[10];
-	r.k23rev = rxntfR[11];
-	r.k27rev = rxntfR[12];
-	r.k29rev = rxntfR[13];
-	r.k31rev = rxntfR[14];
+	r.k17rev = rxntfR[7];
+	r.k18rev = rxntfR[8];
+	r.k22rev = rxntfR[9];
+	r.k23rev = rxntfR[10];
+	r.k27rev = rxntfR[11];
+	r.k29rev = rxntfR[12];
+	r.k31rev = rxntfR[13];
 
 	// Set the rates
-	r.endo = rxntfR[15];
-	r.activeEndo = rxntfR[16];
-	r.sortF = rxntfR[17];
-	r.kRec = rxntfR[18];
-	r.kDeg = rxntfR[19];
+	r.endo = rxntfR[14];
+	r.activeEndo = rxntfR[15];
+	r.sortF = rxntfR[16];
+	r.kRec = rxntfR[17];
+	r.kDeg = rxntfR[18];
 
-	std::copy_n(rxntfR + 20, 6, r.Rexpr.begin());
+	std::copy_n(rxntfR + 19, 6, r.Rexpr.begin());
 
 	return r;
 }
@@ -117,13 +116,13 @@ void dy_dt(const double * const y, const ratesS * const r, double * const dydt, 
 	// IL15
 	// To satisfy detailed balance these relationships should hold
 	// _Based on initial assembly steps
-	const double k16rev = r->kfwd * r->k18rev * r->k15rev / k13rev / kfbnd;
-	const double k19rev = r->kfwd * k14rev * r->k17rev / kfbnd / r->k15rev;
+	const double k16rev = r->kfwd * r->k18rev * k15rev / k13rev / kfbnd;
+	const double k19rev = r->kfwd * k14rev * r->k17rev / kfbnd / k15rev;
 	const double k24rev = k13rev * r->k23rev / k14rev;
 
 	// _Based on formation of full complex
-	const double k21rev = k14rev * r->k22rev * k24rev / r->kfwd / r->k15rev / r->k18rev * kfbnd;
-	const double k20rev = k14rev * r->k22rev * k24rev / k19rev / r->k15rev;
+	const double k21rev = k14rev * r->k22rev * k24rev / r->kfwd / k15rev / r->k18rev * kfbnd;
+	const double k20rev = k14rev * r->k22rev * k24rev / k19rev / k15rev;
 
 	// _One detailed balance IL7/9 loop
 	const double k32rev = r->k29rev * r->k31rev / k30rev;
@@ -145,14 +144,14 @@ void dy_dt(const double * const y, const ratesS * const r, double * const dydt, 
 	dydt[10] = -kfbnd * IL15Ra * IL15 + k13rev * IL15_IL15Ra - kfbnd * IL15Ra * IL15_gc + r->k18rev * IL15_IL15Ra_gc - r->kfwd * IL15Ra * IL15_IL2Rb_gc + k20rev * IL15_IL15Ra_IL2Rb_gc - r->kfwd * IL15Ra * IL15_IL2Rb + k24rev * IL15_IL15Ra_IL2Rb;
 	dydt[11] = -r->kfwd * IL15_IL15Ra * IL2Rb + r->k23rev * IL15_IL15Ra_IL2Rb - r->kfwd * IL15_IL15Ra * gc + k16rev * IL15_IL15Ra_gc + kfbnd * IL15 * IL15Ra - k13rev * IL15_IL15Ra;
 	dydt[12] = -r->kfwd * IL15_IL2Rb * IL15Ra + k24rev * IL15_IL15Ra_IL2Rb - kfbnd * IL15_IL2Rb * gc + r->k17rev * IL15_IL2Rb_gc + kfbnd * IL15 * IL2Rb - k14rev * IL15_IL2Rb;
-	dydt[13] = -kfbnd * IL15_gc * IL15Ra + r->k18rev * IL15_IL15Ra_gc - r->kfwd * IL15_gc * IL2Rb + k19rev * IL15_IL2Rb_gc + kfbnd * IL15 * gc - r->k15rev * IL15_gc;
+	dydt[13] = -kfbnd * IL15_gc * IL15Ra + r->k18rev * IL15_IL15Ra_gc - r->kfwd * IL15_gc * IL2Rb + k19rev * IL15_IL2Rb_gc + kfbnd * IL15 * gc - k15rev * IL15_gc;
 	dydt[14] = -r->kfwd * IL15_IL15Ra_IL2Rb * gc + r->k22rev * IL15_IL15Ra_IL2Rb_gc + r->kfwd * IL15_IL15Ra * IL2Rb - r->k23rev * IL15_IL15Ra_IL2Rb + r->kfwd * IL15_IL2Rb * IL15Ra - k24rev * IL15_IL15Ra_IL2Rb;
 	dydt[15] = -r->kfwd * IL15_IL15Ra_gc * IL2Rb + k21rev * IL15_IL15Ra_IL2Rb_gc + r->kfwd * IL15_IL15Ra * gc - k16rev * IL15_IL15Ra_gc + kfbnd * IL15_gc * IL15Ra - r->k18rev * IL15_IL15Ra_gc;
 	dydt[16] = -r->kfwd * IL15_IL2Rb_gc * IL15Ra + k20rev * IL15_IL15Ra_IL2Rb_gc + kfbnd * gc * IL15_IL2Rb - r->k17rev * IL15_IL2Rb_gc + r->kfwd * IL15_gc * IL2Rb - k19rev * IL15_IL2Rb_gc;
 	dydt[17] =  r->kfwd * IL15_IL2Rb_gc * IL15Ra - k20rev * IL15_IL15Ra_IL2Rb_gc + r->kfwd * IL15_IL15Ra_gc * IL2Rb - k21rev * IL15_IL15Ra_IL2Rb_gc + r->kfwd * IL15_IL15Ra_IL2Rb * gc - r->k22rev * IL15_IL15Ra_IL2Rb_gc;
 	
 	dydt[1] = dydt[1] - kfbnd * IL2Rb * IL15 + k14rev * IL15_IL2Rb - r->kfwd * IL2Rb * IL15_gc + k19rev * IL15_IL2Rb_gc - r->kfwd * IL2Rb * IL15_IL15Ra_gc + k21rev * IL15_IL15Ra_IL2Rb_gc - r->kfwd * IL2Rb * IL15_IL15Ra + r->k23rev * IL15_IL15Ra_IL2Rb;
-	dydt[2] = dydt[2] - kfbnd * IL15 * gc + r->k15rev * IL15_gc - kfbnd * IL15_IL2Rb * gc + r->k17rev * IL15_IL2Rb_gc - r->kfwd * IL15_IL15Ra * gc + k16rev * IL15_IL15Ra_gc - r->kfwd * IL15_IL15Ra_IL2Rb * gc + r->k22rev * IL15_IL15Ra_IL2Rb_gc;
+	dydt[2] = dydt[2] - kfbnd * IL15 * gc + k15rev * IL15_gc - kfbnd * IL15_IL2Rb * gc + r->k17rev * IL15_IL2Rb_gc - r->kfwd * IL15_IL15Ra * gc + k16rev * IL15_IL15Ra_gc - r->kfwd * IL15_IL15Ra_IL2Rb * gc + r->k22rev * IL15_IL15Ra_IL2Rb_gc;
 	
 	// IL7
 	dydt[2] = dydt[2] - kfbnd * IL7 * gc + k26rev * gc_IL7 - r->kfwd * gc * IL7Ra_IL7 + r->k27rev * IL7Ra_gc_IL7;
@@ -285,24 +284,24 @@ void solveAutocrineS (const ratesS * const r, N_Vector *y0s, array<double, 56> &
 
 	for (size_t is : recIDX) {
 		// Endosomal amount doesn't depend on endo
-		NV_Ith_S(y0s[15], is) = -y0[is]/r->endo; // Endo (15)
+		NV_Ith_S(y0s[14], is) = -y0[is]/r->endo; // Endo (15)
 
 		// sortF (17)
-		NV_Ith_S(y0s[17], is + 26) = -y0[is + 26]/r->sortF;
-		NV_Ith_S(y0s[17], is) = r->kRec*internalFrac/r->endo*((1 - r->sortF)*NV_Ith_S(y0s[17], is + 26) - y0[is + 26]);
+		NV_Ith_S(y0s[16], is + 26) = -y0[is + 26]/r->sortF;
+		NV_Ith_S(y0s[16], is) = r->kRec*internalFrac/r->endo*((1 - r->sortF)*NV_Ith_S(y0s[16], is + 26) - y0[is + 26]);
 
 		// Endosomal amount doesn't depend on kRec
-		NV_Ith_S(y0s[18], is) = (1-r->sortF)*y0[is + 26]*internalFrac/r->endo; // kRec (18)
+		NV_Ith_S(y0s[17], is) = (1-r->sortF)*y0[is + 26]*internalFrac/r->endo; // kRec (18)
 
 		// kDeg (19)
-		NV_Ith_S(y0s[19], is + 26) = -y0[is + 26]/r->kDeg;
-		NV_Ith_S(y0s[19], is) = r->kRec*(1-r->sortF)*NV_Ith_S(y0s[19], is + 26)*internalFrac/r->endo;
+		NV_Ith_S(y0s[18], is + 26) = -y0[is + 26]/r->kDeg;
+		NV_Ith_S(y0s[18], is) = r->kRec*(1-r->sortF)*NV_Ith_S(y0s[18], is + 26)*internalFrac/r->endo;
 	}
 
-	// Rexpr (20-26)
+	// Rexpr (19-25)
 	for (size_t ii = 0; ii < recIDX.size(); ii++) {
-		NV_Ith_S(y0s[20 + ii], recIDX[ii] + 26) = y0[recIDX[ii] + 26]/r->Rexpr[ii];
-		NV_Ith_S(y0s[20 + ii], recIDX[ii]) = 1/r->endo + NV_Ith_S(y0s[20 + ii], recIDX[ii] + 26)*r->kRec*(1-r->sortF)*internalFrac/r->endo;
+		NV_Ith_S(y0s[19 + ii], recIDX[ii] + 26) = y0[recIDX[ii] + 26]/r->Rexpr[ii];
+		NV_Ith_S(y0s[19 + ii], recIDX[ii]) = 1/r->endo + NV_Ith_S(y0s[19 + ii], recIDX[ii] + 26)*r->kRec*(1-r->sortF)*internalFrac/r->endo;
 	}
 }
 
@@ -398,6 +397,7 @@ void solver_setup(solver *sMem, double *params) {
 	}
 
 	CVodeSetMaxNumSteps(sMem->cvode_mem, 2000000);
+	CVodeSetStabLimDet(sMem->cvode_mem, true);
 }
 
 
@@ -552,13 +552,13 @@ void jacobian(const double * const y, const ratesS * const r, double * const dyd
 	// IL15
 	// To satisfy detailed balance these relationships should hold
 	// _Based on initial assembly steps
-	const double k16rev = r->kfwd * r->k18rev * r->k15rev / k13rev / kfbnd;
-	const double k19rev = r->kfwd * k14rev * r->k17rev / kfbnd / r->k15rev;
+	const double k16rev = r->kfwd * r->k18rev * k15rev / k13rev / kfbnd;
+	const double k19rev = r->kfwd * k14rev * r->k17rev / kfbnd / k15rev;
 	const double k24rev = k13rev * r->k23rev / k14rev;
 
 	// _Based on formation of full complex
-	const double k21rev = k14rev * r->k22rev * k24rev / r->kfwd / r->k15rev / r->k18rev * kfbnd;
-	const double k20rev = k14rev * r->k22rev * k24rev / k19rev / r->k15rev;
+	const double k21rev = k14rev * r->k22rev * k24rev / r->kfwd / k15rev / r->k18rev * kfbnd;
+	const double k20rev = k14rev * r->k22rev * k24rev / k19rev / k15rev;
 
 	// _One detailed balance IL7/9 loop
 	const double k32rev = r->k29rev * r->k31rev / k30rev;
@@ -608,7 +608,7 @@ void jacobian(const double * const y, const ratesS * const r, double * const dyd
 	out[2][9] = k10rev; // gc with respect to IL2_IL2Ra_IL2Rb_gc
 	out[2][11] = - r->kfwd * gc; // gc with respect to IL15_IL15Ra
 	out[2][12] = - kfbnd * gc; // gc with respect to IL15_IL2Rb
-	out[2][13] = r->k15rev; // gc with respect to IL15_gc
+	out[2][13] = k15rev; // gc with respect to IL15_gc
 	out[2][14] = - r->kfwd * gc; // gc with respect to IL15_IL15Ra_IL2Rb
 	out[2][15] = k16rev; // gc with respect to IL15_IL15Ra_gc
 	out[2][16] = r->k17rev; // gc with respect to IL15_IL2Rb_gc
@@ -710,7 +710,7 @@ void jacobian(const double * const y, const ratesS * const r, double * const dyd
 	out[13][1] = - r->kfwd * IL15_gc; // IL15_gc with respect to IL2Rb
 	out[13][2] = kfbnd * IL15; // IL15_gc with respect to gc
 	out[13][10] = -kfbnd * IL15_gc; // IL15_gc with respect to IL15Ra
-	out[13][13] = -kfbnd * IL15Ra - r->kfwd * IL2Rb - r->k15rev; // IL15_gc with respect to IL15_gc
+	out[13][13] = -kfbnd * IL15Ra - r->kfwd * IL2Rb - k15rev; // IL15_gc with respect to IL15_gc
 	out[13][15] = r->k18rev; // IL15_gc with respect to IL15_IL15Ra_gc
 	out[13][16] = k19rev; // IL15_gc with respect to IL15_IL2Rb_gc
 	
