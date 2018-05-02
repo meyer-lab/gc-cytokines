@@ -44,8 +44,8 @@ constexpr double k26rev = 50000 * kfbnd; // General assumption that cytokine doe
 // Literature values for IL-9
 constexpr double k30rev = 50000 * kfbnd; // General assumption that cytokine doesn't bind to free gc
 
-constexpr double abstolIn = 1E-6;
-constexpr double reltolIn = 1E-7;
+constexpr double abstolIn = 1E-9;
+constexpr double reltolIn = 1E-12;
 constexpr double internalV = 623.0; // Same as that used in TAM model
 constexpr double internalFrac = 0.5; // Same as that used in TAM model
 

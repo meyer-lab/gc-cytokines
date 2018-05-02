@@ -21,22 +21,8 @@ libb.runCkine.argtypes = (ct.POINTER(ct.c_double), ct.c_uint,
 
 
 def runCkine (tps, rxn, tfr):
-    global libb
-
-    rxntfr = np.concatenate((rxn, tfr))
-
-    assert(rxntfr.size == 25)
-
-    yOut = np.zeros((tps.size, 56), dtype=np.float64)
-
-    retVal = libb.runCkine(tps.ctypes.data_as(ct.POINTER(ct.c_double)),
-                           tps.size,
-                           yOut.ctypes.data_as(ct.POINTER(ct.c_double)),
-                           rxntfr.ctypes.data_as(ct.POINTER(ct.c_double)),
-                           False,
-                           ct.POINTER(ct.c_double)())
-
-    return (yOut, retVal)
+    """ Wrapper if rxn and tfr are separate. """
+    return runCkineU (tps, np.concatenate((rxn, tfr)))
 
 
 def runCkineU (tps, rxntfr):
