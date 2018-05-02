@@ -419,12 +419,12 @@ void solver_setup_sensi(solver *sMem, const ratesS * const rr, double *params, a
 	}
 
 	array<double, Nparams> abs;
-	fill(abs.begin(), abs.end(), 1.0E-4);
+	fill(abs.begin(), abs.end(), 1.0E-6);
 
 	// Call CVodeSensSStolerances to estimate tolerances for sensitivity 
 	// variables based on the rolerances supplied for states variables and 
 	// the scaling factor pbar
-	if (CVodeSensSStolerances(sMem->cvode_mem, 1.0E-4, abs.data()) < 0) {
+	if (CVodeSensSStolerances(sMem->cvode_mem, 1.0E-6, abs.data()) < 0) {
 		solverFree(sMem);
 		throw std::runtime_error(string("Error calling CVodeSensSStolerances in solver_setup."));
 	}
@@ -694,7 +694,7 @@ void jacobian(const double * const y, const ratesS * const r, double * const dyd
 	out[11][1] = -r->kfwd * IL15_IL15Ra; // IL15_IL15Ra with respect to IL2Rb
 	out[11][2] = - r->kfwd * IL15_IL15Ra; // IL15_IL15Ra with respect to gc
 	out[11][10] = kfbnd * IL15; // IL15_IL15Ra with respect to IL15Ra
-	out[11][11] = -r->kfwd * IL2Rb- r->kfwd * gc - k13rev; // IL15_IL15Ra with respect to IL15_IL15Ra
+	out[11][11] = -r->kfwd * IL2Rb - r->kfwd * gc - k13rev; // IL15_IL15Ra with respect to IL15_IL15Ra
 	out[11][14] = r->k23rev; // IL15_IL15Ra with respect to IL15_IL15Ra_IL2Rb
 	out[11][15] = k16rev; // IL15_IL15Ra with respect to IL15_IL15Ra_gc
 	

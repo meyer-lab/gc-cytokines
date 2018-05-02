@@ -19,7 +19,7 @@ class TestModel(unittest.TestCase):
         # All the species abundances should be above zero
         self.assertGreater(np.min(X), -1.0E-7)
 
-        # Test that it came to equilirbium
+        # Test that it came to equilibrium
         self.assertLess(np.linalg.norm(func(X)) / (1.0 + np.sum(X)), 1E-5)
 
     def assertConservation(self, y, y0, IDX):
@@ -137,16 +137,13 @@ class TestModel(unittest.TestCase):
         # test that return value of runCkine isn't negative (model run didn't fail)
     #    self.assertGreaterEqual(retVal, 0)
 
-
-        
     def test_jacobian(self):
-        '''Compares the approximate Jacobian (approx_jacobian() in Shuffle_ODE.py) with the analytical Jacobian (jacobian() of model.cpp). Both Jacobians are evaluating the partial derivatives of dydt.'''
-        rxn = np.random.sample(14)
-        t = np.random.sample(1)
-        y = np.random.sample(26)
-        
-        analytical = jacobian(y, t, rxn)
-        approx = approx_jac_dydt(y, t, rxn)
+        '''Compares the approximate Jacobian (approx_jacobian() in Shuffle_ODE.py) with the analytical Jacobian (jacobian() of model.cpp).
+        Both Jacobians are evaluating the partial derivatives of dydt.'''
+        analytical = jacobian(self.y0, self.ts[0], self.args)
+        approx = approx_jac_dydt(self.y0, self.ts[0], self.args, delta=1.0E-4) # Large delta to prevent round-off error  
+
+        self.assertTrue(analytical.shape == approx.shape)
 
         self.assertTrue(np.allclose(analytical, approx, rtol=0.1, atol=0.1))
 

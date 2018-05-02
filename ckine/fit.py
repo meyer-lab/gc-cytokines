@@ -2,49 +2,42 @@
 This file includes the classes and functions necessary to fit the IL2 model to the experimental data.
 """
 import pymc3 as pm, theano.tensor as T, os
+from os.path import join
 from theano import shared
 import numpy as np, pandas as pds
 from .model import runCkineU, getActiveSpecies
-from .differencing_op import centralDiff, runCkineOp
-
-
-def surf_IL2Rb(rxntraf, IL2_conc):
-    # times from experiment are hard-coded into this function
-    ts = np.array([0.01, 2., 5., 15., 30., 60., 90.])
-
-    rxntraf[0] = IL2_conc # the concentration of IL2 is rxnRates[0]
-
-    ys, retVal = runCkineU(ts, rxntraf)
-
-    if retVal < 0:
-        return -100
-
-    return 10. * ys[:, 1] / ys[0, 1] # % sIL2Rb relative to initial amount
+from .differencing_op import runCkineOp, runCkineKineticOp
 
 
 class IL2Rb_trafficking:
     def __init__(self):
         path = os.path.dirname(os.path.abspath(__file__))
-        data = pds.read_csv(os.path.join(path, 'data/IL2Ra+_surface_IL2RB_datasets.csv')) # imports csv file into pandas array
-        self.numpy_data = data.as_matrix() # all of the IL2Rb trafficking data with IL2Ra+... first row contains headers... 9 columns and 8 rows... first column is time
-        data2 = pds.read_csv(os.path.join(path, "data/IL2Ra-_surface_IL2RB_datasets.csv"))
-        self.numpy_data2 = data2.as_matrix() # all of the IL2Rb trafficking data with IL2Ra-... first row contains headers... 9 columns and 8 rows... first column is time
+        # all of the IL2Rb trafficking data with IL2Ra+... first row contains headers... 9 columns and 8 rows... first column is time
+        numpy_data = pds.read_csv(join(path, 'data/IL2Ra+_surface_IL2RB_datasets.csv')).as_matrix()
+        # all of the IL2Rb trafficking data with IL2Ra-... first row contains headers... 9 columns and 8 rows... first column is time
+        numpy_data2 = pds.read_csv(join(path, "data/IL2Ra-_surface_IL2RB_datasets.csv")).as_matrix()
 
-        self.concs = 14
+        # times from experiment are hard-coded into this function
+        self.ts = np.array([0., 2., 5., 15., 30., 60., 90.])
 
-    def calc(self, tfR):
-        # IL2Ra- cells
-        tfR2 = tfR.copy()
-        tfR2[19] = 0.0 # TODO: Check that idx 19 is IL2ra
+        # Condense to just IL2Rb
+        self.condense = np.zeros(56)
+        self.condense[1] = 1;
 
-        diff1 = surf_IL2Rb(tfR, 1) - self.numpy_data[:, 1] # col 2 of numpy_data has all the 1nM IL2Ra+ data
-        diff2 = surf_IL2Rb(tfR, 500) - self.numpy_data[:, 5] # col 6 of numpy_data has all the 500 nM IL2Ra+ data
-        diff3 = surf_IL2Rb(tfR2, 1) - self.numpy_data2[:, 1] # col 2 of numpy_data2 has all the 1nM IL2Ra- data
-        diff4 = surf_IL2Rb(tfR2, 500) - self.numpy_data2[:, 5] # col 6 of numpy_data2 has all the 500 nM IL2Ra- data
+        # Concatted data
+        self.data = np.concatenate((numpy_data[:, 1], numpy_data[:, 5], numpy_data2[:, 1], numpy_data2[:, 5]))/10.
 
-        all_diffs = np.concatenate((diff1, diff2, diff3, diff4))
+    def calc(self, unkVec):
+        unkVecIL2RaMinus = T.set_subtensor(unkVec[19], 0.0) # Set IL2Ra to zero
 
-        return all_diffs
+        KineticOp = runCkineKineticOp(self.ts, self.condense)
+
+        a = KineticOp(T.set_subtensor(unkVec[0], 1.)) # col 2 of numpy_data has all the 1nM IL2Ra+ data
+        b = KineticOp(T.set_subtensor(unkVec[0], 500.)) # col 6 of numpy_data has all the 500 nM IL2Ra+ data
+        c = KineticOp(T.set_subtensor(unkVecIL2RaMinus[0], 1.)) # col 2 of numpy_data2 has all the 1nM IL2Ra- data
+        d = KineticOp(T.set_subtensor(unkVecIL2RaMinus[0], 500.)) # col 6 of numpy_data2 has all the 500 nM IL2Ra- data
+
+        return T.concatenate((a / a[0], b / b[0], c / c[0], d / d[0])) - self.data
     
 # this takes all the desired IL2 values we want to test and gives us the maximum activity value
 # IL2 values pretty much ranged from 5 x 10**-4 to 500 nm with 8 points in between
@@ -54,8 +47,8 @@ class IL2_15_activity:
     def __init__(self):
         """This loads the experiment data and saves it as a member matrix and it also makes a vector of the IL15 concentrations that we are going to take care of."""
         path = os.path.dirname(os.path.abspath(__file__))
-        data = pds.read_csv(os.path.join(path, "./data/IL2_IL15_extracted_data.csv")).as_matrix() # imports csv file into pandas array
-        dataIL2 = pds.read_csv(os.path.join(path, "./data/IL2_IL15_extracted_data.csv")).as_matrix() # imports csv file into pandas array
+        data = pds.read_csv(join(path, "./data/IL2_IL15_extracted_data.csv")).as_matrix() # imports csv file into pandas array
+        dataIL2 = pds.read_csv(join(path, "./data/IL2_IL15_extracted_data.csv")).as_matrix() # imports csv file into pandas array
         self.cytokC = np.logspace(-3.3, 2.7, 8) # 8 log-spaced values between our two endpoints
         self.fit_data = np.concatenate((data[:, 7], data[:, 3], dataIL2[:, 6], dataIL2[:, 2])) #the IL15_IL2Ra- data is within the 4th column (index 3)
         # the IL2_IL2Ra- data is within the 3rd column (index 2)
@@ -110,7 +103,7 @@ class build_model:
             unkVec = T.concatenate((ligands, rxnrates, endo_activeEndo, T.stack(sortF), kRec_kDeg, Rexpr, T.zeros(2, dtype=np.float64)))
 
             Y_15 = self.dst15.calc(unkVec) # fitting the data based on dst15.calc for the given parameters
-            Y_int = centralDiff(self.IL2Rb)(unkVec) # fitting the data based on dst.calc for the given parameters
+            Y_int = self.IL2Rb.calc(unkVec) # fitting the data based on dst.calc for the given parameters
 
             pm.Deterministic('Y_15', T.sum(T.square(Y_15)))
             pm.Deterministic('Y_int', T.sum(T.square(Y_int)))
