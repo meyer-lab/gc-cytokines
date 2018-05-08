@@ -24,7 +24,7 @@ struct ratesS {
 };
 
 // These are probably measured in the literature
-constexpr double kfbnd = 0.01; // Assuming on rate of 10^7 M-1 sec-1
+constexpr double kfbnd = 0.60; // Assuming on rate of 10^7 M-1 sec-1
 constexpr double k1rev = kfbnd * 10; // doi:10.1016/j.jmb.2004.04.038, 10 nM
 
 constexpr double k2rev = kfbnd * 144; // doi:10.1016/j.jmb.2004.04.038, 144 nM
