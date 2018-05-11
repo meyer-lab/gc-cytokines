@@ -46,27 +46,28 @@ ratesS param(const double * const rxntfR) {
 	r.IL7 = rxntfR[2];
 	r.IL9 = rxntfR[3];
 	r.kfwd = rxntfR[4];
-	r.k6rev = rxntfR[5];
-	r.k17rev = rxntfR[6];
-	r.k18rev = rxntfR[7];
-	r.k22rev = rxntfR[8];
-	r.k23rev = rxntfR[9];
-	r.k27rev = rxntfR[10];
-	r.k29rev = rxntfR[11];
-	r.k31rev = rxntfR[12];
+	r.k5rev = rxntfR[5];
+	r.k6rev = rxntfR[6];
+	r.k17rev = rxntfR[7];
+	r.k18rev = rxntfR[8];
+	r.k22rev = rxntfR[9];
+	r.k23rev = rxntfR[10];
+	r.k27rev = rxntfR[11];
+	r.k29rev = rxntfR[12];
+	r.k31rev = rxntfR[13];
 
 	// Set the rates
-	r.endo = rxntfR[13];
-	r.activeEndo = rxntfR[14];
-	r.sortF = rxntfR[15];
-	r.kRec = rxntfR[16];
-	r.kDeg = rxntfR[17];
+	r.endo = rxntfR[14];
+	r.activeEndo = rxntfR[15];
+	r.sortF = rxntfR[16];
+	r.kRec = rxntfR[17];
+	r.kDeg = rxntfR[18];
 
 	if (r.sortF > 1.0) {
 		throw std::runtime_error(string("sortF is a fraction and cannot be greater than 1.0."));
 	}
 
-	std::copy_n(rxntfR + 18, 6, r.Rexpr.begin());
+	std::copy_n(rxntfR + 19, 6, r.Rexpr.begin());
 
 	return r;
 }
@@ -105,13 +106,12 @@ void dy_dt(const double * const y, const ratesS * const r, double * const dydt, 
 	double IL9R_gc_IL9 = y[25];
 
 	// These are probably measured in the literature
-	const double k5rev  =  1.5 * r->kfwd; // doi:10.1016/j.jmb.2004.04.038
-	const double k10rev = 12.0 * r->kfwd; // doi:10.1016/j.jmb.2004.04.038
-	const double k11rev = 63.0 * r->kfwd; // doi:10.1016/j.jmb.2004.04.038
+	const double k10rev = 12.0 * r->k5rev / 1.5; // doi:10.1016/j.jmb.2004.04.038
+	const double k11rev = 63.0 * r->k5rev / 1.5; // doi:10.1016/j.jmb.2004.04.038
 	// To satisfy detailed balance these relationships should hold
 	// _Based on initial assembly steps
 	const double k4rev = kfbnd * r->k6rev * k3rev / k1rev / k3fwd;
-	const double k7rev = k3fwd * k2rev * k5rev / kfbnd / k3rev;
+	const double k7rev = k3fwd * k2rev * r->k5rev / kfbnd / k3rev;
 	const double k12rev = k1rev * k11rev / k2rev;
 	// _Based on formation of full complex
 	const double k9rev = k2rev * k10rev * k12rev / kfbnd / k3rev / r->k6rev * k3fwd;
@@ -135,13 +135,13 @@ void dy_dt(const double * const y, const ratesS * const r, double * const dydt, 
 	// IL2
 	dydt[0] = -kfbnd * IL2Ra * IL2 + k1rev * IL2_IL2Ra - r->kfwd * IL2Ra * IL2_gc + r->k6rev * IL2_IL2Ra_gc - r->kfwd * IL2Ra * IL2_IL2Rb_gc + k8rev * IL2_IL2Ra_IL2Rb_gc - r->kfwd * IL2Ra * IL2_IL2Rb + k12rev * IL2_IL2Ra_IL2Rb;
 	dydt[1] = -kfbnd * IL2Rb * IL2 + k2rev * IL2_IL2Rb - r->kfwd * IL2Rb * IL2_gc + k7rev * IL2_IL2Rb_gc - r->kfwd * IL2Rb * IL2_IL2Ra_gc + k9rev * IL2_IL2Ra_IL2Rb_gc - r->kfwd * IL2Rb * IL2_IL2Ra + k11rev * IL2_IL2Ra_IL2Rb;
-	dydt[2] = -k3fwd * IL2 * gc + k3rev * IL2_gc - r->kfwd * IL2_IL2Rb * gc + k5rev * IL2_IL2Rb_gc - r->kfwd * IL2_IL2Ra * gc + k4rev * IL2_IL2Ra_gc - r->kfwd * IL2_IL2Ra_IL2Rb * gc + k10rev * IL2_IL2Ra_IL2Rb_gc;
+	dydt[2] = -k3fwd * IL2 * gc + k3rev * IL2_gc - r->kfwd * IL2_IL2Rb * gc + r->k5rev * IL2_IL2Rb_gc - r->kfwd * IL2_IL2Ra * gc + k4rev * IL2_IL2Ra_gc - r->kfwd * IL2_IL2Ra_IL2Rb * gc + k10rev * IL2_IL2Ra_IL2Rb_gc;
 	dydt[3] = -r->kfwd * IL2_IL2Ra * IL2Rb + k11rev * IL2_IL2Ra_IL2Rb - r->kfwd * IL2_IL2Ra * gc + k4rev * IL2_IL2Ra_gc + kfbnd * IL2 * IL2Ra - k1rev * IL2_IL2Ra;
-	dydt[4] = -r->kfwd * IL2_IL2Rb * IL2Ra + k12rev * IL2_IL2Ra_IL2Rb - r->kfwd * IL2_IL2Rb * gc + k5rev * IL2_IL2Rb_gc + kfbnd * IL2 * IL2Rb - k2rev * IL2_IL2Rb;
+	dydt[4] = -r->kfwd * IL2_IL2Rb * IL2Ra + k12rev * IL2_IL2Ra_IL2Rb - r->kfwd * IL2_IL2Rb * gc + r->k5rev * IL2_IL2Rb_gc + kfbnd * IL2 * IL2Rb - k2rev * IL2_IL2Rb;
 	dydt[5] = -r->kfwd * IL2_gc * IL2Ra + r->k6rev * IL2_IL2Ra_gc - r->kfwd * IL2_gc * IL2Rb + k7rev * IL2_IL2Rb_gc + k3fwd * IL2 * gc - k3rev * IL2_gc;
 	dydt[6] = -r->kfwd * IL2_IL2Ra_IL2Rb * gc + k10rev * IL2_IL2Ra_IL2Rb_gc + r->kfwd * IL2_IL2Ra * IL2Rb - k11rev * IL2_IL2Ra_IL2Rb + r->kfwd * IL2_IL2Rb * IL2Ra - k12rev * IL2_IL2Ra_IL2Rb;
 	dydt[7] = -r->kfwd * IL2_IL2Ra_gc * IL2Rb + k9rev * IL2_IL2Ra_IL2Rb_gc + r->kfwd * IL2_IL2Ra * gc - k4rev * IL2_IL2Ra_gc + r->kfwd * IL2_gc * IL2Ra - r->k6rev * IL2_IL2Ra_gc;
-	dydt[8] = -r->kfwd * IL2_IL2Rb_gc * IL2Ra + k8rev * IL2_IL2Ra_IL2Rb_gc + r->kfwd * gc * IL2_IL2Rb - k5rev * IL2_IL2Rb_gc + r->kfwd * IL2_gc * IL2Rb - k7rev * IL2_IL2Rb_gc;
+	dydt[8] = -r->kfwd * IL2_IL2Rb_gc * IL2Ra + k8rev * IL2_IL2Ra_IL2Rb_gc + r->kfwd * gc * IL2_IL2Rb - r->k5rev * IL2_IL2Rb_gc + r->kfwd * IL2_gc * IL2Rb - k7rev * IL2_IL2Rb_gc;
 	dydt[9] = r->kfwd * IL2_IL2Rb_gc * IL2Ra - k8rev * IL2_IL2Ra_IL2Rb_gc + r->kfwd * IL2_IL2Ra_gc * IL2Rb - k9rev * IL2_IL2Ra_IL2Rb_gc + r->kfwd * IL2_IL2Ra_IL2Rb * gc - k10rev * IL2_IL2Ra_IL2Rb_gc;
 
 	// IL15
@@ -288,24 +288,24 @@ void solveAutocrineS (const ratesS * const r, N_Vector *y0s, array<double, 56> &
 
 	for (size_t is : recIDX) {
 		// Endosomal amount doesn't depend on endo
-		NV_Ith_S(y0s[13], is) = -y0[is]/r->endo; // Endo (15)
+		NV_Ith_S(y0s[14], is) = -y0[is]/r->endo; // Endo (15)
 
 		// sortF (17)
-		NV_Ith_S(y0s[15], is + 26) = -y0[is + 26]/r->sortF;
-		NV_Ith_S(y0s[15], is) = r->kRec*internalFrac/r->endo*((1 - r->sortF)*NV_Ith_S(y0s[15], is + 26) - y0[is + 26]);
+		NV_Ith_S(y0s[16], is + 26) = -y0[is + 26]/r->sortF;
+		NV_Ith_S(y0s[16], is) = r->kRec*internalFrac/r->endo*((1 - r->sortF)*NV_Ith_S(y0s[16], is + 26) - y0[is + 26]);
 
 		// Endosomal amount doesn't depend on kRec
-		NV_Ith_S(y0s[16], is) = (1-r->sortF)*y0[is + 26]*internalFrac/r->endo; // kRec (18)
+		NV_Ith_S(y0s[17], is) = (1-r->sortF)*y0[is + 26]*internalFrac/r->endo; // kRec (18)
 
 		// kDeg (19)
-		NV_Ith_S(y0s[17], is + 26) = -y0[is + 26]/r->kDeg;
-		NV_Ith_S(y0s[17], is) = r->kRec*(1-r->sortF)*NV_Ith_S(y0s[17], is + 26)*internalFrac/r->endo;
+		NV_Ith_S(y0s[18], is + 26) = -y0[is + 26]/r->kDeg;
+		NV_Ith_S(y0s[18], is) = r->kRec*(1-r->sortF)*NV_Ith_S(y0s[18], is + 26)*internalFrac/r->endo;
 	}
 
 	// Rexpr (19-25)
 	for (size_t ii = 0; ii < recIDX.size(); ii++) {
-		NV_Ith_S(y0s[18 + ii], recIDX[ii] + 26) = y0[recIDX[ii] + 26]/r->Rexpr[ii];
-		NV_Ith_S(y0s[18 + ii], recIDX[ii]) = 1/r->endo + NV_Ith_S(y0s[18 + ii], recIDX[ii] + 26)*r->kRec*(1-r->sortF)*internalFrac/r->endo;
+		NV_Ith_S(y0s[19 + ii], recIDX[ii] + 26) = y0[recIDX[ii] + 26]/r->Rexpr[ii];
+		NV_Ith_S(y0s[19 + ii], recIDX[ii]) = 1/r->endo + NV_Ith_S(y0s[19 + ii], recIDX[ii] + 26)*r->kRec*(1-r->sortF)*internalFrac/r->endo;
 	}
 }
 
@@ -542,13 +542,12 @@ void jacobian(const double * const y, const ratesS * const r, double * const dyd
 	double gc_IL9 = y[24];
 
 	// These are probably measured in the literature
-	const double k5rev  =  1.5 * r->kfwd; // doi:10.1016/j.jmb.2004.04.038
-	const double k10rev = 12.0 * r->kfwd; // doi:10.1016/j.jmb.2004.04.038
-	const double k11rev = 63.0 * r->kfwd; // doi:10.1016/j.jmb.2004.04.038
+	const double k10rev = 12.0 * r->k5rev / 1.5; // doi:10.1016/j.jmb.2004.04.038
+	const double k11rev = 63.0 * r->k5rev / 1.5; // doi:10.1016/j.jmb.2004.04.038
 	// To satisfy detailed balance these relationships should hold
 	// _Based on initial assembly steps
 	const double k4rev = kfbnd * r->k6rev * k3rev / k1rev / k3fwd;
-	const double k7rev = k3fwd * k2rev * k5rev / kfbnd / k3rev;
+	const double k7rev = k3fwd * k2rev * r->k5rev / kfbnd / k3rev;
 	const double k12rev = k1rev * k11rev / k2rev;
 	// _Based on formation of full complex
 	const double k9rev = k2rev * k10rev * k12rev / kfbnd / k3rev / r->k6rev * k3fwd;
@@ -609,7 +608,7 @@ void jacobian(const double * const y, const ratesS * const r, double * const dyd
 	out[2][5] = k3rev; // gc with respect to IL2_gc
 	out[2][6] = - r->kfwd * gc; // gc with respect to IL2_IL2Ra_IL2Rb
 	out[2][7] = k4rev; // gc with respect to IL2_IL2Ra_gc
-	out[2][8] = k5rev; // gc with respect to IL2_IL2Rb_gc
+	out[2][8] = r->k5rev; // gc with respect to IL2_IL2Rb_gc
 	out[2][9] = k10rev; // gc with respect to IL2_IL2Ra_IL2Rb_gc
 	out[2][11] = - r->kfwd * gc; // gc with respect to IL15_IL15Ra
 	out[2][12] = - kfbnd * gc; // gc with respect to IL15_IL2Rb
@@ -639,7 +638,7 @@ void jacobian(const double * const y, const ratesS * const r, double * const dyd
 	out[4][2] = - r->kfwd * IL2_IL2Rb; // IL2_IL2Rb with respect to gc
 	out[4][4] = -r->kfwd * IL2Ra - r->kfwd * gc - k2rev; // IL2_IL2Rb with respect to IL2_IL2Rb
 	out[4][6] = k12rev; // IL2_IL2Rb with respect to IL2_IL2Ra_IL2Rb
-	out[4][8] = k5rev; // IL2_IL2Rb with respect to IL2_IL2Rb_gc
+	out[4][8] = r->k5rev; // IL2_IL2Rb with respect to IL2_IL2Rb_gc
 		
 	// IL2_gc
 	out[5][0] = -r->kfwd * IL2_gc; // IL2_gc with respect to IL2Ra
@@ -673,7 +672,7 @@ void jacobian(const double * const y, const ratesS * const r, double * const dyd
 	out[8][2] = r->kfwd * IL2_IL2Rb; // IL2_IL2Rb_gc with respect to gc
 	out[8][4] = r->kfwd * gc; // IL2_IL2Rb_gc with respect to IL2_IL2Rb
 	out[8][5] = r->kfwd * IL2Rb; // IL2_IL2Rb_gc with respect to IL2_gc
-	out[8][8] = -r->kfwd * IL2Ra - k5rev - k7rev; // IL2_IL2Rb_gc with respect to IL2_IL2Rb_gc
+	out[8][8] = -r->kfwd * IL2Ra - r->k5rev - k7rev; // IL2_IL2Rb_gc with respect to IL2_IL2Rb_gc
 	out[8][9] = k8rev; // IL2_IL2Rb_gc with respect to IL2_IL2Ra_IL2Rb_gc
 	
 	// IL2_IL2Ra_IL2Rb_gc

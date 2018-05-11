@@ -6,6 +6,7 @@ struct ratesS {
 	double IL7;
 	double IL9;
 	double kfwd;
+	double k5rev;
 	double k6rev;
 	double k17rev;
 	double k18rev;
@@ -48,7 +49,7 @@ constexpr double reltolIn = 1E-12;
 constexpr double internalV = 623.0; // Same as that used in TAM model
 constexpr double internalFrac = 0.5; // Same as that used in TAM model
 
-constexpr size_t Nparams = 24;
+constexpr size_t Nparams = 25;
 constexpr size_t Nspecies = 56;
 
 extern "C" int runCkine (double *, size_t, double *, double *, bool, double *);
