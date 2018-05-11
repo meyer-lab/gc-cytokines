@@ -6,8 +6,8 @@ import numpy as np
 from hypothesis import given, settings
 from hypothesis.strategies import floats
 from hypothesis.extra.numpy import arrays as harrays
-from ..model import dy_dt, fullModel, solveAutocrine, getTotalActiveCytokine, solveAutocrineComplete, runCkine, jacobian
-from ..util_analysis.Shuffle_ODE import approx_jacobian, approx_jac_dydt
+from ..model import dy_dt, fullModel, solveAutocrine, getTotalActiveCytokine, solveAutocrineComplete, runCkineU, runCkine, jacobian
+from ..util_analysis.Shuffle_ODE import approx_jac_dydt
 from ..Tensor_analysis import find_R2X
 
 settings.register_profile("ci", max_examples=1000)
@@ -32,12 +32,11 @@ class TestModel(unittest.TestCase):
     def setUp(self):
         self.ts = np.array([0.0, 100000.0])
         self.y0 = np.random.lognormal(0., 1., 26)
-        self.args = np.random.lognormal(0., 1., 14)
+        self.args = np.random.lognormal(0., 1., 13)
         self.tfargs = np.random.lognormal(0., 1., 11)
-        # need to convert args from an array to a tuple of numbers
 
-        if (self.tfargs[2] > 1.):
-            self.tfargs[2] = self.tfargs[2] - np.floor(self.tfargs[2])
+        # Force sorting fraction to be less than 1.0
+        self.tfargs[2] = self.tfargs[2] - np.floor(self.tfargs[2])
 
     def test_length(self):
         self.assertEqual(len(dy_dt(self.y0, 0, self.args)), self.y0.size)
@@ -125,17 +124,16 @@ class TestModel(unittest.TestCase):
         # Test that there's no difference
         self.assertLess(np.linalg.norm(dy1 - dy3), 1E-8)
 
-    #@given(vec=harrays(np.float, 25, elements=floats(0.001, 10.0)), sortF=floats(0.1, 0.9))
-    #def test_runCkine(self, vec, sortF):
-    #    vec = np.insert(vec, 2, sortF)
-    #    # 11 trafRates and 15 rxnRates
-    #    trafRates = vec[0:11]
-    #    rxnRates = vec[11:26]
+    @unittest.skip("Runckine is unstable - known")
+    @given(vec=harrays(np.float, 24, elements=floats(0.01, 10.0)))
+    def test_runCkine(self, vec):
+        # Force sorting fraction to be less than 1.0
+        vec[15] = vec[15] - np.floor(vec[15])
 
-    #    ys, retVal = runCkine(self.ts, rxnRates, trafRates)
+        ys, retVal = runCkineU(self.ts, vec)
         
         # test that return value of runCkine isn't negative (model run didn't fail)
-    #    self.assertGreaterEqual(retVal, 0)
+        self.assertGreaterEqual(retVal, 0)
 
     def test_jacobian(self):
         '''Compares the approximate Jacobian (approx_jacobian() in Shuffle_ODE.py) with the analytical Jacobian (jacobian() of model.cpp).
