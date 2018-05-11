@@ -5,7 +5,7 @@ import pymc3 as pm, theano.tensor as T, os
 from os.path import join
 from theano import shared
 import numpy as np, pandas as pds
-from .model import runCkineU, getActiveSpecies
+from .model import getActiveSpecies
 from .differencing_op import runCkineOp, runCkineKineticOp
 
 
@@ -92,7 +92,7 @@ class build_model:
         M = pm.Model()
 
         with M:
-            rxnrates = pm.Lognormal('rxn', mu=np.log(0.1), sd=1., shape=10) # first 3 are IL2, second 5 are IL15, kfwd is first element (used in both 2&15)
+            rxnrates = pm.Lognormal('rxn', mu=np.log(0.1), sd=1., shape=9) # first 2 are IL2, second 5 are IL15, kfwd is first element (used in both 2&15)
             endo_activeEndo = pm.Lognormal('endo', mu=np.log(0.1), sd=1., shape=2)
             kRec_kDeg = pm.Lognormal('kRec_kDeg', mu=np.log(0.1), sd=1., shape=2)
             Rexpr = pm.Lognormal('IL2Raexpr', sd=1., shape=4) # Expression: IL2Ra, IL2Rb, gc, IL15Ra
