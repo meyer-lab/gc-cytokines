@@ -6,7 +6,7 @@ import numpy as np
 from hypothesis import given, settings
 from hypothesis.strategies import floats
 from hypothesis.extra.numpy import arrays as harrays
-from ..model import dy_dt, fullModel, solveAutocrine, getTotalActiveCytokine, solveAutocrineComplete, runCkineU, runCkine, jacobian
+from ..model import dy_dt, fullModel, solveAutocrine, getTotalActiveCytokine, solveAutocrineComplete, runCkine, runCkineU, jacobian
 from ..util_analysis.Shuffle_ODE import approx_jac_dydt
 from ..Tensor_analysis import find_R2X
 
@@ -32,7 +32,7 @@ class TestModel(unittest.TestCase):
     def setUp(self):
         self.ts = np.array([0.0, 100000.0])
         self.y0 = np.random.lognormal(0., 1., 26)
-        self.args = np.random.lognormal(0., 1., 13)
+        self.args = np.random.lognormal(0., 1., 14)
         self.tfargs = np.random.lognormal(0., 1., 11)
 
         # Force sorting fraction to be less than 1.0
