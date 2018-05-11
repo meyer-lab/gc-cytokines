@@ -102,8 +102,8 @@ void dy_dt(const double * const y, const ratesS * const r, double * const dydt, 
 	double IL9R_gc_IL9 = y[25];
 
 	// These are probably measured in the literature
-	const double k10rev = 12.0 * r->k5rev / 1.5; // doi:10.1016/j.jmb.2004.04.038
-	const double k11rev = 63.0 * r->k5rev / 1.5; // doi:10.1016/j.jmb.2004.04.038
+	const double k10rev = 12.0 * r->kfwd; // doi:10.1016/j.jmb.2004.04.038
+	const double k11rev = 63.0 * r->kfwd; // doi:10.1016/j.jmb.2004.04.038
 	// To satisfy detailed balance these relationships should hold
 	// _Based on initial assembly steps
 	const double k4rev = kfbnd * r->k6rev * k3rev / k1rev / k3fwd;
@@ -538,8 +538,8 @@ void jacobian(const double * const y, const ratesS * const r, double * const dyd
 	double gc_IL9 = y[24];
 
 	// These are probably measured in the literature
-	const double k10rev = 12.0 * r->k5rev / 1.5; // doi:10.1016/j.jmb.2004.04.038
-	const double k11rev = 63.0 * r->k5rev / 1.5; // doi:10.1016/j.jmb.2004.04.038
+	const double k10rev = 12.0 * r->kfwd; // doi:10.1016/j.jmb.2004.04.038
+	const double k11rev = 63.0 * r->kfwd; // doi:10.1016/j.jmb.2004.04.038
 	// To satisfy detailed balance these relationships should hold
 	// _Based on initial assembly steps
 	const double k4rev = kfbnd * r->k6rev * k3rev / k1rev / k3fwd;
