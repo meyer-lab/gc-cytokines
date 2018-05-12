@@ -186,11 +186,13 @@ extern "C" void dydt_C(double *y_in, double, double *dydt_out, double *rxn_in) {
  * @param      dydt  The rate of change vector solved for the receptor species.
  */
 void findLigConsume(double *dydt) {
+	double const * const dydti = dydt + 26;
+
 	// Calculate the ligand consumption.
-	dydt[52] -= std::accumulate(dydt+3, dydt+10, 0) / internalV;
-	dydt[53] -= std::accumulate(dydt+11, dydt+18, 0) / internalV;
-	dydt[54] -= std::accumulate(dydt+19, dydt+22, 0) / internalV;
-	dydt[55] -= std::accumulate(dydt+23, dydt+26, 0) / internalV;
+	dydt[52] -= std::accumulate(dydti+3,  dydti+10, 0) / internalV;
+	dydt[53] -= std::accumulate(dydti+11, dydti+18, 0) / internalV;
+	dydt[54] -= std::accumulate(dydti+19, dydti+22, 0) / internalV;
+	dydt[55] -= std::accumulate(dydti+23, dydti+26, 0) / internalV;
 }
 
 
