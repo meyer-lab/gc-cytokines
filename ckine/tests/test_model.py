@@ -6,8 +6,8 @@ import numpy as np
 from hypothesis import given, settings
 from hypothesis.strategies import floats
 from hypothesis.extra.numpy import arrays as harrays
-from ..model import dy_dt, fullModel, solveAutocrine, getTotalActiveCytokine, solveAutocrineComplete, runCkine, runCkineU, jacobian
-from ..util_analysis.Shuffle_ODE import approx_jac_dydt
+from ..model import dy_dt, fullModel, solveAutocrine, getTotalActiveCytokine, solveAutocrineComplete, runCkine, runCkineU, jacobian, fullJacobian
+from ..util_analysis.Shuffle_ODE import approx_jacobian
 from ..Tensor_analysis import find_R2X
 
 settings.register_profile("ci", max_examples=1000)
@@ -34,6 +34,7 @@ class TestModel(unittest.TestCase):
         self.y0 = np.random.lognormal(0., 1., 26)
         self.args = np.random.lognormal(0., 1., 14)
         self.tfargs = np.random.lognormal(0., 1., 11)
+        self.fully = np.random.lognormal(0., 1., 56)
 
         # Force sorting fraction to be less than 1.0
         self.tfargs[2] = self.tfargs[2] - np.floor(self.tfargs[2])
@@ -139,11 +140,25 @@ class TestModel(unittest.TestCase):
         '''Compares the approximate Jacobian (approx_jacobian() in Shuffle_ODE.py) with the analytical Jacobian (jacobian() of model.cpp).
         Both Jacobians are evaluating the partial derivatives of dydt.'''
         analytical = jacobian(self.y0, self.ts[0], self.args)
-        approx = approx_jac_dydt(self.y0, self.ts[0], self.args, delta=1.0E-4) # Large delta to prevent round-off error  
-
-        self.assertTrue(analytical.shape == approx.shape)
+        approx = approx_jacobian(lambda x: dy_dt(x, self.ts[0], self.args), self.y0, delta=1.0E-4) # Large delta to prevent round-off error  
 
         self.assertTrue(np.allclose(analytical, approx, rtol=0.1, atol=0.1))
+        
+    def test_fullJacobian(self):
+        analytical = fullJacobian(self.fully, 0.0, np.concatenate((self.args, self.tfargs)))
+        approx = approx_jacobian(lambda x: fullModel(x, 0.0, self.args, self.tfargs), self.fully, delta = 1.0E-7)
+        
+        self.assertTrue(analytical.shape == approx.shape)
+
+        closeness = np.isclose(analytical, approx, rtol=0.1, atol=0.1)
+
+        if not np.all(closeness):
+            IDXdiff = np.where(np.logical_not(closeness))
+            print(IDXdiff)
+            print(analytical[IDXdiff])
+            print(approx[IDXdiff])
+
+        self.assertTrue(np.all(closeness))
 
 
     def test_tensor(self):
@@ -162,9 +177,6 @@ class TestModel(unittest.TestCase):
 
     def test_initial(self):
         #test to check that at least one nonzero is at timepoint zero
-        
-        t = 60. * 4 # let's let the system run for 4 hours
-        ts = np.linspace(0.0, t, 100) #generate 100 evenly spaced timepoints
-        
-        temp, retVal = runCkine(ts, self.args, self.tfargs)
+        temp, retVal = runCkine(self.ts, self.args, self.tfargs)
         self.assertGreater(np.count_nonzero(temp[0,:]), 0)
+        self.assertGreaterEqual(retVal, 0)
