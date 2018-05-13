@@ -37,7 +37,9 @@ class TestModel(unittest.TestCase):
         self.fully = np.random.lognormal(0., 1., 56)
 
         # Force sorting fraction to be less than 1.0
-        self.tfargs[2] = self.tfargs[2] - np.floor(self.tfargs[2])
+        self.tfargs[2] = np.tanh(self.tfargs[2])*0.99
+        # High values of kfwd are dangerous
+        self.args[4] = self.args[4] / 1000
 
     def test_length(self):
         self.assertEqual(len(dy_dt(self.y0, 0, self.args)), self.y0.size)
@@ -125,11 +127,11 @@ class TestModel(unittest.TestCase):
         # Test that there's no difference
         self.assertLess(np.linalg.norm(dy1 - dy3), 1E-8)
 
-    @unittest.skip("Runckine is unstable - known")
-    @given(vec=harrays(np.float, 24, elements=floats(0.01, 10.0)))
+    @given(vec=harrays(np.float, 25, elements=floats(0.01, 10.0)))
     def test_runCkine(self, vec):
         # Force sorting fraction to be less than 1.0
-        vec[15] = vec[15] - np.floor(vec[15])
+        vec[16] = np.tanh(vec[16])*0.99
+        vec[4] = vec[4] / 1000.0
 
         ys, retVal = runCkineU(self.ts, vec)
         
@@ -146,7 +148,7 @@ class TestModel(unittest.TestCase):
         
     def test_fullJacobian(self):
         analytical = fullJacobian(self.fully, 0.0, np.concatenate((self.args, self.tfargs)))
-        approx = approx_jacobian(lambda x: fullModel(x, 0.0, self.args, self.tfargs), self.fully, delta = 1.0E-7)
+        approx = approx_jacobian(lambda x: fullModel(x, 0.0, self.args, self.tfargs), self.fully, delta = 1.0E-6)
         
         self.assertTrue(analytical.shape == approx.shape)
 
@@ -160,7 +162,6 @@ class TestModel(unittest.TestCase):
 
         self.assertTrue(np.all(closeness))
 
-
     def test_tensor(self):
         tensor = np.random.rand(35,100,20)
         arr = []
@@ -173,7 +174,6 @@ class TestModel(unittest.TestCase):
         #confirm R2X is >= 0 and <=1
         self.assertGreaterEqual(np.min(arr),0)
         self.assertLessEqual(np.max(arr),1)
-
 
     def test_initial(self):
         #test to check that at least one nonzero is at timepoint zero
