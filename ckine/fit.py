@@ -5,7 +5,7 @@ import pymc3 as pm, theano.tensor as T, os
 from os.path import join
 from theano import shared
 import numpy as np, pandas as pds
-from .model import runCkineU, getActiveSpecies
+from .model import getActiveSpecies
 from .differencing_op import runCkineOp, runCkineKineticOp
 
 

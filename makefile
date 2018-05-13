@@ -1,7 +1,7 @@
 fdir = ./Manuscript/Figures
 tdir = ./Manuscript/Templates
 pan_common = -F pandoc-crossref -F pandoc-citeproc --filter=$(tdir)/figure-filter.py -f markdown ./Manuscript/Text/*.md
-compile_opts = -std=c++14 -Wno-c++98-compat -Wno-padded -Wno-missing-prototypes -Wno-weak-vtables -Wno-global-constructors -Weverything -mavx -march=native
+compile_opts = -std=c++14 -mavx -march=native
 
 .PHONY: clean test all testprofile testcover doc testcpp
 
@@ -12,7 +12,7 @@ ifeq ($(UNAME_S),Linux)
     LINKFLAG = -Wl,-rpath=./ckine
 endif
 
-CPPLINKS = -lm -lsundials_cvodes -lsundials_cvode -lsundials_nvecserial -lcppunit
+CPPLINKS = -I/usr/include/eigen3/ -I/usr/local/Cellar/eigen/3.3.4/include/eigen3/ -lm -lsundials_cvodes -lsundials_cvode -lsundials_nvecserial -lcppunit
 
 $(fdir)/Figure%.svg: genFigures.py
 	mkdir -p ./Manuscript/Figures

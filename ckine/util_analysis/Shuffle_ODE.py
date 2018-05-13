@@ -1,8 +1,7 @@
-from ckine.model import fullModel, dy_dt
-import numpy as np, scipy
+import numpy as np
 
 
-def approx_jacobian():
+def approx_jacobian(func, y, delta=1.0E-9):
     """Approximate the Jacobian matrix of callable function func
 
        * Parameters
@@ -16,38 +15,13 @@ def approx_jacobian():
          The approximation is done using forward differences. func in this case is the fullModel function from the main model file. 
 
     """
-    trafRates = np.random.sample(11)
-    rxnRates = np.random.sample(15)
-    x0 = np.random.sample(56)
-    f0 = fullModel(x0, 0.0 , rxnRates, trafRates)
-    jac = np.zeros([len(x0),len(f0)])
-    dx = np.zeros(len(x0))
-    for i in range(len(x0)):
-        dx[i] = np.sqrt(np.finfo(float).eps)
-        jac[i] = (fullModel(x0 + dx, 0.0 , rxnRates, trafRates) - f0)/(np.sqrt(np.finfo(float).eps))
-        dx[i] = 0.0
-        
-    return jac.transpose()
-
-
-def approx_jac_dydt(y, t, rxn, delta=1.0E-9):
-    """Approximate the Jacobian matrix of callable function func
-
-       * Returns
-         An array of dimensions (lenf, lenx) where lenf is the length
-         of the outputs of func, and lenx is the number of
-
-       * Notes
-         The approximation is done using forward differences. func in this case is the fullModel function from the main model file. 
-
-    """
-    f0 = dy_dt(y, t, rxn)
+    f0 = func(y)
     jac = np.zeros([y.size, f0.size])
+    dy = np.zeros(y.size)
 
     for i in range(y.size):
-        dy = y.copy()
-        dy[i] = dy[i] + delta
+        dy[i] = delta
+        jac[i] = (func(y + dy) - f0)/delta
+        dy[i] = 0.0
 
-        jac[i] = (dy_dt(dy, t, rxn) - f0)/delta
-        
     return jac.transpose()
