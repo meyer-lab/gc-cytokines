@@ -6,15 +6,29 @@ struct ratesS {
 	double IL7;
 	double IL9;
 	double kfwd;
+	double k4rev;
 	double k5rev;
 	double k6rev;
+	double k7rev;
+	double k8rev;
+	double k9rev;
+	double k10rev;
+	double k11rev;
+	double k12rev;
+	double k16rev;
 	double k17rev;
 	double k18rev;
+	double k19rev;
+	double k20rev;
+	double k21rev;
 	double k22rev;
 	double k23rev;
+	double k24rev;
 	double k27rev;
+	double k28rev;
 	double k29rev;
 	double k31rev;
+	double k32rev;
 	double endo;
 	double activeEndo;
 	double sortF;
@@ -51,5 +65,6 @@ constexpr double internalFrac = 0.5; // Same as that used in TAM model
 
 constexpr size_t Nparams = 25;
 constexpr size_t Nspecies = 56;
+constexpr size_t halfL = 26;
 
 extern "C" int runCkine (double *, size_t, double *, double *, bool, double *);

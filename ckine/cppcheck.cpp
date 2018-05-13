@@ -1,6 +1,7 @@
 #include <iostream>
 #include <string>
 #include <random>
+#include <cmath>
 #include <array>
 #include <random>
 #include <algorithm>
@@ -52,10 +53,11 @@ protected:
 		array<double, Nparams*Nspecies*tps.size()> soutput;
 		array<double, Nparams*Nspecies*tps.size()> soutput2;
 
-		for (size_t ii = 0; ii < 1000; ii++) {
+		for (size_t ii = 0; ii < 100; ii++) {
 			generate(rxnRatesIn.begin(), rxnRatesIn.end(), [this, &dis]() { return dis(*this->gen); });
 
-			rxnRatesIn[14 + 2] /= 10.0;
+			rxnRatesIn[16] = tanh(rxnRatesIn[16])*0.99;
+			rxnRatesIn[4] = rxnRatesIn[4] / 1000.0;
 
 			int retVal = runCkine(tps.data(), tps.size(), output.data(), rxnRatesIn.data(), true, soutput.data());
 
