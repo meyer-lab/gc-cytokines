@@ -92,15 +92,16 @@ class build_model:
         M = pm.Model()
 
         with M:
-            rxnrates = pm.Lognormal('rxn', mu=np.log(0.1), sd=1., shape=10) # first 3 are IL2, second 5 are IL15, kfwd is first element (used in both 2&15)
+            kfwd = pm.Lognormal('kfwd', mu=np.log(0.00001), sd=0.1)
+            rxnrates = pm.Lognormal('rxn', mu=np.log(0.01), sd=1., shape=9) # first 3 are IL2, second 5 are IL15, kfwd is first element (used in both 2&15)
             endo_activeEndo = pm.Lognormal('endo', mu=np.log(0.1), sd=1., shape=2)
             kRec_kDeg = pm.Lognormal('kRec_kDeg', mu=np.log(0.1), sd=1., shape=2)
             Rexpr = pm.Lognormal('IL2Raexpr', sd=1., shape=4) # Expression: IL2Ra, IL2Rb, gc, IL15Ra
-            sortF = pm.Beta('sortF', alpha=2, beta=7, testval=0.1)
+            sortF = pm.Beta('sortF', alpha=2, beta=7, testval=0.1)*0.9
 
             ligands = T.zeros(4, dtype=np.float64)
 
-            unkVec = T.concatenate((ligands, rxnrates, endo_activeEndo, T.stack(sortF), kRec_kDeg, Rexpr, T.zeros(2, dtype=np.float64)))
+            unkVec = T.concatenate((ligands, T.stack(kfwd), rxnrates, endo_activeEndo, T.stack(sortF), kRec_kDeg, Rexpr, T.zeros(2, dtype=np.float64)))
 
             Y_15 = self.dst15.calc(unkVec) # fitting the data based on dst15.calc for the given parameters
             Y_int = self.IL2Rb.calc(unkVec) # fitting the data based on dst.calc for the given parameters

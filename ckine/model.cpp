@@ -13,6 +13,7 @@
 #include <cvode/cvode_direct.h>
 #include <iostream>
 #include <Eigen/Core>
+#include <Eigen/Dense>
 #include "model.hpp"
 
 using std::array;
@@ -859,6 +860,8 @@ void fullJacobian(const double * const y, const ratesS * const r, Eigen::Map<Jac
 	out(26 + 24, 55) =  kfbnd * y[26 +  2]; // IL9 binding to gc
 }
 
+constexpr bool debugOutput = false;
+
 
 int Jac(realtype t, N_Vector y, N_Vector fy, SUNMatrix J, void *user_data, N_Vector, N_Vector, N_Vector) {
 	ratesS rattes = param(static_cast<double *>(user_data));
@@ -870,16 +873,15 @@ int Jac(realtype t, N_Vector y, N_Vector fy, SUNMatrix J, void *user_data, N_Vec
 
 	jac.transposeInPlace();
 
-	// JacMat A = jac;
+	if (debugOutput) {
+		JacMat A = jac;
 
-	// Eigen::JacobiSVD<JacMat> svd(A);
-	// double cond = svd.singularValues()(0) / svd.singularValues()(svd.singularValues().size()-1);
+		Eigen::JacobiSVD<JacMat> svd(A);
+		double cond = svd.singularValues()(0) / svd.singularValues()(svd.singularValues().size()-1);
 
-	// std::cout << cond << std::endl;
-
-	// if (cond > 1E10) {
-	// 	std::cout << jac << std::endl;
-	// }
+		if (cond > 1E10)
+			std::cout << std::endl << std::endl << jac << std::endl;
+	}
 
 	return 0;
 }
