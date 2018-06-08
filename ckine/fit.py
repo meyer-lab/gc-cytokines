@@ -21,14 +21,14 @@ class IL2Rb_trafficking:
         self.ts = np.array([0., 2., 5., 15., 30., 60., 90.])
 
         # Condense to just IL2Rb
-        self.condense = np.zeros(56)
+        self.condense = np.zeros(48)
         self.condense[1] = 1;
 
         # Concatted data
         self.data = np.concatenate((numpy_data[:, 1], numpy_data[:, 5], numpy_data2[:, 1], numpy_data2[:, 5]))/10.
 
     def calc(self, unkVec):
-        unkVecIL2RaMinus = T.set_subtensor(unkVec[19], 0.0) # Set IL2Ra to zero
+        unkVecIL2RaMinus = T.set_subtensor(unkVec[17], 0.0) # Set IL2Ra to zero
 
         KineticOp = runCkineKineticOp(self.ts, self.condense)
 
@@ -68,8 +68,7 @@ class IL2_15_activity:
         # Loop over concentrations of IL2
         actVecIL2 = T.stack(list(map(lambda x: T.dot(self.activity, Op(T.set_subtensor(unkVec[0], x))), self.cytokC)))
 
-        unkVecIL2RaMinus = T.set_subtensor(unkVec[19], 0.0) # Set IL2Ra to zero
-        # TODO: Check that idx 19 is IL2ra
+        unkVecIL2RaMinus = T.set_subtensor(unkVec[17], 0.0) # Set IL2Ra to zero
 
         # Loop over concentrations of IL2, IL2Ra-/-
         actVecIL2RaMinus = T.stack(list(map(lambda x: T.dot(self.activity, Op(T.set_subtensor(unkVecIL2RaMinus[0], x))), self.cytokC)))
@@ -93,7 +92,7 @@ class build_model:
 
         with M:
             kfwd = pm.Lognormal('kfwd', mu=np.log(0.00001), sd=0.1)
-            rxnrates = pm.Lognormal('rxn', mu=np.log(0.01), sd=1., shape=9) # first 3 are IL2, second 5 are IL15, kfwd is first element (used in both 2&15)
+            rxnrates = pm.Lognormal('rxn', mu=np.log(0.01), sd=1., shape=7) # first 3 are IL2, second 5 are IL15, kfwd is first element (used in both 2&15)
             endo_activeEndo = pm.Lognormal('endo', mu=np.log(0.1), sd=1., shape=2)
             kRec_kDeg = pm.Lognormal('kRec_kDeg', mu=np.log(0.1), sd=1., shape=2)
             Rexpr = pm.Lognormal('IL2Raexpr', sd=1., shape=4) # Expression: IL2Ra, IL2Rb, gc, IL15Ra

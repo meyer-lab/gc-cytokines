@@ -47,8 +47,8 @@ protected:
 		uniform_real_distribution<> dis(0.0, 10.0);
 
 		array<double, 7> tps = {{0.1, 1.0, 10.0, 100.0, 1000.0, 10000.0, 100000.0}};
-		array<double, 56*7> output;
-		array<double, 56*7> output2;
+		array<double, Nspecies*7> output;
+		array<double, Nspecies*7> output2;
 		array<double, Nparams> rxnRatesIn;
 		array<double, Nparams*Nspecies*tps.size()> soutput;
 		array<double, Nparams*Nspecies*tps.size()> soutput2;
@@ -56,8 +56,7 @@ protected:
 		for (size_t ii = 0; ii < 100; ii++) {
 			generate(rxnRatesIn.begin(), rxnRatesIn.end(), [this, &dis]() { return dis(*this->gen); });
 
-			rxnRatesIn[16] = tanh(rxnRatesIn[16])*0.9;
-			rxnRatesIn[4] = rxnRatesIn[4] / 1000.0;
+			rxnRatesIn[14] = tanh(rxnRatesIn[14])*0.9;
 
 			int retVal = runCkine(tps.data(), tps.size(), output.data(), rxnRatesIn.data(), true, soutput.data());
 
