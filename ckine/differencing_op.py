@@ -23,7 +23,7 @@ class runCkineOp(Op):
     def perform(self, node, inputs, outputs):
         yOut, retVal = runCkineU(self.ts, inputs[0])
 
-        assert yOut.size == 56
+        assert yOut.size == 48
 
         if retVal < 0:
             yOut[:] = -np.inf
@@ -59,7 +59,7 @@ class runCkineKineticOp(Op):
     otypes = [dvector]
 
     def __init__(self, ts, condense):
-        assert condense.size == 56
+        assert condense.size == 48
 
         self.ts = ts
         self.condense = condense
@@ -71,7 +71,7 @@ class runCkineKineticOp(Op):
     def perform(self, node, inputs, outputs):
         yOut, retVal = runCkineU(self.ts, inputs[0])
 
-        assert yOut.shape == (self.ts.size, 56)
+        assert yOut.shape == (self.ts.size, 48)
 
         if retVal < 0:
             yOut[:] = -np.inf
@@ -88,7 +88,7 @@ class runCkineOpKineticDiff(Op):
     otypes = [dmatrix]
 
     def __init__(self, ts, condense):
-        assert condense.size == 56
+        assert condense.size == 48
 
         self.ts = ts
         self.condense = condense

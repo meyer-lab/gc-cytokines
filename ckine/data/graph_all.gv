@@ -14,7 +14,6 @@ label = "Type I Cytokine Model";
 "gc"    [shape=box    ];
 "IL2-IL2Ra" [shape=box];
 "IL2-IL2Rb" [shape=box];
-"IL2-gc" [shape=box];
 "IL2-IL2Ra" [shape=box];
 "IL2-IL2Ra" [shape=box];
 "IL2-IL2Ra-IL2Rb" [shape=box ];
@@ -26,7 +25,6 @@ label = "Type I Cytokine Model";
 "IL15Ra"    [shape=box];
 "IL15-IL15Ra"   [shape=box];
 "IL15-IL2Rb"    [shape=box];
-"IL15-gc"   [shape=box];
 "IL15-IL15Ra-IL2Rb" [shape=box];
 "IL15-IL15Ra-gc"    [shape=box];
 "IL15-IL2Rb-gc" [shape=box];
@@ -35,14 +33,11 @@ label = "Type I Cytokine Model";
 "IL7"   [shape=circle];
 "IL7Ra" [shape=box];
 "IL7-IL7Ra" [shape=box];
-"IL7-gc"    [shape=box];
 "IL7-IL7Ra-gc"  [shape=box];
 
 "IL9"   [shape=circle];
 "IL9R" [shape=box    ];
-"gc"    [shape=box    ];
 "IL9-IL9R" [shape=box];
-"IL9-gc" [shape=box];
 "IL9-IL9R-gc" [shape=box ];
 
 
@@ -56,11 +51,6 @@ label = "Type I Cytokine Model";
 "IL2Rb" -> "k2" [dir=none,weight=1];
 "k2" -> "IL2-IL2Rb" [dir=none, weight=2];
 
-"k3" [shape=diamond,style=filled,height=.1,width=.1];
-"IL2" -> "k3" [dir=none,weight=1];
-"gc" -> "k3" [dir=none,weight=1];
-"k3" -> "IL2-gc" [dir=none, weight=2];
-
 "k4" [shape=diamond,style=filled,height=.1,width=.1];
 "IL2-IL2Ra" -> "k4" [dir=none,weight=1];
 "gc" -> "k4" [dir=none,weight=1];
@@ -70,16 +60,6 @@ label = "Type I Cytokine Model";
 "IL2-IL2Rb" -> "k5" [dir=none,weight=1];
 "gc" -> "k5" [dir=none,weight=1];
 "k5" -> "IL2-IL2Rb-gc" [dir=none, weight=2];
-
-"k6" [shape=diamond,style=filled,height=.1,width=.1];
-"IL2-gc" -> "k6" [dir=none,weight=1];
-"IL2Ra" -> "k6" [dir=none,weight=1];
-"k6" -> "IL2-IL2Ra-gc" [dir=none, weight=2];
-
-"k7" [shape=diamond,style=filled,height=.1,width=.1];
-"IL2-gc" -> "k7" [dir=none,weight=1];
-"IL2Rb" -> "k7" [dir=none,weight=1];
-"k7" -> "IL2-IL2Rb-gc" [dir=none, weight=2];
 
 "k8" [shape=diamond,style=filled,height=.1,width=.1];
 "IL2-IL2Rb-gc" -> "k8" [dir=none,weight=1];
@@ -116,11 +96,6 @@ label = "Type I Cytokine Model";
 "IL2Rb" -> "k14" [dir=none,weight=1];
 "k14" -> "IL15-IL2Rb" [dir=none, weight=2];
 
-"k15" [shape=diamond,style=filled,height=.1,width=.1];
-"IL15" -> "k15" [dir=none,weight=1];
-"gc" -> "k15" [dir=none,weight=1];
-"k15" -> "IL15-gc" [dir=none, weight=2];
-
 "k16" [shape=diamond,style=filled,height=.1,width=.1];
 "IL15-IL15Ra" -> "k16" [dir=none,weight=1];
 "gc" -> "k16" [dir=none,weight=1];
@@ -130,16 +105,6 @@ label = "Type I Cytokine Model";
 "IL15-IL2Rb" -> "k17" [dir=none,weight=1];
 "gc" -> "k17" [dir=none,weight=1];
 "k17" -> "IL15-IL2Rb-gc" [dir=none, weight=2];
-
-"k18" [shape=diamond,style=filled,height=.1,width=.1];
-"IL15-gc" -> "k18" [dir=none,weight=1];
-"IL15Ra" -> "k18" [dir=none,weight=1];
-"k18" -> "IL15-IL15Ra-gc" [dir=none, weight=2];
-
-"k19" [shape=diamond,style=filled,height=.1,width=.1];
-"IL15-gc" -> "k19" [dir=none,weight=1];
-"IL2Rb" -> "k19" [dir=none,weight=1];
-"k19" -> "IL15-IL2Rb-gc" [dir=none, weight=2];
 
 "k20" [shape=diamond,style=filled,height=.1,width=.1];
 "IL15-IL2Rb-gc" -> "k20" [dir=none,weight=1];
@@ -171,39 +136,19 @@ label = "Type I Cytokine Model";
 "IL7Ra" -> "k25" [dir=none,weight=1];
 "k25" -> "IL7-IL7Ra" [dir=none, weight=2];
 
-"k26" [shape=diamond,style=filled,height=.1,width=.1];
-"IL7" -> "k26" [dir=none,weight=1];
-"gc" -> "k26" [dir=none,weight=1];
-"k26" -> "IL7-gc" [dir=none, weight=2];
-
 "k27" [shape=diamond,style=filled,height=.1,width=.1];
 "IL7-IL7Ra" -> "k27" [dir=none,weight=1];
 "gc" -> "k27" [dir=none,weight=1];
 "k27" -> "IL7-IL7Ra-gc" [dir=none, weight=2];
-
-"k28" [shape=diamond,style=filled,height=.1,width=.1];
-"IL7-gc" -> "k28" [dir=none,weight=1];
-"IL7Ra" -> "k28" [dir=none,weight=1];
-"k28" -> "IL7-IL7Ra-gc" [dir=none, weight=2];
 
 "k29" [shape=diamond,style=filled,height=.1,width=.1];
 "IL9" -> "k29" [dir=none,weight=1];
 "IL9R" -> "k29" [dir=none,weight=1];
 "k29" -> "IL9-IL9R" [dir=none, weight=2];
 
-"k30" [shape=diamond,style=filled,height=.1,width=.1];
-"IL9" -> "k30" [dir=none,weight=1];
-"gc" -> "k30" [dir=none,weight=1];
-"k30" -> "IL9-gc" [dir=none, weight=2];
-
 "k31" [shape=diamond,style=filled,height=.1,width=.1];
 "IL9-IL9R" -> "k31" [dir=none,weight=1];
 "gc" -> "k31" [dir=none,weight=1];
 "k31" -> "IL9-IL9R-gc" [dir=none, weight=2];
-
-"k32" [shape=diamond,style=filled,height=.1,width=.1];
-"IL9-gc" -> "k32" [dir=none,weight=1];
-"IL9R" -> "k32" [dir=none,weight=1];
-"k32" -> "IL9-IL9R-gc" [dir=none, weight=2];
 
 }

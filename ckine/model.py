@@ -28,9 +28,10 @@ def runCkine (tps, rxn, tfr):
 def runCkineU (tps, rxntfr):
     global libb
 
-    assert(rxntfr.size == 25)
+    assert(rxntfr.size == 23)
+    assert(rxntfr[14] < 1.0) # Check that sortF won't throw
 
-    yOut = np.zeros((tps.size, 56), dtype=np.float64)
+    yOut = np.zeros((tps.size, 48), dtype=np.float64)
 
     retVal = libb.runCkine(tps.ctypes.data_as(ct.POINTER(ct.c_double)),
                            tps.size,
@@ -45,11 +46,11 @@ def runCkineU (tps, rxntfr):
 def runCkineSensi (tps, rxntfr):
     global libb
 
-    assert(rxntfr.size == 25)
+    assert(rxntfr.size == 23)
 
-    yOut = np.zeros((tps.size, 56), dtype=np.float64)
+    yOut = np.zeros((tps.size, 48), dtype=np.float64)
 
-    sensV = np.zeros((56, 25, tps.size), dtype=np.float64, order='F')
+    sensV = np.zeros((48, 23, tps.size), dtype=np.float64, order='F')
 
     retVal = libb.runCkine(tps.ctypes.data_as(ct.POINTER(ct.c_double)),
                            tps.size,
@@ -64,45 +65,50 @@ def runCkineSensi (tps, rxntfr):
 def dy_dt(y, t, rxn):
     global libb
 
-    assert(rxn.size == 14)
+    assert(rxn.size == 12)
+
+    rxntfr = np.concatenate((rxn, np.ones(15, dtype=np.float64)*0.9))
 
     yOut = np.zeros_like(y)
 
     libb.dydt_C(y.ctypes.data_as(ct.POINTER(ct.c_double)), t,
-                yOut.ctypes.data_as(ct.POINTER(ct.c_double)), rxn.ctypes.data_as(ct.POINTER(ct.c_double)))
+                yOut.ctypes.data_as(ct.POINTER(ct.c_double)), rxntfr.ctypes.data_as(ct.POINTER(ct.c_double)))
     
     return yOut
+
 
 def jacobian(y, t, rxn):
     global libb
     
-    assert(rxn.size == 14)
+    assert(rxn.size == 12)
     
-    yOut = np.zeros((26, 26)) # size of the Jacobian matrix
+    yOut = np.zeros((22, 22)) # size of the Jacobian matrix
     
     libb.jacobian_C(y.ctypes.data_as(ct.POINTER(ct.c_double)), ct.c_double(t),
                 yOut.ctypes.data_as(ct.POINTER(ct.c_double)), rxn.ctypes.data_as(ct.POINTER(ct.c_double)))
     
     return yOut 
 
+
 def fullJacobian(y, t, rxn): # will eventually have to add tfR as an argument once we add more to fullJacobian
     global libb
     
-    assert(rxn.size == 25)
+    assert(rxn.size == 23)
     
-    yOut = np.zeros((56, 56)) # size of the full Jacobian matrix
+    yOut = np.zeros((48, 48)) # size of the full Jacobian matrix
     
     libb.fullJacobian_C(y.ctypes.data_as(ct.POINTER(ct.c_double)), ct.c_double(t),
                 yOut.ctypes.data_as(ct.POINTER(ct.c_double)), rxn.ctypes.data_as(ct.POINTER(ct.c_double)))
     
     return yOut 
-    
+
+
 def fullModel(y, t, rxn, tfr):
     global libb
 
     rxntfr = np.concatenate((rxn, tfr))
 
-    assert(rxntfr.size == 25)
+    assert(rxntfr.size == 23)
 
     yOut = np.zeros_like(y)
 
@@ -112,15 +118,15 @@ def fullModel(y, t, rxn, tfr):
     return yOut
 
 
-__active_species_IDX = np.zeros(26, dtype=np.bool)
-__active_species_IDX[np.array([8, 9, 16, 17, 21, 25])] = 1
+__active_species_IDX = np.zeros(22, dtype=np.bool)
+__active_species_IDX[np.array([7, 8, 14, 15, 18, 21])] = 1
 
 
 def solveAutocrine(trafRates):
     """Faster approach to solve for steady state by directly calculating the starting point without needing odeint."""
-    y0 = np.zeros(26*2 + 4, np.float64)
+    y0 = np.zeros(48 , np.float64)
 
-    recIDX = np.array([0, 1, 2, 10, 18, 22], np.int)
+    recIDX = np.array([0, 1, 2, 9, 16, 19], np.int)
 
     # Expr
     expr = trafRates[5:11]
@@ -136,8 +142,8 @@ def solveAutocrine(trafRates):
 
     # Assuming no autocrine ligand, so can solve steady state
     # Add the species
-    y0[recIDX + 26] = expr / kDeg / internalFrac
-    y0[recIDX] = (expr + kRec*y0[recIDX + 26]*internalFrac)/endo
+    y0[recIDX + 22] = expr / kDeg / internalFrac
+    y0[recIDX] = (expr + kRec*y0[recIDX + 22]*internalFrac)/endo
 
     return y0
 
@@ -147,7 +153,7 @@ def solveAutocrineComplete(rxnRates, trafRates):
     rxnRates = rxnRates.copy()
     autocrineT = np.array([0.0, 100000.0])
 
-    y0 = np.zeros(26*2 + 4, np.float64)
+    y0 = np.zeros(48, np.float64)
 
     # For now assume 0 autocrine ligand
     # TODO: Consider handling autocrine ligand more gracefully
@@ -167,29 +173,29 @@ def getActiveSpecies():
 
 def getCytokineSpecies():
     """ Returns a list of vectors for which species are bound to which cytokines. """
-    return list((np.arange(3, 10), np.arange(11, 18), np.arange(19, 22), np.arange(23, 26)))
+    return list((np.arange(3, 9), np.arange(10, 16), np.arange(17, 19), np.arange(20, 22)))
 
 
 def getActiveCytokine(cytokineIDX, yVec):
     """ Get amount of active species. """
-    assert(len(yVec) == 26)
+    assert(len(yVec) == 22)
     return np.sum((yVec * getActiveSpecies())[getCytokineSpecies()[cytokineIDX]])
 
 
 def getTotalActiveCytokine(cytokineIDX, yVec):
     """ Get amount of surface and endosomal active species. """
-    return getActiveCytokine(cytokineIDX, yVec[0:26]) + getActiveCytokine(cytokineIDX, yVec[26:26*2])
+    return getActiveCytokine(cytokineIDX, yVec[0:22]) + getActiveCytokine(cytokineIDX, yVec[22:22*2])
 
 def surfaceReceptors(y):
     """This function takes in a vector y and returns the amounts of the 6 surface receptors"""
-    IL2Ra = np.sum(y[np.array([0, 3, 6, 7, 9])])
-    IL2Rb = np.sum(y[np.array([1, 4, 6, 8, 9, 12, 14, 16, 17])])
-    gc = np.sum(y[np.array([2, 5, 7, 8, 9, 13, 15, 16, 17, 20, 21, 24, 25])])
-    IL15Ra = np.sum(y[np.array([10, 11, 14, 15, 17])])
-    IL7Ra = np.sum(y[np.array([18, 19, 21])])
-    IL9R = np.sum(y[np.array([22, 23, 25])])
+    IL2Ra = np.sum(y[np.array([0, 3, 5, 6, 8])])
+    IL2Rb = np.sum(y[np.array([1, 4, 5, 7, 8, 11, 12, 14, 15])])
+    gc = np.sum(y[np.array([2, 6, 7, 8, 13, 14, 15, 18, 21])])
+    IL15Ra = np.sum(y[np.array([9, 10, 12, 13, 15])])
+    IL7Ra = np.sum(y[np.array([16, 17, 18])])
+    IL9R = np.sum(y[np.array([19, 20, 21])])
     return np.array([IL2Ra, IL2Rb, gc, IL15Ra, IL7Ra, IL9R])
 
 def totalReceptors(yVec):
     """This function takes in a vector y and returns the amounts of all 6 receptors in both cell compartments"""
-    return surfaceReceptors(yVec) + surfaceReceptors(yVec[26:52])
+    return surfaceReceptors(yVec) + surfaceReceptors(yVec[22:44])
