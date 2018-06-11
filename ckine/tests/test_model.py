@@ -39,7 +39,7 @@ class TestModel(unittest.TestCase):
     def setUp(self):
         self.ts = np.array([0.0, 100000.0])
         self.y0 = np.random.lognormal(0., 1., 22)
-        self.args = np.random.lognormal(0., 1., 12)
+        self.args = np.random.lognormal(0., 1., 13)
         self.tfargs = np.random.lognormal(0., 1., 11)
         self.fully = np.random.lognormal(0., 1., 48)
 
@@ -105,10 +105,10 @@ class TestModel(unittest.TestCase):
         # Test that there's no difference
         self.assertLess(np.linalg.norm(dy1 - dy3), 1E-8)
 
-    @given(vec=harrays(np.float, 23, elements=floats(0.1, 10.0)))
+    @given(vec=harrays(np.float, 24, elements=floats(0.1, 10.0)))
     def test_runCkine(self, vec):
         # Force sorting fraction to be less than 1.0
-        vec[14] = np.tanh(vec[14])*0.9
+        vec[15] = np.tanh(vec[15])*0.9
 
         ys, retVal = runCkineU(self.ts, vec)
         

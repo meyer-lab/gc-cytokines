@@ -28,8 +28,8 @@ def runCkine (tps, rxn, tfr):
 def runCkineU (tps, rxntfr):
     global libb
 
-    assert(rxntfr.size == 23)
-    assert(rxntfr[14] < 1.0) # Check that sortF won't throw
+    assert(rxntfr.size == 24)
+    assert(rxntfr[15] < 1.0) # Check that sortF won't throw
 
     yOut = np.zeros((tps.size, 48), dtype=np.float64)
 
@@ -46,11 +46,11 @@ def runCkineU (tps, rxntfr):
 def runCkineSensi (tps, rxntfr):
     global libb
 
-    assert(rxntfr.size == 23)
+    assert(rxntfr.size == 24)
 
     yOut = np.zeros((tps.size, 48), dtype=np.float64)
 
-    sensV = np.zeros((48, 23, tps.size), dtype=np.float64, order='F')
+    sensV = np.zeros((48, 24, tps.size), dtype=np.float64, order='F')
 
     retVal = libb.runCkine(tps.ctypes.data_as(ct.POINTER(ct.c_double)),
                            tps.size,
@@ -65,7 +65,7 @@ def runCkineSensi (tps, rxntfr):
 def dy_dt(y, t, rxn):
     global libb
 
-    assert(rxn.size == 12)
+    assert(rxn.size == 13)
 
     rxntfr = np.concatenate((rxn, np.ones(15, dtype=np.float64)*0.9))
 
@@ -80,7 +80,7 @@ def dy_dt(y, t, rxn):
 def jacobian(y, t, rxn):
     global libb
     
-    assert(rxn.size == 12)
+    assert(rxn.size == 13)
     
     yOut = np.zeros((22, 22)) # size of the Jacobian matrix
     
@@ -93,7 +93,7 @@ def jacobian(y, t, rxn):
 def fullJacobian(y, t, rxn): # will eventually have to add tfR as an argument once we add more to fullJacobian
     global libb
     
-    assert(rxn.size == 23)
+    assert(rxn.size == 24)
     
     yOut = np.zeros((48, 48)) # size of the full Jacobian matrix
     
@@ -108,7 +108,7 @@ def fullModel(y, t, rxn, tfr):
 
     rxntfr = np.concatenate((rxn, tfr))
 
-    assert(rxntfr.size == 23)
+    assert(rxntfr.size == 24)
 
     yOut = np.zeros_like(y)
 
@@ -156,7 +156,6 @@ def solveAutocrineComplete(rxnRates, trafRates):
     y0 = np.zeros(48, np.float64)
 
     # For now assume 0 autocrine ligand
-    # TODO: Consider handling autocrine ligand more gracefully
     rxnRates[0:4] = 0.0
 
     full_lambda = lambda y, t: fullModel(y, t, rxnRates, trafRates)
