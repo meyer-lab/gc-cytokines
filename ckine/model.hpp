@@ -20,9 +20,7 @@ struct ratesS {
 	double k22rev;
 	double k23rev;
 	double k24rev;
-	double k25rev;
 	double k27rev;
-	double k29rev;
 	double k31rev;
 	double endo;
 	double activeEndo;
@@ -45,12 +43,15 @@ constexpr double k14rev = kfbnd * 438; // doi:10.1038/ni.2449, 438 nM
 // Literature values for IL-7
 constexpr double k25rev = kfbnd * 59; // DOI:10.1111/j.1600-065X.2012.01160.x, 59 nM
 
-constexpr double abstolIn = 1E-2;
-constexpr double reltolIn = 1E-3;
+// Literature value for IL-9
+constexpr double k29rev = kfbnd * 0.1; // DOI:10.1073/pnas.89.12.5690, ~100 pM
+
+constexpr double abstolIn = 1E-4;
+constexpr double reltolIn = 1E-9;
 constexpr double internalV = 623.0; // Same as that used in TAM model
 constexpr double internalFrac = 0.5; // Same as that used in TAM model
 
-constexpr size_t Nparams = 23; // length of rxntfR vector
+constexpr size_t Nparams = 24; // length of rxntfR vector
 constexpr size_t Nspecies = 48; // number of complexes in surface + endosome + free ligand
 constexpr size_t halfL = 22; // number of complexes on surface alone
 
