@@ -22,22 +22,29 @@ class IL2Rb_trafficking:
 
         # Condense to just IL2Rb
         self.condense = np.zeros(48)
-        self.condense[1] = 1;
+        self.condense[np.array([1, 4, 5, 7, 8, 11, 12, 14, 15])] = 1
 
         # Concatted data
-        self.data = np.concatenate((numpy_data[:, 1], numpy_data[:, 5], numpy_data2[:, 1], numpy_data2[:, 5]))/10.
+        self.data = np.concatenate((numpy_data[:, 1], numpy_data[:, 5], numpy_data2[:, 1], numpy_data2[:, 5], numpy_data[:, 2], numpy_data[:, 6], numpy_data2[:, 2], numpy_data2[:, 6]))/10.
 
     def calc(self, unkVec):
         unkVecIL2RaMinus = T.set_subtensor(unkVec[18], 0.0) # Set IL2Ra to zero
 
         KineticOp = runCkineKineticOp(self.ts, self.condense)
-
+        
+        # IL2 stimulation
         a = KineticOp(T.set_subtensor(unkVec[0], 1.)) # col 2 of numpy_data has all the 1nM IL2Ra+ data
         b = KineticOp(T.set_subtensor(unkVec[0], 500.)) # col 6 of numpy_data has all the 500 nM IL2Ra+ data
         c = KineticOp(T.set_subtensor(unkVecIL2RaMinus[0], 1.)) # col 2 of numpy_data2 has all the 1nM IL2Ra- data
         d = KineticOp(T.set_subtensor(unkVecIL2RaMinus[0], 500.)) # col 6 of numpy_data2 has all the 500 nM IL2Ra- data
-
-        return T.concatenate((a / a[0], b / b[0], c / c[0], d / d[0])) - self.data
+        # IL15 stimulation
+        e = KineticOp(T.set_subtensor(unkVec[1], 1.)) 
+        f = KineticOp(T.set_subtensor(unkVec[1], 500.)) 
+        g = KineticOp(T.set_subtensor(unkVecIL2RaMinus[1], 1.)) 
+        h = KineticOp(T.set_subtensor(unkVecIL2RaMinus[1], 500.)) 
+        
+        # assuming all IL2Rb starts on the cell surface
+        return T.concatenate((a / a[0], b / b[0], c / c[0], d / d[0], e / e[0], f / f[0], g / g[0], h / h[0])) - self.data
     
 # this takes all the desired IL2 values we want to test and gives us the maximum activity value
 # IL2 values pretty much ranged from 5 x 10**-4 to 500 nm with 8 points in between
@@ -75,6 +82,7 @@ class IL2_15_activity:
 
         # Normalize to the maximal activity, put together into one vector
         actVec = T.concatenate((actVec / T.max(actVec), actVec / T.max(actVec), actVecIL2 / T.max(actVecIL2), actVecIL2RaMinus / T.max(actVecIL2RaMinus)))
+
         # value we're trying to minimize is the distance between the y-values on points of the graph that correspond to the same IL2 values
         return self.fit_data - actVec
     
@@ -91,7 +99,7 @@ class build_model:
         M = pm.Model()
 
         with M:
-            kfwd = pm.Lognormal('kfwd', mu=np.log(0.0001), sd=0.1)
+            kfwd = pm.Lognormal('kfwd', mu=np.log(0.00001), sd=0.1)
             rxnrates = pm.Lognormal('rxn', mu=np.log(0.1), sd=0.1, shape=8) # first 3 are IL2, second 5 are IL15, kfwd is first element (used in both 2&15)
             endo_activeEndo = pm.Lognormal('endo', mu=np.log(0.1), sd=0.1, shape=2)
             kRec_kDeg = pm.Lognormal('kRec_kDeg', mu=np.log(0.1), sd=0.1, shape=2)
