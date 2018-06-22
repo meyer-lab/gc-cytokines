@@ -9,6 +9,7 @@ from hypothesis.extra.numpy import arrays as harrays
 from ..model import dy_dt, fullModel, solveAutocrine, getTotalActiveCytokine, solveAutocrineComplete, runCkine, runCkineU, jacobian, fullJacobian
 from ..util_analysis.Shuffle_ODE import approx_jacobian
 from ..Tensor_analysis import find_R2X
+from ..tensor_generation import findy
 
 settings.register_profile("ci", max_examples=1000)
 #settings.load_profile("ci")
