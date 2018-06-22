@@ -174,6 +174,12 @@ def getCytokineSpecies():
     """ Returns a list of vectors for which species are bound to which cytokines. """
     return list((np.arange(3, 9), np.arange(10, 16), np.arange(17, 19), np.arange(20, 22)))
 
+def getSurfaceIL2RbSpecies():
+    """ Returns a list of vectors for which surface species contain the IL2Rb receptor. """
+    condense = np.zeros(48)
+    condense[np.array([1, 4, 5, 7, 8, 11, 12, 14, 15])] = 1
+    return condense
+
 
 def getActiveCytokine(cytokineIDX, yVec):
     """ Get amount of active species. """

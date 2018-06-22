@@ -5,7 +5,7 @@ import pymc3 as pm, theano.tensor as T, os
 from os.path import join
 from theano import shared
 import numpy as np, pandas as pds
-from .model import getActiveSpecies
+from .model import getActiveSpecies, getSurfaceIL2RbSpecies
 from .differencing_op import runCkineOp, runCkineKineticOp
 
 
@@ -21,9 +21,8 @@ class IL2Rb_trafficking:
         self.ts = np.array([0., 2., 5., 15., 30., 60., 90.])
 
         # Condense to just IL2Rb
-        self.condense = np.zeros(48)
-        self.condense[np.array([1, 4, 5, 7, 8, 11, 12, 14, 15])] = 1
-
+        self.condense = getSurfaceIL2RbSpecies()
+        
         # Concatted data
         self.data = np.concatenate((numpy_data[:, 1], numpy_data[:, 5], numpy_data2[:, 1], numpy_data2[:, 5], numpy_data[:, 2], numpy_data[:, 6], numpy_data2[:, 2], numpy_data2[:, 6]))/10.
 
@@ -57,8 +56,9 @@ class IL2_15_activity:
         data = pds.read_csv(join(path, "./data/IL2_IL15_extracted_data.csv")).as_matrix() # imports csv file into pandas array
         dataIL2 = pds.read_csv(join(path, "./data/IL2_IL15_extracted_data.csv")).as_matrix() # imports csv file into pandas array
         self.cytokC = np.logspace(-3.3, 2.7, 8) # 8 log-spaced values between our two endpoints
+
         self.fit_data = np.concatenate((data[:, 7], data[:, 3], dataIL2[:, 6], dataIL2[:, 2])) / 100. #the IL15_IL2Ra- data is within the 4th column (index 3)
-        # the IL2_IL2Ra- data is within the 3rd column (index 2)
+
         npactivity = getActiveSpecies().astype(np.float64)
         self.activity = shared(np.concatenate((npactivity, 0.5*npactivity, np.zeros(4)))) # 0.5 is because its the endosome
 
