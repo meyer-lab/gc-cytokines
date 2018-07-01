@@ -12,7 +12,7 @@ def approx_jacobian(func, y, delta=1.0E-9):
          of the outputs of func, and lenx is the number of
 
        * Notes
-         The approximation is done using forward differences. func in this case is the fullModel function from the main model file. 
+         The approximation is done using forward differences. func in this case is the fullModel function from the main model file.
 
     """
     f0 = func(y)

@@ -1,11 +1,8 @@
 """
-Analyze tensor from Sampling.pickle and plotting.
+Analyze tensor from tensor_generation and plotting.
 """
-import os
-import pickle
 import numpy as np
 import pandas as pd
-from scipy import stats
 import tensorly
 from tensorly.decomposition import parafac
 import matplotlib.pyplot as plt
@@ -16,10 +13,10 @@ def z_score_values(A):
     '''Function that takes in the values tensor and z-scores it.'''
     B = np.zeros_like(A)
     for i in range(A.shape[2]):
-        slice = A[:,:,i]
-        mu = np.mean(slice)
-        sigma = np.std(slice)
-        z_scored_slice = (slice - mu) / sigma
+        slice_face = A[:,:,i]
+        mu = np.mean(slice_face)
+        sigma = np.std(slice_face)
+        z_scored_slice = (slice_face - mu) / sigma
         B[:,:,i] = z_scored_slice
     return B
 
@@ -40,6 +37,7 @@ def find_R2X(values, n_comp):
     return R2X
 
 def plot_R2X(values, n_comps):
+    '''Function to plot the R2X values for various components.'''
     arr = []
     for n in range(1,n_comps):
         R2X = find_R2X(values, n)
@@ -56,7 +54,7 @@ def plot_R2X(values, n_comps):
 
 def combo_low_high(mat):
     """This function determines which combinations were high and low according to our initial conditions."""
-    #First four values are IL2, IL15, IL7, IL9 that are low and the bottom 4 are their high in terms of combination values    
+    #First four values are IL2, IL15, IL7, IL9 that are low and the bottom 4 are their high in terms of combination values.
     IL2_low, IL2_high, IL15_low, IL15_high, IL7_low, IL7_high, IL9_low, IL9_high = [],[],[],[],[],[],[],[] #Create empty lists for each ligand to store low and high indices for each
     #lows = [[] for _ in range(4)]
     lows = [IL2_low, IL15_low, IL7_low, IL9_low]
@@ -141,6 +139,7 @@ def plot_values_decomposition(factors, component_x, component_y):
     return fig
 
 def plot_timepoint_decomp(factors, component_x, component_y):
+    '''Function that returns the timepoint decomposition plot for the decomposed tensor.'''
     fig = plt.figure()
     ax = fig.add_subplot(111)
     for i in range(len(factors[1])):
@@ -153,16 +152,15 @@ def plot_timepoint_decomp(factors, component_x, component_y):
     return fig
 
 def calculate_correlation(tensor,mat,r):
-    "Make a pandas dataframe for correlation coefficients between components and initial ligand stimulation-input variables."
+    '''Make a pandas dataframe for correlation coefficients between components and initial ligand stimulation-input variables.'''
     factors = perform_decomposition(tensor, r)
-    cols = mat.shape[1]
     coeffs = np.zeros((factors[0].shape[1], mat.shape[1]))
     for i in range(mat.shape[1]):
         arr = []
         for j in range(factors[0].shape[1]):
             arr.append(np.corrcoef(mat[:,i], factors[0][:,j], rowvar=False)[0,1])
         coeffs[:,i] = np.array(arr)
-    
-    df = pd.DataFrame({'Component': range(1,9),'IL2': coeffs[:,0], 'IL15': coeffs[:,1], 'IL7': coeffs[:,2], 'IL9':coeffs[:,3]})  
+
+    df = pd.DataFrame({'Component': range(1,9),'IL2': coeffs[:,0], 'IL15': coeffs[:,1], 'IL7': coeffs[:,2], 'IL9':coeffs[:,3]})
     df = df.set_index('Component')
     return df

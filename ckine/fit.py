@@ -22,7 +22,7 @@ class IL2Rb_trafficking:
 
         # Condense to just IL2Rb
         self.condense = getSurfaceIL2RbSpecies()
-        
+
         # Concatted data
         self.data = np.concatenate((numpy_data[:, 1], numpy_data[:, 5], numpy_data2[:, 1], numpy_data2[:, 5], numpy_data[:, 2], numpy_data[:, 6], numpy_data2[:, 2], numpy_data2[:, 6]))/10.
 
@@ -30,21 +30,21 @@ class IL2Rb_trafficking:
         unkVecIL2RaMinus = T.set_subtensor(unkVec[18], 0.0) # Set IL2Ra to zero
 
         KineticOp = runCkineKineticOp(self.ts, self.condense)
-        
+
         # IL2 stimulation
         a = KineticOp(T.set_subtensor(unkVec[0], 1.)) # col 2 of numpy_data has all the 1nM IL2Ra+ data
         b = KineticOp(T.set_subtensor(unkVec[0], 500.)) # col 6 of numpy_data has all the 500 nM IL2Ra+ data
         c = KineticOp(T.set_subtensor(unkVecIL2RaMinus[0], 1.)) # col 2 of numpy_data2 has all the 1nM IL2Ra- data
         d = KineticOp(T.set_subtensor(unkVecIL2RaMinus[0], 500.)) # col 6 of numpy_data2 has all the 500 nM IL2Ra- data
         # IL15 stimulation
-        e = KineticOp(T.set_subtensor(unkVec[1], 1.)) 
-        f = KineticOp(T.set_subtensor(unkVec[1], 500.)) 
-        g = KineticOp(T.set_subtensor(unkVecIL2RaMinus[1], 1.)) 
-        h = KineticOp(T.set_subtensor(unkVecIL2RaMinus[1], 500.)) 
-        
+        e = KineticOp(T.set_subtensor(unkVec[1], 1.))
+        f = KineticOp(T.set_subtensor(unkVec[1], 500.))
+        g = KineticOp(T.set_subtensor(unkVecIL2RaMinus[1], 1.))
+        h = KineticOp(T.set_subtensor(unkVecIL2RaMinus[1], 500.))
+
         # assuming all IL2Rb starts on the cell surface
         return T.concatenate((a / a[0], b / b[0], c / c[0], d / d[0], e / e[0], f / f[0], g / g[0], h / h[0])) - self.data
-    
+
 # this takes all the desired IL2 values we want to test and gives us the maximum activity value
 # IL2 values pretty much ranged from 5 x 10**-4 to 500 nm with 8 points in between
 # need the theano decorator to get around the fact that there are if-else statements when running odeint but
@@ -85,7 +85,7 @@ class IL2_15_activity:
 
         # value we're trying to minimize is the distance between the y-values on points of the graph that correspond to the same IL2 values
         return self.fit_data - actVec
-    
+
 
 class build_model:
     """Going to load the data from the CSV file at the very beginning of when build_model is called... needs to be separate member function to avoid uploading file thousands of times."""
