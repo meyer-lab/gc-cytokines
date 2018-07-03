@@ -41,16 +41,16 @@ class surf_IL2Rb:
         unkVecIL2RaMinus_IL15_1[18], unkVecIL2RaMinus_IL15_500[18] = 0.0, 0.0
 
         # calculate IL2 stimulation
-        a_yOut, a_retVal = runCkineU(self.ts, unkVec_IL2_1)
-        b_yOut, b_retVal = runCkineU(self.ts, unkVec_IL2_500)
-        c_yOut, c_retVal = runCkineU(self.ts, unkVecIL2RaMinus_IL2_1)
-        d_yOut, d_retVal = runCkineU(self.ts, unkVecIL2RaMinus_IL2_500)
+        a_yOut = runCkineU(self.ts, unkVec_IL2_1)[0]
+        b_yOut = runCkineU(self.ts, unkVec_IL2_500)[0]
+        c_yOut = runCkineU(self.ts, unkVecIL2RaMinus_IL2_1)[0]
+        d_yOut = runCkineU(self.ts, unkVecIL2RaMinus_IL2_500)[0]
 
         # calculate IL15 stimulation
-        e_yOut, e_retVal = runCkineU(self.ts, unkVec_IL15_1)
-        f_yOut, f_retVal = runCkineU(self.ts, unkVec_IL15_500)
-        g_yOut, g_retVal = runCkineU(self.ts, unkVecIL2RaMinus_IL15_1)
-        h_yOut, h_retVal = runCkineU(self.ts, unkVecIL2RaMinus_IL15_500)
+        e_yOut = runCkineU(self.ts, unkVec_IL15_1)[0]
+        f_yOut = runCkineU(self.ts, unkVec_IL15_500)[0]
+        g_yOut = runCkineU(self.ts, unkVecIL2RaMinus_IL15_1)[0]
+        h_yOut = runCkineU(self.ts, unkVecIL2RaMinus_IL15_500)[0]
 
         a = np.dot(a_yOut, self.IL2Rb_species_IDX)
         b = np.dot(b_yOut, self.IL2Rb_species_IDX)

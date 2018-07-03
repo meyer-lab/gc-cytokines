@@ -3,9 +3,7 @@ Unit test file.
 """
 import unittest
 import numpy as np
-from hypothesis import given, settings
-from ..model import dy_dt, fullModel, solveAutocrine, getTotalActiveCytokine, solveAutocrineComplete, runCkine, runCkineU, jacobian, fullJacobian
-from ..util_analysis.Shuffle_ODE import approx_jacobian
+from hypothesis import settings
 from ..Tensor_analysis import find_R2X
 from ..tensor_generation import findy
 
@@ -29,5 +27,5 @@ class TestModel(unittest.TestCase):
 
     def test_tensor_parameters(self, r = 1, timelength = 1000):
         '''Function to ensure if rate parameters change in the model code then an error should warn us to update tensor generation code.'''
-        y_combos, new_mat, mat, mats, cell_names = findy(r, timelength)
+        y_combos, new_mat = findy(r, timelength)[0:2]
         self.assertEqual(np.array(y_combos.shape).all(), np.array([len(new_mat),timelength, 48]).all())

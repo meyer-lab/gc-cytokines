@@ -4,7 +4,7 @@ The file that runs the fitting process.
 import pymc3 as pm
 import numpy as np
 import matplotlib.pyplot as plt
-from .fit import build_model, IL2_activity_input
+from .fit import build_model
 
 
 def generate_plot(sampling_data, rate):
