@@ -43,7 +43,7 @@ def plot_R2X(values, n_comps):
         R2X = find_R2X(values, n)
         arr.append(R2X)
     fig = plt.figure()
-    ax = fig.add_subplot(111)
+    fig.add_subplot(111)
     plt.scatter(range(1,n_comps),arr)
     plt.title('R2X for various components')
     plt.xlabel('n_components')

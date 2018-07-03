@@ -9,7 +9,6 @@ from hypothesis.extra.numpy import arrays as harrays
 from ..model import dy_dt, fullModel, solveAutocrine, getTotalActiveCytokine, solveAutocrineComplete, runCkine, runCkineU, jacobian, fullJacobian
 from ..util_analysis.Shuffle_ODE import approx_jacobian
 from ..Tensor_analysis import find_R2X
-from ..tensor_generation import findy
 
 settings.register_profile("ci", max_examples=1000)
 #settings.load_profile("ci")
@@ -113,7 +112,7 @@ class TestModel(unittest.TestCase):
         # Force sorting fraction to be less than 1.0
         vec[15] = np.tanh(vec[15])*0.9
 
-        ys, retVal = runCkineU(self.ts, vec)
+        retVal = runCkineU(self.ts, vec)[1]
 
         # test that return value of runCkine isn't negative (model run didn't fail)
         self.assertGreaterEqual(retVal, 0)
@@ -174,7 +173,7 @@ class TestModel(unittest.TestCase):
         rxntfR = self.rxntfR.copy()
         rxntfR[20] = 0.0 # set expression of gc to 0.0
         yOut, retVal = runCkineU(self.ts, rxntfR)
-
+        self.assertGreaterEqual(retVal, 0)
         self.assertAlmostEqual(getTotalActiveCytokine(0, yOut[1]), 0.0, places=5) # IL2
         self.assertAlmostEqual(getTotalActiveCytokine(1, yOut[1]), 0.0, places=5) # IL15
         self.assertAlmostEqual(getTotalActiveCytokine(2, yOut[1]), 0.0, places=5) # IL7
@@ -199,9 +198,13 @@ class TestModel(unittest.TestCase):
 
         # first element is t=0 and second element is t=10**5
         yOut_1, retVal = runCkineU(self.ts, rxntfR_1)
+        self.assertGreaterEqual(retVal, 0)
         yOut_2, retVal = runCkineU(self.ts, rxntfR_2)
+        self.assertGreaterEqual(retVal, 0)
         yOut_3, retVal = runCkineU(self.ts, rxntfR_3)
+        self.assertGreaterEqual(retVal, 0)
         yOut_4, retVal = runCkineU(self.ts, rxntfR_4)
+        self.assertGreaterEqual(retVal, 0)
 
         # make sure endosomal free ligand is positive at equilibrium
         # TODO: Reenable endosomal ligand as it's not currently passing
