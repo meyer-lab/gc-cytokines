@@ -5,36 +5,24 @@ import numpy as np
 import pandas as pd
 import tensorly
 from tensorly.decomposition import parafac
+from scipy.stats import zscore
 import matplotlib.pyplot as plt
 import matplotlib.cm as cm
 tensorly.set_backend('numpy')
 
-def z_score_values(A):
-    '''Function that takes in the values tensor and z-scores it.'''
-    B = np.zeros_like(A)
-    for i in range(A.shape[2]):
-        slice_face = A[:,:,i]
-        mu = np.mean(slice_face)
-        sigma = np.std(slice_face)
-        z_scored_slice = (slice_face - mu) / sigma
-        B[:,:,i] = z_scored_slice
-    return B
 
 def perform_decomposition(tensor, r):
     '''Apply z scoring and perform PARAFAC decomposition'''
-    values_z = z_score_values(tensor)
+    values_z = zscore(tensor, axis=2)
     factors = parafac(values_z,rank = r, random_state=89)
     return factors
 
 def find_R2X(values, n_comp):
     '''Compute R2X'''
-    factors = perform_decomposition(values , n_comp)
+    z_values = zscore(values, axis=2)
+    factors = perform_decomposition(z_values, n_comp)
     values_reconstructed = tensorly.kruskal_to_tensor(factors)
-    z_values = z_score_values(values)
-    denominator = np.var(z_values)
-    numerator = np.var(values_reconstructed - z_values)
-    R2X = 1 - numerator / denominator
-    return R2X
+    return 1 - np.var(values_reconstructed - z_values) / np.var(z_values)
 
 def plot_R2X(values, n_comps):
     '''Function to plot the R2X values for various components.'''
@@ -53,13 +41,11 @@ def plot_R2X(values, n_comps):
     return fig
 
 def combo_low_high(mat):
-    """This function determines which combinations were high and low according to our initial conditions."""
-    #First four values are IL2, IL15, IL7, IL9 that are low and the bottom 4 are their high in terms of combination values.
-    IL2_low, IL2_high, IL15_low, IL15_high, IL7_low, IL7_high, IL9_low, IL9_high = [],[],[],[],[],[],[],[] #Create empty lists for each ligand to store low and high indices for each
-    #lows = [[] for _ in range(4)]
-    lows = [IL2_low, IL15_low, IL7_low, IL9_low]
-    highs = [IL2_high, IL15_high, IL7_high, IL9_high]
-    #fill up low receptor expression rates first. The indices in mat refer to the indices in combination
+    """ This function determines which combinations were high and low according to our initial conditions. """
+    # First four values are IL2, IL15, IL7, IL9 that are low and the bottom 4 are their high in terms of combination values.
+    lows = [[] for _ in range(4)]
+    highs = [[] for _ in range(4)]
+    # Fill low receptor expression rates first. The indices in mat refer to the indices in combination
     for k in range(len(mat)):
         for j in range(4): #low ligand
             if mat[k,j] <= 1e0: #Condition for low ligand concentration
@@ -110,27 +96,29 @@ def plot_values_decomposition(factors, component_x, component_y):
     ax = fig.add_subplot(111)
     #Set Active to color red. Set Surface to color blue. Set Total to color black
     for i in range(len(factors[2])):
+        data = (factors[2][:, component_x - 1][i], factors[2][:, component_y - 1][i])
+
         if i in range(4):
             c = 'r'
             if i==0:
-                plt.scatter(factors[2][:,component_x - 1][i], factors[2][:,component_y - 1][i], color = c, label = 'Ligand Activity')
+                plt.scatter(data[0], data[1], color = c, label = 'Ligand Activity')
             else:
-                plt.scatter(factors[2][:,component_x - 1][i], factors[2][:,component_y - 1][i], color = c)
-            ax.annotate(labels[i], xy=(factors[2][:,component_x - 1][i], factors[2][:,component_y - 1][i]), xytext = (0, 0), textcoords = 'offset points')
+                plt.scatter(data[0], data[1], color = c)
+            ax.annotate(labels[i], xy=data, xytext = (0, 0), textcoords = 'offset points')
         elif i in range(4,10):
             c = 'b'
             if i == 4:
-                plt.scatter(factors[2][:,component_x - 1][i], factors[2][:,component_y - 1][i], color = c, label = 'Surface Receptor')
+                plt.scatter(data[0], data[1], color = c, label = 'Surface Receptor')
             else:
-                plt.scatter(factors[2][:,component_x - 1][i], factors[2][:,component_y - 1][i], color = c)
-            ax.annotate(labels[i], xy=(factors[2][:,component_x - 1][i], factors[2][:,component_y - 1][i]), xytext = (0, 0), textcoords = 'offset points')
+                plt.scatter(data[0], data[1], color = c)
+            ax.annotate(labels[i], xy=data, xytext = (0, 0), textcoords = 'offset points')
         else:
             c = 'k'
             if i==10:
-                plt.scatter(factors[2][:,component_x - 1][i], factors[2][:,component_y - 1][i], color = c, label = 'Total Receptor')
+                plt.scatter(data[0], data[1], color = c, label = 'Total Receptor')
             else:
-                plt.scatter(factors[2][:,component_x - 1][i], factors[2][:,component_y - 1][i], color = c)
-            ax.annotate(labels[i], xy=(factors[2][:,component_x - 1][i], factors[2][:,component_y - 1][i]), xytext = (0, 0), textcoords = 'offset points')
+                plt.scatter(data[0], data[1], color = c)
+            ax.annotate(labels[i], xy=data, xytext = (0, 0), textcoords = 'offset points')
 
     plt.xlabel('Component ' + str(component_x))
     plt.ylabel('Component ' + str(component_y))

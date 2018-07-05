@@ -3,12 +3,9 @@ Unit test file.
 """
 import unittest
 import numpy as np
-from hypothesis import settings
 from ..Tensor_analysis import find_R2X
 from ..tensor_generation import findy
 
-settings.register_profile("ci", max_examples=1000)
-#settings.load_profile("ci")
 
 class TestModel(unittest.TestCase):
     '''Test Class for Tensor related work.'''
@@ -25,7 +22,8 @@ class TestModel(unittest.TestCase):
         self.assertGreaterEqual(np.min(arr),0)
         self.assertLessEqual(np.max(arr),1)
 
-    def test_tensor_parameters(self, r = 1, timelength = 1000):
+    def test_tensor_parameters(self, r=1):
         '''Function to ensure if rate parameters change in the model code then an error should warn us to update tensor generation code.'''
-        y_combos, new_mat = findy(r, timelength)[0:2]
-        self.assertEqual(np.array(y_combos.shape).all(), np.array([len(new_mat),timelength, 48]).all())
+        y_combos, new_mat = findy(r)[0:2]
+
+        self.assertTrue(y_combos.shape[0] == new_mat.shape[0])
