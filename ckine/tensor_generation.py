@@ -38,12 +38,12 @@ def findy(lig, timelength = 1000):
     new_mat = np.concatenate((mats,receptor_repeats), axis = 1) #concatenate to obtain the new meshgrid
 
     #Preset a y_of_combos
-    y_of_combos = np.zeros((len(new_mat), len(ts),48))
+    y_of_combos = np.zeros((len(new_mat), ts.size, 48))
 
     #Set some given parameters already determined from fitting
     rxntfR = np.zeros(24)
-    rxntfR[4:13] = np.ones(9) * (5*10**-1)  #From fitting: kfwd - k31rev
-    rxntfR[13:18] = np.ones(5) * (50* 10**-3) #From fitting: endo - kdeg
+    rxntfR[4:13] = 0.01 # From fitting: kfwd - k31rev
+    rxntfR[13:18] = 5.0E-2 # From fitting: endo - kdeg
 
     #Iterate through every combination of values and store solver values in a y matrix
     for ii in tqdm(range(len(new_mat))):

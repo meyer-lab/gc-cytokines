@@ -37,7 +37,7 @@ class TestModel(unittest.TestCase):
         self.assertAlmostEqual(np.sum(species_delta[IDX]), 0.0, msg=str(IDX))
 
     def setUp(self):
-        self.ts = np.array([0.0, 100000.0])
+        self.ts = np.array([0.0, 1000.0])
         self.y0 = np.random.lognormal(0., 1., 22)
         self.args = np.random.lognormal(0., 1., 13)
         self.tfargs = np.random.lognormal(0., 1., 11)
@@ -123,7 +123,7 @@ class TestModel(unittest.TestCase):
         analytical = jacobian(self.y0, self.ts[0], self.args)
         approx = approx_jacobian(lambda x: dy_dt(x, self.ts[0], self.args), self.y0, delta=1.0E-4) # Large delta to prevent round-off error
 
-        closeness = np.isclose(analytical, approx, rtol=0.001, atol=0.001)
+        closeness = np.isclose(analytical, approx, rtol=0.0001, atol=0.0001)
 
         if not np.all(closeness):
             IDXdiff = np.where(np.logical_not(closeness))
@@ -139,7 +139,7 @@ class TestModel(unittest.TestCase):
 
         self.assertTrue(analytical.shape == approx.shape)
 
-        closeness = np.isclose(analytical, approx, rtol=0.001, atol=0.001)
+        closeness = np.isclose(analytical, approx, rtol=0.0001, atol=0.0001)
 
         if not np.all(closeness):
             IDXdiff = np.where(np.logical_not(closeness))
@@ -182,19 +182,25 @@ class TestModel(unittest.TestCase):
     def test_endosomalCTK_bound(self):
         ''' Test that appreciable cytokine winds up in the endosome. '''
         rxntfR = self.rxntfR.copy()
+        rxntfR[4:24] = 0.1 # Fill all in to avoid parameter variation
+        rxntfR[4] = 0.0001 # Damp down kfwd
+        rxntfR[14] = 10.0 # Turn up active endocytosis
+        rxntfR[17] = 0.02 # Turn down degradation
+        rxntfR[18:24] = 1.0 # Control expression
+
         rxntfR[0:4] = 0.0
         # set high concentration of IL2
         rxntfR_1 = rxntfR.copy()
-        rxntfR_1[0] = 500.
+        rxntfR_1[0] = 1000.
         # set high concentration of IL15
         rxntfR_2 = rxntfR.copy()
-        rxntfR_2[1] = 500.
+        rxntfR_2[1] = 1000.
         # set high concentration of IL7
         rxntfR_3 = rxntfR.copy()
-        rxntfR_3[2] = 500.
+        rxntfR_3[2] = 1000.
         # set high concentration of IL9
         rxntfR_4 = rxntfR.copy()
-        rxntfR_4[3] = 500.
+        rxntfR_4[3] = 1000.
 
         # first element is t=0 and second element is t=10**5
         yOut_1, retVal = runCkineU(self.ts, rxntfR_1)
@@ -207,20 +213,19 @@ class TestModel(unittest.TestCase):
         self.assertGreaterEqual(retVal, 0)
 
         # make sure endosomal free ligand is positive at equilibrium
-        # TODO: Reenable endosomal ligand as it's not currently passing
         # IL2
-        # self.assertGreater(yOut_1[1, 44], 0)
+        self.assertGreater(yOut_1[1, 44], 0)
         self.assertTrue((yOut_1[1, 45:48] == 0).all()) # no other ligand
         # IL15
-        # self.assertGreater(yOut_2[1, 45], 0)
+        self.assertGreater(yOut_2[1, 45], 0)
         self.assertTrue(yOut_2[1, 44] == 0) # no other ligand
         self.assertTrue((yOut_2[1, 46:48] == 0).all()) # no other ligand
         # IL7
-        # self.assertGreater(yOut_3[1,46], 0)
+        self.assertGreater(yOut_3[1, 46], 0)
         self.assertTrue((yOut_3[1, 44:46] == 0).all()) # no other ligand
         self.assertTrue(yOut_3[1, 47] == 0) # no other ligand
         # IL9
-        # self.assertGreater(yOut_4[1,47], 0)
+        self.assertGreater(yOut_4[1, 47], 0)
         self.assertTrue((yOut_4[1, 44:47] == 0).all()) # no other ligand
 
         # make sure total amount of ligand bound to receptors is positive at equilibrium

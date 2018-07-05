@@ -222,11 +222,12 @@ void fullModel(const double * const y, const ratesS * const r, double *dydt) {
 	dy_dt(y,      r, dydt,     r->IL2, r->IL15, r->IL7, r->IL9);
 	dy_dt(y + halfL, r, dydt + halfL, y[44],   y[45],  y[46],  y[47]);
 
+	// Handle endosomal ligand balance.
+	// Must come before trafficking as we only calculate this based on reactions balance
+	findLigConsume(dydt);
+
 	// Handle trafficking
 	trafficking(y, r, dydt);
-
-	// Handle endosomal ligand balance.
-	findLigConsume(dydt);
 }
 
 
@@ -428,7 +429,7 @@ void solver_setup(solver *sMem, double *params) {
 		throw std::runtime_error(string("Error calling CVodeSetUserData in solver_setup."));
 	}
 
-	CVodeSetMaxNumSteps(sMem->cvode_mem, 200000);
+	CVodeSetMaxNumSteps(sMem->cvode_mem, 800000);
 }
 
 
@@ -450,7 +451,7 @@ void solver_setup_sensi(solver *sMem, const ratesS * const rr, double *params, a
 	}
 
 	array<double, Nparams> abs;
-	fill(abs.begin(), abs.end(), 1.0E-2);
+	fill(abs.begin(), abs.end(), 1.0E-3);
 
 	// Call CVodeSensSStolerances to estimate tolerances for sensitivity 
 	// variables based on the rolerances supplied for states variables and 
