@@ -11,7 +11,7 @@ from ..util_analysis.Shuffle_ODE import approx_jacobian
 from ..Tensor_analysis import find_R2X
 
 settings.register_profile("ci", max_examples=1000)
-#settings.load_profile("ci")
+settings.load_profile("ci")
 
 conservation_IDX = [np.array([1, 4, 5, 7, 8, 11, 12, 14, 15]), # IL2Rb
                     np.array([0, 3, 5, 6, 8]), # IL2Ra
@@ -123,7 +123,7 @@ class TestModel(unittest.TestCase):
         analytical = jacobian(self.y0, self.ts[0], self.args)
         approx = approx_jacobian(lambda x: dy_dt(x, self.ts[0], self.args), self.y0, delta=1.0E-4) # Large delta to prevent round-off error
 
-        closeness = np.isclose(analytical, approx, rtol=0.0001, atol=0.0001)
+        closeness = np.isclose(analytical, approx, rtol=0.00001, atol=0.00001)
 
         if not np.all(closeness):
             IDXdiff = np.where(np.logical_not(closeness))
@@ -139,7 +139,7 @@ class TestModel(unittest.TestCase):
 
         self.assertTrue(analytical.shape == approx.shape)
 
-        closeness = np.isclose(analytical, approx, rtol=0.0001, atol=0.0001)
+        closeness = np.isclose(analytical, approx, rtol=0.00001, atol=0.00001)
 
         if not np.all(closeness):
             IDXdiff = np.where(np.logical_not(closeness))

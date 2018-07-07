@@ -13,9 +13,9 @@ class IL2Rb_trafficking:
     def __init__(self):
         path = os.path.dirname(os.path.abspath(__file__))
         # all of the IL2Rb trafficking data with IL2Ra+... first row contains headers... 9 columns and 8 rows... first column is time
-        numpy_data = pds.read_csv(join(path, 'data/IL2Ra+_surface_IL2RB_datasets.csv')).as_matrix()
+        numpy_data = pds.read_csv(join(path, 'data/IL2Ra+_surface_IL2RB_datasets.csv')).values
         # all of the IL2Rb trafficking data with IL2Ra-... first row contains headers... 9 columns and 8 rows... first column is time
-        numpy_data2 = pds.read_csv(join(path, "data/IL2Ra-_surface_IL2RB_datasets.csv")).as_matrix()
+        numpy_data2 = pds.read_csv(join(path, "data/IL2Ra-_surface_IL2RB_datasets.csv")).values
 
         # times from experiment are hard-coded into this function
         self.ts = np.array([0., 2., 5., 15., 30., 60., 90.])
@@ -53,8 +53,8 @@ class IL2_15_activity:
     def __init__(self):
         """This loads the experiment data and saves it as a member matrix and it also makes a vector of the IL15 concentrations that we are going to take care of."""
         path = os.path.dirname(os.path.abspath(__file__))
-        data = pds.read_csv(join(path, "./data/IL2_IL15_extracted_data.csv")).as_matrix() # imports csv file into pandas array
-        dataIL2 = pds.read_csv(join(path, "./data/IL2_IL15_extracted_data.csv")).as_matrix() # imports csv file into pandas array
+        data = pds.read_csv(join(path, "./data/IL2_IL15_extracted_data.csv")).values # imports csv file into pandas array
+        dataIL2 = pds.read_csv(join(path, "./data/IL2_IL15_extracted_data.csv")).values # imports csv file into pandas array
         self.cytokC = np.logspace(-3.3, 2.7, 8) # 8 log-spaced values between our two endpoints
 
         self.fit_data = np.concatenate((data[:, 7], data[:, 3], dataIL2[:, 6], dataIL2[:, 2])) / 100. #the IL15_IL2Ra- data is within the 4th column (index 3)
