@@ -178,10 +178,10 @@ void findLigConsume(double *dydt) {
 	double const * const dydti = dydt + halfL;
 
 	// Calculate the ligand consumption.
-	dydt[44] -= std::accumulate(dydti+3,  dydti+9, 0) / internalV;
-	dydt[45] -= std::accumulate(dydti+10, dydti+16, 0) / internalV;
-	dydt[46] -= std::accumulate(dydti+17, dydti+19, 0) / internalV;
-	dydt[47] -= std::accumulate(dydti+20, dydti+22, 0) / internalV;
+	dydt[44] -= std::accumulate(dydti+3,  dydti+9, (double) 0.0) / internalV;
+	dydt[45] -= std::accumulate(dydti+10, dydti+16, (double) 0.0) / internalV;
+	dydt[46] -= std::accumulate(dydti+17, dydti+19, (double) 0.0) / internalV;
+	dydt[47] -= std::accumulate(dydti+20, dydti+22, (double) 0.0) / internalV;
 }
 
 
@@ -407,7 +407,7 @@ void solver_setup(solver *sMem, double *params) {
 	}
 	
 	// Call CVodeSVtolerances to specify the scalar relative and absolute tolerances
-	if (CVodeSStolerances(sMem->cvode_mem, reltolIn, abstolIn) < 0) {
+	if (CVodeSStolerances(sMem->cvode_mem, tolIn, tolIn) < 0) {
 		solverFree(sMem);
 		throw std::runtime_error(string("Error calling CVodeSStolerances in solver_setup."));
 	}
@@ -451,12 +451,12 @@ void solver_setup_sensi(solver *sMem, const ratesS * const rr, double *params, a
 	}
 
 	array<double, Nparams> abs;
-	fill(abs.begin(), abs.end(), 1.0E-3);
+	fill(abs.begin(), abs.end(), tolIn);
 
 	// Call CVodeSensSStolerances to estimate tolerances for sensitivity 
 	// variables based on the rolerances supplied for states variables and 
 	// the scaling factor pbar
-	if (CVodeSensSStolerances(sMem->cvode_mem, 1.0E-3, abs.data()) < 0) {
+	if (CVodeSensSStolerances(sMem->cvode_mem, tolIn, abs.data()) < 0) {
 		solverFree(sMem);
 		throw std::runtime_error(string("Error calling CVodeSensSStolerances in solver_setup."));
 	}
@@ -792,21 +792,42 @@ void fullJacobian(const double * const y, const ratesS * const r, Eigen::Map<Jac
 		out(ii, ii) -= r->kDeg;
 
 	// Ligand binding
+	// Derivative is w.r.t. second number
+	const double eIL2 = y[44] / internalV;
+	out(44, 44) -= kfbnd * (y[22] + y[23]) / internalV;
 	out(22 + 0, 44) = -kfbnd * y[22 + 0]; // IL2 binding to IL2Ra
+	out(44, 22) = -kfbnd * eIL2; // IL2 binding to IL2Ra
 	out(22 + 1, 44) = -kfbnd * y[22 + 1]; // IL2 binding to IL2Rb
+	out(44, 23) = -kfbnd * eIL2; // IL2 binding to IL2Rb
 	out(22 + 3, 44) = kfbnd * y[22 + 0]; // IL2 binding to IL2Ra
+	out(44, 25) =  k1rev / internalV;
 	out(22 + 4, 44) = kfbnd * y[22 + 1]; // IL2 binding to IL2Rb
+	out(44, 26) = k2rev / internalV;
 
-	out(22 +  1, 45) = -kfbnd * y[22 +  1]; // IL15 binding to IL2Rb
+	const double eIL15 = y[45] / internalV;
+	out(45, 45) -= kfbnd * (y[23] + y[22 + 9]) / internalV;
+	out(22 + 1, 45) = -kfbnd * y[22 + 1]; // IL15 binding to IL2Rb
+	out(45, 23) = -kfbnd * eIL15; // IL15 binding to IL2Rb
 	out(22 + 9, 45) = -kfbnd * y[22 + 9]; // IL15 binding to IL15Ra
+	out(45, 31) = -kfbnd * eIL15; // IL15 binding to IL15Ra
 	out(22 + 10, 45) =  kfbnd * y[22 + 9]; // IL15 binding to IL15Ra
 	out(22 + 11, 45) =  kfbnd * y[22 +  1]; // IL15 binding to IL2Rb
+	out(45, 32) = k13rev / internalV;
+	out(45, 33) = k14rev / internalV;
 
+	const double eIL7 = y[46] / internalV;
+	out(46, 46) -= kfbnd * y[22 + 16] / internalV;
 	out(22 + 16, 46) = -kfbnd * y[22 + 16]; // IL7 binding to IL7Ra
+	out(46, 22 + 16) = -kfbnd * eIL7; // IL7 binding to IL7Ra
 	out(22 + 17, 46) =  kfbnd * y[22 + 16]; // IL7 binding to IL7Ra
+	out(46, 39) = k25rev / internalV;
 
+	const double eIL9 = y[47] / internalV;
+	out(47, 47) -= kfbnd * y[22 + 19] / internalV;
 	out(22 + 19, 47) = -kfbnd * y[22 + 19]; // IL9 binding to IL9R
+	out(47, 22 + 19) = -kfbnd * eIL9; // IL9 binding to IL9R
 	out(22 + 20, 47) =  kfbnd * y[22 + 19]; // IL9 binding to IL9R
+	out(47, 42) = k29rev / internalV; 
 }
 
 constexpr bool debugOutput = false;
