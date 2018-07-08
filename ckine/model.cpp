@@ -365,7 +365,6 @@ static void errorHandler(int error_code, const char *module, const char *functio
 	if (sMem->sensi)
 		std::cout << "Sensitivity enabled." << std::endl;
 
-	//N_VPrint_Serial(sMem->state);
 	std::cout << std::endl << std::endl;
 }
 
