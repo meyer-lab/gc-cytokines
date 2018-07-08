@@ -110,14 +110,14 @@ class build_model:
 
             unkVec = T.concatenate((ligands, T.stack(kfwd), rxnrates, endo_activeEndo, T.stack(sortF), kRec_kDeg, Rexpr, T.zeros(2, dtype=np.float64)))
 
-            # Y_15 = self.dst15.calc(unkVec) # fitting the data based on dst15.calc for the given parameters
+            Y_15 = self.dst15.calc(unkVec) # fitting the data based on dst15.calc for the given parameters
             Y_int = self.IL2Rb.calc(unkVec) # fitting the data based on dst.calc for the given parameters
 
-            # pm.Deterministic('Y_15', T.sum(T.square(Y_15)))
+            pm.Deterministic('Y_15', T.sum(T.square(Y_15)))
             pm.Deterministic('Y_int', T.sum(T.square(Y_int)))
 
-            # pm.Normal('fitD_15', sd=T.std(Y_15), observed=Y_15)
-            pm.Normal('fitD_int', sd=T.std(Y_int), observed=Y_int)
+            pm.Normal('fitD_15', sd=0.1, observed=Y_15) # TODO: Replace with experimental-derived stderr
+            pm.Normal('fitD_int', sd=0.1, observed=Y_int)
 
             # Save likelihood
             pm.Deterministic('logp', M.logpt)
@@ -126,12 +126,7 @@ class build_model:
 
     def sampling(self):
         """This is the sampling that actually runs the model."""
-        self.trace = pm.sample(init='advi', model=self.M)
-
-    def fit_ADVI(self):
-        with self.M:
-            approx = pm.fit(40000, method='fullrank_advi')
-            self.trace = approx.sample()
+        self.trace = pm.sample(init='ADVI', model=self.M)
 
     def profile(self):
         """ Profile the gradient calculation. """
