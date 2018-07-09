@@ -18,7 +18,8 @@ pipeline {
     stage('Report') {
       steps {
         sh 'make doc'
-        archiveArtifacts artifacts: 'Manuscript/Manuscript.pdf', './Manuscript/Figures/*.*', onlyIfSuccessful: true
+        archiveArtifacts artifacts: 'Manuscript/Manuscript.pdf', onlyIfSuccessful: true
+        archiveArtifacts artifacts: 'Manuscript/Figures/*.pdf', onlyIfSuccessful: true
         publishHTML([
           allowMissing: false,
           alwaysLinkToLastBuild: false,
