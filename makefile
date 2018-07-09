@@ -14,17 +14,17 @@ endif
 
 CPPLINKS = -I/usr/include/eigen3/ -I/usr/local/Cellar/eigen/3.3.4/include/eigen3/ -lm -lsundials_cvodes -lsundials_cvode -lsundials_nvecserial -lcppunit
 
-$(fdir)/Figure%.svg: genFigures.py
+$(fdir)/figure%.svg: genFigures.py
 	mkdir -p ./Manuscript/Figures
 	python3 genFigures.py $*
 
-$(fdir)/Figure%pdf: $(fdir)/Figure%svg
+$(fdir)/figure%pdf: $(fdir)/figure%svg
 	rsvg-convert -f pdf $< -o $@
 
-$(fdir)/Figure%eps: $(fdir)/Figure%svg
+$(fdir)/figure%eps: $(fdir)/figure%svg
 	rsvg-convert -f eps $< -o $@
 
-Manuscript/Manuscript.pdf: Manuscript/Manuscript.tex $(fdir)/Figure1.pdf $(fdir)/Figure2.pdf $(fdir)/Figure3.pdf $(fdir)/Figure4.pdf $(fdir)/FigureS1.pdf $(fdir)/FigureS2.pdf
+Manuscript/Manuscript.pdf: Manuscript/Manuscript.tex $(fdir)/figure1.pdf $(fdir)/figure2.pdf $(fdir)/figure3.pdf $(fdir)/figure4.pdf $(fdir)/figureS1.pdf $(fdir)/figureS2.pdf
 	(cd ./Manuscript && latexmk -xelatex -f -quiet)
 	rm -f ./Manuscript/Manuscript.b* ./Manuscript/Manuscript.aux ./Manuscript/Manuscript.fls
 
