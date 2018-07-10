@@ -5,7 +5,7 @@ import pymc3 as pm, theano.tensor as T, os
 from os.path import join
 from theano import shared
 import numpy as np, pandas as pds
-from .model import getActiveSpecies, getSurfaceIL2RbSpecies
+from .model import getTotalActiveSpecies, getSurfaceIL2RbSpecies
 from .differencing_op import runCkineOp, runCkineKineticOp
 
 
@@ -59,8 +59,8 @@ class IL2_15_activity:
 
         self.fit_data = np.concatenate((data[:, 7], data[:, 3], dataIL2[:, 6], dataIL2[:, 2])) / 100. #the IL15_IL2Ra- data is within the 4th column (index 3)
 
-        npactivity = getActiveSpecies().astype(np.float64)
-        self.activity = shared(np.concatenate((npactivity, 0.5*npactivity, np.zeros(4)))) # 0.5 is because its the endosome
+        self.activity = getTotalActiveSpecies().astype(np.float64)
+
 
     def calc(self, unkVec):
         """Simulate the experiment with IL15. It is making a list of promises which will be calculated and returned as output."""
