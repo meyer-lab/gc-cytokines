@@ -1,5 +1,5 @@
 """
-This file includes the classes and functions necessary to fit the IL2 model to the experimental data.
+This file includes the classes and functions necessary to fit the IL2 and IL15 model to the experimental data.
 """
 from os.path import join, dirname, abspath
 import pymc3 as pm
@@ -106,9 +106,9 @@ class build_model:
             Rexpr = pm.Lognormal('IL2Raexpr', sd=0.1, shape=4) # Expression: IL2Ra, IL2Rb, gc, IL15Ra
             sortF = pm.Beta('sortF', alpha=20, beta=40, testval=0.333)*0.95
 
-            ligands = T.zeros(4, dtype=np.float64)
+            ligands = T.zeros(6, dtype=np.float64)
 
-            unkVec = T.concatenate((ligands, T.stack(kfwd), rxnrates, endo_activeEndo, T.stack(sortF), kRec_kDeg, Rexpr, T.zeros(2, dtype=np.float64)))
+            unkVec = T.concatenate((ligands, T.stack(kfwd), rxnrates, endo_activeEndo, T.stack(sortF), kRec_kDeg, Rexpr, T.zeros(4, dtype=np.float64)))
 
             Y_15 = self.dst15.calc(unkVec) # fitting the data based on dst15.calc for the given parameters
             Y_int = self.IL2Rb.calc(unkVec) # fitting the data based on dst.calc for the given parameters
