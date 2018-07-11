@@ -1,7 +1,7 @@
 fdir = ./Manuscript/Figures
 tdir = ./Manuscript/Templates
 pan_common = -F pandoc-crossref -F pandoc-citeproc --filter=$(tdir)/figure-filter.py -f markdown ./Manuscript/Text/*.md
-compile_opts = -std=c++14 -mavx -march=native
+compile_opts = -std=c++14 -mavx -march=native -Wall -Wextra
 
 .PHONY: clean test all testprofile testcover doc testcpp
 

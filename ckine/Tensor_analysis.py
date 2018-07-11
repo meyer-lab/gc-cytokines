@@ -43,11 +43,11 @@ def plot_R2X(values, n_comps):
 def combo_low_high(mat):
     """ This function determines which combinations were high and low according to our initial conditions. """
     # First four values are IL2, IL15, IL7, IL9 that are low and the bottom 4 are their high in terms of combination values.
-    lows = [[] for _ in range(4)]
-    highs = [[] for _ in range(4)]
+    lows = [[] for _ in range(6)]
+    highs = [[] for _ in range(6)]
     # Fill low receptor expression rates first. The indices in mat refer to the indices in combination
     for k in range(len(mat)):
-        for j in range(4): #low ligand
+        for j in range(6): #low ligand
             if mat[k,j] <= 1e0: #Condition for low ligand concentration
                 lows[j].append(k)
             else: #high ligand
@@ -55,7 +55,7 @@ def combo_low_high(mat):
     return lows, highs
 
 def plot_combo_decomp(factors, mat, component_x, component_y, cell_names):
-    """This function plots the combination decomposition based on high vs low receptor expression and liand concentration."""
+    """This function plots the combination decomposition based on high vs low receptor expression and ligand concentration."""
     fig = plt.figure() #prepare figure
     ax = fig.add_subplot(111)
     colors = cm.rainbow(np.linspace(0, 1, len(cell_names)))
@@ -78,8 +78,8 @@ def plot_combo_decomp(factors, mat, component_x, component_y, cell_names):
 def plot_low_high(factors, mat, component_x, component_y):
     """This function plots the combination decomposition based on high vs low ligand concentration."""
     lows, highs = combo_low_high(mat)
-    titles = [' Combination Decomposition: Low IL2 (red) vs High IL2 (blue)', ' Combination Decomposition: Low IL15 (red) vs High IL15 (blue)', ' Combination Decomposition: Low IL7 (red) vs High IL7 (blue)', ' Combination Decomposition: Low IL9 (red) vs High IL9 (blue)']
-    for cytokine in range(4):
+    titles = [' Combination Decomposition: Low IL2 (red) vs High IL2 (blue)', ' Combination Decomposition: Low IL15 (red) vs High IL15 (blue)', ' Combination Decomposition: Low IL7 (red) vs High IL7 (blue)', ' Combination Decomposition: Low IL9 (red) vs High IL9 (blue)',' Combination Decomposition: Low IL4 (red) vs High IL4 (blue)',' Combination Decomposition: Low IL21 (red) vs High IL21 (blue)']
+    for cytokine in range(6):
         fig = plt.figure() #prepare figure
         plt.scatter(factors[0][lows[cytokine],component_x - 1], factors[0][lows[cytokine],component_y - 1], c="r", marker = 's', alpha = 0.2)
         plt.scatter(factors[0][highs[cytokine],component_x - 1], factors[0][highs[cytokine],component_y - 1], c = "b", marker = '^', alpha = 0.2)
@@ -91,30 +91,30 @@ def plot_low_high(factors, mat, component_x, component_y):
 def plot_values_decomposition(factors, component_x, component_y):
     """This function performs the values decomposition and plots it with colors separating low from high."""
     #Generate a plot for component x vs component y of the factors[2] above representing our values
-    labels = ['IL2', 'IL15', 'IL7', 'IL9', 'IL2Ra', 'IL2Rb', 'gc', 'IL15Ra', 'IL7Ra', 'IL9R', 'IL2Ra', 'IL2Rb', 'gc', 'IL15Ra', 'IL7Ra', 'IL9R']
+    labels = ['IL2', 'IL15', 'IL7', 'IL9', 'IL4','IL21','IL2Ra', 'IL2Rb', 'gc', 'IL15Ra', 'IL7Ra', 'IL9R', 'IL4Ra','IL21Ra','IL2Ra', 'IL2Rb', 'gc', 'IL15Ra', 'IL7Ra', 'IL9R', 'IL4Ra','IL21Ra']
     fig = plt.figure()
     ax = fig.add_subplot(111)
     #Set Active to color red. Set Surface to color blue. Set Total to color black
     for i in range(len(factors[2])):
         data = (factors[2][:, component_x - 1][i], factors[2][:, component_y - 1][i])
 
-        if i in range(4):
+        if i in range(6):
             c = 'r'
             if i==0:
                 plt.scatter(data[0], data[1], color = c, label = 'Ligand Activity')
             else:
                 plt.scatter(data[0], data[1], color = c)
             ax.annotate(labels[i], xy=data, xytext = (0, 0), textcoords = 'offset points')
-        elif i in range(4,10):
+        elif i in range(6, 14):
             c = 'b'
-            if i == 4:
+            if i == 6:
                 plt.scatter(data[0], data[1], color = c, label = 'Surface Receptor')
             else:
                 plt.scatter(data[0], data[1], color = c)
             ax.annotate(labels[i], xy=data, xytext = (0, 0), textcoords = 'offset points')
         else:
             c = 'k'
-            if i==10:
+            if i==14:
                 plt.scatter(data[0], data[1], color = c, label = 'Total Receptor')
             else:
                 plt.scatter(data[0], data[1], color = c)
@@ -149,6 +149,6 @@ def calculate_correlation(tensor,mat,r):
             arr.append(np.corrcoef(mat[:,i], factors[0][:,j], rowvar=False)[0,1])
         coeffs[:,i] = np.array(arr)
 
-    df = pd.DataFrame({'Component': range(1,9),'IL2': coeffs[:,0], 'IL15': coeffs[:,1], 'IL7': coeffs[:,2], 'IL9':coeffs[:,3]})
+    df = pd.DataFrame({'Component': range(1,9),'IL2': coeffs[:,0], 'IL15': coeffs[:,1], 'IL7': coeffs[:,2], 'IL9':coeffs[:,3],'IL4':coeffs[:,4],'IL21':coeffs[:,5]})
     df = df.set_index('Component')
     return df

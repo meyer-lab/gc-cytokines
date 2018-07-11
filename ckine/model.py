@@ -14,17 +14,17 @@ libb.jacobian_C.argtypes = (ct.POINTER(ct.c_double), ct.c_double, ct.POINTER(ct.
 libb.fullModel_C.argtypes = (ct.POINTER(ct.c_double), ct.c_double, ct.POINTER(ct.c_double), ct.POINTER(ct.c_double))
 libb.runCkine.argtypes = (ct.POINTER(ct.c_double), ct.c_uint, ct.POINTER(ct.c_double), ct.POINTER(ct.c_double), ct.c_bool, ct.POINTER(ct.c_double))
 
-__nSpecies = 48
+__nSpecies = 62
 def nSpecies():
     """ Returns the total number of species in the model. """
     return __nSpecies
 
-__halfL = 22
+__halfL = 28
 def halfL():
     """ Returns the number of species on the surface alone. """
     return __halfL
 
-__nParams = 24
+__nParams = 30
 def nParams():
     """ Returns the length of the rxntfR vector. """
     return __nParams
@@ -36,9 +36,8 @@ def runCkine (tps, rxn, tfr):
 
 
 def runCkineU (tps, rxntfr):
-
     assert rxntfr.size == __nParams
-    assert rxntfr[15] < 1.0 # Check that sortF won't throw
+    assert rxntfr[19] < 1.0 # Check that sortF won't throw
 
     yOut = np.zeros((tps.size, __nSpecies), dtype=np.float64)
 
@@ -72,9 +71,9 @@ def runCkineSensi (tps, rxntfr):
 
 def dy_dt(y, t, rxn):
 
-    assert rxn.size == 13
+    assert rxn.size == 17
 
-    rxntfr = np.concatenate((rxn, np.ones(15, dtype=np.float64)*0.9))
+    rxntfr = np.concatenate((rxn, np.ones(13, dtype=np.float64)*0.9))
 
     yOut = np.zeros_like(y)
 
@@ -85,7 +84,7 @@ def dy_dt(y, t, rxn):
 
 
 def jacobian(y, t, rxn):
-    assert rxn.size == 13
+    assert rxn.size == 17
 
     yOut = np.zeros((__halfL, __halfL)) # size of the Jacobian matrix for surface alone
 
@@ -93,19 +92,17 @@ def jacobian(y, t, rxn):
 
     return yOut
 
-
-def fullJacobian(y, t, rxn): # will eventually have to add tfR as an argument once we add more to fullJacobian
-    assert rxn.size == __nParams
+def fullJacobian(y, t, rxntfR): # will eventually have to add tfR as an argument once we add more to fullJacobian
+    assert rxntfR.size == __nParams
 
     yOut = np.zeros((__nSpecies, __nSpecies)) # size of the full Jacobian matrix
 
-    libb.fullJacobian_C(y.ctypes.data_as(ct.POINTER(ct.c_double)), ct.c_double(t), yOut.ctypes.data_as(ct.POINTER(ct.c_double)), rxn.ctypes.data_as(ct.POINTER(ct.c_double)))
+    libb.fullJacobian_C(y.ctypes.data_as(ct.POINTER(ct.c_double)), ct.c_double(t), yOut.ctypes.data_as(ct.POINTER(ct.c_double)), rxntfR.ctypes.data_as(ct.POINTER(ct.c_double)))
     return yOut
 
 def fullModel(y, t, rxn, tfr):
 
     rxntfr = np.concatenate((rxn, tfr))
-
     assert rxntfr.size == __nParams
 
     yOut = np.zeros_like(y)
@@ -117,17 +114,16 @@ def fullModel(y, t, rxn, tfr):
 
 
 __active_species_IDX = np.zeros(__halfL, dtype=np.bool)
-__active_species_IDX[np.array([7, 8, 14, 15, 18, 21])] = 1
-
+__active_species_IDX[np.array([7, 8, 14, 15, 18, 21, 24, 27])] = 1
 
 def solveAutocrine(trafRates):
     """Faster approach to solve for steady state by directly calculating the starting point without needing odeint."""
     y0 = np.zeros(__nSpecies , np.float64)
 
-    recIDX = np.array([0, 1, 2, 9, 16, 19], np.int)
+    recIDX = np.array([0, 1, 2, 9, 16, 19, 22, 25], np.int)
 
     # Expr
-    expr = trafRates[5:11]
+    expr = trafRates[5:13]
 
     internalFrac = 0.5 # Same as that used in TAM model
 
@@ -154,7 +150,7 @@ def solveAutocrineComplete(rxnRates, trafRates):
     y0 = np.zeros(__nSpecies, np.float64)
 
     # For now assume 0 autocrine ligand
-    rxnRates[0:4] = 0.0
+    rxnRates[0:6] = 0.0
 
     full_lambda = lambda y, t: fullModel(y, t, rxnRates, trafRates)
 
@@ -167,16 +163,16 @@ def getActiveSpecies():
     """ Return a vector that indicates which species are active. """
     return __active_species_IDX
 
-internalStrength = 0.5 # strength of endosomal activity relative to surface
+__internalStrength = 0.5 # strength of endosomal activity relative to surface
 
 def getTotalActiveSpecies():
     """ Return a vector of all the species (surface + endosome) which are active. """
     activity = getActiveSpecies()
-    return np.concatenate((activity, internalStrength * activity, np.zeros(4)))
+    return np.concatenate((activity, __internalStrength * activity, np.zeros(4)))
 
 def getCytokineSpecies():
     """ Returns a list of vectors for which species are bound to which cytokines. """
-    return list((np.arange(3, 9), np.arange(10, 16), np.arange(17, 19), np.arange(20, 22)))
+    return list((np.arange(3, 9), np.arange(10, 16), np.arange(17, 19), np.arange(20, 22), np.arange(23, 25), np.arange(26, 28)))
 
 def getSurfaceIL2RbSpecies():
     """ Returns a list of vectors for which surface species contain the IL2Rb receptor. """
@@ -193,19 +189,21 @@ def getActiveCytokine(cytokineIDX, yVec):
 
 def getTotalActiveCytokine(cytokineIDX, yVec):
     """ Get amount of surface and endosomal active species. """
-    return getActiveCytokine(cytokineIDX, yVec[0:22]) + internalStrength * getActiveCytokine(cytokineIDX, yVec[22:22*2])
+    return getActiveCytokine(cytokineIDX, yVec[0:(__halfL)] + __internalStrength * getActiveCytokine(cytokineIDX, yVec[__halfL:__halfL*2]))
 
 
 def surfaceReceptors(y):
-    """This function takes in a vector y and returns the amounts of the 6 surface receptors"""
+    """This function takes in a vector y and returns the amounts of the 8 surface receptors"""
     IL2Ra = np.sum(y[np.array([0, 3, 5, 6, 8])])
     IL2Rb = np.sum(y[np.array([1, 4, 5, 7, 8, 11, 12, 14, 15])])
     gc = np.sum(y[np.array([2, 6, 7, 8, 13, 14, 15, 18, 21])])
     IL15Ra = np.sum(y[np.array([9, 10, 12, 13, 15])])
     IL7Ra = np.sum(y[np.array([16, 17, 18])])
     IL9R = np.sum(y[np.array([19, 20, 21])])
-    return np.array([IL2Ra, IL2Rb, gc, IL15Ra, IL7Ra, IL9R])
+    IL4Ra = np.sum(y[np.array([22, 23, 24])])
+    IL21Ra = np.sum(y[np.array([25, 26, 27])])
+    return np.array([IL2Ra, IL2Rb, gc, IL15Ra, IL7Ra, IL9R, IL4Ra, IL21Ra])
 
 def totalReceptors(yVec):
-    """This function takes in a vector y and returns the amounts of all 6 receptors in both cell compartments"""
-    return surfaceReceptors(yVec) + internalStrength * surfaceReceptors(yVec[22:44])
+    """This function takes in a vector y and returns the amounts of all 8 receptors in both cell compartments"""
+    return surfaceReceptors(yVec) + __internalStrength * surfaceReceptors(yVec[__halfL:__halfL*2])

@@ -3,7 +3,7 @@ Theano Op for using differencing for Jacobian calculation.
 """
 import numpy as np
 from theano.tensor import dot, dmatrix, dvector, Op
-from .model import runCkineU, runCkineSensi
+from .model import runCkineU, runCkineSensi, nSpecies, nParams
 
 
 class runCkineOp(Op):
@@ -13,17 +13,18 @@ class runCkineOp(Op):
     def __init__(self, ts):
         if ts.size > 1:
             raise NotImplementedError('This Op only works with a single time point.')
-
+        
         self.ts = ts
+        self.nSpecies = nSpecies()
 
     def infer_shape(self, node, i0_shapes):
         assert len(i0_shapes) == 1
-        return [(56, )]
+        return [(self.nSpecies, )]
 
     def perform(self, node, inputs, outputs):
         yOut, retVal = runCkineU(self.ts, inputs[0])
 
-        assert yOut.size == 48
+        assert yOut.size == self.nSpecies
 
         if retVal < 0:
             yOut[:] = -np.inf
@@ -59,10 +60,10 @@ class runCkineKineticOp(Op):
     otypes = [dvector]
 
     def __init__(self, ts, condense):
-        assert condense.size == 48
-
         self.ts = ts
+        self.nSpecies = nSpecies()
         self.condense = condense
+        assert condense.size == self.nSpecies
 
     def infer_shape(self, node, i0_shapes):
         assert len(i0_shapes) == 1
@@ -71,7 +72,7 @@ class runCkineKineticOp(Op):
     def perform(self, node, inputs, outputs):
         yOut, retVal = runCkineU(self.ts, inputs[0])
 
-        assert yOut.shape == (self.ts.size, 48)
+        assert yOut.shape == (self.ts.size, self.nSpecies)
 
         if retVal < 0:
             yOut[:] = -np.inf
@@ -88,10 +89,10 @@ class runCkineOpKineticDiff(Op):
     otypes = [dmatrix]
 
     def __init__(self, ts, condense):
-        assert condense.size == 48
-
+        self.nSpecies = nSpecies()
         self.ts = ts
         self.condense = condense
+        assert condense.size == self.nSpecies
 
     def perform(self, node, inputs, outputs):
         _, retVal, sensi = runCkineSensi(self.ts, inputs[0])

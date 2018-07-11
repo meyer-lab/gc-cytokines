@@ -41,6 +41,16 @@ label = "Type I Cytokine Model";
 "IL9-IL9R" [shape=box];
 "IL9-IL9R-gc" [shape=box, color=red ];
 
+"IL4"   [shape=circle];
+"IL4Ra" [shape=box    ];
+"IL4-IL4Ra" [shape=box];
+"IL4-IL4Ra-gc" [shape=box, color=red ];
+
+"IL21"   [shape=circle];
+"IL21Ra" [shape=box    ];
+"IL21-IL21Ra" [shape=box];
+"IL21-IL21Ra-gc" [shape=box, color=red ];
+
 subgraph cluster_IL2 {
     style=filled;
 	color=mediumorchid2;
@@ -177,5 +187,38 @@ subgraph cluster_IL9 {
     "IL9-IL9R" -> "k31" [dir=none,weight=1];
     "gc" -> "k31" [dir=none,weight=1];
     "k31" -> "IL9-IL9R-gc" [dir=none, weight=2];
+}
+
+subgraph cluster_IL4 {
+    style=filled;
+	color=lightcyan;
+	node [style=filled,color=lightcyan4];
+    label= "IL4 Family"
+    
+    "k32" [shape=diamond,style=filled,height=.1,width=.1];
+    "IL4" -> "k32" [dir=none,weight=1];
+    "IL4Ra" -> "k32" [dir=none,weight=1];
+    "k32" -> "IL4-IL4Ra" [dir=none, weight=2];
+
+    "k33" [shape=tripleoctagon,style=filled,height=.1,width=.1];
+    "IL4-IL4Ra" -> "k33" [dir=none,weight=1];
+    "gc" -> "k33" [dir=none,weight=1];
+    "k33" -> "IL4-IL4Ra-gc" [dir=none, weight=2];
+}
+subgraph cluster_IL21 {
+    style=filled;
+	color=slategray2;
+	node [style=filled,color=slategray4];
+    label= "IL21 Family"
+    
+    "k34" [shape=diamond,style=filled,height=.1,width=.1];
+    "IL21" -> "k34" [dir=none,weight=1];
+    "IL21Ra" -> "k34" [dir=none,weight=1];
+    "k34" -> "IL21-IL21Ra" [dir=none, weight=2];
+
+    "k35" [shape=tripleoctagon,style=filled,height=.1,width=.1];
+    "IL21-IL21Ra" -> "k35" [dir=none,weight=1];
+    "gc" -> "k35" [dir=none,weight=1];
+    "k35" -> "IL21-IL21Ra-gc" [dir=none, weight=2];
 }
 }
