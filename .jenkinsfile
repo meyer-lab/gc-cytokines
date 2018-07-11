@@ -18,6 +18,7 @@ pipeline {
     stage('Report') {
       steps {
         sh 'make doc'
+        archiveArtifacts artifacts: 'doxy.log', onlyIfSuccessful: false
         archiveArtifacts artifacts: 'Manuscript/Manuscript.pdf', onlyIfSuccessful: true
         archiveArtifacts artifacts: 'Manuscript/Figures/*.pdf', onlyIfSuccessful: true
         publishHTML([
