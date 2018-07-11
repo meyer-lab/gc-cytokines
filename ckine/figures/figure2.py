@@ -9,6 +9,9 @@ def makeFigure():
     # Get list of axis objects
     ax, f = getSetup((7, 6), (3, 4))
 
+    # Blank out for the cartoon
+    ax[0].axis('off')
+
     subplotLabel(ax[0], 'A')
 
     f.tight_layout()
