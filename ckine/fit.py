@@ -1,9 +1,10 @@
 """
 This file includes the classes and functions necessary to fit the IL2 model to the experimental data.
 """
-import pymc3 as pm, theano.tensor as T, os
-from os.path import join
-from theano import shared
+from os.path import join, dirname, abspath
+import pymc3 as pm
+import theano
+import theano.tensor as T
 import numpy as np, pandas as pds
 from .model import getTotalActiveSpecies, getSurfaceIL2RbSpecies
 from .differencing_op import runCkineOp, runCkineKineticOp
@@ -11,7 +12,7 @@ from .differencing_op import runCkineOp, runCkineKineticOp
 
 class IL2Rb_trafficking:
     def __init__(self):
-        path = os.path.dirname(os.path.abspath(__file__))
+        path = dirname(abspath(__file__))
         # all of the IL2Rb trafficking data with IL2Ra+... first row contains headers... 9 columns and 8 rows... first column is time
         numpy_data = pds.read_csv(join(path, 'data/IL2Ra+_surface_IL2RB_datasets.csv')).values
         # all of the IL2Rb trafficking data with IL2Ra-... first row contains headers... 9 columns and 8 rows... first column is time
@@ -43,7 +44,7 @@ class IL2Rb_trafficking:
         h = KineticOp(T.set_subtensor(unkVecIL2RaMinus[1], 500.))
 
         # assuming all IL2Rb starts on the cell surface
-        return T.concatenate((a / a[0], b / b[0], c / c[0], d / d[0], e / e[0], f / f[0], g / g[0], h / h[0])) - self.data
+        return T.concatenate((a, b, c, d, e, f, g, h)) / a[0] - self.data
 
 # this takes all the desired IL2 values we want to test and gives us the maximum activity value
 # IL2 values pretty much ranged from 5 x 10**-4 to 500 nm with 8 points in between
@@ -52,12 +53,11 @@ class IL2Rb_trafficking:
 class IL2_15_activity:
     def __init__(self):
         """This loads the experiment data and saves it as a member matrix and it also makes a vector of the IL15 concentrations that we are going to take care of."""
-        path = os.path.dirname(os.path.abspath(__file__))
+        path = dirname(abspath(__file__))
         data = pds.read_csv(join(path, "./data/IL2_IL15_extracted_data.csv")).values # imports csv file into pandas array
-        dataIL2 = pds.read_csv(join(path, "./data/IL2_IL15_extracted_data.csv")).values # imports csv file into pandas array
         self.cytokC = np.logspace(-3.3, 2.7, 8) # 8 log-spaced values between our two endpoints
 
-        self.fit_data = np.concatenate((data[:, 7], data[:, 3], dataIL2[:, 6], dataIL2[:, 2])) / 100. #the IL15_IL2Ra- data is within the 4th column (index 3)
+        self.fit_data = np.concatenate((data[:, 7], data[:, 3], data[:, 6], data[:, 2])) / 100. #the IL15_IL2Ra- data is within the 4th column (index 3)
 
         self.activity = getTotalActiveSpecies().astype(np.float64)
 
@@ -70,21 +70,21 @@ class IL2_15_activity:
         Op = runCkineOp(ts=np.array(500.))
 
         # Loop over concentrations of IL15
-        actVec = T.stack(list(map(lambda x: T.dot(self.activity, Op(T.set_subtensor(unkVec[1], x))), self.cytokC))) # Change condensation here for activity
+        actVec, _ = theano.map(fn=lambda x: T.dot(self.activity, Op(T.set_subtensor(unkVec[1], x))), sequences=[self.cytokC], name="IL15 loop")
 
         # Loop over concentrations of IL2
-        actVecIL2 = T.stack(list(map(lambda x: T.dot(self.activity, Op(T.set_subtensor(unkVec[0], x))), self.cytokC)))
+        actVecIL2, _ = theano.map(fn=lambda x: T.dot(self.activity, Op(T.set_subtensor(unkVec[0], x))), sequences=[self.cytokC])
 
         unkVecIL2RaMinus = T.set_subtensor(unkVec[18], 0.0) # Set IL2Ra to zero
 
         # Loop over concentrations of IL2, IL2Ra-/-
-        actVecIL2RaMinus = T.stack(list(map(lambda x: T.dot(self.activity, Op(T.set_subtensor(unkVecIL2RaMinus[0], x))), self.cytokC)))
+        actVecIL2RaMinus, _ = theano.map(fn=lambda x: T.dot(self.activity, Op(T.set_subtensor(unkVecIL2RaMinus[0], x))), sequences=[self.cytokC])
 
         # Normalize to the maximal activity, put together into one vector
-        actVec = T.concatenate((actVec / T.max(actVec), actVec / T.max(actVec), actVecIL2 / T.max(actVecIL2), actVecIL2RaMinus / T.max(actVecIL2RaMinus)))
+        actCat = T.concatenate((actVec, actVec, actVecIL2, actVecIL2RaMinus))
 
         # value we're trying to minimize is the distance between the y-values on points of the graph that correspond to the same IL2 values
-        return self.fit_data - actVec
+        return self.fit_data - (actCat / T.max(actCat))
 
 
 class build_model:
