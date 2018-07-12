@@ -53,10 +53,10 @@ protected:
 		array<double, Nparams*Nspecies*tps.size()> soutput;
 		array<double, Nparams*Nspecies*tps.size()> soutput2;
 
-		for (size_t ii = 0; ii < 100; ii++) {
+		for (size_t ii = 0; ii < 1000; ii++) {
 			generate(rxnRatesIn.begin(), rxnRatesIn.end(), [this, &dis]() { return dis(*this->gen); });
 
-			rxnRatesIn[15] = tanh(rxnRatesIn[15])*0.9;
+			rxnRatesIn[19] = tanh(rxnRatesIn[19])*0.9;
 
 			int retVal = runCkine(tps.data(), tps.size(), output.data(), rxnRatesIn.data(), true, soutput.data());
 
