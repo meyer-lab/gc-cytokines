@@ -10,7 +10,7 @@ from os.path import join
 import numpy as np, pandas as pds
 from tqdm import tqdm
 from multiprocessing import Pool
-from .model import getTotalActiveCytokine, runCkineU, surfaceReceptors, totalReceptors, nParams, nSpecies
+from .model import getTotalActiveCytokine, runCkineU, surfaceReceptors, totalReceptors, nParams, nSpecies, nRxn
 
 path = os.path.dirname(os.path.abspath(__file__))
 data = pds.read_csv(join(path, 'data/expr_table.csv')) # Every column in the data represents a specific cell
@@ -25,8 +25,8 @@ def ySolver(matIn):
     # Set some given parameters already determined from fitting
     rxntfR = np.zeros(nParams())
     rxntfR[6] = 0.00001 #kfwd
-    rxntfR[7:17] = 0.001  # From fitting: k4rev - k35rev
-    rxntfR[17:22] = 0.1 # From fitting: endo - kdeg
+    rxntfR[7:nRxn()] = 0.001  # From fitting: k4rev - k35rev
+    rxntfR[nRxn():22] = 0.1 # From fitting: endo - kdeg
 
     rxntfR[22:30] = matIn[6:14] # Receptor expression
     rxntfR[0:6] = matIn[0:6] # Cytokine stimulation concentrations
