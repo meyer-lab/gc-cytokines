@@ -29,6 +29,11 @@ def nParams():
     """ Returns the length of the rxntfR vector. """
     return __nParams
 
+__nRxn = 17
+def nRxn():
+    """ Returns the length of the rxn rates vector (doesn't include traf rates). """
+    return __nRxn
+
 
 def runCkine (tps, rxn, tfr):
     """ Wrapper if rxn and tfr are separate. """
@@ -71,7 +76,7 @@ def runCkineSensi (tps, rxntfr):
 
 def dy_dt(y, t, rxn):
 
-    assert rxn.size == 17
+    assert rxn.size == __nRxn
 
     rxntfr = np.concatenate((rxn, np.ones(13, dtype=np.float64)*0.9))
 
@@ -84,7 +89,7 @@ def dy_dt(y, t, rxn):
 
 
 def jacobian(y, t, rxn):
-    assert rxn.size == 17
+    assert rxn.size == __nRxn
 
     yOut = np.zeros((__halfL, __halfL)) # size of the Jacobian matrix for surface alone
 
@@ -168,7 +173,7 @@ __internalStrength = 0.5 # strength of endosomal activity relative to surface
 def getTotalActiveSpecies():
     """ Return a vector of all the species (surface + endosome) which are active. """
     activity = getActiveSpecies()
-    return np.concatenate((activity, __internalStrength * activity, np.zeros(4)))
+    return np.concatenate((activity, __internalStrength * activity, np.zeros(6)))
 
 def getCytokineSpecies():
     """ Returns a list of vectors for which species are bound to which cytokines. """
@@ -189,7 +194,7 @@ def getActiveCytokine(cytokineIDX, yVec):
 
 def getTotalActiveCytokine(cytokineIDX, yVec):
     """ Get amount of surface and endosomal active species. """
-    return getActiveCytokine(cytokineIDX, yVec[0:(__halfL)] + __internalStrength * getActiveCytokine(cytokineIDX, yVec[__halfL:__halfL*2]))
+    return getActiveCytokine(cytokineIDX, yVec[0:__halfL]) + __internalStrength * getActiveCytokine(cytokineIDX, yVec[__halfL:__halfL*2])
 
 
 def surfaceReceptors(y):
