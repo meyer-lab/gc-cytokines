@@ -56,11 +56,10 @@ constexpr double k32rev = kfbnd * 1.0; // DOI: 10.1126/scisignal.aal1253 (human)
 // Literature value for IL-21
 constexpr double k34rev = kfbnd * 0.07; // DOI: 10.1126/scisignal.aal1253 (human)
 
-constexpr double tolIn = 1E-3;
+constexpr double tolIn = 1E-4;
 constexpr double internalV = 623.0; // Same as that used in TAM model
 constexpr double internalFrac = 0.5; // Same as that used in TAM model
 
-// TODO: change values for global constants
 constexpr size_t Nparams = 30; // length of rxntfR vector
 constexpr size_t Nspecies = 62; // number of complexes in surface + endosome + free ligand
 constexpr size_t halfL = 28; // number of complexes on surface alone
