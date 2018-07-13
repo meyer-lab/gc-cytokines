@@ -42,7 +42,8 @@ def plot_R2X(values, n_comps):
 
 def combo_low_high(mat):
     """ This function determines which combinations were high and low according to our initial conditions. """
-    # First four values are IL2, IL15, IL7, IL9 that are low and the bottom 4 are their high in terms of combination values.
+    # First six values are IL2, IL15, IL7, IL9, IL4, IL21 that are low and the bottom 6 are their high in terms of combination values.
+
     lows = [[] for _ in range(6)]
     highs = [[] for _ in range(6)]
     # Fill low receptor expression rates first. The indices in mat refer to the indices in combination
