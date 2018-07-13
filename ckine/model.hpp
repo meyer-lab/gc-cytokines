@@ -52,7 +52,7 @@ public:
 	double sortF;
 	double kRec;
 	double kDeg;
-	std::array<double, 8> Rexpr;
+	const double * Rexpr;
 
 	ratesS(const double * const rxntfR) {
 		std::copy_n(rxntfR, ILs.size(), ILs.begin());
@@ -99,7 +99,7 @@ public:
 		}
 
 		// Expression: IL2Ra, IL2Rb, gc, IL15Ra, IL7Ra, IL9R, IL4Ra, IL21Ra
-		std::copy_n(rxntfR + 22, Rexpr.size(), Rexpr.begin());
+		Rexpr = rxntfR + 22;
 	}
 
 	void print() {
