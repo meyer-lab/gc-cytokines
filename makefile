@@ -14,7 +14,7 @@ endif
 
 CPPLINKS = -I/usr/include/eigen3/ -I/usr/local/Cellar/eigen/3.3.4/include/eigen3/ -lm -lsundials_cvodes -lsundials_cvode -lsundials_nvecserial -lcppunit
 
-$(fdir)/figure%.svg: genFigures.py
+$(fdir)/figure%.svg: genFigures.py ckine/ckine.so
 	mkdir -p ./Manuscript/Figures
 	python3 genFigures.py $*
 
