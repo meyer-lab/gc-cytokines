@@ -29,6 +29,11 @@ def nParams():
     """ Returns the length of the rxntfR vector. """
     return __nParams
 
+__internalStrength = 0.5 # strength of endosomal activity relative to surface
+def internalStrength():
+    """Returns the internalStrength of endosomal activity."""
+    return __internalStrength
+
 __nRxn = 17
 def nRxn():
     """ Returns the length of the rxn rates vector (doesn't include traf rates). """
@@ -77,7 +82,6 @@ def runCkineSensi (tps, rxntfr):
 def dy_dt(y, t, rxn):
 
     assert rxn.size == __nRxn
-
     rxntfr = np.concatenate((rxn, np.ones(13, dtype=np.float64)*0.9))
 
     yOut = np.zeros_like(y)
@@ -89,6 +93,7 @@ def dy_dt(y, t, rxn):
 
 
 def jacobian(y, t, rxn):
+
     assert rxn.size == __nRxn
 
     yOut = np.zeros((__halfL, __halfL)) # size of the Jacobian matrix for surface alone
@@ -118,7 +123,7 @@ def fullModel(y, t, rxn, tfr):
     return yOut
 
 
-__active_species_IDX = np.zeros(__halfL, dtype=np.bool)
+__active_species_IDX = np.zeros(__halfL, dtype=np.float64)
 __active_species_IDX[np.array([7, 8, 14, 15, 18, 21, 24, 27])] = 1
 
 def solveAutocrine(trafRates):
@@ -168,7 +173,6 @@ def getActiveSpecies():
     """ Return a vector that indicates which species are active. """
     return __active_species_IDX
 
-__internalStrength = 0.5 # strength of endosomal activity relative to surface
 
 def getTotalActiveSpecies():
     """ Return a vector of all the species (surface + endosome) which are active. """
