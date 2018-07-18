@@ -6,7 +6,7 @@ import numpy as np
 from hypothesis import given, settings
 from hypothesis.strategies import floats
 from hypothesis.extra.numpy import arrays as harrays
-from ..model import dy_dt, fullModel, solveAutocrine, getTotalActiveCytokine, solveAutocrineComplete, runCkine, runCkineU, jacobian, fullJacobian, nSpecies
+from ..model import dy_dt, fullModel, solveAutocrine, getTotalActiveCytokine, solveAutocrineComplete, runCkineU, jacobian, fullJacobian, nSpecies, runCkineUP
 from ..util_analysis.Shuffle_ODE import approx_jacobian
 from ..Tensor_analysis import find_R2X
 
@@ -149,6 +149,19 @@ class TestModel(unittest.TestCase):
         # test that return value of runCkine isn't negative (model run didn't fail)
         self.assertGreaterEqual(retVal, 0)
 
+    def test_runCkineParallel(self):
+        """ Test that we can run solving in parallel. """
+        rxntfr = np.reshape(np.tile(self.rxntfR, 20), (20, -1))
+
+        outt, retVal = runCkineUP(self.ts[1], rxntfr)
+
+        # test that return value of runCkine isn't negative (model run didn't fail)
+        self.assertGreaterEqual(retVal, 0)
+
+        # test that all of the solutions returned are identical
+        for ii in range(rxntfr.shape[0]):
+            self.assertTrue(np.all(outt[0, :] == outt[ii, :]))
+
     def test_jacobian(self):
         '''Compares the approximate Jacobian (approx_jacobian() in Shuffle_ODE.py) with the analytical Jacobian (jacobian() of model.cpp).
         Both Jacobians are evaluating the partial derivatives of dydt.'''
@@ -183,8 +196,8 @@ class TestModel(unittest.TestCase):
 
 
     def test_initial(self):
-        #test to check that at least one nonzero is at timepoint zero
-        temp, retVal = runCkine(self.ts, self.args, self.tfargs)
+        """ Test that there is at least 1 non-zero species at T=0. """
+        temp, retVal = runCkineU(self.ts, self.rxntfR)
         self.assertGreater(np.count_nonzero(temp[0,:]), 0)
         self.assertGreaterEqual(retVal, 0)
 

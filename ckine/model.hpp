@@ -52,7 +52,7 @@ public:
 	double sortF;
 	double kRec;
 	double kDeg;
-	const double * Rexpr;
+	std::array<double, 8> Rexpr;
 
 	ratesS(const double * const rxntfR) {
 		std::copy_n(rxntfR, ILs.size(), ILs.begin());
@@ -99,7 +99,7 @@ public:
 		}
 
 		// Expression: IL2Ra, IL2Rb, gc, IL15Ra, IL7Ra, IL9R, IL4Ra, IL21Ra
-		Rexpr = rxntfR + 22;
+		std::copy_n(rxntfR + 22, 8, Rexpr.begin());
 	}
 
 	void print() {
@@ -131,7 +131,7 @@ public:
 };
 
 
-constexpr double tolIn = 1E-4;
+constexpr double tolIn = 1.5E-6;
 constexpr double internalV = 623.0; // Same as that used in TAM model
 constexpr double internalFrac = 0.5; // Same as that used in TAM model
 

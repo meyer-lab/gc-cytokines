@@ -13,6 +13,8 @@ libb.dydt_C.argtypes = (ct.POINTER(ct.c_double), ct.c_double, ct.POINTER(ct.c_do
 libb.jacobian_C.argtypes = (ct.POINTER(ct.c_double), ct.c_double, ct.POINTER(ct.c_double), ct.POINTER(ct.c_double))
 libb.fullModel_C.argtypes = (ct.POINTER(ct.c_double), ct.c_double, ct.POINTER(ct.c_double), ct.POINTER(ct.c_double))
 libb.runCkine.argtypes = (ct.POINTER(ct.c_double), ct.c_uint, ct.POINTER(ct.c_double), ct.POINTER(ct.c_double), ct.c_bool, ct.POINTER(ct.c_double))
+libb.runCkineParallel.argtypes = (ct.POINTER(ct.c_double), ct.c_double, ct.c_uint, ct.c_bool, ct.POINTER(ct.c_double), ct.POINTER(ct.c_double))
+
 
 __nSpecies = 62
 def nSpecies():
@@ -40,43 +42,50 @@ def nRxn():
     return __nRxn
 
 
-def runCkine (tps, rxn, tfr):
-    """ Wrapper if rxn and tfr are separate. """
-    return runCkineU (tps, np.concatenate((rxn, tfr)))
-
-
-def runCkineU (tps, rxntfr):
+def runCkineU (tps, rxntfr, sensi=False):
     assert rxntfr.size == __nParams
     assert rxntfr[19] < 1.0 # Check that sortF won't throw
 
     yOut = np.zeros((tps.size, __nSpecies), dtype=np.float64)
 
-    retVal = libb.runCkine(tps.ctypes.data_as(ct.POINTER(ct.c_double)),
-                           tps.size,
+    if sensi is True:
+        sensV = np.zeros((__nSpecies, __nParams, tps.size), dtype=np.float64, order='F')
+        sensP = sensV.ctypes.data_as(ct.POINTER(ct.c_double))
+    else:
+        sensP = ct.POINTER(ct.c_double)()
+
+
+    retVal = libb.runCkine(tps.ctypes.data_as(ct.POINTER(ct.c_double)), tps.size,
                            yOut.ctypes.data_as(ct.POINTER(ct.c_double)),
                            rxntfr.ctypes.data_as(ct.POINTER(ct.c_double)),
-                           False,
-                           ct.POINTER(ct.c_double)())
+                           sensi, sensP)
 
-    return (yOut, retVal)
+    if sensi is True:
+        return (yOut, retVal, sensV)
+    else:
+        return (yOut, retVal)
 
 
-def runCkineSensi (tps, rxntfr):
+def runCkineUP (tp, rxntfr, sensi=False):
+    assert rxntfr.size % __nParams == 0
+    assert rxntfr.shape[1] == __nParams
+    assert (rxntfr[:, 19] < 1.0).all() # Check that sortF won't throw
 
-    assert rxntfr.size == __nParams
+    yOut = np.zeros((rxntfr.shape[0], __nSpecies), dtype=np.float64)
 
-    yOut = np.zeros((tps.size, __nSpecies), dtype=np.float64)
+    if sensi is True:
+        sensV = np.zeros((__nSpecies, __nParams, rxntfr.shape[0]), dtype=np.float64, order='F')
+        sensP = sensV.ctypes.data_as(ct.POINTER(ct.c_double))
+    else:
+        sensP = ct.POINTER(ct.c_double)()
 
-    sensV = np.zeros((__nSpecies, rxntfr.size, tps.size), dtype=np.float64, order='F')
+    retVal = libb.runCkineParallel(rxntfr.ctypes.data_as(ct.POINTER(ct.c_double)), tp, rxntfr.shape[0], sensi,
+                                   yOut.ctypes.data_as(ct.POINTER(ct.c_double)), sensP)
 
-    retVal = libb.runCkine(tps.ctypes.data_as(ct.POINTER(ct.c_double)),
-                           tps.size,
-                           yOut.ctypes.data_as(ct.POINTER(ct.c_double)),
-                           rxntfr.ctypes.data_as(ct.POINTER(ct.c_double)),
-                           True,
-                           sensV.ctypes.data_as(ct.POINTER(ct.c_double)))
-
-    return (yOut, retVal, sensV)
+    if sensi is True:
+        return (yOut, retVal, sensV)
+    else:
+        return (yOut, retVal)
 
 
 def dy_dt(y, t, rxn):
@@ -95,6 +104,10 @@ def dy_dt(y, t, rxn):
 def jacobian(y, t, rxn):
 
     assert rxn.size == __nRxn
+
+    # Pad with zeros so we don't get a sortF panic
+    rxn = rxn.copy()
+    rxn = np.concatenate((rxn, np.zeros(20, dtype=np.float64)))
 
     yOut = np.zeros((__halfL, __halfL)) # size of the Jacobian matrix for surface alone
 
