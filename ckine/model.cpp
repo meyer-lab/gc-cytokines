@@ -2,6 +2,7 @@
 #include <cstdio>
 #include <numeric>
 #include <array>
+#include <thread>
 #include <vector>
 #include <nvector/nvector_serial.h>  /* serial N_Vector types, fcts., macros */
 #include <cvode/cvode.h>            /* prototypes for CVODE fcts., consts. */
@@ -422,6 +423,27 @@ extern "C" int runCkine (double *tps, size_t ntps, double *out, double *rxnRates
 
 	solverFree(&sMem);
 	return 0;
+}
+
+
+extern "C" int runCkineParallel (double *rxnRatesIn, double tp, size_t nDoses, bool sensi, double *out, double *sensiOut) {
+	vector<int> retVals(nDoses, -1);
+	vector<std::thread> ts;
+
+	// Make a task that handles all the refs
+	auto lamTask = [&tp, &out, &rxnRatesIn, &sensi, &sensiOut](size_t ii, int *retVal) {
+		*retVal = runCkine (&tp, 1, out + Nspecies*ii, rxnRatesIn + ii*Nparams, sensi, sensiOut + Nspecies*Nparams*ii);
+	};
+
+	// Actually run the simulations
+	for (size_t ii = 0; ii < nDoses; ii++)
+		ts.push_back(std::thread(lamTask, ii, retVals.data() + ii));
+
+	// Synchronize all threads
+	for (auto& th:ts) th.join();
+
+	// Get the worst case to return
+	return *std::min_element(retVals.begin(), retVals.end());
 }
 
 
