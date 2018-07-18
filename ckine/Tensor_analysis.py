@@ -13,13 +13,13 @@ tensorly.set_backend('numpy')
 
 def perform_decomposition(tensor, r):
     '''Apply z scoring and perform PARAFAC decomposition'''
-    values_z = zscore(tensor, axis=2)
-    factors = parafac(values_z,rank = r, random_state=89)
+    values_z = zscore(tensor, axis = 3)
+    factors = parafac(values_z, rank = r) #can do verbose and tolerance (tol)
     return factors
 
 def find_R2X(values, n_comp):
     '''Compute R2X'''
-    z_values = zscore(values, axis=2)
+    z_values = zscore(values, axis=3)
     factors = perform_decomposition(z_values, n_comp)
     values_reconstructed = tensorly.kruskal_to_tensor(factors)
     return 1 - np.var(values_reconstructed - z_values) / np.var(z_values)
@@ -56,7 +56,7 @@ def combo_low_high(mat):
     return lows, highs
 
 def plot_combo_decomp(factors, mat, component_x, component_y, cell_names):
-    """This function plots the combination decomposition based on high vs low receptor expression and ligand concentration."""
+    """This function plots the combination decomposition based on cell type."""
     fig = plt.figure() #prepare figure
     ax = fig.add_subplot(111)
     colors = cm.rainbow(np.linspace(0, 1, len(cell_names)))

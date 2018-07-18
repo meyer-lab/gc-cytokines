@@ -11,7 +11,7 @@ class TestModel(unittest.TestCase):
     '''Test Class for Tensor related work.'''
     def test_R2X(self):
         '''Test to ensure R2X for higher components is larger.'''
-        tensor = np.random.rand(35,100,20)
+        tensor = np.random.rand(20,35,100,20)
         arr = []
         for i in range(1,8):
             R2X = find_R2X(tensor, i)

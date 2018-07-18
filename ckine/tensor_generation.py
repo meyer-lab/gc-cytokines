@@ -10,7 +10,7 @@ from os.path import join
 import numpy as np, pandas as pds
 from tqdm import tqdm
 from multiprocessing import Pool
-from .model import getTotalActiveCytokine, runCkineU, surfaceReceptors, totalReceptors, nParams, nSpecies, nRxn, internalStrength
+from .model import getTotalActiveCytokine, runCkineU, surfaceReceptors, totalReceptors, nParams, nSpecies, nRxn, internalStrength, halfL
 
 path = os.path.dirname(os.path.abspath(__file__))
 data = pds.read_csv(join(path, 'data/expr_table.csv')) # Every column in the data represents a specific cell
@@ -86,5 +86,14 @@ def reduce_values(y_of_combos):
     for j in range(len(indices)):
         values[:,:,6+j] = np.sum(y_of_combos[:,:,indices[j]], axis = 2)
     for k in range(len(indices)):
-        values[:,:,6+len(indices)+k] = values[:,:,6+k] + internalStrength * np.sum(y_of_combos[:,:,halfL():halfL()*2][:,:,indices[k]], axis = 2)
+        values[:,:,6+len(indices)+k] = values[:,:,6+k] + internalStrength() * np.sum(y_of_combos[:,:,halfL(): halfL() * 2][:,:,indices[k]], axis = 2)
     return values
+
+def prepare_tensor(lig):
+    """Function to generate the 4D tensor."""
+    y_of_combos, new_mat, mat, mats, cell_names = findy(lig) #mat here is basically the 2^lig cytokine stimulation; mats
+    values = reduce_values(y_of_combos)
+    tensor4D = np.zeros((values.shape[1],len(cell_names),len(mat),values.shape[2]))
+    for ii in range(tensor4D.shape[0]):
+        tensor4D[ii] = values[:,ii,:].reshape(tensor4D.shape[1:4])
+    return tensor4D, new_mat, mat, mats, cell_names
