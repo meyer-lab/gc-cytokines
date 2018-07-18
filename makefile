@@ -14,7 +14,7 @@ endif
 
 CPPLINKS = -I/usr/include/eigen3/ -I/usr/local/Cellar/eigen/3.3.4/include/eigen3/ -lm -lsundials_cvodes -lsundials_cvode -lsundials_nvecserial -lcppunit
 
-$(fdir)/figure%.svg: genFigures.py ckine/ckine.so
+$(fdir)/figure%.svg: genFigures.py ckine/ckine.so graph_all.svg
 	mkdir -p ./Manuscript/Figures
 	python3 genFigures.py $*
 
@@ -23,6 +23,9 @@ $(fdir)/figure%pdf: $(fdir)/figure%svg
 
 $(fdir)/figure%eps: $(fdir)/figure%svg
 	rsvg-convert -f eps $< -o $@
+
+graph_all.svg: ckine/data/graph_all.gv
+	dot $< -Tsvg -o $@
 
 Manuscript/Manuscript.pdf: Manuscript/Manuscript.tex $(fdir)/figure1.pdf $(fdir)/figure2.pdf $(fdir)/figure3.pdf $(fdir)/figure4.pdf $(fdir)/figureS1.pdf $(fdir)/figureS2.pdf
 	(cd ./Manuscript && latexmk -xelatex -f -quiet)
@@ -58,7 +61,7 @@ Manuscript/CoverLetter.pdf: Manuscript/CoverLetter.md
 clean:
 	rm -f ./Manuscript/Manuscript.* ./Manuscript/index.html Manuscript/CoverLetter.docx Manuscript/CoverLetter.pdf ckine/libckine.debug.so
 	rm -f $(fdir)/Figure* ckine/ckine.so profile.p* stats.dat .coverage nosetests.xml coverage.xml ckine.out ckine/cppcheck testResults.xml
-	rm -rf html ckine/*.dSYM doxy.log
+	rm -rf html ckine/*.dSYM doxy.log graph_all.svg
 
 test: ckine/ckine.so
 	nosetests3 -s --with-timer --timer-top-n 20
