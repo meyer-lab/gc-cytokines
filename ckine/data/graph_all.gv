@@ -1,224 +1,232 @@
-##"A few people in the field of genetics are using dot to draw "marriage node diagram"  pedigree drawings.  Here is one I have done of a test pedigree from the FTREE pedigree drawing package (Lion Share was a racehorse)." Contributed by David Duffy.
+digraph cgamma_cytok {
+    ratio = "compress";
+    label = "Type I Cytokine Model";
+    graph [pad=0, ranksep=0.2, nodesep=0.05];
 
-## Command to get the layout: "dot -Tpng thisfile > thisfile.png"
-## documentation can be found at https://graphviz.gitlab.io/documentation/
-
-digraph Ped_Lion_Share           {
-# page = "8.2677165,11.692913";
-ratio = "auto";
-mincross = 2.0;
-label = "Type I Cytokine Model";
-
-"IL2"   [shape=circle ];
-"IL2Ra" [shape=box   ];
-"IL2Rb" [shape=box, style=filled, color="goldenrod1:mediumorchid3"    ];
-"gc"    [shape=box, style=filled, BGCOLOR="white"  ];
-"IL2-IL2Ra" [shape=box];
-"IL2-IL2Rb" [shape=box];
-"IL2-IL2Ra" [shape=box];
-"IL2-IL2Ra" [shape=box];
-"IL2-IL2Ra-IL2Rb" [shape=box ];
-"IL2-IL2Ra-gc" [shape=box ];
-"IL2-IL2Rb-gc" [shape=box, color=red ];
-"IL2-IL2Ra-IL2Rb-gc" [shape=box, color=red ];
-
-"IL15"  [shape=circle];
-"IL15Ra"    [shape=box];
-"IL15-IL15Ra"   [shape=box];
-"IL15-IL2Rb"    [shape=box];
-"IL15-IL15Ra-IL2Rb" [shape=box];
-"IL15-IL15Ra-gc"    [shape=box];
-"IL15-IL2Rb-gc" [shape=box, color=red];
-"IL15-IL15Ra-IL2Rb-gc"  [shape=box, color=red];
-
-"IL7"   [shape=circle];
-"IL7Ra" [shape=box];
-"IL7-IL7Ra" [shape=box];
-"IL7-IL7Ra-gc"  [shape=box, color=red];
-
-"IL9"   [shape=circle];
-"IL9R" [shape=box    ];
-"IL9-IL9R" [shape=box];
-"IL9-IL9R-gc" [shape=box, color=red ];
-
-"IL4"   [shape=circle];
-"IL4Ra" [shape=box    ];
-"IL4-IL4Ra" [shape=box];
-"IL4-IL4Ra-gc" [shape=box, color=red ];
-
-"IL21"   [shape=circle];
-"IL21Ra" [shape=box    ];
-"IL21-IL21Ra" [shape=box];
-"IL21-IL21Ra-gc" [shape=box, color=red ];
-
-subgraph cluster_IL2 {
-    style=filled;
-	color=mediumorchid2;
-	node [style=filled,color=mediumorchid4];
-    label= "IL2 Family"
-
-    "k1" [shape=diamond,style=filled,height=.1,width=.1];
-    "IL2" -> "k1" [dir=none,weight=1];
-    "IL2Ra" -> "k1" [dir=none,weight=1];
-    "k1" -> "IL2-IL2Ra" [dir=none, weight=2];
-
-    "k2" [shape=diamond,style=filled,height=.1,width=.1];
-    "IL2" -> "k2" [dir=none,weight=1];
-    "IL2Rb" -> "k2" [dir=none,weight=1];
-    "k2" -> "IL2-IL2Rb" [dir=none, weight=2];
-
-    "k4" [shape=tripleoctagon,style=filled,height=.1,width=.1];
-    "IL2-IL2Ra" -> "k4" [dir=none,weight=1];
-    "gc" -> "k4" [dir=none,weight=1];
-    "k4" -> "IL2-IL2Ra-gc" [dir=none, weight=2];
-
-    "k5" [shape=tripleoctagon,style=filled,height=.1,width=.1];
-    "IL2-IL2Rb" -> "k5" [dir=none,weight=1];
-    "gc" -> "k5" [dir=none,weight=1];
-    "k5" -> "IL2-IL2Rb-gc" [dir=none, weight=2];
-
-    "k8" [shape=octagon,style=filled,height=.1,width=.1];
-    "IL2-IL2Rb-gc" -> "k8" [dir=none,weight=1];
-    "IL2Ra" -> "k8" [dir=none,weight=1];
-    "k8" -> "IL2-IL2Ra-IL2Rb-gc" [dir=none, weight=2];
-
-    "k9" [shape=octagon,style=filled,height=.1,width=.1];
-    "IL2-IL2Ra-gc" -> "k9" [dir=none,weight=1];
-    "IL2Rb" -> "k9" [dir=none,weight=1];
-    "k9" -> "IL2-IL2Ra-IL2Rb-gc" [dir=none, weight=2];
-
-    "k10" [shape=diamond,style=filled,height=.1,width=.1];
-    "IL2-IL2Ra-IL2Rb" -> "k10" [dir=none,weight=1];
-    "gc" -> "k10" [dir=none,weight=1];
-    "k10" -> "IL2-IL2Ra-IL2Rb-gc" [dir=none, weight=2];
-
-    "k11" [shape=diamond,style=filled,height=.1,width=.1];
-    "IL2-IL2Ra" -> "k11" [dir=none,weight=1];
-    "IL2Rb" -> "k11" [dir=none,weight=1];
-    "k11" -> "IL2-IL2Ra-IL2Rb" [dir=none, weight=2];
-
-    "k12" [shape=octagon,style=filled,height=.1,width=.1];
-    "IL2-IL2Rb" -> "k12" [dir=none,weight=1];
-    "IL2Ra" -> "k12" [dir=none,weight=1];
-    "k12" -> "IL2-IL2Ra-IL2Rb" [dir=none, weight=2];
-}
-
-subgraph cluster_IL15 {
-    style=filled;
-	color=goldenrod1;
-	node [style=filled,color=goldenrod4];
-    label= "IL15 Family"
-
-    "k13" [shape=diamond,style=filled,height=.1,width=.1];
-    "IL15" -> "k13" [dir=none,weight=1];
-    "IL15Ra" -> "k13" [dir=none,weight=1];
-    "k13" -> "IL15-IL15Ra" [dir=none, weight=2];
-
-    "k14" [shape=diamond,style=filled,height=.1,width=.1];
-    "IL15" -> "k14" [dir=none,weight=1];
-    "IL2Rb" -> "k14" [dir=none,weight=1];
-    "k14" -> "IL15-IL2Rb" [dir=none, weight=2];
-
-    "k16" [shape=tripleoctagon,style=filled,height=.1,width=.1];
-    "IL15-IL15Ra" -> "k16" [dir=none,weight=1];
-    "gc" -> "k16" [dir=none,weight=1];
-    "k16" -> "IL15-IL15Ra-gc" [dir=none, weight=2];
-
-    "k17" [shape=tripleoctagon,style=filled,height=.1,width=.1];
-    "IL15-IL2Rb" -> "k17" [dir=none,weight=1];
-    "gc" -> "k17" [dir=none,weight=1];
-    "k17" -> "IL15-IL2Rb-gc" [dir=none, weight=2];
-
-    "k20" [shape=octagon,style=filled,height=.1,width=.1];
-    "IL15-IL2Rb-gc" -> "k20" [dir=none,weight=1];
-    "IL15Ra" -> "k20" [dir=none,weight=1];
-    "k20" -> "IL15-IL15Ra-IL2Rb-gc" [dir=none, weight=2];
-
-    "k21" [shape=octagon,style=filled,height=.1,width=.1];
-    "IL15-IL15Ra-gc" -> "k21" [dir=none,weight=1];
-    "IL2Rb" -> "k21" [dir=none,weight=1];
-    "k21" -> "IL15-IL15Ra-IL2Rb-gc" [dir=none, weight=2];
-
-    "k22" [shape=tripleoctagon,style=filled,height=.1,width=.1];
-    "IL15-IL15Ra-IL2Rb" -> "k22" [dir=none,weight=1];
-    "gc" -> "k22" [dir=none,weight=1];
-    "k22" -> "IL15-IL15Ra-IL2Rb-gc" [dir=none, weight=2];
-
-    "k23" [shape=tripleoctagon,style=filled,height=.1,width=.1];
-    "IL15-IL15Ra" -> "k23" [dir=none,weight=1];
-    "IL2Rb" -> "k23" [dir=none,weight=1];
-    "k23" -> "IL15-IL15Ra-IL2Rb" [dir=none, weight=2];
-
-    "k24" [shape=octagon,style=filled,height=.1,width=.1];
-    "IL15-IL2Rb" -> "k24" [dir=none,weight=1];
-    "IL15Ra" -> "k24" [dir=none,weight=1];
-    "k24" -> "IL15-IL15Ra-IL2Rb" [dir=none, weight=2];
+    subgraph specises {
+        node [margin=0.03];
+        rank="max";
+        "gc"    [shape=box, style=filled, BGCOLOR="white"];
     }
 
-subgraph cluster_IL7 {
-    style=filled;
-	color=dodgerblue;
-	node [style=filled,color=dodgerblue4];
-    label= "IL7 Family"
-    
-    "k25" [shape=diamond,style=filled,height=.1,width=.1];
-    "IL7" -> "k25" [dir=none,weight=1];
-    "IL7Ra" -> "k25" [dir=none,weight=1];
-    "k25" -> "IL7-IL7Ra" [dir=none, weight=2];
+    subgraph species {
+        node [margin=0.03];
 
-    "k27" [shape=tripleoctagon,style=filled,height=.1,width=.1];
-    "IL7-IL7Ra" -> "k27" [dir=none,weight=1];
-    "gc" -> "k27" [dir=none,weight=1];
-    "k27" -> "IL7-IL7Ra-gc" [dir=none, weight=2];
-}
+        "IL2"   [shape=circle ];
+        "IL2Ra" [shape=box   ];
+        "IL2Rb" [shape=box, style=filled, color="goldenrod1:mediumorchid3"];
+        "IL2-IL2Ra" [shape=box];
+        "IL2-IL2Rb" [shape=box];
+        "IL2-IL2Ra" [shape=box];
+        "IL2-IL2Ra" [shape=box];
+        "IL2-IL2Ra-IL2Rb" [shape=box ];
+        "IL2-IL2Ra-gc" [shape=box ];
+        "IL2-IL2Rb-gc" [shape=box, color=red ];
+        "IL2-IL2Ra-IL2Rb-gc" [shape=box, color=red ];
 
-subgraph cluster_IL9 {
-    style=filled;
-	color=darkolivegreen2;
-	node [style=filled,color=darkolivegreen4];
-    label= "IL9 Family"
-    
-    "k29" [shape=diamond,style=filled,height=.1,width=.1];
-    "IL9" -> "k29" [dir=none,weight=1];
-    "IL9R" -> "k29" [dir=none,weight=1];
-    "k29" -> "IL9-IL9R" [dir=none, weight=2];
+        "IL15"  [shape=circle];
+        "IL15Ra"    [shape=box];
+        "IL15-IL15Ra"   [shape=box];
+        "IL15-IL2Rb"    [shape=box];
+        "IL15-IL15Ra-IL2Rb" [shape=box];
+        "IL15-IL15Ra-gc"    [shape=box];
+        "IL15-IL2Rb-gc" [shape=box, color=red];
+        "IL15-IL15Ra-IL2Rb-gc"  [shape=box, color=red];
 
-    "k31" [shape=tripleoctagon,style=filled,height=.1,width=.1];
-    "IL9-IL9R" -> "k31" [dir=none,weight=1];
-    "gc" -> "k31" [dir=none,weight=1];
-    "k31" -> "IL9-IL9R-gc" [dir=none, weight=2];
-}
+        "IL7"   [shape=circle];
+        "IL7Ra" [shape=box];
+        "IL7-IL7Ra" [shape=box];
+        "IL7-IL7Ra-gc"  [shape=box, color=red];
 
-subgraph cluster_IL4 {
-    style=filled;
-	color=lightcyan;
-	node [style=filled,color=lightcyan4];
-    label= "IL4 Family"
-    
-    "k32" [shape=diamond,style=filled,height=.1,width=.1];
-    "IL4" -> "k32" [dir=none,weight=1];
-    "IL4Ra" -> "k32" [dir=none,weight=1];
-    "k32" -> "IL4-IL4Ra" [dir=none, weight=2];
+        "IL9"   [shape=circle];
+        "IL9R" [shape=box    ];
+        "IL9-IL9R" [shape=box];
+        "IL9-IL9R-gc" [shape=box, color=red ];
 
-    "k33" [shape=tripleoctagon,style=filled,height=.1,width=.1];
-    "IL4-IL4Ra" -> "k33" [dir=none,weight=1];
-    "gc" -> "k33" [dir=none,weight=1];
-    "k33" -> "IL4-IL4Ra-gc" [dir=none, weight=2];
-}
-subgraph cluster_IL21 {
-    style=filled;
-	color=slategray2;
-	node [style=filled,color=slategray4];
-    label= "IL21 Family"
-    
-    "k34" [shape=diamond,style=filled,height=.1,width=.1];
-    "IL21" -> "k34" [dir=none,weight=1];
-    "IL21Ra" -> "k34" [dir=none,weight=1];
-    "k34" -> "IL21-IL21Ra" [dir=none, weight=2];
+        "IL4"   [shape=circle];
+        "IL4Ra" [shape=box    ];
+        "IL4-IL4Ra" [shape=box];
+        "IL4-IL4Ra-gc" [shape=box, color=red ];
 
-    "k35" [shape=tripleoctagon,style=filled,height=.1,width=.1];
-    "IL21-IL21Ra" -> "k35" [dir=none,weight=1];
-    "gc" -> "k35" [dir=none,weight=1];
-    "k35" -> "IL21-IL21Ra-gc" [dir=none, weight=2];
-}
+        "IL21"   [shape=circle];
+        "IL21Ra" [shape=box    ];
+        "IL21-IL21Ra" [shape=box];
+        "IL21-IL21Ra-gc" [shape=box, color=red ];
+    }
+
+    subgraph cluster_IL2 {
+        style=filled;
+    	color=mediumorchid2;
+    	node [style=filled,color=mediumorchid4, margin=0];
+        label= "IL2 Family"
+
+        "k1" [shape=diamond,style=filled,height=.1,width=.1];
+        "IL2" -> "k1" [dir=none,weight=1];
+        "IL2Ra" -> "k1" [dir=none,weight=1];
+        "k1" -> "IL2-IL2Ra" [dir=none, weight=2];
+
+        "k2" [shape=diamond,style=filled,height=.1,width=.1];
+        "IL2" -> "k2" [dir=none,weight=1];
+        "IL2Rb" -> "k2" [dir=none,weight=1];
+        "k2" -> "IL2-IL2Rb" [dir=none, weight=2];
+
+        "k4" [shape=tripleoctagon,style=filled,height=.1,width=.1];
+        "IL2-IL2Ra" -> "k4" [dir=none,weight=1];
+        "gc" -> "k4" [dir=none,weight=1];
+        "k4" -> "IL2-IL2Ra-gc" [dir=none, weight=2];
+
+        "k5" [shape=tripleoctagon,style=filled,height=.1,width=.1];
+        "IL2-IL2Rb" -> "k5" [dir=none,weight=1];
+        "gc" -> "k5" [dir=none,weight=1];
+        "k5" -> "IL2-IL2Rb-gc" [dir=none, weight=2];
+
+        "k8" [shape=octagon,style=filled,height=.1,width=.1];
+        "IL2-IL2Rb-gc" -> "k8" [dir=none,weight=1];
+        "IL2Ra" -> "k8" [dir=none,weight=1];
+        "k8" -> "IL2-IL2Ra-IL2Rb-gc" [dir=none, weight=2];
+
+        "k9" [shape=octagon,style=filled,height=.1,width=.1];
+        "IL2-IL2Ra-gc" -> "k9" [dir=none,weight=1];
+        "IL2Rb" -> "k9" [dir=none,weight=1];
+        "k9" -> "IL2-IL2Ra-IL2Rb-gc" [dir=none, weight=2];
+
+        "k10" [shape=diamond,style=filled,height=.1,width=.1];
+        "IL2-IL2Ra-IL2Rb" -> "k10" [dir=none,weight=1];
+        "gc" -> "k10" [dir=none,weight=1];
+        "k10" -> "IL2-IL2Ra-IL2Rb-gc" [dir=none, weight=2];
+
+        "k11" [shape=diamond,style=filled,height=.1,width=.1];
+        "IL2-IL2Ra" -> "k11" [dir=none,weight=1];
+        "IL2Rb" -> "k11" [dir=none,weight=1];
+        "k11" -> "IL2-IL2Ra-IL2Rb" [dir=none, weight=2];
+
+        "k12" [shape=octagon,style=filled,height=.1,width=.1];
+        "IL2-IL2Rb" -> "k12" [dir=none,weight=1];
+        "IL2Ra" -> "k12" [dir=none,weight=1];
+        "k12" -> "IL2-IL2Ra-IL2Rb" [dir=none, weight=2];
+    }
+
+    subgraph cluster_IL15 {
+        style=filled;
+    	color=goldenrod1;
+    	node [style=filled,color=goldenrod4, margin=0];
+        edge [dir=none, weight=1];
+        label= "IL15 Family"
+
+        "k13" [shape=diamond,style=filled,height=.1,width=.1];
+        "IL15" -> "k13";
+        "IL15Ra" -> "k13";
+        "k13" -> "IL15-IL15Ra";
+
+        "k14" [shape=diamond,style=filled,height=.1,width=.1];
+        "IL15" -> "k14";
+        "IL2Rb" -> "k14";
+        "k14" -> "IL15-IL2Rb";
+
+        "k16" [shape=tripleoctagon,style=filled,height=.1,width=.1];
+        "IL15-IL15Ra" -> "k16";
+        "gc" -> "k16";
+        "k16" -> "IL15-IL15Ra-gc";
+
+        "k17" [shape=tripleoctagon,style=filled,height=.1,width=.1];
+        "IL15-IL2Rb" -> "k17";
+        "gc" -> "k17";
+        "k17" -> "IL15-IL2Rb-gc";
+
+        "k20" [shape=octagon,style=filled,height=.1,width=.1];
+        "IL15-IL2Rb-gc" -> "k20";
+        "IL15Ra" -> "k20";
+        "k20" -> "IL15-IL15Ra-IL2Rb-gc";
+
+        "k21" [shape=octagon,style=filled,height=.1,width=.1];
+        "IL15-IL15Ra-gc" -> "k21";
+        "IL2Rb" -> "k21";
+        "k21" -> "IL15-IL15Ra-IL2Rb-gc";
+
+        "k22" [shape=tripleoctagon,style=filled,height=.1,width=.1];
+        "IL15-IL15Ra-IL2Rb" -> "k22";
+        "gc" -> "k22";
+        "k22" -> "IL15-IL15Ra-IL2Rb-gc";
+
+        "k23" [shape=tripleoctagon,style=filled,height=.1,width=.1];
+        "IL15-IL15Ra" -> "k23";
+        "IL2Rb" -> "k23";
+        "k23" -> "IL15-IL15Ra-IL2Rb";
+
+        "k24" [shape=octagon,style=filled,height=.1,width=.1];
+        "IL15-IL2Rb" -> "k24";
+        "IL15Ra" -> "k24";
+        "k24" -> "IL15-IL15Ra-IL2Rb";
+        }
+
+    subgraph cluster_IL7 {
+        style=filled;
+    	color=dodgerblue;
+    	node [style=filled,color=dodgerblue4, margin=0];
+        edge [dir=none, weight=1];
+        label= "IL7 Family"
+        
+        "k25" [shape=diamond,style=filled,height=.1,width=.1];
+        "IL7" -> "k25";
+        "IL7Ra" -> "k25";
+        "k25" -> "IL7-IL7Ra";
+
+        "k27" [shape=tripleoctagon,style=filled,height=.1,width=.1];
+        "IL7-IL7Ra" -> "k27";
+        "gc" -> "k27";
+        "k27" -> "IL7-IL7Ra-gc";
+    }
+
+    subgraph cluster_IL9 {
+        style=filled;
+    	color=darkolivegreen2;
+    	node [style=filled,color=darkolivegreen4, margin=0];
+        edge [dir=none, weight=1];
+        label= "IL9 Family"
+        
+        "k29" [shape=diamond, style=filled, height=.1, width=.1];
+        "IL9" -> "k29";
+        "IL9R" -> "k29";
+        "k29" -> "IL9-IL9R";
+
+        "k31" [shape=tripleoctagon,style=filled,height=.1,width=.1];
+        "IL9-IL9R" -> "k31";
+        "gc" -> "k31";
+        "k31" -> "IL9-IL9R-gc";
+    }
+
+    subgraph cluster_IL4 {
+        style=filled;
+    	color=lightcyan;
+    	node [style=filled, color=lightcyan4, margin=0];
+        edge [dir=none, weight=1];
+        label= "IL4 Family"
+        
+        "k32" [shape=diamond, style=filled, height=0.1, width=0.1];
+        "IL4" -> "k32";
+        "IL4Ra" -> "k32";
+        "k32" -> "IL4-IL4Ra";
+
+        "k33" [shape=tripleoctagon,style=filled,height=.1,width=.1];
+        "IL4-IL4Ra" -> "k33";
+        "gc" -> "k33";
+        "k33" -> "IL4-IL4Ra-gc";
+    }
+    subgraph cluster_IL21 {
+        style=filled;
+    	color=slategray2;
+    	node [style=filled, color=slategray4, margin=0];
+        edge [dir=none, weight=1];
+        label= "IL21 Family"
+        
+        "k34" [shape=diamond,style=filled,height=.1,width=.1];
+        "IL21" -> "k34";
+        "IL21Ra" -> "k34";
+        "k34" -> "IL21-IL21Ra";
+
+        "k35" [shape=tripleoctagon,style=filled, height=.1, width=.1];
+        "IL21-IL21Ra" -> "k35";
+        "gc" -> "k35";
+        "k35" -> "IL21-IL21Ra-gc";
+    }
 }
