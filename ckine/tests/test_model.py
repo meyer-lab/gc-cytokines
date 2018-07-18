@@ -181,18 +181,6 @@ class TestModel(unittest.TestCase):
 
         self.assertTrue(np.all(closeness))
 
-    def test_tensor(self):
-        tensor = np.random.rand(35, 100, 20)
-        arr = []
-        for i in range(1,8):
-            R2X = find_R2X(tensor, i)
-            arr.append(R2X)
-        # confirm R2X for higher components is larger
-        for j in range(len(arr)-1):
-            self.assertTrue(arr[j] < arr[j+1])
-        #confirm R2X is >= 0 and <=1
-        self.assertGreaterEqual(np.min(arr),0)
-        self.assertLessEqual(np.max(arr),1)
 
     def test_initial(self):
         #test to check that at least one nonzero is at timepoint zero
