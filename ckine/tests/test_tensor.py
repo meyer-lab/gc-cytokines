@@ -24,6 +24,6 @@ class TestModel(unittest.TestCase):
 
     def test_tensor_parameters(self, r=1):
         '''Function to ensure if rate parameters change in the model code then an error should warn us to update tensor generation code.'''
-        y_combos, new_mat = findy(r)[0:2]
+        y_combos, new_mat = findy(r,50)[0:2]
 
         self.assertTrue(y_combos.shape[0] == new_mat.shape[0])
