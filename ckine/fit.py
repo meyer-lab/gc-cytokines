@@ -31,7 +31,7 @@ class IL2Rb_trafficking:
         self.data = np.concatenate((numpy_data[:, slicingg], numpy_data2[:, slicingg])).flatten(order='F')/10.
 
     def calc(self, unkVec):
-        unkVecIL2RaMinus = T.set_subtensor(unkVec[18], 0.0) # Set IL2Ra to zero
+        unkVecIL2RaMinus = T.set_subtensor(unkVec[22], 0.0) # Set IL2Ra to zero
 
         # Condense to just IL2Rb
         KineticOp = runCkineKineticOp(self.ts, getSurfaceIL2RbSpecies())
@@ -75,8 +75,7 @@ class IL2_15_activity:
         # IL2Ra- cells have same IL15 activity, so we can just reuse same solution
         Op = runCkineDoseOp(tt=np.array(500.), condense=getTotalActiveSpecies().astype(np.float64), conditions=self.cytokM)
 
-        # Take out expression of IL2Ra
-        unkVecIL2RaMinus = T.set_subtensor(unkVec[18], 0.0) # Set IL2Ra to zero
+        unkVecIL2RaMinus = T.set_subtensor(unkVec[22], 0.0) # Set IL2Ra to zero
 
         # Normalize to the maximal activity, put together into one vector
         actCat = T.concatenate((Op(unkVec), Op(unkVecIL2RaMinus)))
@@ -99,16 +98,17 @@ class build_model:
         M = pm.Model()
 
         with M:
-            kfwd = pm.Lognormal('kfwd', mu=np.log(0.00001), sd=0.1)
-            rxnrates = pm.Lognormal('rxn', mu=np.log(0.1), sd=0.1, shape=10) # first 3 are IL2, second 5 are IL15
+            kfwd = pm.Lognormal('kfwd', mu=np.log(0.00001), sd=1, shape=1)
+            rxnrates = pm.Lognormal('rxn', mu=np.log(0.1), sd=1, shape=6) # there are 6 reverse rxn rates associated with IL2 and IL15
+            nullRates = T.ones(4, dtype=np.float64) # k27rev, k31rev, k33rev, k35rev
             endo_activeEndo = pm.Lognormal('endo', mu=np.log(0.1), sd=0.1, shape=2)
             kRec_kDeg = pm.Lognormal('kRec_kDeg', mu=np.log(0.1), sd=0.1, shape=2)
             Rexpr = pm.Lognormal('IL2Raexpr', sd=0.1, shape=4) # Expression: IL2Ra, IL2Rb, gc, IL15Ra
-            sortF = pm.Beta('sortF', alpha=20, beta=40, testval=0.333)*0.95
+            sortF = pm.Beta('sortF', alpha=20, beta=40, testval=0.333, shape=1)*0.95
 
             ligands = T.zeros(6, dtype=np.float64)
 
-            unkVec = T.concatenate((ligands, T.stack(kfwd), rxnrates, endo_activeEndo, T.stack(sortF), kRec_kDeg, Rexpr, T.zeros(4, dtype=np.float64)))
+            unkVec = T.concatenate((ligands, kfwd, rxnrates, nullRates, endo_activeEndo, sortF, kRec_kDeg, Rexpr, T.zeros(4, dtype=np.float64))) 
 
             Y_15 = self.dst15.calc(unkVec) # fitting the data based on dst15.calc for the given parameters
             Y_int = self.IL2Rb.calc(unkVec) # fitting the data based on dst.calc for the given parameters
@@ -116,8 +116,8 @@ class build_model:
             pm.Deterministic('Y_15', T.sum(T.square(Y_15)))
             pm.Deterministic('Y_int', T.sum(T.square(Y_int)))
 
-            pm.Normal('fitD_15', sd=0.1, observed=Y_15) # TODO: Replace with experimental-derived stderr
-            pm.Normal('fitD_int', sd=0.1, observed=Y_int)
+            pm.Normal('fitD_15', sd=0.05, observed=Y_15) # TODO: Replace with experimental-derived stderr
+            pm.Normal('fitD_int', sd=0.02, observed=Y_int)
 
             # Save likelihood
             pm.Deterministic('logp', M.logpt)

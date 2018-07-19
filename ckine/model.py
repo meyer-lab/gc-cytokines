@@ -202,6 +202,12 @@ def getSurfaceIL2RbSpecies():
     condense[np.array([1, 4, 5, 7, 8, 11, 12, 14, 15])] = 1
     return condense
 
+def getSurfaceGCSpecies():
+    """ Returns a list of vectors for which surface species contain the gc receptor. """
+    condense = np.zeros(__nSpecies)
+    condense[np.array([2, 6, 7, 8, 13, 14, 15, 18, 21])] = 1
+    return condense
+
 
 def getActiveCytokine(cytokineIDX, yVec):
     """ Get amount of active species. """
