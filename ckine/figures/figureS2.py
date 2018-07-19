@@ -30,8 +30,8 @@ def makeFigure():
             ax[row*y + col].set_xlabel('Component ' + str(compNum))
             ax[row*y + col].set_ylabel('Component ' + str(compNum+1))
 
-            x_max = np.max(np.absolute(np.asarray(ax[row*y + col].get_xlim())))
-            y_max = np.max(np.absolute(np.asarray(ax[row*y + col].get_ylim())))
+            x_max = np.max(np.absolute(np.asarray(ax[row*y + col].get_xlim())))*1.1
+            y_max = np.max(np.absolute(np.asarray(ax[row*y + col].get_ylim())))*1.1
 
             ax[row*y + col].set_xlim(-x_max, x_max)
             ax[row*y + col].set_ylim(-y_max, y_max)
@@ -61,7 +61,7 @@ def plot_values(ax, factors, component_x, component_y):
 def plot_timepoint(ax, factors, component_x, component_y):
     """Plot the timepoint decomposition in the first column of figS2."""
     ax.scatter(factors[:, component_x - 1], factors[:, component_y - 1], color = 'k')
-    ax.annotate(str(1000), xy=(factors[999, component_x - 1], factors[999, component_y - 1]), xytext = (0, 0), textcoords = 'offset points')
+    ax.annotate(str(factors.shape[0]), xy=(factors[factors.shape[0]-1, component_x - 1], factors[factors.shape[0]-1, component_y - 1]), xytext = (0, 0), textcoords = 'offset points')
 
 
 def plot_cells(ax, factors, component_x, component_y, cell_names):

@@ -8,17 +8,13 @@ Important Notes:
 import os
 from os.path import join
 import numpy as np, pandas as pds
-from tqdm import tqdm
-from multiprocessing import Pool
+from tqdm import trange
 from .model import getTotalActiveCytokine, runCkineU, surfaceReceptors, totalReceptors, nParams, nSpecies, nRxn, internalStrength, halfL
 
 path = os.path.dirname(os.path.abspath(__file__))
 data = pds.read_csv(join(path, 'data/expr_table.csv')) # Every column in the data represents a specific cell
 
-ts = np.linspace(0.0, 4 * 60., 1000) # generate 1000 evenly spaced timepoints to 4 hrs
-
-
-def ySolver(matIn):
+def ySolver(matIn, ts):
     """ This generates all the solutions of the tensor. """
     matIn = np.squeeze(matIn)
 
@@ -37,7 +33,7 @@ def ySolver(matIn):
     return temp
 
 
-def findy(lig):
+def findy(lig, n_timepoints):
     """A function to find the different values of y at different timepoints and different initial conditions. Takes in how many ligand concentrations and expression rates to iterate over."""
     #Receptor expression levels were determined from the following cells through ImmGen
     #Expression Value Normalized by DESeq2, and we have 34 types of cells
@@ -60,19 +56,15 @@ def findy(lig):
     receptor_repeats = np.repeat(data_numbers.T,len(mat), 0) #Create an array that repeats the receptor expression levels 'len(mat)' times
     new_mat = np.concatenate((mats, receptor_repeats), axis = 1) #concatenate to obtain the new meshgrid
 
+    # generate n_timepoints evenly spaced timepoints to 4 hrs
+    ts = np.linspace(0.0, 4 * 60., n_timepoints) 
+
     # Allocate a y_of_combos
     y_of_combos = np.zeros((len(new_mat), ts.size, nSpecies()))
 
-    pool = Pool()
-
     # Iterate through every combination of values and store solver values in a y matrix
-    ii = 0
-    for x in tqdm(pool.imap(ySolver, np.split(new_mat, new_mat.shape[0])), total=new_mat.shape[0]):
-        y_of_combos[ii] = x
-        ii = ii + 1
-
-    pool.close()
-    pool.join()
+    for ii in trange(new_mat.shape[0]):
+        y_of_combos[ii] = ySolver(new_mat[ii,:], ts)
 
     return y_of_combos, new_mat, mat, mats, cell_names
 
@@ -89,9 +81,9 @@ def reduce_values(y_of_combos):
         values[:,:,6+len(indices)+k] = values[:,:,6+k] + internalStrength() * np.sum(y_of_combos[:,:,halfL(): halfL() * 2][:,:,indices[k]], axis = 2)
     return values
 
-def prepare_tensor(lig):
-    """Function to generate the 4D tensor."""
-    y_of_combos, new_mat, mat, mats, cell_names = findy(lig) #mat here is basically the 2^lig cytokine stimulation; mats
+def prepare_tensor(lig, n_timepoints = 1000):
+    """Function to generate the 4D values tensor."""
+    y_of_combos, new_mat, mat, mats, cell_names = findy(lig, n_timepoints) #mat here is basically the 2^lig cytokine stimulation; mats
     values = reduce_values(y_of_combos)
     tensor4D = np.zeros((values.shape[1],len(cell_names),len(mat),values.shape[2]))
     for ii in range(tensor4D.shape[0]):
