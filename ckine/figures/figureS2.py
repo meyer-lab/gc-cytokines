@@ -12,13 +12,16 @@ from ..Tensor_analysis import perform_decomposition
 def makeFigure():
     """Get a list of the axis objects and create a figure"""
     # Get list of axis objects
-    x, y = 5, 5
-    ax, f = getSetup((10, 10), (x, y))
+    x, y = 10, 5
+    ssize = 2
+    ax, f = getSetup((ssize*y, ssize*x), (x, y))
 
     values, _, _, _, cell_names = prepare_tensor(2)
     factors = perform_decomposition(values, 2*x)
 
     for row in range(x):
+        subplotLabel(ax[row*y], string.ascii_uppercase[row]) # Add subplot labels
+
         compNum = 2*row + 1
         plot_timepoint(ax[row*y], factors[0], compNum, compNum+1)
         plot_cells(ax[row*y + 1], factors[1], compNum, compNum+1, cell_names)
@@ -35,10 +38,6 @@ def makeFigure():
 
             ax[row*y + col].set_xlim(-x_max, x_max)
             ax[row*y + col].set_ylim(-y_max, y_max)
-
-    # Add subplot labels
-    for ii, item in enumerate(ax):
-        subplotLabel(item, string.ascii_uppercase[ii])
 
     f.tight_layout()
 
