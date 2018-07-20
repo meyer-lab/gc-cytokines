@@ -3,17 +3,17 @@ This creates Figure S2.
 """
 import string
 import numpy as np
+import itertools
 import matplotlib.cm as cm
 from .figureCommon import subplotLabel, getSetup
 from ..tensor_generation import prepare_tensor
 from ..Tensor_analysis import perform_decomposition
 
-
 def makeFigure():
     """Get a list of the axis objects and create a figure"""
     # Get list of axis objects
-    x, y = 10, 5
-    ssize = 2
+    x, y = 10, 4
+    ssize = 3
     ax, f = getSetup((ssize*y, ssize*x), (x, y))
 
     values, _, _, _, cell_names = prepare_tensor(2)
@@ -47,27 +47,31 @@ def makeFigure():
 def plot_values(ax, factors, component_x, component_y):
     """Plot the values decomposition factors matrix."""
     #Generate a plot for component x vs component y of the factors[3] above representing our values
-    labels = ['IL2', 'IL15', 'IL7', 'IL9', 'IL4','IL21','IL2Ra', 'IL2Rb', 'gc', 'IL15Ra', 'IL7Ra', 'IL9R', 'IL4Ra','IL21Ra','IL2Ra', 'IL2Rb', 'gc', 'IL15Ra', 'IL7Ra', 'IL9R', 'IL4Ra','IL21Ra']
+    # The markers are for the following elements in order: 'IL2', 'IL15', 'IL7', 'IL9', 'IL4','IL21','IL2Ra', 'IL2Rb', 'gc', 'IL15Ra', 'IL7Ra', 'IL9R', 'IL4Ra','IL21Ra','IL2Ra', 'IL2Rb', 'gc', 'IL15Ra', 'IL7Ra', 'IL9R', 'IL4Ra','IL21Ra.'
+    
+    markersLigand = itertools.cycle(('^', '*', 'D', 's', 'X', 'o'))
+    markersReceptors = itertools.cycle(('^', '4', 'P', '*', 'D', 's', 'X' ,'o')) 
+    
     #Set Active to color red. Set Surface to color blue. Set Total to color black
-    ax.scatter(factors[0:6, component_x - 1], factors[0:6, component_y - 1], color = 'r', label = 'Ligand Activity')
-    ax.scatter(factors[6:14, component_x - 1], factors[6:14, component_y - 1], color = 'b', label = 'Surface Receptor')
-    ax.scatter(factors[14::, component_x - 1], factors[14::, component_y - 1], color = 'k', label = 'Total Receptor')
+    for q,p in zip(factors[0:6, component_x - 1], factors[0:6, component_y - 1]):
+        ax.plot(q, p, linestyle = '', c = 'r', marker = next(markersLigand), label = 'Ligand Activity')
 
-    for i, item in enumerate(labels):
-        ax.annotate(item, xy=(factors[i, component_x - 1], factors[i, component_y - 1]), xytext = (0, 0), textcoords = 'offset points')
+    for q,p in zip(factors[6:14, component_x - 1], factors[6:14, component_y - 1]):
+        ax.plot(q, p, linestyle = '', c = 'b', marker = next(markersReceptors), label = 'Surface Receptor')
+    
+    for q,p in zip(factors[14::, component_x - 1], factors[14::, component_y - 1]):
+        ax.plot(q, p, linestyle = '', c = 'k', marker = next(markersReceptors), label = 'Total Receptor')
 
 
 def plot_timepoint(ax, factors, component_x, component_y):
     """Plot the timepoint decomposition in the first column of figS2."""
-    ax.scatter(factors[:, component_x - 1], factors[:, component_y - 1], color = 'k')
-    ax.annotate(str(factors.shape[0]), xy=(factors[factors.shape[0]-1, component_x - 1], factors[factors.shape[0]-1, component_y - 1]), xytext = (0, 0), textcoords = 'offset points')
-
+    ax.plot(factors[:, component_x - 1], factors[:, component_y - 1], color = 'k')
+    ax.scatter(factors[-1, component_x - 1], factors[-1, component_y - 1], s = 12, color = 'b')
 
 def plot_cells(ax, factors, component_x, component_y, cell_names):
     """This function plots the combination decomposition based on cell type."""
     colors = cm.rainbow(np.linspace(0, 1, len(cell_names)))
     ax.scatter(factors[:, component_x - 1], factors[:, component_y - 1], c=colors, label = cell_names)
-
 
 def plot_ligands(ax, factors, component_x, component_y):
     "This function is to plot the ligand combination dimension of the values tensor."
