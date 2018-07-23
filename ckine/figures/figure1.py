@@ -34,13 +34,13 @@ def plot_structure(IL2vec, IL15vec, title, ax, x_axis, data_type, species='NONE'
     ax.set_title(title)
     ax.set_ylim(0,120)
     if (data_type=='surf'):
-        ax.scatter(x_axis, IL2vec, color='r', label='IL2', alpha=0.7)
-        ax.scatter(x_axis, IL15vec, color='g', label='IL15', alpha=0.7)
+        ax.plot(x_axis, IL2vec, color='darkorchid', label='IL2', alpha=0.7)
+        ax.plot(x_axis, IL15vec, color='goldenrod', label='IL15', alpha=0.7)
         ax.set_ylabel("Surface " + str(species) + " (% x 100)")
         ax.set_xlabel("Time (min)")
     elif (data_type=='act'):
-        ax.scatter(np.log10(x_axis), IL2vec, color='r', alpha=0.5, label="IL2")
-        ax.scatter(np.log10(x_axis), IL15vec, color='g', alpha=0.5, label='IL15')
+        ax.plot(np.log10(x_axis), IL2vec, color='darkorchid', alpha=0.5, label="IL2")
+        ax.plot(np.log10(x_axis), IL15vec, color='goldenrod', alpha=0.5, label='IL15')
         ax.set_ylabel('Maximal p-STAT5 (% x 100)')
         ax.set_xlabel('log10 of cytokine concentration (nM)')
     else:
