@@ -372,11 +372,12 @@ void copyOutSensi(double *out, solver *sMem) {
 }
 
 
-extern "C" int runCkine (double *tps, size_t ntps, double *out, double *rxnRatesIn, bool sensi, double *sensiOut) {
+extern "C" int runCkineY0 (double *y0in, double *tps, size_t ntps, double *out, double *rxnRatesIn, bool sensi, double *sensiOut) {
 	ratesS rattes(rxnRatesIn);
 	size_t itps = 0;
 
-	array<double, Nspecies> y0 = solveAutocrine(&rattes);
+	array<double, Nspecies> y0;
+	std::copy_n(y0in, y0.size(), y0.begin());
 
 	solver sMem;
 
@@ -423,6 +424,15 @@ extern "C" int runCkine (double *tps, size_t ntps, double *out, double *rxnRates
 
 	solverFree(&sMem);
 	return 0;
+}
+
+
+extern "C" int runCkine (double *tps, size_t ntps, double *out, double *rxnRatesIn, bool sensi, double *sensiOut) {
+	ratesS rattes(rxnRatesIn);
+
+	array<double, Nspecies> y0 = solveAutocrine(&rattes);
+
+	return runCkineY0 (y0.data(), tps, ntps, out, rxnRatesIn, sensi, sensiOut);
 }
 
 
