@@ -44,6 +44,7 @@ def nRxn():
 
 
 def runCkineU (tps, rxntfr, sensi=False):
+    rxntfr = rxntfr.copy()
     assert rxntfr.size == __nParams
     assert rxntfr[19] < 1.0 # Check that sortF won't throw
 
@@ -244,6 +245,7 @@ def getActiveCytokine(cytokineIDX, yVec):
 
 def getTotalActiveCytokine(cytokineIDX, yVec):
     """ Get amount of surface and endosomal active species. """
+    assert(yVec.ndim == 1)
     return getActiveCytokine(cytokineIDX, yVec[0:__halfL]) + __internalStrength * getActiveCytokine(cytokineIDX, yVec[__halfL:__halfL*2])
 
 
