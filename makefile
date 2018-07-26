@@ -12,7 +12,7 @@ ifeq ($(UNAME_S),Linux)
     LINKFLAG = -Wl,-rpath=./ckine
 endif
 
-CPPLINKS = -I/usr/include/eigen3/ -I/usr/local/Cellar/eigen/3.3.4/include/eigen3/ -lm -lsundials_cvodes -lsundials_cvode -lsundials_nvecserial -lcppunit
+CPPLINKS = -I/usr/include/eigen3/ -I/usr/local/include/eigen3/ -lm -lsundials_cvodes -lsundials_cvode -lsundials_nvecserial -lcppunit
 
 $(fdir)/figure%.svg: genFigures.py ckine/ckine.so graph_all.svg
 	mkdir -p ./Manuscript/Figures
