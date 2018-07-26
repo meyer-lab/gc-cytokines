@@ -54,7 +54,7 @@ public:
 	double kDeg;
 	std::array<double, 8> Rexpr;
 
-	ratesS(const double * const rxntfR) {
+	explicit ratesS(const double * const rxntfR) {
 		std::copy_n(rxntfR, ILs.size(), ILs.begin());
 		kfwd = rxntfR[6];
 		k4rev = rxntfR[7];
