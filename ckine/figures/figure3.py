@@ -12,7 +12,7 @@ def makeFigure():
     """Get a list of the axis objects and create a figure"""
     # Get list of axis objects
     x, y = 3, 4
-    ax, f = getSetup((10, 10), (x, y))
+    ax, f = getSetup((16, 14), (x, y))
 
     # Blank out for the cartoon
     ax[0].axis('off')
@@ -21,13 +21,9 @@ def makeFigure():
     n_comps = 17
 
     plot_R2X(ax[3], values, n_comps)
-    plot_split_R2X(ax[4], ax[5], ax[6], values, n_comps)
     
-    for n in range(3,7):
-        ax[n].set_xticks(np.arange(1, n_comps+1))
-        ax[n].set_xticklabels(np.arange(1, n_comps+1))
-        ax[n].set_ylim(0, 1)
-        ax[n].set_xlabel('Number of Components')
+    plot_split_R2X(ax[3], values, n_comps)
+    
     
     # Add subplot labels
     for ii, item in enumerate(ax):
@@ -43,18 +39,20 @@ def plot_R2X(ax, tensor, n_comps):
     for n in range(1, n_comps + 1):
         R2X = find_R2X(tensor, n)
         R2X_array.append(R2X)
-    ax.bar(range(1,n_comps+1), R2X_array)
+    ax.plot(range(1,n_comps+1), R2X_array, 'ko', label = 'Overall R2X')
     ax.set_ylabel('R2X')
+    ax.set_xlabel('Number of Components')
+    ax.set_ylim(0, 1)
+    ax.set_xticks(np.arange(1, n_comps+1, 2))
+    ax.set_xticklabels(np.arange(1, n_comps+1, 2))
+    ax.legend()
 
-def plot_split_R2X(ax1, ax2, ax3, tensor, n_comps):
+
+
+def plot_split_R2X(ax, tensor, n_comps):
     """This function takes in the values tensor, splits it up into a mini tensor corresponding to the splitType. If splitType =1, then split ligand activities, if =2, then split surface receptors, if = 3, then split total receptors."""
     R2X_matrix = split_R2X(tensor, n_comps)
-
-    ax1.bar(range(1,n_comps+1), R2X_matrix[0,:])
-    ax1.set_ylabel('Ligand Activity R2X')
-
-    ax2.bar(range(1,n_comps+1), R2X_matrix[1,:])
-    ax2.set_ylabel('Surface Receptors R2X')
-
-    ax3.bar(range(1,n_comps+1), R2X_matrix[2,:])
-    ax3.set_ylabel('Total Receptors R2X')
+    ax.plot(range(1,n_comps+1), R2X_matrix[0,:], 'bo', label = 'Ligand Activity R2X')
+    ax.plot(range(1,n_comps+1), R2X_matrix[1,:], 'ro', label = 'Surface Receptors R2X')
+    ax.plot(range(1,n_comps+1), R2X_matrix[2,:], 'go', label = 'Total Receptors R2X')
+    ax.legend()
