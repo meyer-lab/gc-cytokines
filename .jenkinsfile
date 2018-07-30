@@ -1,20 +1,10 @@
 pipeline {
   agent any
   stages {
-    stage('Clean') {
-      steps {
-        sh 'git clean -ffdx'
-        sh 'make clean'
-      }
-    }
-    stage('Build/Test') {
-      parallel {
-        stage('Build')     { steps { sh 'make -j 16' } }
-        stage('Lint')      { steps { sh '(pylint3 --rcfile=.pylintrc ckine > pylint.log || echo "pylint3 exited with $?")' } }
-        stage('Test')      { steps { sh 'make testcover' } }
-        stage('Doc Build') { steps { sh 'make doc' } }
-      }
-    }
+    stage('Clean') { steps { sh 'git clean -ffdx && make clean' } }
+    stage('Test')  { steps { sh 'make testcover' } }
+    stage('Build') { steps { sh 'make' } }
+    stage('Lint')  { steps { sh '(pylint3 --rcfile=.pylintrc ckine > pylint.log || echo "pylint3 exited with $?")' } }
     stage('Report') {
       steps {
         sh 'make doc'

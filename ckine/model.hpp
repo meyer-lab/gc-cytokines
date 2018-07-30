@@ -139,4 +139,4 @@ constexpr size_t Nparams = 30; // length of rxntfR vector
 constexpr size_t Nspecies = 62; // number of complexes in surface + endosome + free ligand
 constexpr size_t halfL = 28; // number of complexes on surface alone
 
-extern "C" int runCkine (double *, size_t, double *, double *, bool, double *);
+extern "C" int runCkine (double *tps, size_t ntps, double *out, const double * const rxnRatesIn, const bool sensi, double *sensiOut);
