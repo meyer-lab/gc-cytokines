@@ -6,7 +6,7 @@ import numpy as np
 from hypothesis import given, settings
 from hypothesis.strategies import floats
 from hypothesis.extra.numpy import arrays as harrays
-from ..model import dy_dt, fullModel, solveAutocrine, getTotalActiveCytokine, solveAutocrineComplete, runCkineU, jacobian, fullJacobian, nSpecies, runCkineUP
+from ..model import fullModel, solveAutocrine, getTotalActiveCytokine, solveAutocrineComplete, runCkineU, fullJacobian, nSpecies, runCkineUP
 from ..util_analysis.Shuffle_ODE import approx_jacobian
 from ..Tensor_analysis import find_R2X
 
@@ -50,16 +50,6 @@ class TestModel(unittest.TestCase):
 
         self.rxntfR = np.concatenate((self.args, self.tfargs))
 
-    def test_length(self):
-        self.assertEqual(len(dy_dt(self.y0, 0, self.args)), self.y0.size)
-
-    @given(y0=harrays(np.float, 28, elements=floats(1, 10)))
-    def test_conservation(self, y0):
-        """Check for the conservation of each of the initial receptors."""
-        dy = dy_dt(y0, 0.0, self.args)
-        # Check for conservation of each receptor
-        for idxs in conservation_IDX:
-            self.assertConservation(dy, 0.0, idxs)
 
     @given(y0=harrays(np.float, nSpecies(), elements=floats(1, 10)))
     def test_conservation_full(self, y0):
@@ -161,22 +151,6 @@ class TestModel(unittest.TestCase):
         # test that all of the solutions returned are identical
         for ii in range(rxntfr.shape[0]):
             self.assertTrue(np.all(outt[0, :] == outt[ii, :]))
-
-    def test_jacobian(self):
-        '''Compares the approximate Jacobian (approx_jacobian() in Shuffle_ODE.py) with the analytical Jacobian (jacobian() of model.cpp).
-        Both Jacobians are evaluating the partial derivatives of dydt.'''
-        analytical = jacobian(self.y0, self.ts[0], self.args)
-        approx = approx_jacobian(lambda x: dy_dt(x, self.ts[0], self.args), self.y0, delta=1.0E-4) # Large delta to prevent round-off error
-
-        closeness = np.isclose(analytical, approx, rtol=0.00001, atol=0.00001)
-
-        if not np.all(closeness):
-            IDXdiff = np.where(np.logical_not(closeness))
-            print(IDXdiff)
-            print(analytical[IDXdiff])
-            print(approx[IDXdiff])
-
-        self.assertTrue(np.all(closeness))
 
     def test_fullJacobian(self):
         analytical = fullJacobian(self.fully, 0.0, np.concatenate((self.args, self.tfargs)))

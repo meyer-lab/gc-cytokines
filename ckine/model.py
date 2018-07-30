@@ -9,8 +9,6 @@ from scipy.integrate import odeint
 
 filename = os.path.join(os.path.dirname(os.path.abspath(__file__)), "./ckine.so")
 libb = ct.cdll.LoadLibrary(filename)
-libb.dydt_C.argtypes = (ct.POINTER(ct.c_double), ct.c_double, ct.POINTER(ct.c_double), ct.POINTER(ct.c_double))
-libb.jacobian_C.argtypes = (ct.POINTER(ct.c_double), ct.c_double, ct.POINTER(ct.c_double), ct.POINTER(ct.c_double))
 libb.fullModel_C.argtypes = (ct.POINTER(ct.c_double), ct.c_double, ct.POINTER(ct.c_double), ct.POINTER(ct.c_double))
 libb.runCkine.argtypes = (ct.POINTER(ct.c_double), ct.c_uint, ct.POINTER(ct.c_double), ct.POINTER(ct.c_double), ct.c_bool, ct.POINTER(ct.c_double))
 libb.runCkineY0.argtypes = (ct.POINTER(ct.c_double), ct.POINTER(ct.c_double), ct.c_uint, ct.POINTER(ct.c_double), ct.POINTER(ct.c_double), ct.c_bool, ct.POINTER(ct.c_double))
@@ -115,33 +113,6 @@ def runCkineUP (tp, rxntfr, sensi=False):
     else:
         return (yOut, retVal)
 
-
-def dy_dt(y, t, rxn):
-
-    assert rxn.size == __nRxn
-    rxntfr = np.concatenate((rxn, np.ones(13, dtype=np.float64)*0.9))
-
-    yOut = np.zeros_like(y)
-
-    libb.dydt_C(y.ctypes.data_as(ct.POINTER(ct.c_double)), t,
-                yOut.ctypes.data_as(ct.POINTER(ct.c_double)), rxntfr.ctypes.data_as(ct.POINTER(ct.c_double)))
-
-    return yOut
-
-
-def jacobian(y, t, rxn):
-
-    assert rxn.size == __nRxn
-
-    # Pad with zeros so we don't get a sortF panic
-    rxn = rxn.copy()
-    rxn = np.concatenate((rxn, np.zeros(20, dtype=np.float64)))
-
-    yOut = np.zeros((__halfL, __halfL)) # size of the Jacobian matrix for surface alone
-
-    libb.jacobian_C(y.ctypes.data_as(ct.POINTER(ct.c_double)), ct.c_double(t), yOut.ctypes.data_as(ct.POINTER(ct.c_double)), rxn.ctypes.data_as(ct.POINTER(ct.c_double)))
-
-    return yOut
 
 def fullJacobian(y, t, rxntfR): # will eventually have to add tfR as an argument once we add more to fullJacobian
     assert rxntfR.size == __nParams
