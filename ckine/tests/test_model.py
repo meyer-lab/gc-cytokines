@@ -6,8 +6,8 @@ import numpy as np
 from hypothesis import given, settings
 from hypothesis.strategies import floats
 from hypothesis.extra.numpy import arrays as harrays
-from ..model import fullModel, solveAutocrine, getTotalActiveCytokine, solveAutocrineComplete, runCkineU, fullJacobian, nSpecies, runCkineUP
-from ..util_analysis.Shuffle_ODE import approx_jacobian
+from ..model import fullModel, getTotalActiveCytokine, runCkineU, fullJacobian, nSpecies, runCkineUP
+from scipy.optimize.slsqp import approx_jacobian
 from ..Tensor_analysis import find_R2X
 
 settings.register_profile("ci", max_examples=1000)
@@ -54,9 +54,10 @@ class TestModel(unittest.TestCase):
     @given(y0=harrays(np.float, nSpecies(), elements=floats(1, 10)))
     def test_conservation_full(self, y0):
         """In the absence of trafficking, mass balance should hold in both compartments."""
-        kw = np.zeros(self.tfargs.shape, dtype=np.float64)
+        rxntfR = self.rxntfR.copy()
+        rxntfR[17:30] = 0.0
 
-        dy = fullModel(y0, 0.0, self.args, kw)
+        dy = fullModel(y0, 0.0, rxntfR)
 
         # Check for conservation of each surface receptor
         for idxs in conservation_IDX:
@@ -89,45 +90,36 @@ class TestModel(unittest.TestCase):
         self.assertGreaterEqual(retVal, 0)
 
         # check that dydt is ~0
-        self.assertPosEquilibrium(yOut_2[1], lambda y: fullModel(y, 100000.0, rxnIL2[0:17], rxnIL2[17:30]))
-        self.assertPosEquilibrium(yOut_15[1], lambda y: fullModel(y, 100000.0, rxnIL15[0:17], rxnIL15[17:30]))
-        self.assertPosEquilibrium(yOut_7[1], lambda y: fullModel(y, 100000.0, rxnIL7[0:17], rxnIL7[17:30]))
-        self.assertPosEquilibrium(yOut_9[1], lambda y: fullModel(y, 100000.0, rxnIL9[0:17], rxnIL9[17:30]))
-        self.assertPosEquilibrium(yOut_4[1], lambda y: fullModel(y, 100000.0, rxnIL4[0:17], rxnIL4[17:30]))
-        self.assertPosEquilibrium(yOut_21[1], lambda y: fullModel(y, 100000.0, rxnIL21[0:17], rxnIL21[17:30]))
+        self.assertPosEquilibrium(yOut_2[1], lambda y: fullModel(y, 100000.0, rxnIL2))
+        self.assertPosEquilibrium(yOut_15[1], lambda y: fullModel(y, 100000.0, rxnIL15))
+        self.assertPosEquilibrium(yOut_7[1], lambda y: fullModel(y, 100000.0, rxnIL7))
+        self.assertPosEquilibrium(yOut_9[1], lambda y: fullModel(y, 100000.0, rxnIL9))
+        self.assertPosEquilibrium(yOut_4[1], lambda y: fullModel(y, 100000.0, rxnIL4))
+        self.assertPosEquilibrium(yOut_21[1], lambda y: fullModel(y, 100000.0, rxnIL21))
 
     def test_fullModel(self):
-        """Assert the two functions solveAutocrine and solveAutocrine complete return the same values."""
-        yOut = solveAutocrine(self.tfargs)
+        """ Assert that we're at autocrine steady-state at t=0. """
+        yOut, _ = runCkineU(np.array([0.0]), self.rxntfR)
+        yOut = np.squeeze(yOut)
 
-        yOut2 = solveAutocrineComplete(self.args, self.tfargs)
-
-        kw = self.args.copy()
-
-        kw[0:6] = 0.
+        rxnNoLigand = self.rxntfR
+        rxnNoLigand[0:6] = 0.0
 
         # Autocrine condition assumes no cytokine present, and so no activity
         self.assertAlmostEqual(getTotalActiveCytokine(0, yOut), 0.0, places=5)
 
-        # Autocrine condition assumes no cytokine present, and so no activity
-        self.assertAlmostEqual(getTotalActiveCytokine(0, yOut2), 0.0, places=5)
-
-        self.assertPosEquilibrium(yOut, lambda y: fullModel(y, 0.0, kw, self.tfargs))
+        self.assertPosEquilibrium(yOut, lambda y: fullModel(y, 0.0, rxnNoLigand))
 
     @given(y0=harrays(np.float, nSpecies(), elements=floats(0, 10)))
     def test_reproducible(self, y0):
 
-        dy1 = fullModel(y0, 0.0, self.args, self.tfargs)
-
-        dy2 = fullModel(y0, 1.0, self.args, self.tfargs)
-
-        dy3 = fullModel(y0, 2.0, self.args, self.tfargs)
+        dy1 = fullModel(y0, 0.0, self.rxntfR)
 
         # Test that there's no difference
-        self.assertLess(np.linalg.norm(dy1 - dy2), 1E-8)
+        self.assertLess(np.linalg.norm(dy1 - fullModel(y0, 1.0, self.rxntfR)), 1E-8)
 
         # Test that there's no difference
-        self.assertLess(np.linalg.norm(dy1 - dy3), 1E-8)
+        self.assertLess(np.linalg.norm(dy1 - fullModel(y0, 2.0, self.rxntfR)), 1E-8)
 
     @given(vec=harrays(np.float, 30, elements=floats(0.1, 10.0)))
     def test_runCkine(self, vec):
@@ -153,8 +145,8 @@ class TestModel(unittest.TestCase):
             self.assertTrue(np.all(outt[0, :] == outt[ii, :]))
 
     def test_fullJacobian(self):
-        analytical = fullJacobian(self.fully, 0.0, np.concatenate((self.args, self.tfargs)))
-        approx = approx_jacobian(lambda x: fullModel(x, 0.0, self.args, self.tfargs), self.fully, delta = 1.0E-6)
+        analytical = fullJacobian(self.fully, 0.0, self.rxntfR)
+        approx = approx_jacobian(self.fully, lambda x: fullModel(x, 0.0, self.rxntfR), epsilon=1.0E-6)
 
         self.assertTrue(analytical.shape == approx.shape)
 
