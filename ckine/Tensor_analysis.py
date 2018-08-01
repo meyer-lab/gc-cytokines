@@ -24,50 +24,53 @@ def perform_decomposition(tensor, r):
     factors = parafac(values_z, rank = r) #can do verbose and tolerance (tol)
     return factors
 
-def find_R2X(values, n_comp):
+def find_R2X(values, factors):
     '''Compute R2X'''
     z_values = z_score_values(values)
-    factors = perform_decomposition(z_values, n_comp)
     values_reconstructed = tensorly.kruskal_to_tensor(factors)
     return 1 - np.var(values_reconstructed - z_values) / np.var(z_values)
 
-def split_R2X(values, n_comp):
+def split_R2X(values, factors_list, n_comp):
     """Decompose and reconstruct with n components, and then split tensor from both original and reconstructed to determine R2X."""
     z_values = z_score_values(values)
     R2X_matrix = np.zeros((3,n_comp)) # A 3 by n_comp matrix to store the R2X values for each split tensor. 
     
-    for ii in range(1, n_comp +1):
-        factors = perform_decomposition(z_values, ii)
+    for ii in range(n_comp):
+        factors = factors_list[ii]
         values_reconstructed = tensorly.kruskal_to_tensor(factors)
         
         LigandTensor = z_values[:,:,:, 0:6]
         Ligand_reconstructed = values_reconstructed[:,:,:,0:6]
-        R2X_matrix[0,ii-1] = 1 - np.var(Ligand_reconstructed - LigandTensor) / np.var(LigandTensor)
+        R2X_matrix[0,ii] = 1 - np.var(Ligand_reconstructed - LigandTensor) / np.var(LigandTensor)
         
         SurfTensor = z_values[:,:,:, 6:14]
         Surf_reconstructed = values_reconstructed[:,:,:,6:14]
-        R2X_matrix[1,ii-1] = 1 - np.var(Surf_reconstructed - SurfTensor) / np.var(SurfTensor)
+        R2X_matrix[1,ii] = 1 - np.var(Surf_reconstructed - SurfTensor) / np.var(SurfTensor)
         
         TotalTensor = z_values[:,:,:, 14:22]
         Total_reconstructed = values_reconstructed[:,:,:,14:22]
-        R2X_matrix[2, ii-1] = 1 - np.var(Total_reconstructed - TotalTensor) / np.var(TotalTensor)
+        R2X_matrix[2, ii] = 1 - np.var(Total_reconstructed - TotalTensor) / np.var(TotalTensor)
 
     return R2X_matrix
 
-def combo_low_high(mat):
+def combo_low_high(mat, lig):
     """ This function determines which combinations were high and low according to our initial conditions. """
     # First six values are IL2, IL15, IL7, IL9, IL4, IL21 that are low and the bottom 6 are their high in terms of combination values.
-
-    lows = [[] for _ in range(6)]
-    highs = [[] for _ in range(6)]
+    ILs = np.logspace(-3, 2, num=lig)
+    
+    IL2_low_high = [[] for _ in range(len(ILs))]
+    IL15_low_high = [[] for _ in range(len(ILs))]
+    
+    #lows = [[] for _ in range(2)]
+    #highs = [[] for _ in range(2)]
     # Fill low receptor expression rates first. The indices in mat refer to the indices in combination
-    for k in range(len(mat)):
-        for j in range(6): #low ligand
-            if mat[k,j] <= 1e0: #Condition for low ligand concentration
-                lows[j].append(k)
-            else: #high ligand
-                highs[j].append(k)
-    return lows, highs
+    for a in range(len(ILs)):
+        for k in range(len(mat)):
+            if mat[k,0] == ILs[a]: #Condition for low ligand concentration
+                IL2_low_high[a].append(k)
+            if mat[k,1] == ILs[a]:
+                IL15_low_high[a].append(k)
+    return IL2_low_high, IL15_low_high
 
 def calculate_correlation(tensor,mat,r):
     '''Make a pandas dataframe for correlation coefficients between components and initial ligand stimulation-input variables.'''
