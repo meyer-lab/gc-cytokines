@@ -3,7 +3,7 @@ Unit test file.
 """
 import unittest
 import numpy as np
-from ..Tensor_analysis import find_R2X
+from ..Tensor_analysis import find_R2X, perform_decomposition
 from ..tensor_generation import findy
 
 
@@ -14,7 +14,8 @@ class TestModel(unittest.TestCase):
         tensor = np.random.rand(20,35,100,20)
         arr = []
         for i in range(1,8):
-            R2X = find_R2X(tensor, i)
+            factors = perform_decomposition(tensor, i)
+            R2X = find_R2X(tensor, factors)
             arr.append(R2X)
         for j in range(len(arr)-1):
             self.assertTrue(arr[j] < arr[j+1])

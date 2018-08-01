@@ -20,9 +20,21 @@ def ySolver(matIn, ts):
 
     # Set some given parameters already determined from fitting
     rxntfR = np.zeros(nParams())
-    rxntfR[6] = 0.00001 #kfwd
-    rxntfR[7:nRxn()] = 0.001  # From fitting: k4rev - k35rev
-    rxntfR[nRxn():22] = 0.1 # From fitting: endo - kdeg
+    rxntfR[6] = 0.004475761 #kfwd
+    rxntfR[7] = 8.543317686 #k4rev
+    rxntfR[8] = 0.12321939  #k5rev
+    rxntfR[9] = 3.107488811 #k16rev
+    rxntfR[10] = 0.212958572 #k17rev
+    rxntfR[11] = 0.013775029 #k22rev
+    rxntfR[12] = 0.151523448 #k23rev
+    rxntfR[13] = 0.094763588 #k27rev
+    rxntfR[15] = 0.095618346 #k33rev
+    rxntfR[[14, 16]] = 0.25  # From fitting IL9 and IL21: k4rev - k35rev
+    rxntfR[17] = 0.080084184 #endo
+    rxntfR[18] = 1.474695447 #activeEndo
+    rxntfR[19] = 0.179927669 #sortF
+    rxntfR[20] = 0.155260036 #kRec
+    rxntfR[21] = 0.017236595 #kDeg 
 
     rxntfR[22:30] = matIn[6:14] # Receptor expression
     rxntfR[0:6] = matIn[0:6] # Cytokine stimulation concentrations
@@ -47,17 +59,18 @@ def findy(lig, n_timepoints):
     #['Il2ra' 'Il2rb' 'Il2rg' 'Il15ra' 'Il7r' 'Il9r', 'IL4Ra, 'IL21Ra'] in that order
     data_numbers = np.delete(numpy_data, 0, 1)
 
-    ILs = np.logspace(-3, 2, num=lig) # Cytokine stimulation concentrations
+    ILs = np.logspace(-3., 2., num=lig) # Cytokine stimulation concentrations
     # Goal is to make one cell expression levels by len(mat) for every cell
     # Make mesh grid of all combinations of ligand
-    mat = np.array(np.meshgrid(ILs, ILs, ILs, ILs,ILs,ILs)).T.reshape(-1, 6)
+    mat = np.array(np.meshgrid(ILs, ILs, ILs, ILs, ILs, ILs)).T.reshape(-1, 6)
 
     mats = np.tile(mat, (len(cell_names), 1)) # Repeat the cytokine stimulations (mat) an X amount of times where X here is number of cells (34)
     receptor_repeats = np.repeat(data_numbers.T,len(mat), 0) #Create an array that repeats the receptor expression levels 'len(mat)' times
     new_mat = np.concatenate((mats, receptor_repeats), axis = 1) #concatenate to obtain the new meshgrid
 
     # generate n_timepoints evenly spaced timepoints to 4 hrs
-    ts = np.linspace(0.0, 4 * 60., n_timepoints) 
+    ts = np.logspace(-3., np.log10(4 * 60.), n_timepoints)
+    ts = np.insert(ts, 0, 0.0)
 
     # Allocate a y_of_combos
     y_of_combos = np.zeros((len(new_mat), ts.size, nSpecies()))
@@ -81,11 +94,14 @@ def reduce_values(y_of_combos):
         values[:,:,6+len(indices)+k] = values[:,:,6+k] + internalStrength() * np.sum(y_of_combos[:,:,halfL(): halfL() * 2][:,:,indices[k]], axis = 2)
     return values
 
-def prepare_tensor(lig, n_timepoints = 1000):
+def prepare_tensor(lig, n_timepoints = 100):
     """Function to generate the 4D values tensor."""
     y_of_combos, new_mat, mat, mats, cell_names = findy(lig, n_timepoints) #mat here is basically the 2^lig cytokine stimulation; mats
+
     values = reduce_values(y_of_combos)
     tensor4D = np.zeros((values.shape[1],len(cell_names),len(mat),values.shape[2]))
     for ii in range(tensor4D.shape[0]):
         tensor4D[ii] = values[:,ii,:].reshape(tensor4D.shape[1:4])
+
+    #tensor4D[:,:,:, [0,1,6,7,8,9,14,15,16,17]] are the indices for IL2 and IL15
     return tensor4D, new_mat, mat, mats, cell_names
