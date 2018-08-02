@@ -24,6 +24,27 @@ def perform_decomposition(tensor, r):
     factors = parafac(values_z, rank = r) #can do verbose and tolerance (tol)
     return factors
 
+def reorient_one(factors, component_index):
+    """Function that takes in the 4 factor matrices and decides if that column index should flip or not and then flips it."""
+    factors_idx = [factors[0][:,component_index], factors[1][:,component_index], factors[2][:,component_index], factors[3][:,component_index]]
+    component_means = np.array([np.mean(factors_idx[0]), np.mean(factors_idx[1]), np.mean(factors_idx[2]), np.mean(factors_idx[3])])
+    if np.sum(component_means < 0) >= 2 and np.sum(component_means < 0) < 4: #if at least 2 are negative, then flip the negative component and keep others unchanged
+        count = 1
+        for index, factor_idx in enumerate(factors_idx):
+            if component_means[index] < 0 and count < 3:
+                factors[index][:, component_index] = factor_idx * -1
+                count += 1
+    elif np.sum(np.array(component_means) < 0) == 4:
+        for index, factor_idx in enumerate(factors_idx):
+            factors[index][:,component_index] = factor_idx * -1
+    return factors
+
+def reorient_factors(factors):
+    """This function is to reorient the factors if at least one component in two factors matrices are negative."""
+    for jj in range(factors[0].shape[1]):
+        factors = reorient_one(factors, jj)
+    return factors
+
 def find_R2X(values, factors):
     '''Compute R2X'''
     z_values = z_score_values(values)

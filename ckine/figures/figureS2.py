@@ -11,6 +11,7 @@ import matplotlib
 import matplotlib.cm as cm
 import matplotlib.pyplot as plt
 from .figureCommon import subplotLabel, getSetup
+from ..Tensor_analysis import reorient_factors
 
 def makeFigure():
     """Get a list of the axis objects and create a figure"""
@@ -26,7 +27,10 @@ def makeFigure():
 
     with open(factors_filename,'rb') as f:
         factors_list = pickle.load(f)
-    factors = factors_list[19]
+    
+    n_comps = 19
+    factors = factors_list[n_comps]
+    newfactors = reorient_factors(factors)
 
     x, y = 10, 4
     ssize = 3
@@ -34,10 +38,10 @@ def makeFigure():
     for row in range(x):
         subplotLabel(ax[row*y], string.ascii_uppercase[row]) # Add subplot labels
         compNum = 2*row + 1
-        plot_timepoint(ax[row*y], factors[0], compNum, compNum+1)
-        plot_cells(ax[row*y + 1], factors[1], compNum, compNum+1, cell_names)
-        plot_ligands(ax[row*y + 2], factors[2], compNum, compNum+1)
-        plot_values(ax[row*y + 3], factors[3], compNum, compNum+1)
+        plot_timepoint(ax[row*y], newfactors[0], compNum, compNum+1)
+        plot_cells(ax[row*y + 1], newfactors[1], compNum, compNum+1, cell_names)
+        plot_ligands(ax[row*y + 2], newfactors[2], compNum, compNum+1)
+        plot_values(ax[row*y + 3], newfactors[3], compNum, compNum+1)
 
         # Set axes to center on the origin, and add labels
         for col in range(y):
