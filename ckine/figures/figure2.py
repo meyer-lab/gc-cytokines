@@ -1,7 +1,7 @@
 """
 This creates Figure 2.
 """
-from .figureCommon import subplotLabel, getSetup, traf_names, Rexpr_names
+from .figureCommon import subplotLabel, getSetup, traf_names, Rexpr_names, plot_conf_int
 from ..plot_model_prediction import pstat
 from ..model import nParams, getTotalActiveSpecies, runCkineU, getSurfaceGCSpecies, runCkineY0, getTotalActiveCytokine
 import numpy as np
@@ -17,17 +17,16 @@ from ..fit_others import build_model
 def makeFigure():
     """Get a list of the axis objects and create a figure"""
     # Get list of axis objects
-    ax, f = getSetup((7, 6), (3, 4))
+    ax, f = getSetup((10, 6), (2, 4))
 
     # Blank out for the cartoon
     ax[0].axis('off')
 
     subplotLabel(ax[0], 'A')
     pstat_plot(ax[1])
-    violinPlots(ax[2:6])
-    surf_gc(ax[6], 100.)
-    surf_gc(ax[7], 1000.)
-    plot_pretreat(ax[8])
+    plot_pretreat(ax[2])
+    surf_gc(ax[3], 100.)
+    violinPlots(ax[4:8])
     
     
 
@@ -96,33 +95,32 @@ def pstat_plot(ax):
     path = os.path.dirname(os.path.abspath(__file__))
     dataIL4 = pd.read_csv(join(path, "../data/Gonnord_S3B.csv")).values # imports IL4 file into pandas array
     dataIL7 = pd.read_csv(join(path, "../data/Gonnord_S3C.csv")).values # imports IL7 file into pandas array
-    
-    def plot_structure(IL4vec, IL7vec, title, ax):
-        ax.set_title(title)
-        ax.plot(np.log10(cytokC_common), IL4vec, color='powderblue', alpha=0.5, label="IL4")
-        ax.plot(np.log10(cytokC_common), IL7vec, color='b', alpha=0.5, label='IL7') 
-        ax.set_ylabel('pSTAT activation' )
-        ax.set_xlabel('cytokine concentration (nM)')
-        # ax.legend()
 
+    IL4_output = np.zeros((PTS, 500))
+    IL7_output = IL4_output.copy()
     for ii in range(0,500):
         output = pstat_calc(unkVec[:,ii], scales[ii,:], cytokC_common)
-        IL4_output = output[0:PTS]
-        IL7_output = output[PTS:(PTS*2)]
-
-        plot_structure(IL4_output, IL7_output, "PBMCs stimulated for 10 min.", ax)
+        IL4_output[:, ii] = output[0:PTS]
+        IL7_output[:, ii] = output[PTS:(PTS*2)]
         
+    # plot confidence intervals based on model predictions
+    plot_conf_int(ax, np.log10(cytokC_common), IL4_output, "powderblue", "IL4")
+    plot_conf_int(ax, np.log10(cytokC_common), IL7_output, "b", "IL7")
+    
+    # overlay experimental data
     ax.scatter(np.log10(cytokC_4), dataIL4[:,1], color='powderblue', marker='^', edgecolors='k', zorder=100)
     ax.scatter(np.log10(cytokC_4), dataIL4[:,2], color='powderblue', marker='^', edgecolors='k', zorder=200)
     ax.scatter(np.log10(cytokC_7), dataIL7[:,1], color='b', marker='^', edgecolors='k', zorder=300)
     ax.scatter(np.log10(cytokC_7), dataIL7[:,2], color='b', marker='^', edgecolors='k', zorder=400)
+    ax.set(ylabel='pSTAT activation', xlabel='stimulation concentration (nM)', title="pSTAT activity")
+    ax.legend()
         
 def violinPlots(ax):
     """ Create violin plots of model posterior. """
     unkVec, scales = import_samples()
     unkVec = unkVec.transpose()
     
-    rxn = np.array([unkVec[:, 6], unkVec[:, 13], unkVec[:, 15]])
+    rxn = np.array([unkVec[:, 6], unkVec[:, 13], unkVec[:, 15]]) # kfwd, k27rev, k33rev
     rxn = rxn.transpose()
     rxn = pd.DataFrame(rxn)
     traf = pd.DataFrame(unkVec[:, 17:22])
@@ -133,37 +131,22 @@ def violinPlots(ax):
     
     rxn.columns = ['kfwd', 'k27rev', 'k33rev']
     a = sns.violinplot(data=np.log10(rxn), ax=ax[0])  # creates names based on dataframe columns
-    a.set_xticklabels(a.get_xticklabels(),
-                       rotation=40,
-                       rotation_mode="anchor",
-                       ha="right",
-                       fontsize=8,
-                       position=(0, 0.075))
-    
+    a.set_xticklabels(a.get_xticklabels(), rotation=40, rotation_mode="anchor", ha="right", fontsize=8, position=(0,0.045))
     
     traf.columns = traf_names()
     b = sns.violinplot(data=traf, ax=ax[1])
-    b.set_xticklabels(b.get_xticklabels(),
-                       rotation=40,
-                       rotation_mode="anchor",
-                       ha="right",
-                       fontsize=8,
-                       position=(0, 0.075))
+    b.set_xticklabels(b.get_xticklabels(), rotation=40, rotation_mode="anchor", ha="right", fontsize=8, position=(0,0.045))
     
     Rexpr.columns = ['GCexpr', 'IL7Raexpr', 'IL4Raexpr']
     c = sns.violinplot(data=Rexpr, ax=ax[2])
-    c.set_xticklabels(c.get_xticklabels(),
-                       rotation=40,
-                       rotation_mode="anchor",
-                       ha="right",
-                       fontsize=8,
-                       position=(0, 0.075))
+    c.set_xticklabels(c.get_xticklabels(), rotation=40, rotation_mode="anchor", ha="right", fontsize=8, position=(0,0.045))
     
     scales.columns = ['IL4 scale', 'IL7 scale']
-    sns.violinplot(data=scales, ax=ax[3])
+    d = sns.violinplot(data=scales, ax=ax[3])
+    d.set_xticklabels(d.get_xticklabels(), rotation=40, rotation_mode="anchor", ha="right", fontsize=8, position=(0,0.045))
     
 
-def pretreat_calc(unkVec, pre_IL4, pre_IL7):
+def pretreat_calc(unkVec, pre_conc):
     ''' This function performs the calculations necessary to produce the Gonnord Figures S3B and S3C. '''
     # import function returns from model.py
     activity = getTotalActiveSpecies().astype(np.float64)
@@ -199,8 +182,8 @@ def pretreat_calc(unkVec, pre_IL4, pre_IL7):
         return getTotalActiveCytokine(2, np.squeeze(returnn)) # only look at active species associated with IL7
     
     assert unkVec.size == nParams()
-    actVec_IL4stim = np.fromiter((singleCalc_4stim(unkVec, 2, x) for x in pre_IL7), np.float64)
-    actVec_IL7stim = np.fromiter((singleCalc_7stim(unkVec, 4, x) for x in pre_IL4), np.float64)
+    actVec_IL4stim = np.fromiter((singleCalc_4stim(unkVec, 2, x) for x in pre_conc), np.float64)
+    actVec_IL7stim = np.fromiter((singleCalc_7stim(unkVec, 4, x) for x in pre_conc), np.float64)
     
     actVec = np.concatenate((actVec_IL4stim, actVec_IL7stim))
     
@@ -225,49 +208,41 @@ def plot_pretreat(ax):
     data = pd.read_csv(join(path, "../data/Gonnord_S3D.csv")).values 
     IL7_pretreat_conc = data[:, 0] / 17400. # concentrations used for IL7 pretreatment followed by IL4 stimulation
     IL4_pretreat_conc = data[:, 5] / 14900. # concentrations used for IL4 pretreatment followed by IL7 stimulation 
-    num = 20
-    pre_IL4 = np.logspace(-3.8, 1.0, num=num)
-    pre_IL7 = np.logspace(-3.8, 1.0, num=num)
-    for ii in range(25):
-        output = pretreat_calc(unkVec[:, ii], pre_IL4, pre_IL7)
-        IL4_stim = output[0:num]
-        IL7_stim = output[num:(num*2)]
-        ax.plot(np.log10(pre_IL7), IL4_stim, color='powderblue', zorder=ii)
-        ax.plot(np.log10(pre_IL4), IL7_stim, color='b', zorder=ii)
-    
-    ax.set_title('IL-4 and IL-7 crosstalk')
-    ax.set_ylim(0,120)
-    ax.set_ylabel("Percent inhibition (% x 100)")
-    ax.set_xlabel("log10 of pretreatment concentration (nM)")
-    
-    # add experimental data to plots
-    ax.scatter(np.log10(IL7_pretreat_conc), data[:, 1], color='powderblue', zorder=100, marker='^', edgecolors='k', 
-              label='IL-4 stim. (IL-7 pre.)')
-    ax.scatter(np.log10(IL7_pretreat_conc), data[:, 2], color='powderblue', zorder=101, marker='^', edgecolors='k')
-    ax.scatter(np.log10(IL7_pretreat_conc), data[:, 3], color='powderblue', zorder=102, marker='^', edgecolors='k')
-    ax.scatter(np.log10(IL4_pretreat_conc), data[:, 6], color='b', zorder=103, marker='^', edgecolors='k', 
-              label='IL-7 stim. (IL-4 pre.)')
-    ax.scatter(np.log10(IL4_pretreat_conc), data[:, 7], color='b', zorder=104, marker='^', edgecolors='k')
-    ax.scatter(np.log10(IL4_pretreat_conc), data[:, 8], color='b', zorder=105, marker='^', edgecolors='k')
-
-
-    
-
-def surf_gc(ax, cytokC_pg):
-    size = 40
-    ts = np.linspace(0., 100., num=size)
-    output = calc_surf_gc(ts, cytokC_pg)
-    IL4vec = output[:, 0:size]
-    IL7vec = output[:, size:(size*2)]
+    PTS = 30
+    pre_conc = np.logspace(-3.8, 1.0, num=PTS)
+    IL4_stim = np.zeros((PTS, 500))
+    IL7_stim = IL4_stim.copy()
     
     for ii in range(500):
-        ax.plot(ts, IL4vec[ii, :], color='powderblue', label='IL4', alpha=0.5, zorder=ii)
-        ax.plot(ts, IL7vec[ii, :], color='b', label='IL7', alpha=0.5, zorder=ii)
+        output = pretreat_calc(unkVec[:, ii], pre_conc)
+        IL4_stim[:, ii] = output[0:PTS]
+        IL7_stim[:, ii] = output[PTS:(PTS*2)]
     
-    ax.set_title(str(cytokC_pg) + ' pg/mL of stimulation')
-    ax.set_ylim(0,120)
-    ax.set_ylabel("Surface gamma chain (% x 100)")
-    ax.set_xlabel("Time (min)")
+    plot_conf_int(ax, np.log10(pre_conc), IL4_stim, "powderblue", "IL-4 stim. (IL-7 pre.)")
+    plot_conf_int(ax, np.log10(pre_conc), IL7_stim, "b", "IL-7 stim. (IL-4 pre.)")
+    ax.set(title="IL-4 and IL-7 crosstalk", ylabel="percent inhibition", xlabel="pretreatment concentration (nM)")
+    
+    # add experimental data to plots
+    ax.scatter(np.log10(IL7_pretreat_conc), data[:, 1], color='powderblue', zorder=100, marker='^', edgecolors='k')
+    ax.scatter(np.log10(IL7_pretreat_conc), data[:, 2], color='powderblue', zorder=101, marker='^', edgecolors='k')
+    ax.scatter(np.log10(IL7_pretreat_conc), data[:, 3], color='powderblue', zorder=102, marker='^', edgecolors='k')
+    ax.scatter(np.log10(IL4_pretreat_conc), data[:, 6], color='b', zorder=103, marker='^', edgecolors='k')
+    ax.scatter(np.log10(IL4_pretreat_conc), data[:, 7], color='b', zorder=104, marker='^', edgecolors='k')
+    ax.scatter(np.log10(IL4_pretreat_conc), data[:, 8], color='b', zorder=105, marker='^', edgecolors='k')
+    ax.legend()
+
+
+def surf_gc(ax, cytokC_pg):
+    PTS = 40
+    ts = np.linspace(0., 100., num=PTS)
+    output = calc_surf_gc(ts, cytokC_pg)
+    IL4vec = np.transpose(output[:, 0:PTS])
+    IL7vec = np.transpose(output[:, PTS:(PTS*2)])
+    
+    plot_conf_int(ax, ts, IL4vec, "powderblue", "IL4")
+    plot_conf_int(ax, ts, IL7vec, "b", "IL7")
+    ax.set(title=("Ligand conc.: " + str(cytokC_pg) + ' pg/mL'), ylabel="surface gamma chain (% x 100)", xlabel="time (min)")
+    ax.legend()
     
 def calc_surf_gc(t, cytokC_pg):
     gc_species_IDX = getSurfaceGCSpecies()
