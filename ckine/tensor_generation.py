@@ -83,15 +83,15 @@ def findy(lig, n_timepoints):
 
 def reduce_values(y_of_combos):
     """Reduce y_of_combinations into necessary values."""
-    active_list = [np.array([7,8]),np.array([14,15]), np.array([18]),np.array([21]),np.array([24]),np.array([27])] #active indices for all receptors relative to cytokine
-    values = np.zeros((y_of_combos.shape[0],y_of_combos.shape[1],22))
+    active_list = [np.array([7, 8, 14, 15]),np.array([18]),np.array([21]),np.array([24]),np.array([27])] #active indices for all receptors relative to cytokine; NOte we combined the activity of IL2 and IL15
+    values = np.zeros((y_of_combos.shape[0],y_of_combos.shape[1],21))
     indices = [np.array([0, 3, 5, 6, 8]), np.array([1, 4, 5, 7, 8, 11, 12, 14, 15]), np.array([2, 6, 7, 8, 13, 14, 15, 18, 21]), np.array([9, 10, 12, 13, 15]), np.array([16, 17, 18]), np.array([19, 20, 21]), np.array([22, 23, 24]),np.array([25, 26, 27])]
-    for i in range(6): #first 6 total active cytokines
+    for i in range(5): #first 6 total active cytokines
         values[:,:,i] = np.sum(y_of_combos[:,:,active_list[i]], axis = 2) + internalStrength() * np.sum(y_of_combos[:,:,halfL()+active_list[i]], axis = 2)
     for j in range(len(indices)):
-        values[:,:,6+j] = np.sum(y_of_combos[:,:,indices[j]], axis = 2)
+        values[:,:,5+j] = np.sum(y_of_combos[:,:,indices[j]], axis = 2)
     for k in range(len(indices)):
-        values[:,:,6+len(indices)+k] = values[:,:,6+k] + internalStrength() * np.sum(y_of_combos[:,:,halfL(): halfL() * 2][:,:,indices[k]], axis = 2)
+        values[:,:,5+len(indices)+k] = values[:,:,5+k] + internalStrength() * np.sum(y_of_combos[:,:,halfL(): halfL() * 2][:,:,indices[k]], axis = 2)
     return values
 
 def prepare_tensor(lig, n_timepoints = 100):
@@ -102,6 +102,4 @@ def prepare_tensor(lig, n_timepoints = 100):
     tensor4D = np.zeros((values.shape[1],len(cell_names),len(mat),values.shape[2]))
     for ii in range(tensor4D.shape[0]):
         tensor4D[ii] = values[:,ii,:].reshape(tensor4D.shape[1:4])
-
-    #tensor4D[:,:,:, [0,1,6,7,8,9,14,15,16,17]] are the indices for IL2 and IL15
     return tensor4D, new_mat, mat, mats, cell_names
