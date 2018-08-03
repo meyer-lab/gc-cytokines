@@ -41,6 +41,7 @@ def nRxn():
 
 
 def runCkineU (tps, rxntfr, sensi=False):
+    """ Standard version of solver that returns species abundances given times and unknown rates. """
     rxntfr = rxntfr.copy()
     assert rxntfr.size == __nParams
     assert rxntfr[19] < 1.0 # Check that sortF won't throw
@@ -61,11 +62,12 @@ def runCkineU (tps, rxntfr, sensi=False):
 
     if sensi is True:
         return (yOut, retVal, sensV)
-    else:
-        return (yOut, retVal)
+
+    return (yOut, retVal)
 
 
 def runCkineY0 (y0, tps, rxntfr, sensi=False):
+    """ Version of runCkine that takes y0 as an input. """
     assert y0.size == __nSpecies
     assert rxntfr.size == __nParams
     assert rxntfr[19] < 1.0 # Check that sortF won't throw
@@ -87,11 +89,12 @@ def runCkineY0 (y0, tps, rxntfr, sensi=False):
 
     if sensi is True:
         return (yOut, retVal, sensV)
-    else:
-        return (yOut, retVal)
+
+    return (yOut, retVal)
 
 
 def runCkineUP (tp, rxntfr, sensi=False):
+    """ Version of runCkine that runs in parallel. """
     assert rxntfr.size % __nParams == 0
     assert rxntfr.shape[1] == __nParams
     assert (rxntfr[:, 19] < 1.0).all() # Check that sortF won't throw
@@ -109,11 +112,12 @@ def runCkineUP (tp, rxntfr, sensi=False):
 
     if sensi is True:
         return (yOut, retVal, sensV)
-    else:
-        return (yOut, retVal)
+
+    return (yOut, retVal)
 
 
-def fullJacobian(y, t, rxntfR): # will eventually have to add tfR as an argument once we add more to fullJacobian
+def fullJacobian(y, t, rxntfR):
+    """ Calculates the Jacobian matrix for all species in our model. """
     assert rxntfR.size == __nParams
 
     yOut = np.zeros((__nSpecies, __nSpecies)) # size of the full Jacobian matrix
@@ -122,6 +126,7 @@ def fullJacobian(y, t, rxntfR): # will eventually have to add tfR as an argument
     return yOut
 
 def fullModel(y, t, rxntfr):
+    """ Implement the full model based on dydt, trafficking, expression. """
     assert rxntfr.size == __nParams
 
     yOut = np.zeros_like(y)
@@ -171,7 +176,7 @@ def getActiveCytokine(cytokineIDX, yVec):
 
 def getTotalActiveCytokine(cytokineIDX, yVec):
     """ Get amount of surface and endosomal active species. """
-    assert(yVec.ndim == 1)
+    assert yVec.ndim == 1
     return getActiveCytokine(cytokineIDX, yVec[0:__halfL]) + __internalStrength * getActiveCytokine(cytokineIDX, yVec[__halfL:__halfL*2])
 
 

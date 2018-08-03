@@ -1,20 +1,19 @@
 """
 This file includes the classes and functions necessary to fit the IL4 and IL7 model to experimental data.
 """
-import pymc3 as pm, theano.tensor as T, os
 from os.path import join
-from theano import shared
+import pymc3 as pm, theano.tensor as T, os
 import numpy as np, pandas as pds
 from .model import getTotalActiveSpecies
-from .differencing_op import runCkineOp, runCkineDoseOp
+from .differencing_op import runCkineDoseOp
 
 class IL4_7_activity:
+    """ This class is responsible for calculating residuals between model predictions and the data from Gonnord et al. """
     def __init__(self):
-        """This loads the experiment data and saves it as a member matrix and it also makes a vector of the ligand concentrations that we are going to take care of."""
         path = os.path.dirname(os.path.abspath(__file__))
         dataIL4 = pds.read_csv(join(path, "./data/Gonnord_S3B.csv")).values # imports IL4 file into pandas array
         dataIL7 = pds.read_csv(join(path, "./data/Gonnord_S3C.csv")).values # imports IL7 file into pandas array
-        
+
         # units are converted from pg/mL to nM
         self.cytokC_4 = np.array([5., 50., 500., 5000., 50000., 250000.]) / 14900. # 14.9 kDa according to sigma aldrich
         self.cytokC_7 = np.array([1., 10., 100., 1000., 10000., 100000.]) / 17400. # 17.4 kDa according to prospec bio
@@ -23,12 +22,12 @@ class IL4_7_activity:
         self.cytokM[0:self.cytokC_4.size, 4] = self.cytokC_4
         self.cytokM[self.cytokC_4.size::, 2] = self.cytokC_7
 
-        self.fit_data = np.concatenate((dataIL4[:, 1], dataIL4[:, 2], dataIL7[:, 1], dataIL7[:, 2])) # the measurements are not normalized
+        self.fit_data = np.concatenate((dataIL4[:, 1], dataIL4[:, 2], dataIL7[:, 1], dataIL7[:, 2])) # measurements aren't normalized
         self.activity = getTotalActiveSpecies().astype(np.float64)
 
 
     def calc(self, unkVec, scales):
-        """Simulate the experiment with different ligand stimulations. It is making a list of promises which will be calculated and returned as output."""
+        """ Simulate the experiment with different ligand stimulations and compare with experimental data. """
         Op = runCkineDoseOp(tt=np.array(10.), condense=getTotalActiveSpecies().astype(np.float64), conditions=self.cytokM)
 
         # Run the experiment
@@ -37,11 +36,10 @@ class IL4_7_activity:
         actVecIL4 = outt[0:self.cytokC_4.size]
         actVecIL7 = outt[self.cytokC_4.size:self.cytokC_4.size*2]
 
-        # Normalize to the scaling constants, put together into one vector
-        # TODO: make sure indexing in unkVec is correct for scales
+        # Multiply by scaling constants and put together in one vector
         actVec = T.concatenate((actVecIL4 * scales[0], actVecIL4 * scales[0], actVecIL7 * scales[1], actVecIL7 * scales[1]))
 
-        # value we're trying to minimize is the distance between the y-values on points of the graph that correspond to the same lignad values and species
+        # return residual
         return self.fit_data - actVec
 
 
@@ -68,9 +66,8 @@ class build_model:
             GCexpr = (328. * endo_activeEndo[0]) / (1. + ((kRec_kDeg[0]*(1.-sortF)) / (kRec_kDeg[1]*sortF))) # constant according to measured number per cell
             IL7Raexpr = (2591. * endo_activeEndo[0]) / (1. + ((kRec_kDeg[0]*(1.-sortF)) / (kRec_kDeg[1]*sortF))) # constant according to measured number per cell
             IL4Raexpr = (254. * endo_activeEndo[0]) / (1. + ((kRec_kDeg[0]*(1.-sortF)) / (kRec_kDeg[1]*sortF))) # constant according to measured number per cell
-            # TODO: double check the priors for scales seem reasonable
             scales = pm.Lognormal('scales', mu=np.log(100), sd=np.log(25), shape=2) # create scaling constants for activity measurements
-            
+
             unkVec = T.concatenate((kfwd, nullRates, k27rev, Tone, k33rev, Tone, endo_activeEndo, sortF, kRec_kDeg))
             unkVec = T.concatenate((unkVec, Tzero, Tzero, GCexpr, Tzero, IL7Raexpr, Tzero, IL4Raexpr, Tzero)) # indexing same as in model.hpp
 
@@ -90,6 +87,7 @@ class build_model:
         self.trace = pm.sample(init='advi', model=self.M)
 
     def fit_ADVI(self):
+        """ Running fit_advi instead of true sampling. """
         with self.M:
             approx = pm.fit(40000, method='fullrank_advi')
             self.trace = approx.sample()

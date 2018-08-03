@@ -1,6 +1,8 @@
+"""
+This file is responsible for performing calculations that allow us to compare our fitting results with the Ring paper in figure1.py
+"""
 import numpy as np
-import matplotlib.pyplot as plt
-from .model import getTotalActiveSpecies, runCkineU, getSurfaceIL2RbSpecies, nSpecies, nParams, getSurfaceGCSpecies
+from .model import getTotalActiveSpecies, runCkineU, getSurfaceIL2RbSpecies, nParams, getSurfaceGCSpecies
 
 
 class surf_IL2Rb:
@@ -43,14 +45,13 @@ class surf_IL2Rb:
         g = self.singleCalc(unkVecIL2RaMinus, 1, 1., t)
         h = self.singleCalc(unkVecIL2RaMinus, 1, 500., t)
 
-        return (np.concatenate((a, b, c, d, e, f, g, h)) / a[0])
+        return np.concatenate((a, b, c, d, e, f, g, h)) / a[0]
 
 class pstat:
     '''Generate values to match the pSTAT5 measurements used in fitting'''
     def __init__(self):
         # import function returns from model.py
         self.activity = getTotalActiveSpecies().astype(np.float64)
-        
         self.ts = np.array([500.]) # was 500. in literature
 
     def singleCalc(self, unkVec, cytokine, conc):
@@ -80,13 +81,14 @@ class pstat:
         # Normalize to the maximal activity, put together into one vector
         actVec = np.concatenate((actVec_IL2, actVec_IL2_IL2Raminus, actVec_IL15, actVec_IL15_IL2Raminus))
 
-        return (actVec / np.max(actVec))
+        return actVec / np.max(actVec)
 
 class surf_gc:
+    """ This class is responsible for calculating the percent of gamma chain on the cell surface. The experimental conditions match those of the surface IL2Rb measurements in Ring et al. """
     def __init__(self):
         # import function returns from model.py
         self.gc_species_IDX = getSurfaceGCSpecies()
-        
+
     def singleCalc(self, unkVec, cytokine, conc, t):
         """ Calculates the surface gc over time for one condition. """
         unkVec = unkVec.copy()
@@ -99,7 +101,7 @@ class surf_gc:
         a = np.dot(returnn, self.gc_species_IDX)
 
         return a
-    
+
     def calc(self, unkVec, t):
         '''This function calls single Calc for all the experimental combinations of interest; it uses an unkVec that has the same elements as the unkVec in fit.py'''
 
@@ -121,5 +123,5 @@ class surf_gc:
         g = self.singleCalc(unkVecIL2RaMinus, 1, 1., t)
         h = self.singleCalc(unkVecIL2RaMinus, 1, 500., t)
 
-        return (np.concatenate((a, b, c, d, e, f, g, h)) / a[0])
+        return np.concatenate((a, b, c, d, e, f, g, h)) / a[0]
     

@@ -2,11 +2,11 @@
 This creates Figure 3.
 """
 import string
-from .figureCommon import subplotLabel, getSetup
-import numpy as np
 import os
 import pickle
+import numpy as np
 from ..tensor_generation import prepare_tensor
+from .figureCommon import subplotLabel, getSetup
 from ..Tensor_analysis import find_R2X, split_R2X, R2X_singles
 
 
@@ -32,9 +32,7 @@ def makeFigure():
     n_comps = 20
 
     plot_R2X(ax[3], values, factors_list, n_comps)
-    
     plot_split_R2X(ax[3], values, factors_list, n_comps)
-    
     plot_R2X_singles(ax[7], values, factors_list, n_comps)
     # Add subplot labels
     for ii, item in enumerate(ax):
@@ -66,13 +64,13 @@ def plot_R2X_singles(ax, values, factors_list, n_comps):
     old_R2X = np.zeros((3,n_comps))
 
     for ii in range(3):
-        old_R2X[ii,:] = R2X_matrix[ii,-1] #the -1 value here is for the R2X for the last component. 
+        old_R2X[ii,:] = R2X_matrix[ii,-1] #the -1 value here is for the R2X for the last component.
 
     percent_reduction = 1 - R2X_singles_matrix[1:4, :] / old_R2X
 
     ax.plot(range(1,n_comps+1), percent_reduction[0,:], 'bo', label = 'Ligand Activity R2X')
     ax.plot(range(1,n_comps+1), percent_reduction[1,:], 'ro', label = 'Surface Receptors R2X')
-    ax.plot(range(1,n_comps+1), percent_reduction[2,:], 'go', label = 'Total Receptors R2X')    
+    ax.plot(range(1,n_comps+1), percent_reduction[2,:], 'go', label = 'Total Receptors R2X')
     ax.set_ylabel('Percent Reduction in R2X')
     ax.set_xlabel('Component Index')
     ax.set_ylim(0, 1)

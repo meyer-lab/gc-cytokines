@@ -40,8 +40,8 @@ class runCkineOpDiff(Op):
 
         if sensi is True:
             return np.squeeze(outt[2])
-        else:
-            return np.squeeze(outt[0])
+
+        return np.squeeze(outt[0])
 
     def perform(self, node, inputs, outputs):
         outputs[0][0] = self.runCkine(inputs, True)
@@ -80,8 +80,8 @@ class runCkineOpKineticDiff(Op):
 
         if sensi is True:
             return np.dot(np.transpose(outt[2]), self.condense)
-        else:
-            return np.dot(outt[0], self.condense)
+
+        return np.dot(outt[0], self.condense)
 
     def perform(self, node, inputs, outputs):
         outputs[0][0] = self.runCkine(inputs, sensi=True)
@@ -126,8 +126,8 @@ class runCkineOpDoseDiff(Op):
         if sensi is True:
             # We override the ligands, so don't pass along their gradient
             return np.dot(np.transpose(outt[2][:, 6::]), self.condense)
-        else:
-            return np.dot(outt[0], self.condense)
+
+        return np.dot(outt[0], self.condense)
 
     def perform(self, node, inputs, outputs):
         outputs[0][0] = self.runCkine(inputs, sensi=True)

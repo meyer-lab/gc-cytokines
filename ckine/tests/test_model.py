@@ -6,9 +6,9 @@ import numpy as np
 from hypothesis import given, settings
 from hypothesis.strategies import floats
 from hypothesis.extra.numpy import arrays as harrays
-from ..model import fullModel, getTotalActiveCytokine, runCkineU, fullJacobian, nSpecies, runCkineUP
 from scipy.optimize.slsqp import approx_jacobian
-from ..Tensor_analysis import find_R2X
+from ..model import fullModel, getTotalActiveCytokine, runCkineU, fullJacobian, nSpecies, runCkineUP
+
 
 settings.register_profile("ci", max_examples=1000)
 settings.load_profile("ci")
@@ -23,6 +23,7 @@ conservation_IDX = [np.array([1, 4, 5, 7, 8, 11, 12, 14, 15]), # IL2Rb
                     np.array([2, 6, 7, 8, 13, 14, 15, 18, 21, 24, 27])] # gc
 
 class TestModel(unittest.TestCase):
+    """ Here are the unit tests. """
     def assertPosEquilibrium(self, X, func):
         """Assert that all species came to equilibrium."""
         # All the species abundances should be above zero
@@ -66,7 +67,7 @@ class TestModel(unittest.TestCase):
         # Check for conservation of each endosomal receptor
         for idxs in conservation_IDX:
             self.assertConservation(dy, 0.0, idxs + 28)
-            
+
     def test_equlibrium(self):
         '''System should still come to equilibrium after being stimulated with ligand'''
         t = np.array([0.0, 100000.0])
@@ -112,6 +113,7 @@ class TestModel(unittest.TestCase):
 
     @given(y0=harrays(np.float, nSpecies(), elements=floats(0, 10)))
     def test_reproducible(self, y0):
+        """ Make sure full model is reproducible under same conditions. """
 
         dy1 = fullModel(y0, 0.0, self.rxntfR)
 
@@ -123,12 +125,9 @@ class TestModel(unittest.TestCase):
 
     @given(vec=harrays(np.float, 30, elements=floats(0.1, 10.0)))
     def test_runCkine(self, vec):
-        # Force sorting fraction to be less than 1.0
-        vec[19] = np.tanh(vec[19])*0.9
-
+        """ Make sure model runs properly by checking retVal. """
+        vec[19] = np.tanh(vec[19])*0.9 # Force sorting fraction to be less than 1.0
         retVal = runCkineU(self.ts, vec)[1]
-
-        # test that return value of runCkine isn't negative (model run didn't fail)
         self.assertGreaterEqual(retVal, 0)
 
     def test_runCkineParallel(self):
@@ -145,13 +144,13 @@ class TestModel(unittest.TestCase):
             self.assertTrue(np.all(outt[0, :] == outt[ii, :]))
 
     def test_fullJacobian(self):
+        """ Test that our analytical jacobian matches an approximate jacobian. """
         analytical = fullJacobian(self.fully, 0.0, self.rxntfR)
         approx = approx_jacobian(self.fully, lambda x: fullModel(x, 0.0, self.rxntfR), epsilon=1.0E-6)
 
         self.assertTrue(analytical.shape == approx.shape)
 
         closeness = np.isclose(analytical, approx, rtol=0.00001, atol=0.00001)
-
         if not np.all(closeness):
             IDXdiff = np.where(np.logical_not(closeness))
             print(IDXdiff)
@@ -186,7 +185,6 @@ class TestModel(unittest.TestCase):
         rxntfR[0:6] = 0.0
         rxntfR[6] = 1.0E-6 # Damp down kfwd
         rxntfR[7:22] = 0.1 # Fill all in to avoid parameter variation
-        
         rxntfR[18] = 10.0 # Turn up active endocytosis
         rxntfR[21] = 0.02 # Turn down degradation
         rxntfR[22:30] = 10.0 # Control expression
