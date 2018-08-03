@@ -57,7 +57,7 @@ def R2X_singles(values, factors_list, n_comps):
     LigandTensor = z_values[:,:,:, 0:6]
     SurfTensor = z_values[:,:,:, 6:14]
     TotalTensor = z_values[:,:,:, 14:22]
-    
+
     factors = factors_list[-1]
     R2X_singles_matrix = np.zeros((4,n_comps)) #1st row is overall R2X; 2nd row is ligand activity R2X; 3rd is Surface receptor; 4th is total receptor
     for ii in range(n_comps):
@@ -86,13 +86,13 @@ def split_R2X(values, factors_list, n_comp):
     for ii in range(n_comp):
         factors = factors_list[ii]
         values_reconstructed = tensorly.kruskal_to_tensor(factors)
-        
+
         Ligand_reconstructed = values_reconstructed[:,:,:,0:6]
         R2X_matrix[0,ii] = 1 - np.var(Ligand_reconstructed - LigandTensor) / np.var(LigandTensor)
-        
+
         Surf_reconstructed = values_reconstructed[:,:,:,6:14]
         R2X_matrix[1,ii] = 1 - np.var(Surf_reconstructed - SurfTensor) / np.var(SurfTensor)
-        
+
         Total_reconstructed = values_reconstructed[:,:,:,14:22]
         R2X_matrix[2, ii] = 1 - np.var(Total_reconstructed - TotalTensor) / np.var(TotalTensor)
 
@@ -102,10 +102,10 @@ def combo_low_high(mat, lig):
     """ This function determines which combinations were high and low according to our initial conditions. """
     # First six values are IL2, IL15, IL7, IL9, IL4, IL21 that are low and the bottom 6 are their high in terms of combination values.
     ILs = np.logspace(-3, 2, num=lig)
-    
+
     IL2_low_high = [[] for _ in range(len(ILs))]
     IL15_low_high = [[] for _ in range(len(ILs))]
-    
+
     #lows = [[] for _ in range(2)]
     #highs = [[] for _ in range(2)]
     # Fill low receptor expression rates first. The indices in mat refer to the indices in combination
