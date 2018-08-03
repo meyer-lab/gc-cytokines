@@ -62,15 +62,15 @@ def makeFigure():
 def plot_values(ax, factors, component_x, component_y):
     """Plot the values decomposition factors matrix."""
     #Generate a plot for component x vs component y of the factors[3] above representing our values
-    # The markers are for the following elements in order: 'IL2', 'IL15', 'IL7', 'IL9', 'IL4','IL21','IL2Ra', 'IL2Rb', 'gc', 'IL15Ra', 'IL7Ra', 'IL9R', 'IL4Ra','IL21Ra','IL2Ra', 'IL2Rb', 'gc', 'IL15Ra', 'IL7Ra', 'IL9R', 'IL4Ra','IL21Ra.'
+    # The markers are for the following elements in order: 'IL2 & IL15 Combined', 'IL7', 'IL9', 'IL4','IL21','IL2Ra', 'IL2Rb', 'gc', 'IL15Ra', 'IL7Ra', 'IL9R', 'IL4Ra','IL21Ra','IL2Ra', 'IL2Rb', 'gc', 'IL15Ra', 'IL7Ra', 'IL9R', 'IL4Ra','IL21Ra.'
     #Set Active to color red. Set Surface to color blue. Set Total to color black
-    markersLigand = itertools.cycle(('^', '*', 'D', 's', 'X', 'o'))
+    markersLigand = itertools.cycle(('^', 'D', 's', 'X', 'o'))
     markersReceptors = itertools.cycle(('^', '4', 'P', '*', 'D', 's', 'X' ,'o'))
     
-    for q,p in zip(factors[0:6, component_x - 1], factors[0:6, component_y - 1]):
+    for q,p in zip(factors[0:6, component_x - 1], factors[0:5, component_y - 1]):
         ax.plot(q, p, linestyle = '', c = 'r', marker = next(markersLigand), label = 'Ligand Activity')
         
-    for q,p in zip(factors[6:14, component_x - 1], factors[6:14, component_y - 1]):
+    for q,p in zip(factors[6:14, component_x - 1], factors[5:13, component_y - 1]):
         ax.plot(q, p, linestyle = '', c = 'b', marker = next(markersReceptors), label = 'Surface Receptor')
         
     for q,p in zip(factors[14::, component_x - 1], factors[14::, component_y - 1]):
