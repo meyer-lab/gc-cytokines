@@ -17,6 +17,8 @@
 #include <Eigen/Core>
 #include <Eigen/Dense>
 #include "model.hpp"
+#include "reaction.hpp"
+#include "jacobian.hpp"
 
 using std::array;
 using std::copy;
@@ -26,137 +28,12 @@ using std::string;
 using std::endl;
 using std::cout;
 
-typedef Eigen::Matrix<double, Nspecies, Nspecies, Eigen::RowMajor> JacMat;
-
-int Jac(realtype t, N_Vector y, N_Vector fy, SUNMatrix J, void *user_data, N_Vector, N_Vector, N_Vector);
-
-template <class T>
-void fullJacobian(const double * const y, const ratesS * const r, T &out);
-
-const array<size_t, 8> recIDX = {{0, 1, 2, 9, 16, 19, 22, 25}};
-
 std::mutex print_mutex; // mutex to prevent threads printing on top of each other
-
-std::array<bool, halfL> __active_species_IDX() {
-	std::array<bool, halfL> __active_species_IDX;
-	std::fill(__active_species_IDX.begin(), __active_species_IDX.end(), false);
-
-	__active_species_IDX[7] = true;
-	__active_species_IDX[8] = true;
-	__active_species_IDX[14] = true;
-	__active_species_IDX[15] = true;
-	__active_species_IDX[18] = true;
-	__active_species_IDX[21] = true;
-	__active_species_IDX[24] = true;
-	__active_species_IDX[27] = true;
-
-	return __active_species_IDX;
-}
-
-const std::array<bool, halfL> activeV = __active_species_IDX();
-
-
-void dy_dt(const double * const y, const ratesS * const r, double * const dydt, const double * const ILs) {
-	// IL2 in nM
-	const double IL2Ra = y[0];
-	const double IL2Rb = y[1];
-	const double gc = y[2];
-	const double IL2_IL2Ra = y[3];
-	const double IL2_IL2Rb = y[4];
-	const double IL2_IL2Ra_IL2Rb = y[5];
-	const double IL2_IL2Ra_gc = y[6];
-	const double IL2_IL2Rb_gc = y[7];
-	const double IL2_IL2Ra_IL2Rb_gc = y[8];
-	
-	// IL15 in nM
-	const double IL15Ra = y[9];
-	const double IL15_IL15Ra = y[10];
-	const double IL15_IL2Rb = y[11];
-	const double IL15_IL15Ra_IL2Rb = y[12];
-	const double IL15_IL15Ra_gc = y[13];
-	const double IL15_IL2Rb_gc = y[14];
-	const double IL15_IL15Ra_IL2Rb_gc = y[15];
-		
-	// IL2
-	dydt[0] = -kfbnd * IL2Ra * ILs[0] + k1rev * IL2_IL2Ra - r->kfwd * IL2Ra * IL2_IL2Rb_gc + r->k8rev * IL2_IL2Ra_IL2Rb_gc - r->kfwd * IL2Ra * IL2_IL2Rb + r->k12rev * IL2_IL2Ra_IL2Rb;
-	dydt[1] = -kfbnd * IL2Rb * ILs[0] + k2rev * IL2_IL2Rb - r->kfwd * IL2Rb * IL2_IL2Ra_gc + r->k9rev * IL2_IL2Ra_IL2Rb_gc - r->kfwd * IL2Rb * IL2_IL2Ra + r->k11rev * IL2_IL2Ra_IL2Rb;
-	dydt[2] = -r->kfwd * IL2_IL2Rb * gc + r->k5rev * IL2_IL2Rb_gc - r->kfwd * IL2_IL2Ra * gc + r->k4rev * IL2_IL2Ra_gc - r->kfwd * IL2_IL2Ra_IL2Rb * gc + r->k10rev * IL2_IL2Ra_IL2Rb_gc;
-	dydt[3] = -r->kfwd * IL2_IL2Ra * IL2Rb + r->k11rev * IL2_IL2Ra_IL2Rb - r->kfwd * IL2_IL2Ra * gc + r->k4rev * IL2_IL2Ra_gc + kfbnd * ILs[0] * IL2Ra - k1rev * IL2_IL2Ra;
-	dydt[4] = -r->kfwd * IL2_IL2Rb * IL2Ra + r->k12rev * IL2_IL2Ra_IL2Rb - r->kfwd * IL2_IL2Rb * gc + r->k5rev * IL2_IL2Rb_gc + kfbnd * ILs[0] * IL2Rb - k2rev * IL2_IL2Rb;
-	dydt[5] = -r->kfwd * IL2_IL2Ra_IL2Rb * gc + r->k10rev * IL2_IL2Ra_IL2Rb_gc + r->kfwd * IL2_IL2Ra * IL2Rb - r->k11rev * IL2_IL2Ra_IL2Rb + r->kfwd * IL2_IL2Rb * IL2Ra - r->k12rev * IL2_IL2Ra_IL2Rb;
-	dydt[6] = -r->kfwd * IL2_IL2Ra_gc * IL2Rb + r->k9rev * IL2_IL2Ra_IL2Rb_gc + r->kfwd * IL2_IL2Ra * gc - r->k4rev * IL2_IL2Ra_gc;
-	dydt[7] = -r->kfwd * IL2_IL2Rb_gc * IL2Ra + r->k8rev * IL2_IL2Ra_IL2Rb_gc + r->kfwd * gc * IL2_IL2Rb - r->k5rev * IL2_IL2Rb_gc;
-	dydt[8] = r->kfwd * IL2_IL2Rb_gc * IL2Ra - r->k8rev * IL2_IL2Ra_IL2Rb_gc + r->kfwd * IL2_IL2Ra_gc * IL2Rb - r->k9rev * IL2_IL2Ra_IL2Rb_gc + r->kfwd * IL2_IL2Ra_IL2Rb * gc - r->k10rev * IL2_IL2Ra_IL2Rb_gc;
-
-	// IL15
-	dydt[9] = -kfbnd * IL15Ra * ILs[1] + k13rev * IL15_IL15Ra - r->kfwd * IL15Ra * IL15_IL2Rb_gc + r->k20rev * IL15_IL15Ra_IL2Rb_gc - r->kfwd * IL15Ra * IL15_IL2Rb + r->k24rev * IL15_IL15Ra_IL2Rb;
-	dydt[10] = -r->kfwd * IL15_IL15Ra * IL2Rb + r->k23rev * IL15_IL15Ra_IL2Rb - r->kfwd * IL15_IL15Ra * gc + r->k16rev * IL15_IL15Ra_gc + kfbnd * ILs[1] * IL15Ra - k13rev * IL15_IL15Ra;
-	dydt[11] = -r->kfwd * IL15_IL2Rb * IL15Ra + r->k24rev * IL15_IL15Ra_IL2Rb - r->kfwd * IL15_IL2Rb * gc + r->k17rev * IL15_IL2Rb_gc + kfbnd * ILs[1] * IL2Rb - k14rev * IL15_IL2Rb;
-	dydt[12] = -r->kfwd * IL15_IL15Ra_IL2Rb * gc + r->k22rev * IL15_IL15Ra_IL2Rb_gc + r->kfwd * IL15_IL15Ra * IL2Rb - r->k23rev * IL15_IL15Ra_IL2Rb + r->kfwd * IL15_IL2Rb * IL15Ra - r->k24rev * IL15_IL15Ra_IL2Rb;
-	dydt[13] = -r->kfwd * IL15_IL15Ra_gc * IL2Rb + r->k21rev * IL15_IL15Ra_IL2Rb_gc + r->kfwd * IL15_IL15Ra * gc - r->k16rev * IL15_IL15Ra_gc;
-	dydt[14] = -r->kfwd * IL15_IL2Rb_gc * IL15Ra + r->k20rev * IL15_IL15Ra_IL2Rb_gc + r->kfwd * gc * IL15_IL2Rb - r->k17rev * IL15_IL2Rb_gc;
-	dydt[15] =  r->kfwd * IL15_IL2Rb_gc * IL15Ra - r->k20rev * IL15_IL15Ra_IL2Rb_gc + r->kfwd * IL15_IL15Ra_gc * IL2Rb - r->k21rev * IL15_IL15Ra_IL2Rb_gc + r->kfwd * IL15_IL15Ra_IL2Rb * gc - r->k22rev * IL15_IL15Ra_IL2Rb_gc;
-	
-	dydt[1] = dydt[1] - kfbnd * IL2Rb * ILs[1] + k14rev * IL15_IL2Rb - r->kfwd * IL2Rb * IL15_IL15Ra_gc + r->k21rev * IL15_IL15Ra_IL2Rb_gc - r->kfwd * IL2Rb * IL15_IL15Ra + r->k23rev * IL15_IL15Ra_IL2Rb;
-	dydt[2] = dydt[2] - r->kfwd * IL15_IL2Rb * gc + r->k17rev * IL15_IL2Rb_gc - r->kfwd * IL15_IL15Ra * gc + r->k16rev * IL15_IL15Ra_gc - r->kfwd * IL15_IL15Ra_IL2Rb * gc + r->k22rev * IL15_IL15Ra_IL2Rb_gc; 
-	
-	auto simpleCkine = [&](const size_t ij, const double revOne, const double revTwo, const double IL) {
-		dydt[2] += - r->kfwd * gc * y[ij+1] + revTwo * y[ij+2];
-		dydt[ij] = -kfbnd * y[ij] * IL + revOne * y[ij+1];
-		dydt[ij+1] = kfbnd * y[ij] * IL - revOne * y[ij+1] - r->kfwd * gc * y[ij+1] + revTwo * y[ij+2];
-		dydt[ij+2] = r->kfwd * gc * y[ij+1] - revTwo * y[ij+2];
-	};
-
-	simpleCkine(16, k25rev, r->k27rev, ILs[2]);
-	simpleCkine(19, k29rev, r->k31rev, ILs[3]);
-	simpleCkine(22, k32rev, r->k33rev, ILs[4]);
-	simpleCkine(25, k34rev, r->k35rev, ILs[5]);
-}
-
 
 extern "C" void dydt_C(double *y_in, double, double *dydt_out, double *rxn_in) {
 	ratesS r(rxn_in);
 
 	dy_dt(y_in, &r, dydt_out, r.ILs.data());
-}
-
-
-void fullModel(const double * const y, const ratesS * const r, double *dydt) {
-	// Implement full model.
-	fill(dydt, dydt + Nspecies, 0.0);
-
-	// Calculate cell surface and endosomal reactions
-	dy_dt(y,         r,         dydt, r->ILs.data());
-	dy_dt(y + halfL, r, dydt + halfL,   y + halfL*2);
-
-	// Handle endosomal ligand balance.
-	// Must come before trafficking as we only calculate this based on reactions balance
-	double const * const dydti = dydt + halfL;
-	dydt[56] = -std::accumulate(dydti+3,  dydti+9, (double) 0.0) / internalV;
-	dydt[57] = -std::accumulate(dydti+10, dydti+16, (double) 0.0) / internalV;
-	dydt[58] = -std::accumulate(dydti+17, dydti+19, (double) 0.0) / internalV;
-	dydt[59] = -std::accumulate(dydti+20, dydti+22, (double) 0.0) / internalV;
-	dydt[60] = -std::accumulate(dydti+23, dydti+25, (double) 0.0) / internalV;
-	dydt[61] = -std::accumulate(dydti+26, dydti+28, (double) 0.0) / internalV;
-
-	// Actually calculate the trafficking
-	for (size_t ii = 0; ii < halfL; ii++) {
-		if (activeV[ii]) {
-			dydt[ii] += -y[ii]*(r->endo + r->activeEndo); // Endocytosis
-			dydt[ii+halfL] += y[ii]*(r->endo + r->activeEndo)/internalFrac - r->kDeg*y[ii+halfL]; // Endocytosis, degradation
-		} else {
-			dydt[ii] += -y[ii]*r->endo + r->kRec*(1.0-r->sortF)*y[ii+halfL]*internalFrac; // Endocytosis, recycling
-			dydt[ii+halfL] += y[ii]*r->endo/internalFrac - r->kRec*(1.0-r->sortF)*y[ii+halfL] - (r->kDeg*r->sortF)*y[ii+halfL]; // Endocytosis, recycling, degradation
-		}
-	}
-
-	// Expression: IL2Ra, IL2Rb, gc, IL15Ra, IL7Ra, IL9R, IL4Ra, IL21Ra
-	for (size_t ii = 0; ii < recIDX.size(); ii++)
-		dydt[recIDX[ii]] += r->Rexpr[ii];
-
-	// Degradation does lead to some clearance of ligand in the endosome
-	for (size_t ii = 0; ii < 6; ii++)
-		dydt[(halfL*2) + ii] -= y[(halfL*2) + ii] * r->kDeg;
 }
 
 
@@ -284,6 +161,20 @@ int ewt(N_Vector y, N_Vector w, void *) {
 	for (size_t i = 0; i < Nspecies; i++) {
 		NV_Ith_S(w, i) = 1.0/(fabs(NV_Ith_S(y, i))*tolIn + tolIn);
 	}
+
+	return 0;
+}
+
+
+int Jac(realtype, N_Vector y, N_Vector, SUNMatrix J, void *user_data, N_Vector, N_Vector, N_Vector) {
+	ratesS rattes(static_cast<double *>(user_data));
+
+	Eigen::Map<JacMat> jac(SM_DATA_D(J));
+
+	// Actually get the Jacobian
+	fullJacobian(NV_DATA_S(y), &rattes, jac);
+
+	jac.transposeInPlace();
 
 	return 0;
 }
@@ -460,265 +351,6 @@ extern "C" int runCkineParallel (const double * const rxnRatesIn, double tp, siz
 
 	// Get the worst case to return
 	return *std::min_element(retVals.begin(), retVals.end());
-}
-
-
-void jacobian(const double * const y, const ratesS * const r, double * const dydt, const double * const ILs) {
-	// IL2 in nM
-	const double IL2Ra = y[0];
-	const double IL2Rb = y[1];
-	const double gc = y[2];
-	const double IL2_IL2Ra = y[3];
-	const double IL2_IL2Rb = y[4];
-	const double IL2_IL2Ra_gc = y[6];
-	const double IL2_IL2Rb_gc = y[7];
-	
-	// IL15 in nM
-	const double IL15Ra = y[9];
-	const double IL15_IL15Ra = y[10];
-	const double IL15_IL2Rb = y[11];
-	const double IL15_IL15Ra_gc = y[13];
-	const double IL15_IL2Rb_gc = y[14];
-
-	Eigen::Map<Eigen::Matrix<double, halfL, halfL, Eigen::RowMajor>> out(dydt);
-	
-	// unless otherwise specified, assume all partial derivatives are 0
-	out.setConstant(0.0);
-
-	auto complexCkine = [&out, &gc, &r, &y](const size_t ij, const size_t RaIDX, const double revOne, const double revTwo) {
-		out(RaIDX, ij+1) = -r->kfwd * y[RaIDX]; // Ra with respect to IL_Rb
-		out(RaIDX, ij+4) = -r->kfwd * y[RaIDX]; // Ra with respect to IL_Rb_gc
-
-		out(2, 2) -= r->kfwd * (y[ij] + y[ij+1] + y[ij+2]); // gc with respect to gc
-		out(2, ij) = - r->kfwd * gc; // gc with respect to IL_Ra
-		out(2, ij+1) = - r->kfwd * gc; // gc with respect to IL_Rb
-		out(2, ij+2) = - r->kfwd * gc; // gc with respect to IL_Ra_Rb
-
-		out(1, ij) = - r->kfwd * y[1]; // Rb with respect to IL_Ra
-		out(1, ij+3) = - r->kfwd * y[1]; // Rb with respect to IL_Ra_gc
-
-		out(ij, 1) = -r->kfwd * y[ij]; // IL_Ra with respect to Rb
-		out(ij, 2) = - r->kfwd * y[ij]; // IL_Ra with respect to gc
-
-		out(ij+5, ij+2) = r->kfwd * gc; // IL_Ra_Rb_gc with respect to IL_Ra_Rb
-
-		out(ij+4, 2) = r->kfwd * y[ij+1]; // IL_Rb_gc with respect to gc
-		out(ij+4, RaIDX) = -r->kfwd * y[ij+4]; // IL_Rb_gc with respect to Ra
-		out(ij+4, ij+1) = r->kfwd * gc; // IL_Rb_gc with respect to IL_Rb
-		out(ij+4, ij+4) = -r->kfwd * y[RaIDX] - revOne; // IL_Rb_gc with respect to IL_Rb_gc
-		out(ij+4, ij+5) = revTwo; // IL_Rb_gc with respect to IL_Ra_Rb_gc
-
-		out(2, ij+4) = revOne; // gc with respect to IL_Rb_gc
-		out(ij+1, ij+4) = revOne; // IL_Rb with respect to IL_Rb_gc
-		out(RaIDX, ij+5) = revTwo; // Ra with respect to IL_Ra_Rb_gc
-
-		out(ij+5, RaIDX) = r->kfwd * y[ij+4]; // IL_Ra_Rb_gc with respect to Ra
-		out(ij+5, 1) = r->kfwd * y[ij+3]; // IL_Ra_Rb_gc with respect to Rb
-		out(ij+5, 2) = r->kfwd * y[ij+2]; // IL_Ra_Rb_gc with respect to gc
-		out(ij+5, ij+3) = r->kfwd * y[1]; // IL_Ra_Rb_gc with respect to IL_Ra_gc
-		out(ij+5, ij+4) = r->kfwd * y[RaIDX]; // IL_Ra_Rb_gc with respect to IL_Rb_gc
-		out(ij+2, RaIDX) = r->kfwd * y[ij+1]; // IL_Ra_Rb with respect to Ra
-		out(ij+2, 1) = r->kfwd * y[ij]; // IL_Ra_Rb with respect to Rb
-		out(ij+2, 2) = -r->kfwd * y[ij+2]; // IL_Ra_Rb with respect to gc
-		out(ij+2, ij) = r->kfwd * y[1]; // IL_Ra_Rb with respect to IL_Ra
-		out(ij+2, ij+1) = r->kfwd * y[RaIDX]; // IL_Ra_Rb with respect to IL_Rb
-
-		out(ij+1, RaIDX) = -r->kfwd * y[ij+1]; // IL2_IL2Rb with respect to IL2Ra
-		out(ij+1, 2) = - r->kfwd * y[ij+1]; // IL2_IL2Rb with respect to gc
-		out(ij+3, 1) = -r->kfwd * y[ij+3]; // IL2_IL2Ra_gc with respect to IL2Rb
-		out(ij+3, 2) = r->kfwd * y[ij]; // IL2_IL2Ra_gc with respect to gc
-		out(ij+3, ij) = r->kfwd * gc; // IL2_IL2Ra_gc with respect to IL2_IL2Ra
-	};
-
-	complexCkine(3, 0, r->k5rev, r->k8rev); // IL2
-	complexCkine(10, 9, r->k17rev, r->k20rev); // IL15
-	
-	// IL2Ra
-	out(0, 0) = -kfbnd * ILs[0] - r->kfwd * IL2_IL2Rb_gc - r->kfwd * IL2_IL2Rb; // IL2Ra with respect to IL2Ra
-	out(0, 3) = k1rev; // IL2Ra with respect to IL2_IL2Ra
-	out(0, 5) = r->k12rev; // IL2Ra with respect to IL2_IL2Ra_IL2Rb
-	
-	// IL2Rb
-	out(1, 1) = -kfbnd * (ILs[0] + ILs[1]) - r->kfwd * (IL2_IL2Ra_gc + IL2_IL2Ra + IL15_IL15Ra_gc + IL15_IL15Ra); // partial derivative of IL2Rb with respect to IL2Rb
-	out(1, 4) = k2rev; // IL2Rb with respect to IL2_IL2Rb
-	out(1, 5) = r->k11rev; // IL2Rb with respect to IL2_IL2Ra_IL2Rb
-	out(1, 8) = r->k9rev; // IL2Rb with respect to IL2_IL2Ra_IL2Rb_gc
-	out(1, 11) = k14rev; // IL2Rb with respect to IL15_IL2Rb
-	out(1, 12) = r->k23rev; // IL2Rb with respect to IL15_IL15Ra_IL2Rb
-	out(1, 15) = r->k21rev; // IL2Rb with respect to IL15_IL15Ra_IL2Rb_gc
-	
-	// gc
-	out(2, 6) = r->k4rev; // gc with respect to IL2_IL2Ra_gc
-	out(2, 8) = r->k10rev; // gc with respect to IL2_IL2Ra_IL2Rb_gc
-	out(2, 13) = r->k16rev; // gc with respect to IL15_IL15Ra_gc
-	out(2, 15) = r->k22rev; // gc with respect to IL15_IL15Ra_IL2Rb_gc
-	
-	// IL2_IL2Ra
-	out(3, 0) = kfbnd * ILs[0]; // IL2_IL2Ra with respect to IL2Ra
-	out(3, 3) = -r->kfwd * IL2Rb - r->kfwd * gc - k1rev; // IL2_IL2Ra with respect to IL2_IL2Ra
-	out(3, 5) = r->k11rev; // IL2_IL2Ra with respect to IL2_IL2Ra_IL2Rb
-	out(3, 6) = r->k4rev; // IL2_IL2Ra with respect to IL2_IL2Ra_gc
-	
-	// IL2_IL2Rb
-	out(4, 1) = kfbnd * ILs[0]; // IL2_IL2Rb with respect to IL2Rb
-	out(4, 4) = -r->kfwd * IL2Ra - r->kfwd * gc - k2rev; // IL2_IL2Rb with respect to IL2_IL2Rb
-	out(4, 5) = r->k12rev; // IL2_IL2Rb with respect to IL2_IL2Ra_IL2Rb
-	
-	// IL2_IL2Ra_IL2Rb
-	out(5, 5) = -r->kfwd * gc - r->k11rev - r->k12rev; // IL2_IL2Ra_IL2Rb with respect to IL2_IL2Ra_IL2Rb
-	out(5, 8) = r->k10rev; // IL2_IL2Ra_IL2Rb with respect to IL2_IL2Ra_IL2Rb_gc
-	
-	// IL2_IL2Ra_gc
-	out(6, 6) = -r->kfwd * IL2Rb - r->k4rev; // IL2_IL2Ra_gc with respect to IL2_IL2Ra_gc
-	out(6, 8) = r->k9rev; // IL2_IL2Ra_gc with respect to IL2_IL2Ra_IL2Rb_gc
-	
-	// IL2_IL2Ra_IL2Rb_gc
-	out(8, 8) = - r->k8rev - r->k9rev - r->k10rev; // IL2_IL2Ra_IL2Rb_gc with respect to IL2_IL2Ra_IL2Rb_gc
-	
-	// IL15Ra
-	out(9, 9) = -kfbnd * ILs[1] - r->kfwd * IL15_IL2Rb_gc - r->kfwd * IL15_IL2Rb; // IL15Ra with respect to IL15Ra
-	out(9, 10) = k13rev; // IL15Ra with respect to IL15_IL15Ra
-	out(9, 12) = r->k24rev; // IL15Ra with respect to IL15_IL15Ra_IL2Rb
-	
-	// IL15_IL15Ra
-	out(10, 9) = kfbnd * ILs[1]; // IL15_IL15Ra with respect to IL15Ra
-	out(10, 10) = -r->kfwd * IL2Rb - r->kfwd * gc - k13rev; // IL15_IL15Ra with respect to IL15_IL15Ra
-	out(10, 12) = r->k23rev; // IL15_IL15Ra with respect to IL15_IL15Ra_IL2Rb
-	out(10, 13) = r->k16rev; // IL15_IL15Ra with respect to IL15_IL15Ra_gc
-	
-	// IL15_IL2Rb
-	out(11, 1) = kfbnd * ILs[1]; // IL15_IL2Rb with respect to IL2Rb
-	out(11, 11) = -r->kfwd * IL15Ra - r->kfwd * gc - k14rev; // IL15_IL2Rb with respect to IL15_IL2Rb
-	out(11, 12) = r->k24rev; // IL15_IL2Rb with respect to IL15_IL15Ra_IL2Rb
-	
-	// IL15_IL15Ra_IL2Rb
-	out(12, 12) = -r->kfwd * gc - r->k23rev - r->k24rev; // IL15_IL15Ra_IL2Rb with respect to IL15_IL15Ra_IL2Rb
-	out(12, 15) = r->k22rev; // IL15_IL15Ra_IL2Rb with respect to IL15_IL15Ra_IL2Rb_gc
-	
-	// IL15_IL15Ra_gc
-	out(13, 13) = -r->kfwd * IL2Rb - r->k16rev; // IL15_IL15Ra_gc with respect to IL15_IL15Ra_gc
-	out(13, 15) = r->k21rev; // IL15_IL15Ra_gc with respect to IL15_IL15Ra_IL2Rb_gc
-	
-	// IL15_IL15Ra_IL2Rb_gc
-	out(15, 15) = - r->k20rev - r->k21rev - r->k22rev; // IL15_IL15Ra_IL2Rb_gc with respect to IL15_IL15Ra_IL2Rb_gc
-
-
-	auto simpleCkine = [&out, &gc, &r, &y](const size_t ij, const double revOne, const double revTwo, const double IL) {
-		out(2, 2) -= r->kfwd * y[ij+1]; // gc with respect to gc
-		out(2, ij+1) = -r->kfwd * gc; // gc with respect to Ra_IL
-		out(2, ij+2) = revTwo; // gc with respect to Ra_gc_IL
-
-		out(ij, ij  ) = -kfbnd * IL; // Ra with respect to Ra
-		out(ij, ij+1) = revOne; // IL_Ra
-
-		out(ij+1, 2) = - r->kfwd * y[ij+1]; // IL_Ra with respect to gc
-		out(ij+1, ij) = kfbnd * IL; // IL_Ra with respect to Ra
-		out(ij+1, ij+1) = - revOne - r->kfwd * gc; // IL_Ra with respect to IL_Ra
-		out(ij+1, ij+2) = revTwo; // IL_Ra with respect to IL_Ra_gc
-
-		out(ij+2,    2) = r->kfwd * y[ij+1]; // IL_Ra_gc with respect to gc
-		out(ij+2, ij+1) = r->kfwd * gc; // IL_Ra_gc with respect to IL_Ra
-		out(ij+2, ij+2) = -revTwo; // IL_Ra_gc with respect to IL_Ra_gc
-	};
-
-	simpleCkine(16, k25rev, r->k27rev, ILs[2]); // IL7
-	simpleCkine(19, k29rev, r->k31rev, ILs[3]); // IL9
-	simpleCkine(22, k32rev, r->k33rev, ILs[4]); // IL4
-	simpleCkine(25, k34rev, r->k35rev, ILs[5]); // IL21
-}
-
-
-template <class T>
-void fullJacobian(const double * const y, const ratesS * const r, T &out) {
-	
-	// unless otherwise specified, assume all partial derivatives are 0
-	out.setConstant(0.0);
-
-	array <double, (halfL*halfL)> sub_y;
-	jacobian(y, r, sub_y.data(), r->ILs.data()); // jacobian function assigns values to sub_y
-	for (size_t ii = 0; ii < halfL; ii++)
-		std::copy_n(sub_y.data() + halfL*ii, halfL, out.data() + Nspecies*ii);
-
-	jacobian(y + halfL, r, sub_y.data(), y + halfL*2); // different IL concs for internal case 
-	for (size_t ii = 0; ii < halfL; ii++)
-		std::copy_n(sub_y.data() + halfL*ii, halfL, out.data() + Nspecies*(ii + halfL) + halfL);
-
-	// Implement trafficking
-	double endo = 0;
-	double deg = 0;
-	double rec = 0;
-	for (size_t ii = 0; ii < halfL; ii++) {
-		if (activeV[ii]) {
-			endo = r->endo + r->activeEndo;
-			deg = r->kDeg;
-			rec = 0.0;
-		} else {
-			endo = r->endo;
-			deg = r->kDeg*r->sortF;
-			rec = r->kRec*(1.0-r->sortF);
-		}
-
-		out(ii, ii) = out(ii, ii) - endo; // Endocytosis
-		out(ii + halfL, ii + halfL) -= deg + rec; // Degradation
-		out(ii + halfL, ii) += endo/internalFrac;
-		out(ii, ii + halfL) += rec*internalFrac; // Recycling
-	}
-
-	// Ligand degradation
-	for (size_t ii = (halfL*2); ii < ((halfL*2)+6); ii++)
-		out(ii, ii) -= r->kDeg;
-
-	// Ligand binding
-	// Derivative is w.r.t. second number
-	const double eIL2 = y[56] / internalV;
-	out(56, 56) -= kfbnd * (y[halfL] + y[halfL+1]) / internalV;
-	out(halfL + 0, 56) = -kfbnd * y[halfL + 0]; // IL2 binding to IL2Ra
-	out(56, halfL) = -kfbnd * eIL2; // IL2 binding to IL2Ra
-	out(halfL + 1, 56) = -kfbnd * y[halfL + 1]; // IL2 binding to IL2Rb
-	out(56, halfL+1) = -kfbnd * eIL2; // IL2 binding to IL2Rb
-	out(halfL + 3, 56) = kfbnd * y[halfL + 0]; // IL2 binding to IL2Ra
-	out(56, halfL+3) =  k1rev / internalV;
-	out(halfL + 4, 56) = kfbnd * y[halfL + 1]; // IL2 binding to IL2Rb
-	out(56, halfL+4) = k2rev / internalV;
-
-	const double eIL15 = y[57] / internalV;
-	out(57, 57) -= kfbnd * (y[halfL+1] + y[halfL + 9]) / internalV;
-	out(halfL + 1, 57) = -kfbnd * y[halfL + 1]; // IL15 binding to IL2Rb
-	out(57, halfL+1) = -kfbnd * eIL15; // IL15 binding to IL2Rb
-	out(halfL + 9, 57) = -kfbnd * y[halfL + 9]; // IL15 binding to IL15Ra
-	out(57, halfL+9) = -kfbnd * eIL15; // IL15 binding to IL15Ra
-	out(halfL + 10, 57) =  kfbnd * y[halfL + 9]; // IL15 binding to IL15Ra
-	out(halfL + 11, 57) =  kfbnd * y[halfL +  1]; // IL15 binding to IL2Rb
-	out(57, halfL+10) = k13rev / internalV;
-	out(57, halfL+11) = k14rev / internalV;
-
-	auto simpleCkine = [&](const size_t ij, const size_t ix, const double revRate) {
-		const double eIL = y[ix] / internalV;
-		out(ix, ix) -= kfbnd * y[halfL + ij] / internalV;
-		out(halfL + ij, ix) = -kfbnd * y[halfL + ij];
-		out(ix, halfL + ij) = -kfbnd * eIL;
-		out(halfL + ij + 1, ix) =  kfbnd * y[halfL + ij];
-		out(ix, halfL + ij + 1) = revRate / internalV;
-	};
-
-	simpleCkine(16, 58, k25rev); // IL7
-	simpleCkine(19, 59, k29rev); // IL9
-	simpleCkine(22, 60, k32rev); // IL4
-	simpleCkine(25, 61, k34rev); // IL21
-}
-
-
-int Jac(realtype, N_Vector y, N_Vector, SUNMatrix J, void *user_data, N_Vector, N_Vector, N_Vector) {
-	ratesS rattes(static_cast<double *>(user_data));
-
-	Eigen::Map<JacMat> jac(SM_DATA_D(J));
-
-	// Actually get the Jacobian
-	fullJacobian(NV_DATA_S(y), &rattes, jac);
-
-	jac.transposeInPlace();
-
-	return 0;
 }
 
 

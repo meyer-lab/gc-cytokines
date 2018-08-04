@@ -31,13 +31,13 @@ Manuscript/Manuscript.pdf: Manuscript/Manuscript.tex $(fdir)/figure1.pdf $(fdir)
 	(cd ./Manuscript && latexmk -xelatex -f -quiet)
 	rm -f ./Manuscript/Manuscript.b* ./Manuscript/Manuscript.aux ./Manuscript/Manuscript.fls
 
-ckine/ckine.so: ckine/model.cpp ckine/model.hpp
+ckine/ckine.so: ckine/model.cpp ckine/model.hpp ckine/jacobian.hpp ckine/reaction.hpp
 	clang++    $(compile_opts) -O3 $(CPPLINKS) ckine/model.cpp --shared -fPIC -o $@
 
-ckine/libckine.debug.so: ckine/model.cpp ckine/model.hpp
+ckine/libckine.debug.so: ckine/model.cpp ckine/model.hpp ckine/jacobian.hpp ckine/reaction.hpp
 	clang++ -g $(compile_opts) -O3 $(CPPLINKS) ckine/model.cpp --shared -fPIC -o $@
 
-ckine/cppcheck: ckine/libckine.debug.so ckine/model.hpp ckine/cppcheck.cpp
+ckine/cppcheck: ckine/libckine.debug.so ckine/model.hpp ckine/cppcheck.cpp ckine/jacobian.hpp ckine/reaction.hpp
 	clang++ -g $(compile_opts) -L./ckine ckine/cppcheck.cpp $(CPPLINKS) -lckine.debug $(LINKFLAG) -o $@
 
 Manuscript/index.html: Manuscript/Text/*.md
