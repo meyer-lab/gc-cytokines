@@ -272,8 +272,11 @@ void copyOutSensi(double *out, solver *sMem) {
 }
 
 
-extern "C" int runCkineY0 (const double * const y0in, double * const tps, const size_t ntps, double * const out, const double * const rxnRatesIn, const bool sensi, double * const sensiOut) {
+extern "C" int runCkine (double * const tps, const size_t ntps, double * const out, const double * const rxnRatesIn, const bool sensi, double * const sensiOut) {
 	ratesS rattes(rxnRatesIn);
+
+	array<double, Nspecies> y0 = solveAutocrine(&rattes);
+
 	size_t itps = 0;
 
 	solver sMem;
@@ -281,14 +284,14 @@ extern "C" int runCkineY0 (const double * const y0in, double * const tps, const 
 
 	// Just the full model
 	sMem.state = N_VNew_Serial(static_cast<long>(Nspecies));
-	std::copy_n(y0in, Nspecies, NV_DATA_S(sMem.state));
+	std::copy_n(y0.data(), Nspecies, NV_DATA_S(sMem.state));
 
 	solver_setup(&sMem, rxnRatesIn);
 
 	double tret = 0;
 
 	if (tps[0] < std::numeric_limits<double>::epsilon()) {
-		std::copy_n(y0in, Nspecies, out);
+		std::copy_n(y0.data(), Nspecies, out);
 
 		if (sensi) copyOutSensi(sensiOut, &sMem);
 
@@ -324,12 +327,52 @@ extern "C" int runCkineY0 (const double * const y0in, double * const tps, const 
 }
 
 
-extern "C" int runCkine (double * const tps, const size_t ntps, double * const out, const double * const rxnRatesIn, const bool sensi, double * const sensiOut) {
-	ratesS rattes(rxnRatesIn);
+extern "C" int runCkinePretreat (const double pret, const double tt, double * const out, const double * const rxnRatesIn, const double * const postStim, const bool sensi, double * const sensiOut) {
+	solver sMem;
+	sMem.sensi = sensi;
 
+	ratesS rattes(rxnRatesIn);
 	array<double, Nspecies> y0 = solveAutocrine(&rattes);
 
-	return runCkineY0 (y0.data(), tps, ntps, out, rxnRatesIn, sensi, sensiOut);
+	// Just the full model
+	sMem.state = N_VNew_Serial(static_cast<long>(Nspecies));
+	std::copy(y0.begin(), y0.end(), NV_DATA_S(sMem.state));
+
+	solver_setup(&sMem, rxnRatesIn);
+
+	double tret = 0;
+
+	int returnVal = CVode(sMem.cvode_mem, pret, sMem.state, &tret, CV_NORMAL);
+		
+	if (returnVal < 0) {
+		std::cout << "CVode error in CVode. Code: " << returnVal << std::endl;
+		solverFree(&sMem);
+		return returnVal;
+	}
+
+	std::copy_n(postStim, Nlig, sMem.params.begin()); // Copy in stimulation ligands
+
+	CVodeReInit(sMem.cvode_mem, pret, sMem.state);
+
+	returnVal = CVode(sMem.cvode_mem, pret + tt, sMem.state, &tret, CV_NORMAL);
+		
+	if (returnVal < 0) {
+		std::cout << "CVode error in CVode. Code: " << returnVal << std::endl;
+		solverFree(&sMem);
+		return returnVal;
+	}
+
+	// Copy out result
+	std::copy_n(NV_DATA_S(sMem.state), Nspecies, out);
+
+	if (sensi) {
+		tret = pret + tt; // Just make sure this is set to the right time
+		CVodeGetSens(sMem.cvode_mem, &tret, sMem.yS);
+		copyOutSensi(sensiOut, &sMem);
+	}
+
+	solverFree(&sMem);
+	return 0;
 }
 
 
