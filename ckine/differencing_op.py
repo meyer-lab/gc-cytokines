@@ -3,7 +3,7 @@ Theano Op for using differencing for Jacobian calculation.
 """
 import numpy as np
 from theano.tensor import dot, dmatrix, dvector, Op
-from .model import runCkineU, nSpecies, nParams, runCkineUP
+from .model import runCkineU, nSpecies, nParams, runCkineUP, runCkinePreT
 
 
 class runCkineOp(Op):
@@ -35,6 +35,50 @@ class runCkineOpDiff(Op):
 
     def runCkine(self, inputs, sensi):
         outt = runCkineU(self.ts, inputs[0], sensi)
+        assert outt[1] >= 0
+        assert outt[0].size == nSpecies()
+
+        if sensi is True:
+            return np.squeeze(outt[2])
+
+        return np.squeeze(outt[0])
+
+    def perform(self, node, inputs, outputs):
+        outputs[0][0] = self.runCkine(inputs, True)
+
+
+class runCkinePreSOp(Op):
+    itypes, otypes = [dvector], [dvector]
+
+    def __init__(self, tpre, ts, postlig):
+        self.dOp = runCkinePreSOpDiff(tpre, ts, postlig)
+
+    def infer_shape(self, node, i0_shapes):
+        assert len(i0_shapes) == 1
+        return [(nSpecies(), )]
+
+    def perform(self, node, inputs, outputs):
+        outputs[0][0] = self.dOp.runCkine(inputs, False)
+
+    def grad(self, inputs, g):
+        """ Calculate the runCkineOp gradient. """
+        return [dot(g[0], self.dOp(inputs[0]))]
+
+
+class runCkinePreSOpDiff(Op):
+    itypes, otypes = [dvector], [dmatrix]
+
+    def __init__(self, tpre, ts, postlig):
+        assert ts.size == 1
+        assert postlig.size == 6
+
+        self.ts = ts
+        self.tpre = tpre
+        self.postlig = postlig
+
+    def runCkine(self, inputs, sensi):
+        outt = runCkinePreT(self.tpre, self.ts, inputs[0], self.postlig, sensi)
+
         assert outt[1] >= 0
         assert outt[0].size == nSpecies()
 
