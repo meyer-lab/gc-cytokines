@@ -139,3 +139,43 @@ def calculate_correlation(tensor,mat,r):
     df = pd.DataFrame({'Component': range(1,9),'IL2': coeffs[:,0], 'IL15': coeffs[:,1], 'IL7': coeffs[:,2], 'IL9':coeffs[:,3],'IL4':coeffs[:,4],'IL21':coeffs[:,5]})
     df = df.set_index('Component')
     return df
+
+def R2X_split_ligand(values, factors):
+    """Determine R2X for each ligand type for one factors matrix. Follows similar procedure to split_R2X. Return a single array with R2X for each cytokine. IL2 and 15 are still combined here."""
+    z_values = z_score_values(values)
+    AllLigandTensors = split_values_by_ligand(z_values)
+    values_reconstructed = tensorly.kruskal_to_tensor(factors)
+    AllLigandReconstructed = split_values_by_ligand(values_reconstructed)
+    R2X_by_ligand = np.zeros(6) #R2X at each component number with respect to each of the 6 cytokines
+    for ii in range(6):
+        R2X_by_ligand[ii] = 1 - np.var(AllLigandReconstructed[ii] - AllLigandTensors[ii]) / np.var(AllLigandTensors[ii])
+    return R2X_by_ligand
+
+def split_values_by_ligand(tensor):
+    """Takes in tensor, either values, or values reconstructed, and returns a list of each split tensor in a list."""
+    split_list = list()
+    IL2Tensor =  split_list.append(tensor[:,:,:, [0,5,6,13,14]]) #IL2,IL15,IL7,IL9,IL4,IL21,IL2Ra,IL2Rb,gc,IL15Ra,IL7Ra,IL9R,IL4Ra,IL21Ra
+    IL15Tensor = split_list.append(tensor[:,:,:, [0,6,8,14,16]])
+    IL7Tensor = split_list.append(tensor[:,:,:, [1, 9, 17]])
+    IL9Tensor = split_list.append(tensor[:,:,:, [2,10,18]])
+    IL4Tensor = split_list.append(tensor[:,:,:, [3,11,19]])
+    IL21Tensor = split_list.append(tensor[:,:,:, [4,12,20]])
+    return split_list
+
+def percent_reduction_by_ligand(values, factors):
+    """Removing single components from final factorization (factors input) and performing percent reduction for all cytokine R2X."""
+    z_values = z_score_values(values)
+    AllLigandTensors = split_values_by_ligand(z_values)
+
+    R2X_ligand_mx = np.zeros((6, factors[0].shape[1])) #0 is IL2; 1 is IL15; 2 is IL7; 3 is IL9; 4 is IL4; 5 is IL21
+    
+    for ii in range(factors[0].shape[1]):
+        new_factors = list()
+        for jj in range(4): #4 because decomposed tensor into 4 factor matrices
+            new_factors.append(np.delete(factors[jj], ii, 1))
+    
+        overall_reconstructed = tensorly.kruskal_to_tensor(new_factors)
+        AllLigandReconstructed = split_values_by_ligand(overall_reconstructed)
+        for jj in range(6):
+            R2X_ligand_mx[jj,ii] = 1 - np.var(AllLigandReconstructed[jj] - AllLigandTensors[jj]) / np.var(AllLigandTensors[jj])
+    return R2X_ligand_mx

@@ -11,7 +11,7 @@ import itertools
 from sklearn.decomposition.pca import PCA
 from ..tensor_generation import prepare_tensor
 from .figureCommon import subplotLabel, getSetup
-from ..Tensor_analysis import find_R2X, split_one_comp, split_types_R2X, R2X_remove_one
+from ..Tensor_analysis import find_R2X, split_one_comp, split_types_R2X, R2X_remove_one, percent_reduction_by_ligand, R2X_split_ligand
 
 def makeFigure():
     """Get a list of the axis objects and create a figure"""
@@ -45,7 +45,7 @@ def makeFigure():
     plot_R2X(ax[3], values, factors_list, n_comps = 20)
     plot_split_R2X(ax[3], values, factors_list, n_comps = 20)
     plot_R2X_singles(ax[7], values, factors_list[13], n_comps = 14)
-
+    plot_reduction_ligand(ax[4], values, factors_list[13])
     # Add subplot labels
     for ii, item in enumerate(ax):
         subplotLabel(item, string.ascii_uppercase[ii])
@@ -53,6 +53,24 @@ def makeFigure():
     #f.tight_layout()
 
     return f
+
+def plot_reduction_ligand(ax, values, factors):
+    """Function to plot the percent by reduction in R2X for each ligand type."""
+    old_R2X = R2X_split_ligand(values, factors) #array of 6 old values for R2X
+    
+    new_R2X = percent_reduction_by_ligand(values, factors) #array of 6 by n_comp for R2X for each ligand after removing each component. 
+    
+    percent_reduction = np.zeros_like(new_R2X)
+    for ii in range(6):
+        percent_reduction[ii,:] = 1 - new_R2X[ii, :] / old_R2X[ii]
+    
+    labels = ['IL2', 'IL15', 'IL7', 'IL9', 'IL4', 'IL21']
+    colorsMarker = ['bo', 'go', 'ro', 'ko', 'mo', 'yo']
+    for kk in range(6):
+        ax.plot(range(1,factors[0].shape[1]+1), percent_reduction[kk,:], colorsMarker[kk], label = labels[kk])
+    ax.set_xlabel('Component Index')
+    ax.set_ylabel('Percent Reduction in R2X')
+    ax.legend()
 
 def PCA_receptor(ax1, ax2, cell_names, data):
     """Plot PCA scores and loadings for Receptor Expression Data. """
