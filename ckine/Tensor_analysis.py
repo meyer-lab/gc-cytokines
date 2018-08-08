@@ -27,7 +27,7 @@ def perform_decomposition(tensor, r):
 def reorient_one(factors, component_index):
     """Function that takes in the 4 factor matrices and decides if that column index should flip or not and then flips it."""
     factors_idx = [factors[0][:,component_index], factors[1][:,component_index], factors[2][:,component_index], factors[3][:,component_index]]
-    component_means = np.array([np.mean(factors_idx[0]), np.mean(factors_idx[1]), np.mean(factors_idx[2]), np.mean(factors_idx[3])])
+    component_means = np.array([np.mean(np.power(factors_idx[0],3)), np.mean(np.power(factors_idx[1],3)), np.mean(np.power(factors_idx[2],3)), np.mean(np.power(factors_idx[3],3))])
     if np.sum(component_means < 0) >= 2 and np.sum(component_means < 0) < 4: #if at least 2 are negative, then flip the negative component and keep others unchanged
         count = 1
         for index, factor_idx in enumerate(factors_idx):
