@@ -7,8 +7,7 @@ import pickle
 import numpy as np
 from ..tensor_generation import prepare_tensor
 from .figureCommon import subplotLabel, getSetup
-from ..Tensor_analysis import find_R2X, split_R2X, R2X_singles
-
+from ..Tensor_analysis import find_R2X, split_one_comp, split_types_R2X, R2X_remove_one
 
 def makeFigure():
     """Get a list of the axis objects and create a figure"""
@@ -29,11 +28,11 @@ def makeFigure():
     factors = factors_list[19]
 
     values, _, _, _, _ = prepare_tensor(2)
-    n_comps = 20
 
-    plot_R2X(ax[3], values, factors_list, n_comps)
-    plot_split_R2X(ax[3], values, factors_list, n_comps)
-    plot_R2X_singles(ax[7], values, factors_list, n_comps)
+    plot_R2X(ax[3], values, factors_list, n_comps = 20)
+    plot_split_R2X(ax[3], values, factors_list, n_comps = 20)
+    plot_R2X_singles(ax[7], values, factors_list[13], n_comps = 14)
+
     # Add subplot labels
     for ii, item in enumerate(ax):
         subplotLabel(item, string.ascii_uppercase[ii])
@@ -57,20 +56,28 @@ def plot_R2X(ax, tensor, factors_list, n_comps):
     ax.set_xticklabels(np.arange(1, n_comps+1, 2))
     ax.legend()
 
-def plot_R2X_singles(ax, values, factors_list, n_comps):
-    """R2X plot for removing single components from final factorization."""
-    R2X_matrix = split_R2X(values, factors_list, n_comps)
-    R2X_singles_matrix = R2X_singles(values, factors_list, n_comps)
-    old_R2X = np.zeros((3,n_comps))
+def plot_split_R2X(ax, tensor, factors_list, n_comps):
+    """This function takes in the values tensor, splits it up into a mini tensor corresponding to quantity type."""
+    R2X_matrix = split_types_R2X(tensor, factors_list, n_comps)
+    ax.plot(range(1,n_comps+1), R2X_matrix[:,0], 'bo', label = 'Ligand Activity R2X')
+    ax.plot(range(1,n_comps+1), R2X_matrix[:,1], 'ro', label = 'Surface Receptors R2X')
+    ax.plot(range(1,n_comps+1), R2X_matrix[:,2], 'go', label = 'Total Receptors R2X')
+    ax.legend()    
 
-    for ii in range(3):
-        old_R2X[ii,:] = R2X_matrix[ii,-1] #the -1 value here is for the R2X for the last component.
+def plot_R2X_singles(ax, values, factors, n_comps):
+    """R2X plot for removing single components from final factorization & performing percent reduction."""    
 
-    percent_reduction = 1 - R2X_singles_matrix[1:4, :] / old_R2X
+    old_arr = split_one_comp(values, factors) #Array of old values for that one particular component for all 4 quanitity types (overall, ligand,surface, total)
+
+    R2X_singles_mx = R2X_remove_one(values, factors, n_comps) #To get the new values for each type including overall; of shape 4
+    percent_reduction = np.zeros_like(R2X_singles_mx)
+    for ii in range(4):
+        percent_reduction[ii,:] = 1 - R2X_singles_mx[ii, :] / old_arr[ii]
 
     ax.plot(range(1,n_comps+1), percent_reduction[0,:], 'bo', label = 'Ligand Activity R2X')
     ax.plot(range(1,n_comps+1), percent_reduction[1,:], 'ro', label = 'Surface Receptors R2X')
     ax.plot(range(1,n_comps+1), percent_reduction[2,:], 'go', label = 'Total Receptors R2X')
+    ax.plot(range(1,n_comps+1), percent_reduction[3,:], 'ko', label = 'Overall R2X')
     ax.set_ylabel('Percent Reduction in R2X')
     ax.set_xlabel('Component Index')
     ax.set_ylim(0, 1)
@@ -78,10 +85,3 @@ def plot_R2X_singles(ax, values, factors_list, n_comps):
     ax.set_xticklabels(np.arange(1, n_comps+1, 2))
     ax.legend()
 
-def plot_split_R2X(ax, tensor, factors_list, n_comps):
-    """This function takes in the values tensor, splits it up into a mini tensor corresponding to quantity type."""
-    R2X_matrix = split_R2X(tensor, factors_list, n_comps)
-    ax.plot(range(1,n_comps+1), R2X_matrix[0,:], 'bo', label = 'Ligand Activity R2X')
-    ax.plot(range(1,n_comps+1), R2X_matrix[1,:], 'ro', label = 'Surface Receptors R2X')
-    ax.plot(range(1,n_comps+1), R2X_matrix[2,:], 'go', label = 'Total Receptors R2X')
-    ax.legend()

@@ -51,15 +51,14 @@ def find_R2X(values, factors):
     values_reconstructed = tensorly.kruskal_to_tensor(factors)
     return 1 - np.var(values_reconstructed - z_values) / np.var(z_values)
 
-def R2X_singles(values, factors_list, n_comps):
+def R2X_remove_one(values, factors, n_comps):
     """Generate additional R2X plot for removing single components from final factorization."""
     z_values = z_score_values(values)
     LigandTensor = z_values[:,:,:, 0:6]
     SurfTensor = z_values[:,:,:, 6:14]
     TotalTensor = z_values[:,:,:, 14:22]
 
-    factors = factors_list[-1]
-    R2X_singles_matrix = np.zeros((4,n_comps)) #1st row is overall R2X; 2nd row is ligand activity R2X; 3rd is Surface receptor; 4th is total receptor
+    R2X_singles_arr = np.zeros((4, n_comps)) #0 is ligand; 1 is surface; 2 is total; 3 is overall
     for ii in range(n_comps):
         new_factors = list()
         for jj in range(4): #4 because decomposed tensor into 4 factor matrices
@@ -69,33 +68,43 @@ def R2X_singles(values, factors_list, n_comps):
         Ligand_reconstructed = overall_reconstructed[:,:,:,0:6]
         Surf_reconstructed = overall_reconstructed[:,:,:,6:14]
         Total_reconstructed = overall_reconstructed[:,:,:,14:22]
-        R2X_singles_matrix[0,ii] = 1 - np.var(overall_reconstructed - z_values) / np.var(z_values)
-        R2X_singles_matrix[1,ii] = 1 - np.var(Ligand_reconstructed - LigandTensor) / np.var(LigandTensor)
-        R2X_singles_matrix[2,ii] = 1 - np.var(Surf_reconstructed - SurfTensor) / np.var(SurfTensor)
-        R2X_singles_matrix[3, ii] = 1 - np.var(Total_reconstructed - TotalTensor) / np.var(TotalTensor)
-    return R2X_singles_matrix
 
-def split_R2X(values, factors_list, n_comp):
-    """Decompose and reconstruct with n components, and then split tensor from both original and reconstructed to determine R2X."""
+        R2X_singles_arr[0,ii] = 1 - np.var(Ligand_reconstructed - LigandTensor) / np.var(LigandTensor)
+        R2X_singles_arr[1,ii] = 1 - np.var(Surf_reconstructed - SurfTensor) / np.var(SurfTensor)
+        R2X_singles_arr[2,ii] = 1 - np.var(Total_reconstructed - TotalTensor) / np.var(TotalTensor)
+        R2X_singles_arr[3,ii] = 1 - np.var(overall_reconstructed - z_values) / np.var(z_values)
+
+    return R2X_singles_arr
+
+def split_one_comp(values, factors):
+    """Decompose and reconstruct with just one designated component, and then split tensor from both original and reconstructed to determine R2X."""
     z_values = z_score_values(values)
-    R2X_matrix = np.zeros((3,n_comp)) # A 3 by n_comp matrix to store the R2X values for each split tensor. 
+    R2X_array = np.zeros((4)) # An array of to store the R2X values for each split tensor and the overall one [index 3]. 
     LigandTensor = z_values[:,:,:, 0:6]
     SurfTensor = z_values[:,:,:, 6:14]
     TotalTensor = z_values[:,:,:, 14:22]
+    
+    values_reconstructed = tensorly.kruskal_to_tensor(factors)
+    R2X_array[3] = 1 - np.var(values_reconstructed -z_values) / np.var(z_values) #overall
+    
+    Ligand_reconstructed = values_reconstructed[:,:,:,0:6]
+    R2X_array[0] = 1 - np.var(Ligand_reconstructed - LigandTensor) / np.var(LigandTensor) #ligand
+
+    Surf_reconstructed = values_reconstructed[:,:,:,6:14]
+    R2X_array[1] = 1 - np.var(Surf_reconstructed - SurfTensor) / np.var(SurfTensor) #surface
+
+    Total_reconstructed = values_reconstructed[:,:,:,14:22]
+    R2X_array[2] = 1 - np.var(Total_reconstructed - TotalTensor) / np.var(TotalTensor) #total
+
+    return R2X_array
+
+def split_types_R2X(values, factors_list, n_comp):
+    """Decompose and reconstruct with n components, and then split tensor from both original and reconstructed to determine R2X. n_comp here is the number of components."""
+    R2X_matrix = np.zeros((n_comp,4)) # A 4 by n_comp matrix to store the R2X values for each split tensor. 
 
     for ii in range(n_comp):
-        factors = factors_list[ii]
-        values_reconstructed = tensorly.kruskal_to_tensor(factors)
-
-        Ligand_reconstructed = values_reconstructed[:,:,:,0:6]
-        R2X_matrix[0,ii] = 1 - np.var(Ligand_reconstructed - LigandTensor) / np.var(LigandTensor)
-
-        Surf_reconstructed = values_reconstructed[:,:,:,6:14]
-        R2X_matrix[1,ii] = 1 - np.var(Surf_reconstructed - SurfTensor) / np.var(SurfTensor)
-
-        Total_reconstructed = values_reconstructed[:,:,:,14:22]
-        R2X_matrix[2, ii] = 1 - np.var(Total_reconstructed - TotalTensor) / np.var(TotalTensor)
-
+        array = split_one_comp(values, factors_list[ii])
+        R2X_matrix[ii] = array
     return R2X_matrix
 
 def combo_low_high(mat, lig):
