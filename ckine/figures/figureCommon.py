@@ -44,3 +44,16 @@ def plot_conf_int(ax, x_axis, y_axis, color, label):
     y_axis_top = np.percentile(y_axis, 97.5, axis=1)
     y_axis_bot = np.percentile(y_axis, 2.5, axis=1)
     ax.fill_between(x_axis, y_axis_top, y_axis_bot, color=color, alpha=0.5, label=label)
+
+def overlayCartoon(figFile, cartoonFile, x, y, scalee=1):
+    """ Add cartoon to a figure file. """
+    import svgutils.transform as st
+
+    # Overlay Figure 4 cartoon
+    template = st.fromfile(figFile)
+    cartoon = st.fromfile(cartoonFile).getroot()
+
+    cartoon.moveto(x, y, scale=scalee)
+
+    template.append(cartoon)
+    template.save(figFile)
