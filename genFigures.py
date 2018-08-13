@@ -18,6 +18,6 @@ if __name__ == '__main__':
     if sys.argv[1] == '1':
         # Overlay Figure 1 cartoon
         overlayCartoon(fdir + 'figure1.svg',
-                       './graph_all.svg', 10, -15, scalee=0.3)
+                       './graph_all.svg', 10, 15, scalee=0.3)
 
     print(nameOut + ' is done.')
