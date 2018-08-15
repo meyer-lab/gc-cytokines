@@ -5,6 +5,7 @@
 #include <thread>
 #include <mutex>
 #include <vector>
+#include <list>
 #include <nvector/nvector_serial.h>  /* serial N_Vector types, fcts., macros */
 #include <cvode/cvode.h>            /* prototypes for CVODE fcts., consts. */
 #include <string>
@@ -19,6 +20,7 @@
 #include "model.hpp"
 #include "reaction.hpp"
 #include "jacobian.hpp"
+#include "thread_pool.hpp"
 
 using std::array;
 using std::copy;
@@ -375,25 +377,27 @@ extern "C" int runCkinePretreat (const double pret, const double tt, double * co
 	return 0;
 }
 
+bool launched = false;
+ThreadPool *pool;
 
 extern "C" int runCkineParallel (const double * const rxnRatesIn, double tp, size_t nDoses, bool sensi, double *out, double *sensiOut) {
-	vector<int> retVals(nDoses, -1);
-	vector<std::thread> ts;
+	int retVal = 1000;
+	if (launched == false) {
+		pool = new ThreadPool();
+		launched = true;
+	}
 
-	// Make a task that handles all the refs
-	auto lamTask = [&tp, &out, &rxnRatesIn, &sensi, &sensiOut](size_t ii, int *retVal) {
-		*retVal = runCkine (&tp, 1, out + Nspecies*ii, rxnRatesIn + ii*Nparams, sensi, sensiOut + Nspecies*Nparams*ii);
-	};
+	std::list<std::future<int>> results;
 
 	// Actually run the simulations
 	for (size_t ii = 0; ii < nDoses; ii++)
-		ts.push_back(std::thread(lamTask, ii, retVals.data() + ii));
+		results.push_back(pool->enqueue(runCkine, &tp, 1, out + Nspecies*ii, rxnRatesIn + ii*Nparams, sensi, sensiOut + Nspecies*Nparams*ii));
 
 	// Synchronize all threads
-	for (auto& th:ts) th.join();
+	for (std::future<int> &th:results) retVal = std::min(th.get(), retVal);
 
 	// Get the worst case to return
-	return *std::min_element(retVals.begin(), retVals.end());
+	return retVal;
 }
 
 
