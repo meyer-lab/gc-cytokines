@@ -7,20 +7,28 @@ import tensorly
 from tensorly.decomposition import parafac
 tensorly.set_backend('numpy')
 
-def z_score_values(A):
+def z_score_values(A, subtract = True):
     '''Function that takes in the values tensor and z-scores it.'''
-    B = np.zeros_like(A)
-    for i in range(A.shape[3]):
-        slice_face = A[:,:,:,i]
-        mu = np.mean(slice_face)
-        sigma = np.std(slice_face)
-        z_scored_slice = (slice_face - mu) / sigma
-        B[:,:,:,i] = z_scored_slice
+    if subtract == True:
+        B = np.zeros_like(A)
+        for i in range(A.shape[3]):
+            slice_face = A[:,:,:,i]
+            mu = np.mean(slice_face)
+            sigma = np.std(slice_face)
+            z_scored_slice = (slice_face - mu) / sigma
+            B[:,:,:,i] = z_scored_slice
+    elif subtract == False:
+        B = np.zeros_like(A)
+        for i in range(A.shape[3]):
+            slice_face = A[:,:,:,i]
+            sigma = np.std(slice_face)
+            z_scored_slice = slice_face / sigma
+            B[:,:,:,i] = z_scored_slice
     return B
 
-def perform_decomposition(tensor, r):
+def perform_decomposition(tensor, r, subt = True):
     '''Apply z scoring and perform PARAFAC decomposition'''
-    values_z = z_score_values(tensor)
+    values_z = z_score_values(tensor, subtract = subt)
     factors = parafac(values_z, rank = r) #can do verbose and tolerance (tol)
     return factors
 
@@ -45,9 +53,9 @@ def reorient_factors(factors):
         factors = reorient_one(factors, jj)
     return factors
 
-def find_R2X(values, factors):
+def find_R2X(values, factors, subt = True):
     '''Compute R2X'''
-    z_values = z_score_values(values)
+    z_values = z_score_values(values, subtract = subt)
     values_reconstructed = tensorly.kruskal_to_tensor(factors)
     return 1 - np.var(values_reconstructed - z_values) / np.var(z_values)
 
