@@ -1,13 +1,17 @@
 """
-This creates Figure S2.
+This creates Figure S1.
 """
 import string
 import numpy as np
 import pandas as pds
 import os
 import pickle
+from ..tensor_generation import prepare_tensor
 from .figureCommon import subplotLabel, getSetup, plot_timepoint, plot_cells, plot_ligands, plot_values
 from ..Tensor_analysis import reorient_factors
+from .figureCommon import subplotLabel, getSetup, plot_timepoint, plot_cells, plot_ligands, plot_values
+from ..Tensor_analysis import reorient_factors, find_R2X
+
 
 def makeFigure():
     """Get a list of the axis objects and create a figure"""
@@ -22,13 +26,13 @@ def makeFigure():
     cell_names = data.columns.values.tolist()[1::] #returns the cell names from the pandas dataframe (which came from csv)
 
     with open(factors_filename,'rb') as f:
-        factors_list = pickle.load(f)[0]
+        factors_activity = pickle.load(f)[1]
 
-    n_comps = 13
-    factors = factors_list[n_comps]
+    n_comps = 5
+    factors = factors_activity[n_comps]
     newfactors = reorient_factors(factors)
 
-    x, y = 7, 4
+    x, y = 3, 4
     ssize = 3
     ax, f = getSetup((ssize*y, ssize*x), (x, y))
 
@@ -50,4 +54,10 @@ def makeFigure():
 
             ax[row*y + col].set_xlim(-x_max, x_max)
             ax[row*y + col].set_ylim(-y_max, y_max)
+
+    values, _, _, _, _ = prepare_tensor(2)
+    for n in range(6):
+        factors = factors_activity[n]
+        R2X = find_R2X(np.concatenate((values[:,:,:,[0,1,2,3,4]], values[:,:,:,[0,1,2,3,4]]), axis = 3), factors, subt = False)
+        print(R2X)
     return f

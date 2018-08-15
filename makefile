@@ -27,7 +27,7 @@ $(fdir)/figure%eps: $(fdir)/figure%svg
 graph_all.svg: ckine/data/graph_all.gv
 	dot $< -Tsvg -o $@
 
-Manuscript/Manuscript.pdf: Manuscript/Manuscript.tex $(fdir)/figure1.pdf $(fdir)/figure2.pdf $(fdir)/figure3.pdf $(fdir)/figure4.pdf $(fdir)/figureS1.pdf $(fdir)/figureS2.pdf
+Manuscript/Manuscript.pdf: Manuscript/Manuscript.tex $(fdir)/figure1.pdf $(fdir)/figure2.pdf $(fdir)/figure3.pdf $(fdir)/figure4.pdf $(fdir)/figureS1.pdf $(fdir)/figureS2.pdf $(fdir)/figureS3.pdf
 	(cd ./Manuscript && latexmk -xelatex -f -quiet)
 	rm -f ./Manuscript/Manuscript.b* ./Manuscript/Manuscript.aux ./Manuscript/Manuscript.fls
 

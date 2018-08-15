@@ -35,7 +35,7 @@ def makeFigure():
     Receptor_data = np.delete(numpy_data, 0, 1)
 
     with open(factors_filename,'rb') as ff:
-        factors_list = pickle.load(ff)
+        factors_list = pickle.load(ff)[0]
     factors = factors_list[19]
 
     values, _, _, _, _ = prepare_tensor(2)
