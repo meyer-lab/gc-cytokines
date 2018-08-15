@@ -90,12 +90,12 @@ digraph cgamma_cytok {
         "IL2Rb" -> "k9" [dir=none,weight=1];
         "k9" -> "IL2-IL2Ra-IL2Rb-gc" [dir=none, weight=2];
 
-        "k10" [shape=diamond,style=filled,height=.1,width=.1];
+        "k10" [shape=triangle,style=filled,height=.1,width=.04];
         "IL2-IL2Ra-IL2Rb" -> "k10" [dir=none,weight=1];
         "gc" -> "k10" [dir=none,weight=1];
         "k10" -> "IL2-IL2Ra-IL2Rb-gc" [dir=none, weight=2];
 
-        "k11" [shape=diamond,style=filled,height=.1,width=.1];
+        "k11" [shape=triangle,style=filled,height=.1,width=.04];
         "IL2-IL2Ra" -> "k11" [dir=none,weight=1];
         "IL2Rb" -> "k11" [dir=none,weight=1];
         "k11" -> "IL2-IL2Ra-IL2Rb" [dir=none, weight=2];
