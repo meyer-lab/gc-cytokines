@@ -16,7 +16,7 @@ from ..model import nParams
 def makeFigure():
     """Get a list of the axis objects and create a figure"""
     # Get list of axis objects
-    ax, f = getSetup((10, 7), (3, 4), mults=[0, 8], multz={0: 2, 8: 2})
+    ax, f = getSetup((10, 7), (3, 4), mults=[0, 10], multz={0: 2, 10: 2}, empts=[3])
 
     # blank out first two axes for cartoon
     ax[0].axis('off')
@@ -25,10 +25,11 @@ def makeFigure():
         subplotLabel(item, string.ascii_uppercase[ii])
 
     unkVec = import_samples()
-    pstat_act(ax[1:3], unkVec)
-    surf_perc(ax[3:7], 'IL2Rb', unkVec)
-    rateComp(ax[7], unkVec)
-    violinPlots(ax[8:10], unkVec)
+    pstat_act(ax[1], unkVec)
+    surf_perc(ax[2:4], 'IL2Rb', unkVec)
+    violinPlots(ax[6:8], unkVec)
+    rateComp(ax[8], unkVec)
+    
 
     f.tight_layout()
 
@@ -47,10 +48,10 @@ def surf_perc(ax, species, unkVec):
         ax[0].scatter(data_minus[:,0], data_minus[:,2] * 10., color='goldenrod', marker='^', edgecolors='k', zorder=101) # 1nM of IL15 in 2Ra-
         ax[1].scatter(data_minus[:,0], data_minus[:,5] * 10., color='darkorchid', marker='^', edgecolors='k', zorder=100) # 500nM of IL2 in 2Ra-
         ax[1].scatter(data_minus[:,0], data_minus[:,6] * 10., color='goldenrod', marker='^', edgecolors='k', zorder=101) # 500nM of IL15 in 2Ra-
-        ax[2].scatter(data_plus[:,0], data_plus[:,1] * 10., color='darkorchid', marker='^', edgecolors='k', zorder=100) # 1nM of IL2 in 2Ra+
-        ax[2].scatter(data_plus[:,0], data_plus[:,2] * 10., color='goldenrod', marker='^', edgecolors='k', zorder=101) # 1nM of IL15 in 2Ra+
-        ax[3].scatter(data_plus[:,0], data_plus[:,5] * 10., color='darkorchid', marker='^', edgecolors='k', zorder=100) # 500nM of IL2 in 2Ra+
-        ax[3].scatter(data_plus[:,0], data_plus[:,6] * 10., color='goldenrod', marker='^', edgecolors='k', zorder=101) # 500nM of IL15 in 2Ra+
+        ax[0].scatter(data_plus[:,0], data_plus[:,1] * 10., color='darkorchid', marker='o', edgecolors='k', zorder=100) # 1nM of IL2 in 2Ra+
+        ax[0].scatter(data_plus[:,0], data_plus[:,2] * 10., color='goldenrod', marker='o', edgecolors='k', zorder=101) # 1nM of IL15 in 2Ra+
+        ax[1].scatter(data_plus[:,0], data_plus[:,5] * 10., color='darkorchid', marker='o', edgecolors='k', zorder=100) # 500nM of IL2 in 2Ra+
+        ax[1].scatter(data_plus[:,0], data_plus[:,6] * 10., color='goldenrod', marker='o', edgecolors='k', zorder=101) # 500nM of IL15 in 2Ra+
 
     if species == 'gc':
         surf = surf_gc()    # load proper class
@@ -73,17 +74,14 @@ def surf_perc(ax, species, unkVec):
 
     for n in range(4):
         # plot results within confidence intervals
-        plot_conf_int(ax[n], ts, results[:, :, n, 0], "darkorchid", "IL2")
-        plot_conf_int(ax[n], ts, results[:, :, n, 1], "goldenrod", "IL15")
-        # label axes and show legends
-        ax[n].set(xlabel="time (min)", ylabel=("surface " + str(species) + " (%)"))
-        ax[n].legend()
+        plot_conf_int(ax[n % 2], ts, results[:, :, n, 0], "darkorchid", "IL2")
+        plot_conf_int(ax[n % 2], ts, results[:, :, n, 1], "goldenrod", "IL15")
 
-    # set titles
-    ax[0].set_title("1 nM and IL2Ra-")
-    ax[1].set_title("500 nM and IL2Ra-")
-    ax[2].set_title("1 nM and IL2Ra+")
-    ax[3].set_title("500 nM and IL2Ra+")
+    # label axes and titles
+    ax[1].set(xlabel="Time (min)", ylabel=("Surface " + str(species) + " (%)"), title="YT-1 Cells and 500 nM")
+    ax[1].set_ylim(0,115)
+    ax[0].set(xlabel="Time (min)", ylabel=("Surface " + str(species) + " (%)"), title="YT-1 Cells and 1 nM")
+    ax[0].set_ylim(0,115)
 
 
 def pstat_act(ax, unkVec):
@@ -106,22 +104,20 @@ def pstat_act(ax, unkVec):
         IL15_minus[:, ii] = output[(PTS*3):(PTS*4)]
 
     # plot confidence intervals based on model predictions
-    plot_conf_int(ax[0], np.log10(cytokC), IL2_minus, "darkorchid", "IL2")
-    plot_conf_int(ax[0], np.log10(cytokC), IL15_minus, "goldenrod", "IL15")
-    plot_conf_int(ax[1], np.log10(cytokC), IL2_plus, "darkorchid", "IL2")
-    plot_conf_int(ax[1], np.log10(cytokC), IL15_plus, "goldenrod", "IL15")
+    plot_conf_int(ax, np.log10(cytokC), IL2_minus, "darkorchid", "IL2")
+    plot_conf_int(ax, np.log10(cytokC), IL15_minus, "goldenrod", "IL15")
+    plot_conf_int(ax, np.log10(cytokC), IL2_plus, "darkorchid", "IL2")
+    plot_conf_int(ax, np.log10(cytokC), IL15_plus, "goldenrod", "IL15")
 
     # plot experimental data
     path = os.path.dirname(os.path.abspath(__file__))
     data = pd.read_csv(join(path, "../data/IL2_IL15_extracted_data.csv")).values # imports file into pandas array
-    ax[0].scatter(data[:,0], data[:,2], color='darkorchid', marker='^', edgecolors='k', zorder=100) # IL2 in 2Ra-
-    ax[0].scatter(data[:,0], data[:,3], color='goldenrod', marker='^', edgecolors='k', zorder=101) # IL15 in 2Ra-
-    ax[1].scatter(data[:,0], data[:,6], color='darkorchid', marker='^', edgecolors='k', zorder=100) # IL2 in 2Ra+
-    ax[1].scatter(data[:,0], data[:,7], color='goldenrod', marker='^', edgecolors='k', zorder=101) # IL15 in 2Ra+
-    ax[0].set(ylabel='Maximal p-STAT5 (% x 100)', xlabel='log10 of cytokine concentration (nM)', title='IL2Ra- YT-1 cells')
-    ax[1].set(ylabel='Maximal p-STAT5 (% x 100)', xlabel='log10 of cytokine concentration (nM)', title='IL2Ra+ YT-1 cells')
-    ax[0].legend()
-    ax[1].legend()
+    ax.scatter(data[:,0], data[:,2], color='darkorchid', marker='^', edgecolors='k', zorder=100, label="IL2, 2Ra-") # IL2 in 2Ra-
+    ax.scatter(data[:,0], data[:,3], color='goldenrod', marker='^', edgecolors='k', zorder=101, label="IL15, 2Ra-") # IL15 in 2Ra-
+    ax.scatter(data[:,0], data[:,6], color='darkorchid', marker='o', edgecolors='k', zorder=102, label="IL2, 2Ra+") # IL2 in 2Ra+
+    ax.scatter(data[:,0], data[:,7], color='goldenrod', marker='o', edgecolors='k', zorder=103, label="IL15, 2Ra+") # IL15 in 2Ra+
+    ax.set(ylabel='Maximal p-STAT5 (% x 100)', xlabel='log10 of cytokine concentration (nM)', title='YT-1 Cell Activity')
+    ax.legend(loc='upper left', bbox_to_anchor=(1.5, 1))
 
 
 def import_samples():
@@ -204,8 +200,8 @@ def rateComp(ax, unkVec):
 
     # plot with hue being cytokine species
     a = sns.violinplot(x='rate', y='log10 of value', data=melted, hue='cytokine', ax=ax, cmap=cmap, linewidth=0, bw=15, scale='width')
-    a.scatter(2.75, np.log(kfbnd * 10), color="darkviolet")   # overlay point for k1rev
-    a.scatter(3.20, np.log(kfbnd * 0.065), color='goldenrod') # overlay point for k13rev
-    a.scatter(3.7, np.log(kfbnd * 144), color="darkviolet")   # overlay point for k2rev
-    a.scatter(4.15, np.log(kfbnd * 468), color='goldenrod') # overlay point for k14rev
+    a.scatter(2.75, np.log10(kfbnd * 10), color="darkviolet")   # overlay point for k1rev
+    a.scatter(3.20, np.log10(kfbnd * 0.065), color='goldenrod') # overlay point for k13rev
+    a.scatter(3.7, np.log10(kfbnd * 144), color="darkviolet")   # overlay point for k2rev
+    a.scatter(4.15, np.log10(kfbnd * 468), color='goldenrod') # overlay point for k14rev
     a.set_title("Analogous reverse reaction rates")
