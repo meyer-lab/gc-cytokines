@@ -1,232 +1,219 @@
 digraph cgamma_cytok {
     ratio = "compress";
-    label = "Type I Cytokine Model";
     graph [pad=0, ranksep=0.2, nodesep=0.05];
 
     subgraph specises {
         node [margin=0.03];
         rank="max";
-        "gc"    [shape=box, style=filled, BGCOLOR="white"];
+        "gc"    [shape=box, style=filled, BGCOLOR="white", fontname = "helvetica"];
     }
 
     subgraph species {
         node [margin=0.03];
 
-        "IL2"   [shape=circle ];
-        "IL2Ra" [shape=box   ];
-        "IL2Rb" [shape=box, style=filled, color="goldenrod1:mediumorchid3"];
-        "IL2-IL2Ra" [shape=box];
-        "IL2-IL2Rb" [shape=box];
-        "IL2-IL2Ra" [shape=box];
-        "IL2-IL2Ra" [shape=box];
-        "IL2-IL2Ra-IL2Rb" [shape=box ];
-        "IL2-IL2Ra-gc" [shape=box ];
-        "IL2-IL2Rb-gc" [shape=box, color=red ];
-        "IL2-IL2Ra-IL2Rb-gc" [shape=box, color=red ];
+        "IL2"   [shape=circle, fontname = "helvetica", fillcolor=mediumorchid2, style=filled ];
+        "2Ra" [shape=box, fontname = "helvetica", fillcolor=mediumorchid2, style=filled   ];
+        "2Rb" [shape=box, style=filled, fontname = "helvetica", fillcolor="goldenrod1:mediumorchid3", style=filled];
+        "2-2Ra" [shape=box, fontname = "helvetica", fillcolor=mediumorchid2, style=filled];
+        "2-2Rb" [shape=box, fontname = "helvetica", fillcolor=mediumorchid2, style=filled];
+        "2-2Ra" [shape=box, fontname = "helvetica", fillcolor=mediumorchid2, style=filled];
+        "2-2Ra" [shape=box, fontname = "helvetica", fillcolor=mediumorchid2, style=filled];
+        "2-2Ra-2Rb" [shape=box, fontname = "helvetica", fillcolor=mediumorchid2, style=filled ];
+        "2-2Ra-gc" [shape=box, fontname = "helvetica" , fillcolor=mediumorchid2, style=filled];
+        "2-2Rb-gc" [shape=box, color=red, fontname = "helvetica" , fillcolor=mediumorchid2, style=filled, penwidth=2.5];
+        "2-2Ra-2Rb-gc" [shape=box, color=red, fontname = "helvetica", fillcolor=mediumorchid2, style=filled , penwidth=2.5];
 
-        "IL15"  [shape=circle];
-        "IL15Ra"    [shape=box];
-        "IL15-IL15Ra"   [shape=box];
-        "IL15-IL2Rb"    [shape=box];
-        "IL15-IL15Ra-IL2Rb" [shape=box];
-        "IL15-IL15Ra-gc"    [shape=box];
-        "IL15-IL2Rb-gc" [shape=box, color=red];
-        "IL15-IL15Ra-IL2Rb-gc"  [shape=box, color=red];
+        "IL15"  [shape=circle, fontname = "helvetica", fillcolor=goldenrod1, style=filled];
+        "15Ra"    [shape=box, fontname = "helvetica", fillcolor=goldenrod1, style=filled];
+        "15-15Ra"   [shape=box, fontname = "helvetica", fillcolor=goldenrod1, style=filled];
+        "15-2Rb"    [shape=box, fontname = "helvetica", fillcolor=goldenrod1, style=filled];
+        "15-15Ra-2Rb" [shape=box, fontname = "helvetica", fillcolor=goldenrod1, style=filled];
+        "15-15Ra-gc"    [shape=box, fontname = "helvetica", fillcolor=goldenrod1, style=filled];
+        "15-2Rb-gc" [shape=box, color=red, fontname = "helvetica", fillcolor=goldenrod1, style=filled, penwidth=2.5];
+        "15-15Ra-2Rb-gc"  [shape=box, color=red, fontname = "helvetica", fillcolor=goldenrod1, style=filled, penwidth=2.5];
 
-        "IL7"   [shape=circle];
-        "IL7Ra" [shape=box];
-        "IL7-IL7Ra" [shape=box];
-        "IL7-IL7Ra-gc"  [shape=box, color=red];
+        "IL7"   [shape=circle, fontname = "helvetica", fillcolor=dodgerblue, style=filled];
+        "7Ra" [shape=box, fontname = "helvetica", fillcolor=dodgerblue, style=filled];
+        "7-7Ra" [shape=box, fontname = "helvetica", fillcolor=dodgerblue, style=filled];
+        "7-7Ra-gc"  [shape=box, color=red, fontname = "helvetica", fillcolor=dodgerblue, style=filled, penwidth=2.5];
 
-        "IL9"   [shape=circle];
-        "IL9R" [shape=box    ];
-        "IL9-IL9R" [shape=box];
-        "IL9-IL9R-gc" [shape=box, color=red ];
+        "IL9"   [shape=circle, fontname = "helvetica", fillcolor=darkolivegreen2, style=filled];
+        "9R" [shape=box , fontname = "helvetica" , fillcolor=darkolivegreen2, style=filled  ];
+        "9-9R" [shape=box, fontname = "helvetica", fillcolor=darkolivegreen2, style=filled];
+        "9-9R-gc" [shape=box, color=red, fontname = "helvetica", fillcolor=darkolivegreen2, style=filled , penwidth=2.5];
 
-        "IL4"   [shape=circle];
-        "IL4Ra" [shape=box    ];
-        "IL4-IL4Ra" [shape=box];
-        "IL4-IL4Ra-gc" [shape=box, color=red ];
+        "IL4"   [shape=circle, fontname = "helvetica", fillcolor=lightcyan, style=filled];
+        "4Ra" [shape=box, fontname = "helvetica" , fillcolor=lightcyan, style=filled   ];
+        "4-4Ra" [shape=box, fontname = "helvetica", fillcolor=lightcyan, style=filled];
+        "4-4Ra-gc" [shape=box, color=red, fontname = "helvetica" , fillcolor=lightcyan, style=filled , penwidth=2.5];
 
-        "IL21"   [shape=circle];
-        "IL21Ra" [shape=box    ];
-        "IL21-IL21Ra" [shape=box];
-        "IL21-IL21Ra-gc" [shape=box, color=red ];
+        "IL21"   [shape=circle, fontname = "helvetica", fillcolor=slategray2, style=filled];
+        "21Ra" [shape=box , fontname = "helvetica", fillcolor=slategray2, style=filled   ];
+        "21-21Ra" [shape=box, fontname = "helvetica", fillcolor=slategray2, style=filled];
+        "21-21Ra-gc" [shape=box, color=red, fontname = "helvetica", fillcolor=slategray2, style=filled , penwidth=2.5 ];
     }
 
     subgraph cluster_IL2 {
-        style=filled;
-    	color=mediumorchid2;
     	node [style=filled,color=mediumorchid4, margin=0];
-        label= "IL2 Family"
+        penwidth=0;
 
-        "k1" [shape=diamond,style=filled,height=.1,width=.1];
-        "IL2" -> "k1" [dir=none,weight=1];
-        "IL2Ra" -> "k1" [dir=none,weight=1];
-        "k1" -> "IL2-IL2Ra" [dir=none, weight=2];
+        "1" [shape=diamond,style=filled,height=.1,width=.1, fontname = "helvetica"];
+        "IL2" -> "1" [dir=none,weight=1];
+        "2Ra" -> "1" [dir=none,weight=1];
+        "1" -> "2-2Ra" [dir=none, weight=2];
 
-        "k2" [shape=diamond,style=filled,height=.1,width=.1];
-        "IL2" -> "k2" [dir=none,weight=1];
-        "IL2Rb" -> "k2" [dir=none,weight=1];
-        "k2" -> "IL2-IL2Rb" [dir=none, weight=2];
+        "2" [shape=diamond,style=filled,height=.1,width=.1, fontname = "helvetica"];
+        "IL2" -> "2" [dir=none,weight=1];
+        "2Rb" -> "2" [dir=none,weight=1];
+        "2" -> "2-2Rb" [dir=none, weight=2];
 
-        "k4" [shape=tripleoctagon,style=filled,height=.1,width=.1];
-        "IL2-IL2Ra" -> "k4" [dir=none,weight=1];
-        "gc" -> "k4" [dir=none,weight=1];
-        "k4" -> "IL2-IL2Ra-gc" [dir=none, weight=2];
+        "4" [shape=tripleoctagon,style=filled,height=.1,width=.1, fontname = "helvetica"];
+        "2-2Ra" -> "4" [dir=none,weight=1];
+        "gc" -> "4" [dir=none,weight=1];
+        "4" -> "2-2Ra-gc" [dir=none, weight=2];
 
-        "k5" [shape=tripleoctagon,style=filled,height=.1,width=.1];
-        "IL2-IL2Rb" -> "k5" [dir=none,weight=1];
-        "gc" -> "k5" [dir=none,weight=1];
-        "k5" -> "IL2-IL2Rb-gc" [dir=none, weight=2];
+        "5" [shape=tripleoctagon,style=filled,height=.1,width=.1, fontname = "helvetica"];
+        "2-2Rb" -> "5" [dir=none,weight=1];
+        "gc" -> "5" [dir=none,weight=1];
+        "5" -> "2-2Rb-gc" [dir=none, weight=2];
 
-        "k8" [shape=octagon,style=filled,height=.1,width=.1];
-        "IL2-IL2Rb-gc" -> "k8" [dir=none,weight=1];
-        "IL2Ra" -> "k8" [dir=none,weight=1];
-        "k8" -> "IL2-IL2Ra-IL2Rb-gc" [dir=none, weight=2];
+        "8" [shape=octagon,style=filled,height=.1,width=.1, fontname = "helvetica"];
+        "2-2Rb-gc" -> "8" [dir=none,weight=1];
+        "2Ra" -> "8" [dir=none,weight=1];
+        "8" -> "2-2Ra-2Rb-gc" [dir=none, weight=2, fontname = "helvetica"];
 
-        "k9" [shape=octagon,style=filled,height=.1,width=.1];
-        "IL2-IL2Ra-gc" -> "k9" [dir=none,weight=1];
-        "IL2Rb" -> "k9" [dir=none,weight=1];
-        "k9" -> "IL2-IL2Ra-IL2Rb-gc" [dir=none, weight=2];
+        "9" [shape=octagon,style=filled,height=.1,width=.1, fontname = "helvetica"];
+        "2-2Ra-gc" -> "9" [dir=none,weight=1];
+        "2Rb" -> "9" [dir=none,weight=1];
+        "9" -> "2-2Ra-2Rb-gc" [dir=none, weight=2];
 
-        "k10" [shape=triangle,style=filled,height=.1,width=.04];
-        "IL2-IL2Ra-IL2Rb" -> "k10" [dir=none,weight=1];
-        "gc" -> "k10" [dir=none,weight=1];
-        "k10" -> "IL2-IL2Ra-IL2Rb-gc" [dir=none, weight=2];
+        "10" [shape=triangle,style=filled,height=.1,width=.04, fontname = "helvetica"];
+        "2-2Ra-2Rb" -> "10" [dir=none,weight=1];
+        "gc" -> "10" [dir=none,weight=1];
+        "10" -> "2-2Ra-2Rb-gc" [dir=none, weight=2];
 
-        "k11" [shape=triangle,style=filled,height=.1,width=.04];
-        "IL2-IL2Ra" -> "k11" [dir=none,weight=1];
-        "IL2Rb" -> "k11" [dir=none,weight=1];
-        "k11" -> "IL2-IL2Ra-IL2Rb" [dir=none, weight=2];
+        "11" [shape=triangle,style=filled,height=.1,width=.04, fontname = "helvetica"];
+        "2-2Ra" -> "11" [dir=none,weight=1];
+        "2Rb" -> "11" [dir=none,weight=1];
+        "11" -> "2-2Ra-2Rb" [dir=none, weight=2];
 
-        "k12" [shape=octagon,style=filled,height=.1,width=.1];
-        "IL2-IL2Rb" -> "k12" [dir=none,weight=1];
-        "IL2Ra" -> "k12" [dir=none,weight=1];
-        "k12" -> "IL2-IL2Ra-IL2Rb" [dir=none, weight=2];
+        "12" [shape=octagon,style=filled,height=.1,width=.1, fontname = "helvetica"];
+        "2-2Rb" -> "12" [dir=none,weight=1];
+        "2Ra" -> "12" [dir=none,weight=1];
+        "12" -> "2-2Ra-2Rb" [dir=none, weight=2];
     }
 
     subgraph cluster_IL15 {
-        style=filled;
-    	color=goldenrod1;
     	node [style=filled,color=goldenrod4, margin=0];
         edge [dir=none, weight=1];
-        label= "IL15 Family"
+        penwidth=0;
 
-        "k13" [shape=diamond,style=filled,height=.1,width=.1];
-        "IL15" -> "k13";
-        "IL15Ra" -> "k13";
-        "k13" -> "IL15-IL15Ra";
+        "13" [shape=diamond,style=filled,height=.1,width=.1, fontname = "helvetica"];
+        "IL15" -> "13";
+        "15Ra" -> "13";
+        "13" -> "15-15Ra";
 
-        "k14" [shape=diamond,style=filled,height=.1,width=.1];
-        "IL15" -> "k14";
-        "IL2Rb" -> "k14";
-        "k14" -> "IL15-IL2Rb";
+        "14" [shape=diamond,style=filled,height=.1,width=.1, fontname = "helvetica"];
+        "IL15" -> "14";
+        "2Rb" -> "14";
+        "14" -> "15-2Rb";
 
-        "k16" [shape=tripleoctagon,style=filled,height=.1,width=.1];
-        "IL15-IL15Ra" -> "k16";
-        "gc" -> "k16";
-        "k16" -> "IL15-IL15Ra-gc";
+        "16" [shape=tripleoctagon,style=filled,height=.1,width=.1, fontname = "helvetica"];
+        "15-15Ra" -> "16";
+        "gc" -> "16";
+        "16" -> "15-15Ra-gc";
 
-        "k17" [shape=tripleoctagon,style=filled,height=.1,width=.1];
-        "IL15-IL2Rb" -> "k17";
-        "gc" -> "k17";
-        "k17" -> "IL15-IL2Rb-gc";
+        "17" [shape=tripleoctagon,style=filled,height=.1,width=.1, fontname = "helvetica"];
+        "15-2Rb" -> "17";
+        "gc" -> "17";
+        "17" -> "15-2Rb-gc";
 
-        "k20" [shape=octagon,style=filled,height=.1,width=.1];
-        "IL15-IL2Rb-gc" -> "k20";
-        "IL15Ra" -> "k20";
-        "k20" -> "IL15-IL15Ra-IL2Rb-gc";
+        "20" [shape=octagon,style=filled,height=.1,width=.1, fontname = "helvetica"];
+        "15-2Rb-gc" -> "20";
+        "15Ra" -> "20";
+        "20" -> "15-15Ra-2Rb-gc";
 
-        "k21" [shape=octagon,style=filled,height=.1,width=.1];
-        "IL15-IL15Ra-gc" -> "k21";
-        "IL2Rb" -> "k21";
-        "k21" -> "IL15-IL15Ra-IL2Rb-gc";
+        "21" [shape=octagon,style=filled,height=.1,width=.1, fontname = "helvetica"];
+        "15-15Ra-gc" -> "21";
+        "2Rb" -> "21";
+        "21" -> "15-15Ra-2Rb-gc";
 
-        "k22" [shape=tripleoctagon,style=filled,height=.1,width=.1];
-        "IL15-IL15Ra-IL2Rb" -> "k22";
-        "gc" -> "k22";
-        "k22" -> "IL15-IL15Ra-IL2Rb-gc";
+        "22" [shape=tripleoctagon,style=filled,height=.1,width=.1, fontname = "helvetica"];
+        "15-15Ra-2Rb" -> "22";
+        "gc" -> "22";
+        "22" -> "15-15Ra-2Rb-gc";
 
-        "k23" [shape=tripleoctagon,style=filled,height=.1,width=.1];
-        "IL15-IL15Ra" -> "k23";
-        "IL2Rb" -> "k23";
-        "k23" -> "IL15-IL15Ra-IL2Rb";
+        "23" [shape=tripleoctagon,style=filled,height=.1,width=.1, fontname = "helvetica"];
+        "15-15Ra" -> "23";
+        "2Rb" -> "23";
+        "23" -> "15-15Ra-2Rb";
 
-        "k24" [shape=octagon,style=filled,height=.1,width=.1];
-        "IL15-IL2Rb" -> "k24";
-        "IL15Ra" -> "k24";
-        "k24" -> "IL15-IL15Ra-IL2Rb";
+        "24" [shape=octagon,style=filled,height=.1,width=.1, fontname = "helvetica"];
+        "15-2Rb" -> "24";
+        "15Ra" -> "24";
+        "24" -> "15-15Ra-2Rb";
         }
 
     subgraph cluster_IL7 {
-        style=filled;
-    	color=dodgerblue;
     	node [style=filled,color=dodgerblue4, margin=0];
         edge [dir=none, weight=1];
-        label= "IL7 Family"
+        penwidth=0;
         
-        "k25" [shape=diamond,style=filled,height=.1,width=.1];
-        "IL7" -> "k25";
-        "IL7Ra" -> "k25";
-        "k25" -> "IL7-IL7Ra";
+        "25" [shape=diamond,style=filled,height=.1,width=.1, fontname = "helvetica"];
+        "IL7" -> "25";
+        "7Ra" -> "25";
+        "25" -> "7-7Ra";
 
-        "k27" [shape=tripleoctagon,style=filled,height=.1,width=.1];
-        "IL7-IL7Ra" -> "k27";
-        "gc" -> "k27";
-        "k27" -> "IL7-IL7Ra-gc";
+        "27" [shape=tripleoctagon,style=filled,height=.1,width=.1, fontname = "helvetica"];
+        "7-7Ra" -> "27";
+        "gc" -> "27";
+        "27" -> "7-7Ra-gc";
     }
 
     subgraph cluster_IL9 {
-        style=filled;
-    	color=darkolivegreen2;
     	node [style=filled,color=darkolivegreen4, margin=0];
         edge [dir=none, weight=1];
-        label= "IL9 Family"
+        penwidth=0;
         
-        "k29" [shape=diamond, style=filled, height=.1, width=.1];
-        "IL9" -> "k29";
-        "IL9R" -> "k29";
-        "k29" -> "IL9-IL9R";
+        "29" [shape=diamond, style=filled, height=.1, width=.1, fontname = "helvetica"];
+        "IL9" -> "29";
+        "9R" -> "29";
+        "29" -> "9-9R";
 
-        "k31" [shape=tripleoctagon,style=filled,height=.1,width=.1];
-        "IL9-IL9R" -> "k31";
-        "gc" -> "k31";
-        "k31" -> "IL9-IL9R-gc";
+        "31" [shape=tripleoctagon,style=filled,height=.1,width=.1, fontname = "helvetica"];
+        "9-9R" -> "31";
+        "gc" -> "31";
+        "31" -> "9-9R-gc";
     }
 
     subgraph cluster_IL4 {
-        style=filled;
-    	color=lightcyan;
     	node [style=filled, color=lightcyan4, margin=0];
         edge [dir=none, weight=1];
-        label= "IL4 Family"
+        penwidth=0;
         
-        "k32" [shape=diamond, style=filled, height=0.1, width=0.1];
-        "IL4" -> "k32";
-        "IL4Ra" -> "k32";
-        "k32" -> "IL4-IL4Ra";
+        "32" [shape=diamond, style=filled, height=0.1, width=0.1, fontname = "helvetica"];
+        "IL4" -> "32";
+        "4Ra" -> "32";
+        "32" -> "4-4Ra";
 
-        "k33" [shape=tripleoctagon,style=filled,height=.1,width=.1];
-        "IL4-IL4Ra" -> "k33";
-        "gc" -> "k33";
-        "k33" -> "IL4-IL4Ra-gc";
+        "33" [shape=tripleoctagon,style=filled,height=.1,width=.1, fontname = "helvetica"];
+        "4-4Ra" -> "33";
+        "gc" -> "33";
+        "33" -> "4-4Ra-gc";
     }
     subgraph cluster_IL21 {
-        style=filled;
-    	color=slategray2;
     	node [style=filled, color=slategray4, margin=0];
         edge [dir=none, weight=1];
-        label= "IL21 Family"
+        penwidth=0;
         
-        "k34" [shape=diamond,style=filled,height=.1,width=.1];
-        "IL21" -> "k34";
-        "IL21Ra" -> "k34";
-        "k34" -> "IL21-IL21Ra";
+        "34" [shape=diamond,style=filled,height=.1,width=.1, fontname = "helvetica"];
+        "IL21" -> "34";
+        "21Ra" -> "34";
+        "34" -> "21-21Ra";
 
-        "k35" [shape=tripleoctagon,style=filled, height=.1, width=.1];
-        "IL21-IL21Ra" -> "k35";
-        "gc" -> "k35";
-        "k35" -> "IL21-IL21Ra-gc";
+        "35" [shape=tripleoctagon,style=filled, height=.1, width=.1, fontname = "helvetica"];
+        "21-21Ra" -> "35";
+        "gc" -> "35";
+        "35" -> "21-21Ra-gc";
     }
 }
