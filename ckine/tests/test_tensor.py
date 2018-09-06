@@ -3,9 +3,10 @@ Unit test file.
 """
 import unittest
 import numpy as np
-from ..Tensor_analysis import find_R2X, perform_decomposition
+import tensorly
+from ..Tensor_analysis import find_R2X, perform_decomposition, reorient_factors
 from ..tensor_generation import findy
-
+tensorly.set_backend('numpy')
 
 class TestModel(unittest.TestCase):
     '''Test Class for Tensor related work.'''
@@ -28,3 +29,13 @@ class TestModel(unittest.TestCase):
         y_combos, new_mat = findy(r,50)[0:2]
 
         self.assertTrue(y_combos.shape[0] == new_mat.shape[0])
+    
+    def test_reorientation(self, n_comp = 20):
+        """Test if reorienting the factors matrices changes anything about the original tensor itself."""
+        tensor = np.random.rand(20,35,100, n_comp)
+        for ii in range(n_comp-10,n_comp-1):
+            factors = perform_decomposition(tensor, ii)
+            reconstruct_old = tensorly.kruskal_to_tensor(factors)
+            new_factors = reorient_factors(factors)
+            reconstruct_new = tensorly.kruskal_to_tensor(new_factors)
+            np.testing.assert_almost_equal(reconstruct_old, reconstruct_new)
