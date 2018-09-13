@@ -33,7 +33,7 @@ pipeline {
         step([$class:'TasksPublisher', canComputeNew:false, defaultEncoding:'', excludePattern:'',
           healthy:'', high:'TODO,FIXME,XXX', low:'', normal:'CITE', pattern:'**/*.py, **/*.md', unHealthy:''])
         step([$class:'WarningsPublisher', parserConfigurations: [[parserName:'PYLint', pattern:'pylint.log']],
-          unstableTotalAll:'1000', usePreviousBuildAsReference:true])
+          unstableTotalAll:'160', usePreviousBuildAsReference:true])
         publishHTML([allowMissing:false, alwaysLinkToLastBuild:false, keepAll:true,
           reportDir:'html', reportFiles:'index.html', reportName:'Documentation', reportTitles:''])
       }
