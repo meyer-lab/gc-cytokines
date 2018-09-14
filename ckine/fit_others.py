@@ -183,4 +183,3 @@ class build_model:
     def profile(self):
         """ Profile the gradient calculation. """
         self.M.profile(pm.theanof.gradient(self.M.logpt, None)).summary()
-

@@ -1,17 +1,17 @@
 """
 This file contains functions that are used in multiple figures.
 """
-import seaborn as sns
 import string
-import numpy as np
-import pandas as pds
 import os
 import pickle
 import itertools
+import seaborn as sns
+import numpy as np
+import pandas as pds
 import matplotlib
 import matplotlib.cm as cm
 from matplotlib import gridspec, pyplot as plt
-import numpy as np
+
 
 def getSetup(figsize, gridd, mults=None, multz=None, empts=[]):
     """ Establish figure set-up with subplots. """
@@ -59,7 +59,7 @@ def plot_values(ax1, factors, component_x, component_y, ax_pos):
     #Set Active to color red. Set Surface to color blue. Set Total to color black
     markersLigand = itertools.cycle(('^', 'D', 's', 'X', 'o'))
     markersReceptors = itertools.cycle(('^', '4', 'P', '*', 'D', 's', 'X' ,'o'))
-    
+
     labelLigand = itertools.cycle(('Combined IL2-15 Activity', 'IL7 Activity', 'IL9 Activity', 'IL4 Activity', 'IL21 Activity'))
     labelSurface = itertools.cycle(('Surface IL2Ra', 'Surface IL2Rb', 'Surface gc', 'Surface IL15Ra', 'Surface IL7Ra', 'Surface IL9R', 'Surface IL4Ra', 'Surface IL21Ra'))
     labelTotal = itertools.cycle(('Total IL2Ra', 'Total IL2Rb', 'Total gc', 'Total IL15Ra', 'Total IL7Ra', 'Total IL9R', 'Total IL4Ra', 'Total IL21Ra'))
@@ -82,6 +82,7 @@ def plot_values(ax1, factors, component_x, component_y, ax_pos):
 
 def plot_timepoint(ax, factors, component_x, component_y):
     """Plot the timepoint decomposition in the first column of figS2."""
+    print(factors.shape)
     ax.plot(factors[:, component_x - 1], factors[:, component_y - 1], color = 'k')
     ax.scatter(factors[-1, component_x - 1], factors[-1, component_y - 1], s = 12, color = 'b')
 
@@ -94,7 +95,7 @@ def plot_cells(ax, factors, component_x, component_y, cell_names, ax_pos):
         ax.scatter(factors[ii, component_x - 1], factors[ii, component_y - 1], c = colors[ii], marker = markersCells[ii], label = cell_names[ii])
     if ax_pos == 5 and factors.shape[1] <= 10:
         ax.legend(loc='upper left', bbox_to_anchor=(3.6, 1.7))
-    
+
     elif ax_pos == 5:
         ax.legend(loc='upper left', bbox_to_anchor=(3.6, 0.5))
 

@@ -27,7 +27,7 @@ def makeFigure():
     plot_pretreat(ax[2], unkVec, scales, "Inhibition with active endocytosis")
     surf_gc(ax[3], 100., unkVec)
     violinPlots(ax[4:8], unkVec, scales)
-    
+
     unkVec_noActiveEndo = unkVec.copy()
     unkVec_noActiveEndo[18] = 0.0   # set activeEndo rate to 0
     plot_pretreat(ax[8], unkVec_noActiveEndo, scales, "Inhibition without active endocytosis")
@@ -168,11 +168,11 @@ def pretreat_calc(unkVec, scales, pre_conc):
     assert unkVec.size == nParams()
     actVec_IL4stim = np.fromiter((singleCalc(unkVec, 2, x, 4, IL4_stim_conc) for x in pre_conc), np.float64)
     actVec_IL7stim = np.fromiter((singleCalc(unkVec, 4, x, 2, IL7_stim_conc) for x in pre_conc), np.float64)
-    
+
     # incorporate IC50
     actVec_IL4stim = actVec_IL4stim  / (actVec_IL4stim + scales[0])
     actVec_IL7stim = actVec_IL7stim  / (actVec_IL7stim + scales[1])
-    
+
 
     def singleCalc_no_pre(unkVec, cytokine, conc):
         ''' This function generates the active vector for a given unkVec, cytokine, and concentration. '''
@@ -184,7 +184,7 @@ def pretreat_calc(unkVec, scales, pre_conc):
 
     IL4stim_no_pre = singleCalc_no_pre(unkVec, 4, IL4_stim_conc)
     IL7stim_no_pre = singleCalc_no_pre(unkVec, 2, IL7_stim_conc)
-    
+
     # incorporate IC50
     IL4stim_no_pre = IL4stim_no_pre  / (IL4stim_no_pre + scales[0])
     IL7stim_no_pre = IL7stim_no_pre  / (IL7stim_no_pre + scales[1])
@@ -202,7 +202,7 @@ def plot_pretreat(ax, unkVec, scales, title):
     pre_conc = np.logspace(-3.8, 1.0, num=PTS)
     IL4_stim = np.zeros((PTS, 500))
     IL7_stim = IL4_stim.copy()
-    
+
     for ii in range(500):
         output = pretreat_calc(unkVec[:, ii], scales[ii, :], pre_conc)
         IL4_stim[:, ii] = output[0:PTS]
