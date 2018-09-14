@@ -34,7 +34,7 @@ def ySolver(matIn, ts):
     rxntfR[18] = 1.474695447 #activeEndo
     rxntfR[19] = 0.179927669 #sortF
     rxntfR[20] = 0.155260036 #kRec
-    rxntfR[21] = 0.017236595 #kDeg 
+    rxntfR[21] = 0.017236595 #kDeg
 
     rxntfR[22:30] = matIn[6:14] # Receptor expression
     rxntfR[0:6] = matIn[0:6] # Cytokine stimulation concentrations

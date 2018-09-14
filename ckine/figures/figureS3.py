@@ -36,16 +36,20 @@ def makeFigure():
     ssize = 3
     ax, f = getSetup((ssize*y, ssize*x), (x, y))
 
+    plot_timepoints(ax[0], newfactors[0])
+
+    
     for row in range(x):
-        subplotLabel(ax[row*y], string.ascii_uppercase[row]) # Add subplot labels
+        subplotLabel(ax[row], string.ascii_uppercase[row]) # Add subplot labels
         compNum = 2*row + 1
-        plot_timepoint(ax[row*y], newfactors[0], compNum, compNum+1)
+        if row >= 1:
+            ax[row*y].axis('off')
         plot_cells(ax[row*y + 1], newfactors[1], compNum, compNum+1, cell_names, ax_pos = row*y + 1)
         plot_ligands(ax[row*y + 2], newfactors[2], compNum, compNum+1)
         plot_values(ax[row*y + 3] ,newfactors[3], compNum, compNum+1, ax_pos = row*y + 3)
 
         # Set axes to center on the origin, and add labels
-        for col in range(y):
+        for col in range(1,y):
             ax[row*y + col].set_xlabel('Component ' + str(compNum))
             ax[row*y + col].set_ylabel('Component ' + str(compNum+1))
 
@@ -61,3 +65,15 @@ def makeFigure():
         R2X = find_R2X(np.concatenate((values[:,:,:,[0,1,2,3,4]], values[:,:,:,[0,1,2,3,4]]), axis = 3), factors, subt = False)
         print(R2X)
     return f
+
+def plot_timepoints(ax, factors):
+    """Function to put all timepoint plots in one figure."""
+    ts = np.logspace(-3., np.log10(4 * 60.), 100)
+    ts = np.insert(ts, 0, 0.0)
+    colors = ['b', 'k', 'r', 'y', 'm', 'g']
+    for ii in range(factors.shape[1]):
+        ax.plot(ts, factors[:,ii], c = colors[ii], label = 'Component ' + str(ii+1))
+        ax.scatter(ts[-1], factors[-1, ii], s = 12, color = 'k')
+    ax.set_xlabel('Time (min)')
+    ax.set_ylabel('Component')
+    ax.legend()
