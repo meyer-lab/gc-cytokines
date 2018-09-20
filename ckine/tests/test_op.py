@@ -68,3 +68,36 @@ class TestOp(unittest.TestCase):
 
         # Assert that all the conditions are the same so the derivatives are the same
         self.assertAlmostEqual(np.std(np.sum(Jac, axis=1)), 0.0)
+
+    def test_runCkinePreSOp_noPostTreat(self):
+        """ Test that runCkineOp and runCkinePreSOp return the same Jacobian when there is pretreatment only for runCkinePreSOp. """
+        # Setup an Op for conditions with cytokines present, sufficient pre-treat time, and no post-treat time
+        ligands = np.zeros((6))
+        ligands[2], ligands[4] = 25., 50.
+        PreOp = runCkinePreSOp(tpre=np.array([10.0]), ts=np.array([0.0]), postlig=ligands)
+        
+        # Calculate the Jacobian
+        preF, Jac = setupJacobian(PreOp, self.unkV)
+        
+        # Setup an Op for runCkineOp under the same conditions
+        Op = runCkineOp(np.array([10.0]))
+        
+        # Calculate the Jacobian
+        f, Jac2 = setupJacobian(Op, self.unkV)
+        
+        np.set_printoptions(threshold=np.nan)
+        
+        closeness = np.isclose(preF, f, rtol=0.00001, atol=0.00001)
+        if not np.all(closeness):
+            IDXdiff = np.where(np.logical_not(closeness))
+            print(IDXdiff)
+
+        self.assertTrue(np.all(closeness))
+        
+        closeness = np.isclose(Jac, Jac2, rtol=0.01, atol=0.01)
+        if not np.all(closeness):
+            IDXdiff = np.where(np.logical_not(closeness))
+            print(IDXdiff)
+            print((Jac - Jac2)[IDXdiff])
+
+        self.assertTrue(np.all(closeness))
