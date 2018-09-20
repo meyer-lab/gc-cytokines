@@ -354,8 +354,12 @@ extern "C" int runCkinePretreat (const double pret, const double tt, double * co
 	std::copy_n(postStim, Nlig, sMem.params.begin()); // Copy in stimulation ligands
 
 	CVodeReInit(sMem.cvode_mem, pret, sMem.state);
-
-	returnVal = CVode(sMem.cvode_mem, pret + tt, sMem.state, &tret, CV_NORMAL);
+    
+	if (tt > std::numeric_limits<double>::epsilon()) {
+		returnVal = CVode(sMem.cvode_mem, pret + tt, sMem.state, &tret, CV_NORMAL);
+	} else {
+		returnVal = 0;
+	}
 		
 	if (returnVal < 0) {
 		std::cout << "CVode error in CVode. Code: " << returnVal << std::endl;
