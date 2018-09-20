@@ -58,7 +58,7 @@ class runCkinePreSOp(Op):
         return [(nSpecies(), )]
 
     def perform(self, node, inputs, outputs):
-        outputs[0][0] = self.dOp.runCkine(inputs, False)
+        outputs[0][0] = self.dOp.runCkine(inputs[0])
 
     def grad(self, inputs, g):
         """ Calculate the runCkineOp gradient. """
@@ -76,19 +76,27 @@ class runCkinePreSOpDiff(Op):
         self.tpre = tpre
         self.postlig = postlig
 
-    def runCkine(self, inputs, sensi):
-        outt = runCkinePreT(self.tpre, self.ts, inputs[0], self.postlig, sensi)
+    def runCkine(self, inputs):
+        outt = runCkinePreT(self.tpre, self.ts, inputs, self.postlig)
 
         assert outt[1] >= 0
         assert outt[0].size == nSpecies()
 
-        if sensi is True:
-            return np.squeeze(outt[2])
-
         return np.squeeze(outt[0])
 
     def perform(self, node, inputs, outputs):
-        outputs[0][0] = self.runCkine(inputs, True)
+        x0 = inputs[0]
+        f0 = self.runCkine(x0)
+        epsilon = 1.0E-7
+
+        jac = np.zeros((len(x0), len(f0)), dtype=np.float64)
+
+        for i in range(len(x0)):
+            dx = x0.copy()
+            dx[i] = dx[i] + epsilon
+            jac[i] = (self.runCkine(dx) - f0)/epsilon
+
+        outputs[0][0] = np.transpose(jac)
 
 
 class runCkineKineticOp(Op):
