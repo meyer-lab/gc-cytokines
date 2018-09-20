@@ -11,7 +11,7 @@ libb = ct.cdll.LoadLibrary(filename)
 libb.fullModel_C.argtypes = (ct.POINTER(ct.c_double), ct.c_double, ct.POINTER(ct.c_double), ct.POINTER(ct.c_double))
 libb.runCkine.argtypes = (ct.POINTER(ct.c_double), ct.c_uint, ct.POINTER(ct.c_double), ct.POINTER(ct.c_double), ct.c_bool, ct.POINTER(ct.c_double))
 libb.runCkineParallel.argtypes = (ct.POINTER(ct.c_double), ct.c_double, ct.c_uint, ct.c_bool, ct.POINTER(ct.c_double), ct.POINTER(ct.c_double))
-libb.runCkinePretreat.argtypes = (ct.c_double, ct.c_double, ct.POINTER(ct.c_double), ct.POINTER(ct.c_double), ct.POINTER(ct.c_double), ct.c_bool, ct.POINTER(ct.c_double))
+libb.runCkinePretreat.argtypes = (ct.c_double, ct.c_double, ct.POINTER(ct.c_double), ct.POINTER(ct.c_double), ct.POINTER(ct.c_double))
 
 
 __nSpecies = 62
@@ -40,7 +40,7 @@ def nRxn():
     return __nRxn
 
 
-def runCkinePreT (pret, tt, rxntfr, postLig, sensi=False):
+def runCkinePreT (pret, tt, rxntfr, postLig):
     """ Standard version of solver that returns species abundances given times and unknown rates. """
     rxntfr = rxntfr.copy()
     assert rxntfr.size == __nParams
@@ -50,19 +50,9 @@ def runCkinePreT (pret, tt, rxntfr, postLig, sensi=False):
 
     yOut = np.zeros(__nSpecies, dtype=np.float64)
 
-    if sensi is True:
-        sensV = np.zeros((__nSpecies, __nParams), dtype=np.float64, order='F')
-        sensP = sensV.ctypes.data_as(ct.POINTER(ct.c_double))
-    else:
-        sensP = ct.POINTER(ct.c_double)()
-
 
     retVal = libb.runCkinePretreat(pret, tt, yOut.ctypes.data_as(ct.POINTER(ct.c_double)),
-                                   rxntfr.ctypes.data_as(ct.POINTER(ct.c_double)), postLig.ctypes.data_as(ct.POINTER(ct.c_double)),
-                                   sensi, sensP)
-
-    if sensi is True:
-        return (yOut, retVal, sensV)
+                                   rxntfr.ctypes.data_as(ct.POINTER(ct.c_double)), postLig.ctypes.data_as(ct.POINTER(ct.c_double)))
 
     return (yOut, retVal)
 

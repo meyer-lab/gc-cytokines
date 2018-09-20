@@ -8,6 +8,7 @@ from ..model import nSpecies, nParams, getTotalActiveSpecies
 
 
 def setupJacobian(Op, unk):
+    """ Take an Op, and a vector at which to evaluate the Op. Pass back the return value and Jacobian. """
     a = T.dvector('tempVar')
     fexpr = Op(a)
 
@@ -29,21 +30,24 @@ class TestOp(unittest.TestCase):
         self.ts = np.linspace(0., 1000.)
 
     def test_runCkineOp_T0(self):
+        """ Verify the Jacobian for the core Op at t=0. """
         utt.verify_grad(runCkineOp(np.array([0.0])), [self.unkV])
 
     def test_runCkineOp(self):
+        """ Verify the Jacobian for the core Op. """
         utt.verify_grad(runCkineOp(np.array([100.])), [self.unkV])
 
-    @unittest.skip('TODO: Think the sensitivity analysis here is slightly off—this should be able to pass.')
     def test_runCkinePreSOp(self):
+        """ Verify the Jacobian for the pre-stimulation Op. """
         utt.verify_grad(runCkinePreSOp(np.array([100.]), np.array([100.]),
                                        np.array([0.0, 0.0, 1.0, 1.0, 0.0, 0.0])), [self.unkV])
 
     def test_runCkineKineticOp(self):
+        """ Verify kinetic Op Jacobian. """
         utt.verify_grad(runCkineKineticOp(self.ts, self.cond), [self.unkV])
 
     def test_runCkineDoseOp(self):
-        """ Verify the derivative passed back by runCkineDoseOp. """
+        """ Verify the Jacobian passed back by runCkineDoseOp. """
         Op = runCkineDoseOp(np.array(1.0), self.cond, self.conditions)
 
         utt.verify_grad(Op, [self.doseUnkV])
