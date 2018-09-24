@@ -10,7 +10,7 @@ from ..tensor_generation import prepare_tensor
 from .figureCommon import subplotLabel, getSetup, plot_timepoint, plot_cells, plot_ligands, plot_values
 from ..Tensor_analysis import reorient_factors
 from .figureCommon import subplotLabel, getSetup, plot_timepoint, plot_cells, plot_ligands, plot_values
-from ..Tensor_analysis import reorient_factors, find_R2X
+from ..Tensor_analysis import reorient_factors, find_R2X, scale_time_factors, scale_all
 
 
 def makeFigure():
@@ -31,7 +31,7 @@ def makeFigure():
     n_comps = 5
     factors = factors_activity[n_comps]
     newfactors = reorient_factors(factors)
-
+    newfactors = scale_all(newfactors)
     x, y = 3, 4
     ssize = 3
     ax, f = getSetup((ssize*y, ssize*x), (x, y))
@@ -46,7 +46,7 @@ def makeFigure():
             ax[row*y].axis('off')
         plot_cells(ax[row*y + 1], newfactors[1], compNum, compNum+1, cell_names, ax_pos = row*y + 1)
         plot_ligands(ax[row*y + 2], newfactors[2], compNum, compNum+1)
-        plot_values(ax[row*y + 3] ,newfactors[3], compNum, compNum+1, ax_pos = row*y + 3)
+        plot_values(ax[row*y + 3] , newfactors[3], compNum, compNum+1, ax_pos = row*y + 3)
 
         # Set axes to center on the origin, and add labels
         for col in range(1,y):
@@ -58,12 +58,6 @@ def makeFigure():
 
             ax[row*y + col].set_xlim(-x_max, x_max)
             ax[row*y + col].set_ylim(-y_max, y_max)
-
-    values, _, _, _, _ = prepare_tensor(2)
-    for n in range(6):
-        factors = factors_activity[n]
-        R2X = find_R2X(np.concatenate((values[:,:,:,[0,1,2,3,4]], values[:,:,:,[0,1,2,3,4]]), axis = 3), factors, subt = False)
-        print(R2X)
     return f
 
 def plot_timepoints(ax, factors):

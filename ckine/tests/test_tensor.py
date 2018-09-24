@@ -4,7 +4,7 @@ Unit test file.
 import unittest
 import numpy as np
 import tensorly
-from ..Tensor_analysis import find_R2X, perform_decomposition, reorient_factors
+from ..Tensor_analysis import find_R2X, perform_decomposition, reorient_factors, scale_time_factors, scale_all
 from ..tensor_generation import findy
 tensorly.set_backend('numpy')
 
@@ -39,3 +39,22 @@ class TestModel(unittest.TestCase):
             new_factors = reorient_factors(factors)
             reconstruct_new = tensorly.kruskal_to_tensor(new_factors)
             np.testing.assert_almost_equal(reconstruct_old, reconstruct_new)
+
+    def test_scaling(self, n_comp = 20):
+        """Test if multiplying one component of one factor matrix by a number X and dividing that same component of another factor matrix by X gives back the same tensor."""
+        tensor = np.random.rand(20,35,100, n_comp)
+        factors = perform_decomposition(tensor, n_comp-1)
+        reconstruct_old = tensorly.kruskal_to_tensor(factors)
+        for ii in range(1,n_comp):
+            newfactors = scale_time_factors(factors, ii)
+            reconstruct_new = tensorly.kruskal_to_tensor(newfactors)
+            np.testing.assert_almost_equal(reconstruct_old, reconstruct_new)
+
+    def test_rescale_all(self, n_comp = 20):
+        """Test if rescaling every component keeps the tensor the same."""
+        tensor = np.random.rand(20,35,100, n_comp)
+        factors = perform_decomposition(tensor, n_comp-1)
+        reconstruct_old = tensorly.kruskal_to_tensor(factors)
+        newfactors = scale_all(factors)
+        reconstruct_new = tensorly.kruskal_to_tensor(newfactors)
+        np.testing.assert_almost_equal(reconstruct_old, reconstruct_new)
