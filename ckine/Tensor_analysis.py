@@ -5,6 +5,7 @@ import numpy as np
 import pandas as pd
 import tensorly
 from tensorly.decomposition import parafac
+from tensorly.decomposition import tucker
 tensorly.set_backend('numpy')
 
 def z_score_values(A, subtract = True):
@@ -31,6 +32,18 @@ def perform_decomposition(tensor, r, subt = True):
     values_z = z_score_values(tensor, subtract = subt)
     factors = parafac(values_z, rank = r) #can do verbose and tolerance (tol)
     return factors
+
+def perform_tucker(tensor, rank_list, subt = True):
+    '''Function to peform tucker decomposition.'''
+    values_z = z_score_values(tensor, subtract = subt)
+    out = tucker(values_z, ranks = rank_list, init = 'random') #index 0 is for core tensor, index 1 is for factors; out is a list of core and factors
+    return out
+
+def find_R2X_tucker(values, out, subt = True):
+    '''Compute R2X for the tucker decomposition.'''
+    z_values = z_score_values(values, subtract = subt)
+    values_reconstructed = tensorly.tucker_to_tensor(out[0], out[1])
+    return 1 - np.var(values_reconstructed - z_values) / np.var(z_values)
 
 def reorient_one(factors, component_index):
     """Function that takes in the 4 factor matrices and decides if that column index should flip or not and then flips it."""

@@ -58,26 +58,14 @@ def plot_values(ax1, factors, component_x, component_y, ax_pos):
     # The markers are for the following elements in order: 'IL2 & IL15 Combined', 'IL7', 'IL9', 'IL4','IL21','IL2Ra', 'IL2Rb', 'gc', 'IL15Ra', 'IL7Ra', 'IL9R', 'IL4Ra','IL21Ra','IL2Ra', 'IL2Rb', 'gc', 'IL15Ra', 'IL7Ra', 'IL9R', 'IL4Ra','IL21Ra.'
     #Set Active to color red. Set Surface to color blue. Set Total to color black
     markersLigand = itertools.cycle(('^', 'D', 's', 'X', 'o'))
-    markersReceptors = itertools.cycle(('^', '4', 'P', '*', 'D', 's', 'X' ,'o'))
 
     labelLigand = itertools.cycle(('Combined IL2-15 Activity', 'IL7 Activity', 'IL9 Activity', 'IL4 Activity', 'IL21 Activity'))
-    labelSurface = itertools.cycle(('Surface IL2Ra', 'Surface IL2Rb', 'Surface gc', 'Surface IL15Ra', 'Surface IL7Ra', 'Surface IL9R', 'Surface IL4Ra', 'Surface IL21Ra'))
-    labelTotal = itertools.cycle(('Total IL2Ra', 'Total IL2Rb', 'Total gc', 'Total IL15Ra', 'Total IL7Ra', 'Total IL9R', 'Total IL4Ra', 'Total IL21Ra'))
 
     for q,p in zip(factors[0:5, component_x - 1], factors[0:5, component_y - 1]):
-            ax1.plot(q, p, linestyle = '', c = 'r', marker = next(markersLigand), label = next(labelLigand))
-            if factors.shape[0] <= 10 and ax_pos == 3:
-                ax1.legend(loc='upper left', bbox_to_anchor=(1.2, 1.025))
+            ax1.plot(q, p, linestyle = '', c = 'm', marker = next(markersLigand), label = next(labelLigand))
 
-    if factors.shape[0] > 10:
-        for q,p in zip(factors[5:13, component_x - 1], factors[5:13, component_y - 1]):
-            ax1.plot(q, p, linestyle = '', c = 'b', marker = next(markersReceptors), label = next(labelSurface))
-
-        for q,p in zip(factors[13::, component_x - 1], factors[13::, component_y - 1]):
-            ax1.plot(q, p, linestyle = '', c = 'k', marker = next(markersReceptors), label = next(labelTotal))
-
-        if ax_pos == 3:
-            ax1.legend(loc='upper left', bbox_to_anchor=(1.2, 1.025))
+    if ax_pos == 3:
+        ax1.legend(loc='upper left', bbox_to_anchor=(1.2, 1.025))
 
 
 def plot_timepoint(ax, factors, component_x, component_y):
@@ -115,3 +103,15 @@ def overlayCartoon(figFile, cartoonFile, x, y, scalee=1):
 
     template.append(cartoon)
     template.save(figFile)
+
+def plot_timepoints(ax, factors):
+    """Function to put all timepoint plots in one figure."""
+    ts = np.logspace(-3., np.log10(4 * 60.), 100)
+    ts = np.insert(ts, 0, 0.0)
+    colors = ['b', 'k', 'r', 'y', 'm', 'g']
+    for ii in range(factors.shape[1]):
+        ax.plot(ts, factors[:,ii], c = colors[ii], label = 'Component ' + str(ii+1))
+        ax.scatter(ts[-1], factors[-1, ii], s = 12, color = 'k')
+    ax.set_xlabel('Time (min)')
+    ax.set_ylabel('Component')
+    ax.legend()
