@@ -1,10 +1,12 @@
 """
 Theano Op for using differencing for Jacobian calculation.
 """
+import concurrent.futures
 import numpy as np
 from theano.tensor import dot, dmatrix, dvector, Op
 from .model import runCkineU, nSpecies, nParams, runCkineUP, runCkinePreT
 
+pool = concurrent.futures.ThreadPoolExecutor()
 
 class runCkineOp(Op):
     itypes, otypes = [dvector], [dvector]
@@ -90,11 +92,17 @@ class runCkinePreSOpDiff(Op):
         epsilon = 1.0E-7
 
         jac = np.zeros((len(x0), len(f0)), dtype=np.float64)
+        dxl = list()
 
         for i in range(len(x0)):
             dx = x0.copy()
             dx[i] = dx[i] + epsilon
-            jac[i] = (self.runCkine(dx) - f0)/epsilon
+            dxl.append(dx)
+
+        dxlr = pool.map(self.runCkine, dxl)
+
+        for i, item in enumerate(dxlr):
+            jac[i] = (item - f0)/epsilon
 
         outputs[0][0] = np.transpose(jac)
 
