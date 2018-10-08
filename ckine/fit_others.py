@@ -62,8 +62,8 @@ class crosstalk:
         path = os.path.dirname(os.path.abspath(__file__))
         data = pds.read_csv(join(path, "./data/Gonnord_S3D.csv")).values
         self.fit_data = np.concatenate((data[:, 1], data[:, 2], data[:, 3], data[:, 6], data[:, 7], data[:, 8]))
-        self.pre_IL7 = data[:, 0]   # concentrations of IL7 used as pretreatment
-        self.pre_IL4 = data[:, 5]   # concentrations of IL4 used as pretreatment
+        self.pre_IL7 = data[:, 0] / 17400.  # concentrations of IL7 used as pretreatment
+        self.pre_IL4 = data[:, 5] / 14900.  # concentrations of IL4 used as pretreatment
 
 
     def singleCalc(self, unkVec, pre_cytokine, pre_conc, stim_cytokine, stim_conc):
