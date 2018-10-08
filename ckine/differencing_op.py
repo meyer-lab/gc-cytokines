@@ -89,7 +89,7 @@ class runCkinePreSOpDiff(Op):
     def perform(self, node, inputs, outputs):
         x0 = inputs[0]
         f0 = self.runCkine(x0)
-        epsilon = 1.0E-7
+        epsilon = 1.0E-6
 
         jac = np.zeros((len(x0), len(f0)), dtype=np.float64)
         dxl = list()
