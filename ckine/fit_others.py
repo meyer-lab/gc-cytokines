@@ -141,15 +141,15 @@ class build_model:
             nullRates = T.ones(6, dtype=np.float64) # associated with IL2 and IL15
             Tone = T.ones(1, dtype=np.float64)
             Tzero = T.zeros(1, dtype=np.float64)
-            k27rev = pm.Lognormal('k27rev', mu=np.log(0.1), sd=10, shape=1) # associated with IL7
-            k33rev = pm.Lognormal('k33rev', mu=np.log(0.1), sd=10, shape=1) # associated with IL4
+            k27rev = pm.Lognormal('k27rev', mu=np.log(0.1), sd=1, shape=1) # associated with IL7
+            k33rev = pm.Lognormal('k33rev', mu=np.log(0.1), sd=1, shape=1) # associated with IL4
             endo_activeEndo = pm.Lognormal('endo', mu=np.log(0.1), sd=0.1, shape=2)
             sortF = pm.Beta('sortF', alpha=20, beta=40, testval=0.333, shape=1)*0.95
             kRec_kDeg = pm.Lognormal('kRec_kDeg', mu=np.log(0.1), sd=0.1, shape=2)
             GCexpr = (328. * endo_activeEndo[0]) / (1. + ((kRec_kDeg[0]*(1.-sortF)) / (kRec_kDeg[1]*sortF))) # constant according to measured number per cell
             IL7Raexpr = (2591. * endo_activeEndo[0]) / (1. + ((kRec_kDeg[0]*(1.-sortF)) / (kRec_kDeg[1]*sortF))) # constant according to measured number per cell
             IL4Raexpr = (254. * endo_activeEndo[0]) / (1. + ((kRec_kDeg[0]*(1.-sortF)) / (kRec_kDeg[1]*sortF))) # constant according to measured number per cell
-            scales = pm.Lognormal('scales', mu=np.log(10.), sd=5, shape=2) # create scaling constants for activity measurements
+            scales = pm.Lognormal('scales', mu=np.log(100.), sd=1, shape=2) # create scaling constants for activity measurements
 
             unkVec = T.concatenate((kfwd, nullRates, k27rev, Tone, k33rev, Tone, endo_activeEndo, sortF, kRec_kDeg))
             unkVec = T.concatenate((unkVec, Tzero, Tzero, GCexpr, Tzero, IL7Raexpr, Tzero, IL4Raexpr, Tzero)) # indexing same as in model.hpp
