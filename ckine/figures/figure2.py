@@ -2,14 +2,13 @@
 This creates Figure 2.
 """
 from os.path import join
-import pymc3 as pm, os
+import os
+import string
 import numpy as np
 import seaborn as sns
 import pandas as pd
-import string
-from .figureCommon import subplotLabel, getSetup, traf_names, plot_conf_int
+from .figureCommon import subplotLabel, getSetup, traf_names, plot_conf_int, import_samples_4_7
 from ..model import nParams, getTotalActiveSpecies, runCkineU, getSurfaceGCSpecies, runCkinePreT, getTotalActiveCytokine
-from ..fit_others import build_model
 
 def makeFigure():
     """Get a list of the axis objects and create a figure"""
@@ -22,7 +21,7 @@ def makeFigure():
     for ii, item in enumerate(ax):
         subplotLabel(item, string.ascii_uppercase[ii])
 
-    unkVec, scales = import_samples()
+    unkVec, scales = import_samples_4_7()
     pstat_plot(ax[1], unkVec, scales)
     plot_pretreat(ax[2], unkVec, scales, "Inhibition with active endocytosis")
     surf_gc(ax[3], 100., unkVec)
@@ -35,30 +34,6 @@ def makeFigure():
     f.tight_layout()
 
     return f
-
-def import_samples():
-    ''' Imports the csv files into a proper unkVec'''
-    bmodel = build_model()
-    n_params = nParams()
-
-    path = os.path.dirname(os.path.abspath(__file__))
-    trace = pm.backends.text.load(join(path, '../../IL4-7_model_results'), bmodel.M)
-    kfwd = trace.get_values('kfwd', chains=[0])
-    k27rev = trace.get_values('k27rev', chains=[0])
-    k33rev = trace.get_values('k33rev', chains=[0])
-    endo_activeEndo = trace.get_values('endo', chains=[0])
-    sortF = trace.get_values('sortF', chains=[0])
-    kRec_kDeg = trace.get_values('kRec_kDeg', chains=[0])
-    scales = trace.get_values('scales', chains=[0])
-    GCexpr = (328. * endo_activeEndo[:, 0]) / (1. + ((kRec_kDeg[:, 0]*(1.-sortF[:, 0])) / (kRec_kDeg[:, 1]*sortF[:, 0]))) # constant according to measured number per cell
-    IL7Raexpr = (2591. * endo_activeEndo[:, 0]) / (1. + ((kRec_kDeg[:, 0]*(1.-sortF[:, 0])) / (kRec_kDeg[:, 1]*sortF[:, 0]))) # constant according to measured number per cell
-    IL4Raexpr = (254. * endo_activeEndo[:, 0]) / (1. + ((kRec_kDeg[:, 0]*(1.-sortF[:, 0])) / (kRec_kDeg[:, 1]*sortF[:, 0]))) # constant according to measured number per cell
-
-    unkVec = np.zeros((n_params, 500))
-    for ii in range (0, 500):
-        unkVec[:, ii] = np.array([0., 0., 0., 0., 0., 0., kfwd[ii], 1., 1., 1., 1., 1., 1., k27rev[ii], 1., k33rev[ii], 1., endo_activeEndo[ii, 0], endo_activeEndo[ii, 1], sortF[ii], kRec_kDeg[ii, 0], kRec_kDeg[ii, 1], 0., 0., np.squeeze(GCexpr[ii]), 0., np.squeeze(IL7Raexpr[ii]), 0., np.squeeze(IL4Raexpr[ii]), 0.])
-
-    return unkVec, scales
 
 def pstat_calc(unkVec, scales, cytokC):
     ''' This function performs the calculations necessary to produce the Gonnord Figures S3B and S3C. '''
@@ -156,6 +131,7 @@ def pretreat_calc(unkVec, scales, pre_conc):
     IL7_stim_conc = 50. / 17400. # concentration used for IL7 stimulation
 
     def singleCalc(unkVec, pre_cytokine, pre_conc, stim_cytokine, stim_conc):
+        """ Calculate for single case. """
         unkVec2 = unkVec.copy()
         unkVec2[pre_cytokine] = pre_conc
         ligands = np.zeros((6))
