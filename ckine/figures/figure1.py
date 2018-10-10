@@ -2,16 +2,13 @@
 This creates Figure 1.
 """
 from os.path import join
-import pymc3 as pm, os
+import os
 import numpy as np
 import seaborn as sns
 import pandas as pd
 import string
-from ..fit import build_model
-from .figureCommon import subplotLabel, getSetup, traf_names, plot_conf_int
+from .figureCommon import subplotLabel, getSetup, traf_names, plot_conf_int, import_samples_2_15
 from ..plot_model_prediction import surf_IL2Rb, pstat, surf_gc
-from ..model import nParams
-
 
 def makeFigure():
     """Get a list of the axis objects and create a figure"""
@@ -24,7 +21,7 @@ def makeFigure():
     for ii, item in enumerate(ax):
         subplotLabel(item, string.ascii_uppercase[ii])
 
-    unkVec = import_samples()
+    unkVec = import_samples_2_15()
     pstat_act(ax[1], unkVec)
     surf_perc(ax[2:4], 'IL2Rb', unkVec)
     violinPlots(ax[6:8], unkVec)
@@ -118,27 +115,6 @@ def pstat_act(ax, unkVec):
     ax.scatter(data[:,0], data[:,7], color='goldenrod', marker='o', edgecolors='k', zorder=103, label="IL15, 2Ra+") # IL15 in 2Ra+
     ax.set(ylabel='Maximal p-STAT5 (% x 100)', xlabel='log10 of cytokine concentration (nM)', title='YT-1 Cell Activity')
     ax.legend(loc='upper left', bbox_to_anchor=(1.5, 1))
-
-
-def import_samples():
-    """ This function imports the csv results into a numpy array called unkVec. """
-    bmodel = build_model()
-    n_params = nParams()
-
-    path = os.path.dirname(os.path.abspath(__file__))
-    trace = pm.backends.text.load(join(path, '../../IL2_model_results'), bmodel.M)
-    kfwd = trace.get_values('kfwd', chains=[0])
-    rxn = trace.get_values('rxn', chains=[0])
-    endo_activeEndo = trace.get_values('endo', chains=[0])
-    sortF = trace.get_values('sortF', chains=[0])
-    kRec_kDeg = trace.get_values('kRec_kDeg', chains=[0])
-    exprRates = trace.get_values('IL2Raexpr', chains=[0])
-
-    unkVec = np.zeros((n_params, 500))
-    for ii in range (0, 500):
-        unkVec[:, ii] = np.array([0., 0., 0., 0., 0., 0., kfwd[ii], rxn[ii, 0], rxn[ii, 1], rxn[ii, 2], rxn[ii, 3], rxn[ii, 4], rxn[ii, 5], 1., 1., 1., 1., endo_activeEndo[ii, 0], endo_activeEndo[ii, 1], sortF[ii], kRec_kDeg[ii, 0], kRec_kDeg[ii, 1], exprRates[ii, 0], exprRates[ii, 1], exprRates[ii, 2], exprRates[ii, 3], 0., 0., 0., 0.])
-
-    return unkVec
 
 def violinPlots(ax, unkVec):
     """ Create violin plots of model posterior. """
