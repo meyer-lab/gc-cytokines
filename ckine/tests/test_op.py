@@ -17,7 +17,7 @@ def setupJacobian(Op, unk):
 
     f = theano.function([a], fexpr)
     fprime = theano.function([a], J)
-    
+
     return f(unk), fprime(unk)
 
 
@@ -75,25 +75,25 @@ class TestOp(unittest.TestCase):
         ligands = np.zeros((6))
         ligands[2], ligands[4] = 25., 50.
         PreOp = runCkinePreSOp(tpre=np.array([10.0]), ts=np.array([0.0]), postlig=ligands)
-        
+
         # Calculate the Jacobian
         preF, Jac = setupJacobian(PreOp, self.unkV)
-        
+
         # Setup an Op for runCkineOp under the same conditions
         Op = runCkineOp(np.array([10.0]))
-        
+
         # Calculate the Jacobian
         f, Jac2 = setupJacobian(Op, self.unkV)
-        
+
         np.set_printoptions(threshold=np.nan)
-        
+
         closeness = np.isclose(preF, f, rtol=0.00001, atol=0.00001)
         if not np.all(closeness):
             IDXdiff = np.where(np.logical_not(closeness))
             print(IDXdiff)
 
         self.assertTrue(np.all(closeness))
-        
+
         closeness = np.isclose(Jac, Jac2, rtol=0.01, atol=0.01)
         if not np.all(closeness):
             IDXdiff = np.where(np.logical_not(closeness))

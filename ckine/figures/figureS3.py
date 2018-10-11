@@ -2,21 +2,14 @@
 This creates Figure S1.
 """
 import string
-import numpy as np
-import pandas as pds
 import os
 import pickle
-from ..tensor_generation import prepare_tensor
-from .figureCommon import subplotLabel, getSetup, plot_timepoint, plot_cells, plot_ligands, plot_values
-from ..Tensor_analysis import reorient_factors
-
-from .figureCommon import subplotLabel, getSetup, plot_timepoint, plot_cells, plot_ligands, plot_values, plot_timepoints
-
-
-
-from ..Tensor_analysis import reorient_factors, find_R2X, scale_time_factors, scale_all
-
-
+import numpy as np
+import pandas as pds
+import tensorly
+tensorly.set_backend('numpy')
+from .figureCommon import subplotLabel, getSetup, plot_cells, plot_ligands, plot_values, plot_timepoints
+from ..Tensor_analysis import reorient_factors, scale_all
 
 def makeFigure():
     """Get a list of the axis objects and create a figure"""
@@ -31,7 +24,7 @@ def makeFigure():
     cell_names = data.columns.values.tolist()[1::] #returns the cell names from the pandas dataframe (which came from csv)
 
     with open(factors_filename,'rb') as f:
-        factors_activity = pickle.load(f)[1]
+        factors_activity = pickle.load(f)[0]
 
     n_comps = 5
     factors = factors_activity[n_comps]
@@ -43,7 +36,7 @@ def makeFigure():
 
     plot_timepoints(ax[0], newfactors[0])
 
-    
+
     for row in range(x):
         subplotLabel(ax[row], string.ascii_uppercase[row]) # Add subplot labels
         compNum = 2*row + 1
