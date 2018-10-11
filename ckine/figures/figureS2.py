@@ -1,29 +1,39 @@
 """
 This creates Figure S2.
 """
+from .figureCommon import subplotLabel, getSetup, plot_timepoint, plot_cells, plot_ligands, plot_values, plot_timepoints
+import tensorly
+from tensorly.decomposition import tucker
+tensorly.set_backend('numpy')
+from ..tensor_generation import prepare_tensor
 import string
-import numpy as np
-import pandas as pds
 import os
 import pickle
-from ..tensor_generation import prepare_tensor
-from .figureCommon import subplotLabel, getSetup, plot_timepoint, plot_cells, plot_ligands, plot_values
-from ..Tensor_analysis import reorient_factors, perform_tucker
-from .figureCommon import subplotLabel, getSetup, plot_timepoint, plot_cells, plot_ligands, plot_values, plot_timepoints
-from ..Tensor_analysis import reorient_factors, find_R2X_tucker
+import numpy as np
+import pandas as pds
+from ..Tensor_analysis import reorient_factors, perform_tucker, find_R2X_tucker
 
 def makeFigure():
     """Get a list of the axis objects and create a figure"""
     x, y = 5, 4
     ssize = 3
     ax, f = getSetup((ssize*y, ssize*x), (x, y))
-    
+
     fileDir = os.path.dirname(os.path.realpath('__file__'))
     expr_filename = os.path.join(fileDir, './ckine/data/expr_table.csv')
     data = pds.read_csv(expr_filename) # Every column in the data represents a specific cell
     cell_names = data.columns.values.tolist()[1::] #returns the cell names from the pandas dataframe (which came from csv)
+
+
+    factors_filename = os.path.join(fileDir, './ckine/data/factors_results/Sampling.pickle')
+    factors_filename = os.path.abspath(os.path.realpath(factors_filename))
+    numpy_data = data.values
+    Receptor_data = np.delete(numpy_data, 0, 1)
+
+    with open(factors_filename,'rb') as ff:
+        two_files = pickle.load(ff)
     
-    values, _, _, _, _ = prepare_tensor(2)
+    values = tensorly.tucker_to_tensor(two_files[1][0], two_files[1][1]) #This reconstruvts our values tensor from the decomposed one that we used to store our data in.
     values = values[:,:,:,[0,1,2,3,4]]
     rank_list = [2,10,8,5]
     out = perform_tucker(values, rank_list)
@@ -51,12 +61,11 @@ def makeFigure():
         elif compNum == rank_list[3]:
             plot_values(ax[row*y + 3] , factors[3], compNum-1, compNum, ax_pos = row*y + 3)
 
-
         # Set axes to center on the origin, and add labels
         for col in range(1,y):
             ax[row*y + col].set_xlabel('Component ' + str(compNum))
             ax[row*y + col].set_ylabel('Component ' + str(compNum+1))
-            
+
             if compNum == rank_list[3] and col == 3:
                 ax[row*y + col].set_xlabel('Component ' + str(compNum-1))
                 ax[row*y + col].set_ylabel('Component ' + str(compNum))
