@@ -16,9 +16,6 @@ from ..model import nParams
 from ..fit import build_model as build_model_2_15
 from ..fit_others import build_model as build_model_4_7
 
-
-
-
 def getSetup(figsize, gridd, mults=None, multz=None, empts=[]):
     """ Establish figure set-up with subplots. """
     sns.set(style="whitegrid",
@@ -165,3 +162,11 @@ def import_samples_4_7():
         unkVec[:, ii] = np.array([0., 0., 0., 0., 0., 0., kfwd[ii], 1., 1., 1., 1., 1., 1., k27rev[ii], 1., k33rev[ii], 1., endo_activeEndo[ii, 0], endo_activeEndo[ii, 1], sortF[ii], kRec_kDeg[ii, 0], kRec_kDeg[ii, 1], 0., 0., np.squeeze(GCexpr[ii]), 0., np.squeeze(IL7Raexpr[ii]), 0., np.squeeze(IL4Raexpr[ii]), 0.])
 
     return unkVec, scales
+
+def load_cells():
+    """ Loads CSV file that gives Rexpr levels for different cell types. """
+    fileDir = os.path.dirname(os.path.realpath('__file__'))
+    expr_filename = os.path.join(fileDir, './ckine/data/expr_table.csv')
+    data = pds.read_csv(expr_filename) # Every column in the data represents a specific cell
+    cell_names = data.columns.values.tolist()[1::] #returns the cell names from the pandas dataframe (which came from csv)
+    return data, cell_names
