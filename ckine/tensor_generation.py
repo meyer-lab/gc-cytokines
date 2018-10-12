@@ -9,7 +9,7 @@ import os
 from os.path import join
 import numpy as np, pandas as pds
 from tqdm import trange
-from .model import getTotalActiveCytokine, runCkineU, surfaceReceptors, totalReceptors, nParams, nSpecies, nRxn, internalStrength, halfL
+from .model import runCkineU, nParams, nSpecies, internalStrength, halfL
 
 path = os.path.dirname(os.path.abspath(__file__))
 data = pds.read_csv(join(path, 'data/expr_table.csv')) # Every column in the data represents a specific cell

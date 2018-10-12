@@ -3,10 +3,10 @@ This creates Figure 1.
 """
 from os.path import join
 import os
+import string
 import numpy as np
 import seaborn as sns
 import pandas as pd
-import string
 from .figureCommon import subplotLabel, getSetup, traf_names, plot_conf_int, import_samples_2_15
 from ..plot_model_prediction import surf_IL2Rb, pstat, surf_gc
 

@@ -9,6 +9,7 @@ from .model import runCkineU, nSpecies, nParams, runCkineUP, runCkinePreT
 pool = concurrent.futures.ThreadPoolExecutor()
 
 class runCkineOp(Op):
+    """ Runs model for a single time point and condition. """
     itypes, otypes = [dvector], [dvector]
 
     def __init__(self, ts):
@@ -27,6 +28,7 @@ class runCkineOp(Op):
 
 
 class runCkineOpDiff(Op):
+    """ Gradient for a single time point and condition. """
     itypes, otypes = [dvector], [dmatrix]
 
     def __init__(self, ts):
@@ -108,6 +110,7 @@ class runCkinePreSOpDiff(Op):
 
 
 class runCkineKineticOp(Op):
+    """ Runs model for a single condition over time. """
     itypes, otypes = [dvector], [dvector]
 
     def __init__(self, ts, condense):
@@ -126,6 +129,7 @@ class runCkineKineticOp(Op):
 
 
 class runCkineOpKineticDiff(Op):
+    """ Gradient of model for a single condition over time. """
     itypes, otypes = [dvector], [dmatrix]
 
     def __init__(self, ts, condense):
@@ -148,6 +152,7 @@ class runCkineOpKineticDiff(Op):
 
 
 class runCkineDoseOp(Op):
+    """ Runs model for a dose response at a single time point. """
     itypes, otypes = [dvector], [dvector]
 
     def __init__(self, tt, condense, conditions):
@@ -166,6 +171,7 @@ class runCkineDoseOp(Op):
 
 
 class runCkineOpDoseDiff(Op):
+    """ Gradient of model for a dose response at a single time point. """
     itypes, otypes = [dvector], [dmatrix]
 
     def __init__(self, tt, condense, conditions):

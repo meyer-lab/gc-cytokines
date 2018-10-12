@@ -1,3 +1,6 @@
+"""
+Test Theano interfaces and Ops for correctness.
+"""
 import unittest
 import theano
 import theano.tensor as T
@@ -22,6 +25,7 @@ def setupJacobian(Op, unk):
 
 
 class TestOp(unittest.TestCase):
+    """ Test Theano Ops. """
     def setUp(self):
         self.unkV = np.full(nParams(), 0.3)
         self.doseUnkV = self.unkV[6::]
