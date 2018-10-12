@@ -7,7 +7,7 @@ from hypothesis import given, settings
 from hypothesis.strategies import floats
 from hypothesis.extra.numpy import arrays as harrays
 from scipy.optimize.slsqp import approx_jacobian
-from ..model import fullModel, getTotalActiveCytokine, runCkineU, fullJacobian, nSpecies, runCkineUP, runCkinePreT
+from ..model import fullModel, getTotalActiveCytokine, runCkineU, fullJacobian, nSpecies, runCkineUP
 
 
 settings.register_profile("ci", max_examples=1000)

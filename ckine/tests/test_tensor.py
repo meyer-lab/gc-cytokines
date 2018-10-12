@@ -31,7 +31,7 @@ class TestModel(unittest.TestCase):
         self.assertTrue(y_combos.shape[0] == new_mat.shape[0])
 
     def test_reorientation(self, n_comp = 20):
-        """Test if reorienting the factors matrices changes anything about the original tensor itself."""
+        """ Test if reorienting the factors matrices changes anything about the original tensor itself. """
         tensor = np.random.rand(20, 35, 100, n_comp)
         factors = perform_decomposition(tensor, n_comp-1)
         reconstruct_old = tensorly.kruskal_to_tensor(factors)
@@ -40,7 +40,7 @@ class TestModel(unittest.TestCase):
         np.testing.assert_almost_equal(reconstruct_old, reconstruct_new)
 
     def test_rescale_all(self, n_comp = 20):
-        """Test if rescaling every component keeps the tensor the same."""
+        """ Test if rescaling every component keeps the tensor the same. """
         tensor = np.random.rand(20, 35, 100, n_comp)
         factors = perform_decomposition(tensor, n_comp-1)
         reconstruct_old = tensorly.kruskal_to_tensor(factors)

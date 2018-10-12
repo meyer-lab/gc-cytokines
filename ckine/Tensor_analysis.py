@@ -108,25 +108,6 @@ def split_types_R2X(values, factors_list, n_comp):
         R2X_matrix[ii] = array
     return R2X_matrix
 
-def combo_low_high(mat, lig):
-    """ This function determines which combinations were high and low according to our initial conditions. """
-    # First six values are IL2, IL15, IL7, IL9, IL4, IL21 that are low and the bottom 6 are their high in terms of combination values.
-    ILs = np.logspace(-3, 2, num=lig)
-
-    IL2_low_high = [[] for _ in range(len(ILs))]
-    IL15_low_high = [[] for _ in range(len(ILs))]
-
-    #lows = [[] for _ in range(2)]
-    #highs = [[] for _ in range(2)]
-    # Fill low receptor expression rates first. The indices in mat refer to the indices in combination
-    for a in range(len(ILs)):
-        for k in range(len(mat)):
-            if mat[k,0] == ILs[a]: #Condition for low ligand concentration
-                IL2_low_high[a].append(k)
-            if mat[k,1] == ILs[a]:
-                IL15_low_high[a].append(k)
-    return IL2_low_high, IL15_low_high
-
 def calculate_correlation(tensor,mat,r):
     '''Make a pandas dataframe for correlation coefficients between components and initial ligand stimulation-input variables.'''
     factors = perform_decomposition(tensor, r)
@@ -153,14 +134,8 @@ def R2X_split_ligand(values, factors):
     return R2X_by_ligand
 
 def split_values_by_ligand(tensor):
-    """Takes in tensor, either values, or values reconstructed, and returns a list of each split tensor in a list."""
-    split_list = list()
-    IL2_15_CombinedTensor =  split_list.append(tensor[:,:,:, [0]]) #IL2,IL15,IL7,IL9,IL4,IL21
-    IL7Tensor = split_list.append(tensor[:,:,:, [1]])
-    IL9Tensor = split_list.append(tensor[:,:,:, [2]])
-    IL4Tensor = split_list.append(tensor[:,:,:, [3]])
-    IL21Tensor = split_list.append(tensor[:,:,:, [4]])
-    return split_list
+    """ Takes in tensor, either values, or values reconstructed, and returns a list of each split tensor in a list. """
+    return np.split(tensor, tensor.shape[3], axis=3)
 
 def percent_reduction_by_ligand(values, factors):
     """Removing single components from final factorization (factors input) and performing percent reduction for all cytokine R2X."""

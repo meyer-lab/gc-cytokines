@@ -1,17 +1,15 @@
 """
 This creates Figure S2.
 """
-from .figureCommon import subplotLabel, getSetup, plot_timepoint, plot_cells, plot_ligands, plot_values, plot_timepoints
-import tensorly
-from tensorly.decomposition import tucker
-tensorly.set_backend('numpy')
-from ..tensor_generation import prepare_tensor
-import string
 import os
+import string
 import pickle
 import numpy as np
 import pandas as pds
-from ..Tensor_analysis import reorient_factors, perform_tucker, find_R2X_tucker
+import tensorly
+tensorly.set_backend('numpy')
+from .figureCommon import subplotLabel, getSetup, plot_cells, plot_ligands, plot_values, plot_timepoints
+from ..Tensor_analysis import perform_tucker, find_R2X_tucker
 
 def makeFigure():
     """Get a list of the axis objects and create a figure"""
@@ -27,8 +25,6 @@ def makeFigure():
 
     factors_filename = os.path.join(fileDir, './ckine/data/factors_results/Sampling.pickle')
     factors_filename = os.path.abspath(os.path.realpath(factors_filename))
-    numpy_data = data.values
-    Receptor_data = np.delete(numpy_data, 0, 1)
 
     with open(factors_filename,'rb') as ff:
         two_files = pickle.load(ff)
