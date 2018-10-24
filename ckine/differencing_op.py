@@ -19,7 +19,7 @@ class runCkineOp(Op):
         assert len(i0_shapes) == 1
         return [(nSpecies(), )]
 
-    def perform(self, node, inputs, outputs):
+    def perform(self, node, inputs, outputs, params=None):
         outputs[0][0] = self.dOp.runCkine(inputs, False)
 
     def grad(self, inputs, g):
@@ -38,6 +38,7 @@ class runCkineOpDiff(Op):
         self.ts = ts
 
     def runCkine(self, inputs, sensi):
+        """ function for runCkine """
         outt = runCkineU(self.ts, inputs[0], sensi)
         assert outt[1] >= 0
         assert outt[0].size == nSpecies()
@@ -47,21 +48,23 @@ class runCkineOpDiff(Op):
 
         return np.squeeze(outt[0])
 
-    def perform(self, node, inputs, outputs):
+    def perform(self, node, inputs, outputs, params=None):
         outputs[0][0] = self.runCkine(inputs, True)
 
 
 class runCkinePreSOp(Op):
+    """ Op for pretreatment experiments. """
     itypes, otypes = [dvector], [dvector]
 
     def __init__(self, tpre, ts, postlig):
         self.dOp = runCkinePreSOpDiff(tpre, ts, postlig)
 
     def infer_shape(self, node, i0_shapes):
+        """ inferring shape """
         assert len(i0_shapes) == 1
         return [(nSpecies(), )]
 
-    def perform(self, node, inputs, outputs):
+    def perform(self, node, inputs, outputs, params=None):
         outputs[0][0] = self.dOp.runCkine(inputs[0])
 
     def grad(self, inputs, g):
@@ -70,6 +73,7 @@ class runCkinePreSOp(Op):
 
 
 class runCkinePreSOpDiff(Op):
+    """ Differencing op for pretreatment experiments. """
     itypes, otypes = [dvector], [dmatrix]
 
     def __init__(self, tpre, ts, postlig):
@@ -81,6 +85,7 @@ class runCkinePreSOpDiff(Op):
         self.postlig = postlig
 
     def runCkine(self, inputs):
+        """ function for runCkine """
         outt = runCkinePreT(self.tpre, self.ts, inputs, self.postlig)
 
         assert outt[1] >= 0
@@ -88,7 +93,7 @@ class runCkinePreSOpDiff(Op):
 
         return np.squeeze(outt[0])
 
-    def perform(self, node, inputs, outputs):
+    def perform(self, node, inputs, outputs, params=None):
         x0 = inputs[0]
         f0 = self.runCkine(x0)
         epsilon = 1.0E-6
@@ -117,10 +122,11 @@ class runCkineKineticOp(Op):
         self.dOp = runCkineOpKineticDiff(ts, condense)
 
     def infer_shape(self, node, i0_shapes):
+        """ inferring shape """
         assert len(i0_shapes) == 1
         return [(self.dOp.ts.size, )]
 
-    def perform(self, node, inputs, outputs):
+    def perform(self, node, inputs, outputs, params=None):
         outputs[0][0] = self.dOp.runCkine(inputs, False)
 
     def grad(self, inputs, g):
@@ -138,6 +144,7 @@ class runCkineOpKineticDiff(Op):
         assert condense.size == nSpecies()
 
     def runCkine(self, inputs, sensi):
+        """ function for runCkine """
         outt = runCkineU(self.ts, inputs[0], sensi)
         assert outt[0].shape == (self.ts.size, nSpecies())
         assert outt[1] >= 0
@@ -147,7 +154,7 @@ class runCkineOpKineticDiff(Op):
 
         return np.dot(outt[0], self.condense)
 
-    def perform(self, node, inputs, outputs):
+    def perform(self, node, inputs, outputs, params=None):
         outputs[0][0] = self.runCkine(inputs, sensi=True)
 
 
@@ -159,10 +166,11 @@ class runCkineDoseOp(Op):
         self.dOp = runCkineOpDoseDiff(tt, condense, conditions)
 
     def infer_shape(self, node, i0_shapes):
+        """ infering shape """
         assert len(i0_shapes) == 1
         return [(self.dOp.conditions.shape[0], )]
 
-    def perform(self, node, inputs, outputs):
+    def perform(self, node, inputs, outputs, params=None):
         outputs[0][0] = self.dOp.runCkine(inputs, sensi=False)
 
     def grad(self, inputs, g):
@@ -181,6 +189,7 @@ class runCkineOpDoseDiff(Op):
         assert conditions.shape[1] == 6 # Check that this is a matrix of ligands
 
     def runCkine(self, inputs, sensi):
+        """ function for runCkine """
         assert inputs[0].size == nParams() - self.conditions.shape[1]
         rxntfr = np.reshape(np.tile(inputs[0], self.conditions.shape[0]), (self.conditions.shape[0], -1))
         rxntfr = np.concatenate((self.conditions, rxntfr), axis=1)
@@ -195,5 +204,5 @@ class runCkineOpDoseDiff(Op):
 
         return np.dot(outt[0], self.condense)
 
-    def perform(self, node, inputs, outputs):
+    def perform(self, node, inputs, outputs, params=None):
         outputs[0][0] = self.runCkine(inputs, sensi=True)

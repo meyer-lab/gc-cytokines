@@ -159,7 +159,7 @@ class build_model:
 
             pm.Normal('fitD_int', sd=0.1, observed=Y_int)
 
-            if self.pretreat == True:
+            if self.pretreat is True:
                 Y_cross = self.cross.calc(unkVec, scales)   # fitting the data based on cross.calc
                 pm.Deterministic('Y_cross', T.sum(T.square(Y_cross)))
                 pm.Normal('fitD_cross', sd=0.1, observed=Y_cross)
