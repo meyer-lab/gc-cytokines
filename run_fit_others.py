@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 # Set matplotlib backend so python remains in the background
 import matplotlib
 matplotlib.use("Agg")
