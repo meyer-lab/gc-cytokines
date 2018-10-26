@@ -67,7 +67,7 @@ test: ckine/ckine.so
 	nosetests3 -s --with-timer --timer-top-n 20
 
 testcover: ckine/ckine.so
-	nosetests3 --with-xunit --with-xcoverage --cover-package=ckine -s --with-timer --timer-top-n 5
+	nosetests3 --with-xunit --with-xcoverage --cover-inclusive --cover-package=ckine -s --with-timer --timer-top-n 5
 
 stats.dat: ckine/ckine.so
 	nosetests3 -s --with-cprofile
