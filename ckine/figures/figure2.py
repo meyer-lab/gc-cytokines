@@ -52,14 +52,13 @@ def pstat_calc(unkVec, scales, cytokC):
     actVecIL7 = np.fromiter((singleCalc(unkVec, 2, x) for x in cytokC), np.float64)
     actVecIL4 = np.fromiter((singleCalc(unkVec, 4, x) for x in cytokC), np.float64)
 
-    # normalize each actVec by its maximum
-    actVecIL4 = actVecIL4 / np.amax(actVecIL4)
-    actVecIL7 = actVecIL7 / np.amax(actVecIL7)
-
     # incorporate IC50 scale
     actVecIL4 = actVecIL4  / (actVecIL4 + scales[0])
     actVecIL7 = actVecIL7 / (actVecIL7 + scales[1])
 
+    # normalize each actVec by its maximum... do I need to be doing this?
+    actVecIL4 = actVecIL4 / np.max(actVecIL4)
+    actVecIL7 = actVecIL7 / np.max(actVecIL7)
     return np.concatenate((actVecIL4, actVecIL7))
 
 def pstat_plot(ax, unkVec, scales):
@@ -154,7 +153,6 @@ def pretreat_calc(unkVec, scales, pre_conc):
     # incorporate IC50
     actVec_IL4stim = actVec_IL4stim  / (actVec_IL4stim + scales[0])
     actVec_IL7stim = actVec_IL7stim  / (actVec_IL7stim + scales[1])
-
 
     def singleCalc_no_pre(unkVec, cytokine, conc):
         ''' This function generates the active vector for a given unkVec, cytokine, and concentration. '''

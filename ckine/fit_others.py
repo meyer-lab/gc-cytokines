@@ -24,7 +24,7 @@ class IL4_7_activity:
 
         IL4_data_max = np.amax(np.concatenate((dataIL4[:,1], dataIL4[:,2])))
         IL7_data_max = np.amax(np.concatenate((dataIL7[:,1], dataIL7[:,2])))
-        self.fit_data = np.concatenate((dataIL4[:, 1] / IL4_data_max, dataIL4[:, 2] / IL4_data_max, dataIL7[:, 1] / IL7_data_max, dataIL7[:, 2] / IL7_data_max)) # measurements are normalized to max of own species
+        self.fit_data = np.concatenate((dataIL4[:, 1] / IL4_data_max, dataIL4[:, 2] / IL4_data_max, dataIL7[:, 1] / IL7_data_max, dataIL7[:, 2] / IL7_data_max)) # measurements ARE normalized to max of own species
 
     def calc(self, unkVec, scales):
         """ Simulate the experiment with different ligand stimulations and compare with experimental data. """
@@ -36,15 +36,15 @@ class IL4_7_activity:
         actVecIL4 = outt[0:self.cytokC_4.size]
         actVecIL7 = outt[self.cytokC_4.size:self.cytokC_4.size*2]
 
-        # normalize each actVec by its maximum
-        actVecIL4 = actVecIL4 / T.max(actVecIL4)
-        actVecIL7 = actVecIL7 / T.max(actVecIL7)
-
         # incorporate IC50 scale
         actVecIL4 = actVecIL4  / (actVecIL4 + scales[0])
         actVecIL7 = actVecIL7 / (actVecIL7 + scales[1])
 
-        # concatenate into one vector
+        # normalize each actVec by its maximum... do I need to be doing this?
+        actVecIL4 = actVecIL4 / T.max(actVecIL4)
+        actVecIL7 = actVecIL7 / T.max(actVecIL7)
+
+        # put into one vector
         actVec = T.concatenate((actVecIL4, actVecIL4, actVecIL7, actVecIL7))
 
         # return residual
@@ -111,17 +111,16 @@ class crosstalk:
         # IL4 pretreatment with IL7 stimulation
         actVec_IL7stim = T.stack((list(self.singleCalc(unkVec, 4, x, 2, self.cytokM[1, 2]) for x in self.pre_IL4)))
 
+        # shoudld I be dividing by the max before doing this?
         # incorporate IC50
         actVec_IL4stim = actVec_IL4stim  / (actVec_IL4stim + scales[0])
         actVec_IL7stim = actVec_IL7stim  / (actVec_IL7stim + scales[1])
-
 
         case1 = (1-(actVec_IL4stim/IL4stim_no_pre)) * 100.    # % inhibition of IL4 act. after IL7 pre.
         case2 = (1-(actVec_IL7stim/IL7stim_no_pre)) * 100.    # % inhibition of IL7 act. after IL4 pre.
         inh_vec = T.concatenate((case1, case1, case1, case2, case2, case2 ))   # mimic order of CSV file
 
         return inh_vec - self.fit_data
-
 
 class build_model:
     """ Build a model that minimizes residuals in above classes by using MCMC to find optimal rate parameters. """
@@ -142,9 +141,13 @@ class build_model:
             Tzero = T.zeros(1, dtype=np.float64)
             k27rev = pm.Lognormal('k27rev', mu=np.log(0.1), sd=1, shape=1) # associated with IL7
             k33rev = pm.Lognormal('k33rev', mu=np.log(0.1), sd=1, shape=1) # associated with IL4
-            endo_activeEndo = pm.Lognormal('endo', mu=np.log(0.1), sd=0.1, shape=2)
-            sortF = pm.Beta('sortF', alpha=20, beta=40, testval=0.333, shape=1)*0.95
-            kRec_kDeg = pm.Lognormal('kRec_kDeg', mu=np.log(0.1), sd=0.1, shape=2)
+            endo_activeEndo = T.ones(2, dtype=np.float64)
+            endo_activeEndo = T.set_subtensor(endo_activeEndo[0], 0.080189183)
+            endo_activeEndo = T.set_subtensor(endo_activeEndo[1], 1.463922832)
+            sortF = T.ones(1, dtype=np.float64) * 0.179757424
+            kRec_kDeg = T.ones(2, dtype=np.float64)
+            kRec_kDeg = T.set_subtensor(kRec_kDeg[0], 0.154753853)
+            kRec_kDeg = T.set_subtensor(kRec_kDeg[1], 0.017205254)
             GCexpr = (328. * endo_activeEndo[0]) / (1. + ((kRec_kDeg[0]*(1.-sortF)) / (kRec_kDeg[1]*sortF))) # constant according to measured number per cell
             IL7Raexpr = (2591. * endo_activeEndo[0]) / (1. + ((kRec_kDeg[0]*(1.-sortF)) / (kRec_kDeg[1]*sortF))) # constant according to measured number per cell
             IL4Raexpr = (254. * endo_activeEndo[0]) / (1. + ((kRec_kDeg[0]*(1.-sortF)) / (kRec_kDeg[1]*sortF))) # constant according to measured number per cell
