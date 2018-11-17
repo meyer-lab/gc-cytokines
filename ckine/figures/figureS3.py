@@ -6,8 +6,6 @@ import os
 import pickle
 import numpy as np
 import pandas as pds
-import tensorly
-tensorly.set_backend('numpy')
 from .figureCommon import subplotLabel, getSetup, plot_cells, plot_ligands, plot_values, plot_timepoints
 from ..Tensor_analysis import reorient_factors, scale_all
 
