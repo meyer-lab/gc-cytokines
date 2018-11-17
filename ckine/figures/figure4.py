@@ -73,7 +73,7 @@ def all_cells(ax, cell_data, cell_names, unkVec):
         unkVec[22:30] = cell_data[:, ii+1]  # place cell data into unkVec
         act = single_cell_act(unkVec, cytokC)
         ax.plot(np.log10(cytokC), act, label=cell_names[ii], c=colors[ii])
- 
+
     ax.legend(loc='upper left', bbox_to_anchor=(1.05, 1.2))
     ax.set(title="Cell Response to IL-2", ylabel="Relative pSTAT5 activity (% x 1)", xlabel="log10 IL-2 conc. (nM)")
 

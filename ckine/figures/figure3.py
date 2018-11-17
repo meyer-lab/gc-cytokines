@@ -1,28 +1,25 @@
 """
 This creates Figure 3.
 """
-from sklearn.decomposition.pca import PCA
-import matplotlib.cm as cm
-from ..tensor_generation import prepare_tensor
-from .figureCommon import subplotLabel, getSetup
-from ..Tensor_analysis import find_R2X, split_one_comp, split_types_R2X, R2X_remove_one, percent_reduction_by_ligand, R2X_split_ligand, reorient_factors
-import string
 import os
 import pickle
-from sklearn.decomposition.pca import PCA
-from .figureCommon import subplotLabel, getSetup
-from ..Tensor_analysis import find_R2X, percent_reduction_by_ligand, R2X_split_ligand, reorient_factors
-import numpy as np, pandas as pds
-from scipy import stats
+import itertools
 import tensorly
-tensorly.set_backend('numpy')
+import numpy as np, pandas as pds, cupy as cp
+import string
+from scipy import stats
+from sklearn.decomposition.pca import PCA
+import matplotlib.cm as cm
+from .figureCommon import subplotLabel, getSetup
+from ..Tensor_analysis import find_R2X, split_one_comp, split_types_R2X, R2X_remove_one, percent_reduction_by_ligand, R2X_split_ligand, reorient_factors
+from tensorly.decomposition import tucker
+tensorly.set_backend('cupy')
 
 def makeFigure():
     """Get a list of the axis objects and create a figure"""
     # Get list of axis objects
     x, y = 3, 4
     ax, f = getSetup((16, 14), (x, y))
-
     # Blank out for the cartoon
     ax[0].axis('off')
 
@@ -45,7 +42,7 @@ def makeFigure():
     factors = reorient_factors(factors)
 
     values = tensorly.tucker_to_tensor(two_files[1][0], two_files[1][1]) #This reconstructs our values tensor from the decomposed one that we used to store our data in.
-    values = np.concatenate((values, values), axis = 3)
+    values = np.concatenate((cp.asnumpy(values), cp.asnumpy(values)), axis = 3)
     n_comps = 5
     factors_activ = factors_activity[n_comps]
     newfactors_activ = reorient_factors(factors_activ)

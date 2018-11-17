@@ -1,14 +1,15 @@
 """
 This creates Figure S2.
 """
-import os
 import string
+import os
 import pickle
-import numpy as np
+import numpy as np, cupy as cp
 import pandas as pds
 import tensorly
-tensorly.set_backend('numpy')
-from .figureCommon import subplotLabel, getSetup, plot_cells, plot_ligands, plot_values, plot_timepoints
+from tensorly.decomposition import tucker
+tensorly.set_backend('cupy')
+from .figureCommon import subplotLabel, getSetup, plot_timepoint, plot_cells, plot_ligands, plot_values, plot_timepoints
 from ..Tensor_analysis import perform_tucker, find_R2X_tucker
 
 def makeFigure():
@@ -29,13 +30,13 @@ def makeFigure():
     with open(factors_filename,'rb') as ff:
         two_files = pickle.load(ff)
     
-    values = tensorly.tucker_to_tensor(two_files[1][0], two_files[1][1]) #This reconstruvts our values tensor from the decomposed one that we used to store our data in.
+    values = cp.asnumpy(tensorly.tucker_to_tensor(two_files[1][0], two_files[1][1])) #This reconstruvts our values tensor from the decomposed one that we used to store our data in.
     values = values[:,:,:,[0,1,2,3,4]]
     rank_list = [2,10,8,5]
     out = perform_tucker(values, rank_list)
 
     factors = out[1]
-    plot_timepoints(ax[0], factors[0])
+    plot_timepoints(ax[0], cp.asnumpy(factors[0]))
 
     for row in range(x):
         subplotLabel(ax[row], string.ascii_uppercase[row]) # Add subplot labels
@@ -49,13 +50,13 @@ def makeFigure():
         if row > np.floor(rank_list[3]/2):
             ax[row*y +3].axis('off')
         
-        plot_cells(ax[row*y + 1], factors[1], compNum, compNum+1, cell_names, ax_pos = row*y + 1)
+        plot_cells(ax[row*y + 1], cp.asnumpy(factors[1]), compNum, compNum+1, cell_names, ax_pos = row*y + 1)
         if compNum < rank_list[2]:
-            plot_ligands(ax[row*y + 2], factors[2], compNum, compNum+1)
+            plot_ligands(ax[row*y + 2], cp.asnumpy(factors[2]), compNum, compNum+1)
         if compNum < rank_list[3]:
-            plot_values(ax[row*y + 3] , factors[3], compNum, compNum+1, ax_pos = row*y + 3)
+            plot_values(ax[row*y + 3] , cp.asnumpy(factors[3]), compNum, compNum+1, ax_pos = row*y + 3)
         elif compNum == rank_list[3]:
-            plot_values(ax[row*y + 3] , factors[3], compNum-1, compNum, ax_pos = row*y + 3)
+            plot_values(ax[row*y + 3] , cp.asnumpy(factors[3]), compNum-1, compNum, ax_pos = row*y + 3)
 
         # Set axes to center on the origin, and add labels
         for col in range(1,y):
@@ -71,6 +72,7 @@ def makeFigure():
 
             ax[row*y + col].set_xlim(-x_max, x_max)
             ax[row*y + col].set_ylim(-y_max, y_max)
-
+    print('Finding R2X')
+    print('Finding R2X')
     print(find_R2X_tucker(values, out, subt = True))
     return f
