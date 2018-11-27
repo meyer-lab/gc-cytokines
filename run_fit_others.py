@@ -1,8 +1,5 @@
 #!/usr/bin/env python3
 
-# Set matplotlib backend so python remains in the background
-import matplotlib
-matplotlib.use("Agg")
 from ckine.fit_others import build_model
 import pymc3 as pm
 
