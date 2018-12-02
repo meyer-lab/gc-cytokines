@@ -31,10 +31,11 @@ using std::cout;
 
 std::mutex print_mutex; // mutex to prevent threads printing on top of each other
 
+
 extern "C" void dydt_C(double *y_in, double, double *dydt_out, double *rxn_in) {
 	ratesS r(rxn_in);
 
-	dy_dt(y_in, &r, dydt_out, r.ILs.data());
+	dy_dt(y_in, &r.surface, dydt_out, r.ILs.data());
 }
 
 
