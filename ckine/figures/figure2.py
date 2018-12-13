@@ -169,7 +169,7 @@ def pretreat_calc(unkVec, scales, pre_conc):
     IL4stim_no_pre = IL4stim_no_pre  / (IL4stim_no_pre + scales[0])
     IL7stim_no_pre = IL7stim_no_pre  / (IL7stim_no_pre + scales[1])
 
-    return np.concatenate(((1-(actVec_IL4stim/IL4stim_no_pre)), (1-(actVec_IL7stim/IL7stim_no_pre)))) * 100.
+    return np.concatenate(((1-(actVec_IL4stim/IL4stim_no_pre)), (1-(actVec_IL7stim/IL7stim_no_pre))))
 
 
 def plot_pretreat(ax, unkVec, scales, title):
@@ -190,15 +190,15 @@ def plot_pretreat(ax, unkVec, scales, title):
 
     plot_conf_int(ax, np.log10(pre_conc), IL4_stim, "powderblue", "IL-4 stim. (IL-7 pre.)")
     plot_conf_int(ax, np.log10(pre_conc), IL7_stim, "b", "IL-7 stim. (IL-4 pre.)")
-    ax.set(title=title, ylabel="percent inhibition", xlabel="pretreatment concentration (nM)")
+    ax.set(title=title, ylabel="Fraction of inhibition", xlabel="log10 of pretreatment concentration (nM)")
 
     # add experimental data to plots
-    ax.scatter(np.log10(IL7_pretreat_conc), data[:, 1], color='powderblue', zorder=100, marker='^', edgecolors='k')
-    ax.scatter(np.log10(IL7_pretreat_conc), data[:, 2], color='powderblue', zorder=101, marker='^', edgecolors='k')
-    ax.scatter(np.log10(IL7_pretreat_conc), data[:, 3], color='powderblue', zorder=102, marker='^', edgecolors='k')
-    ax.scatter(np.log10(IL4_pretreat_conc), data[:, 6], color='b', zorder=103, marker='^', edgecolors='k')
-    ax.scatter(np.log10(IL4_pretreat_conc), data[:, 7], color='b', zorder=104, marker='^', edgecolors='k')
-    ax.scatter(np.log10(IL4_pretreat_conc), data[:, 8], color='b', zorder=105, marker='^', edgecolors='k')
+    ax.scatter(np.log10(IL7_pretreat_conc), data[:, 1] / 100., color='powderblue', zorder=100, marker='^', edgecolors='k')
+    ax.scatter(np.log10(IL7_pretreat_conc), data[:, 2] / 100., color='powderblue', zorder=101, marker='^', edgecolors='k')
+    ax.scatter(np.log10(IL7_pretreat_conc), data[:, 3] / 100., color='powderblue', zorder=102, marker='^', edgecolors='k')
+    ax.scatter(np.log10(IL4_pretreat_conc), data[:, 6] / 100., color='b', zorder=103, marker='^', edgecolors='k')
+    ax.scatter(np.log10(IL4_pretreat_conc), data[:, 7] / 100., color='b', zorder=104, marker='^', edgecolors='k')
+    ax.scatter(np.log10(IL4_pretreat_conc), data[:, 8] / 100., color='b', zorder=105, marker='^', edgecolors='k')
     ax.legend()
 
 

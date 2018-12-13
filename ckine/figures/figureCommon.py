@@ -145,8 +145,8 @@ def import_samples_4_7():
     n_params = nParams()
 
     path = os.path.dirname(os.path.abspath(__file__))
-    trace = pm.backends.text.load(join(path, '../../IL4-7_model_results'), bmodel.M)
-    kfwd = trace.get_values('kfwd', chains=[0])
+    trace = pm.backends.text.load(join(path, '../../IL4-7_fitADVI_results'), bmodel.M)
+    kfwd = 0.00448600766505774
     k27rev = trace.get_values('k27rev', chains=[0])
     k33rev = trace.get_values('k33rev', chains=[0])
     endo_activeEndo = np.array([0.080189183, 1.463922832])
@@ -159,7 +159,7 @@ def import_samples_4_7():
 
     unkVec = np.zeros((n_params, 500))
     for ii in range (0, 500):
-        unkVec[:, ii] = np.array([0., 0., 0., 0., 0., 0., kfwd[ii], 1., 1., 1., 1., 1., 1., k27rev[ii], 1., k33rev[ii], 1., endo_activeEndo[0], endo_activeEndo[1], sortF, kRec_kDeg[0], kRec_kDeg[1], 0., 0., np.squeeze(GCexpr), 0., np.squeeze(IL7Raexpr), 0., np.squeeze(IL4Raexpr), 0.])
+        unkVec[:, ii] = np.array([0., 0., 0., 0., 0., 0., kfwd, 1., 1., 1., 1., 1., 1., k27rev[ii], 1., k33rev[ii], 1., endo_activeEndo[0], endo_activeEndo[1], sortF, kRec_kDeg[0], kRec_kDeg[1], 0., 0., np.squeeze(GCexpr), 0., np.squeeze(IL7Raexpr), 0., np.squeeze(IL4Raexpr), 0.])
 
     return unkVec, scales
 

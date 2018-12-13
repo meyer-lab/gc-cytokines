@@ -60,7 +60,7 @@ class crosstalk:
 
         path = os.path.dirname(os.path.abspath(__file__))
         data = pds.read_csv(join(path, "./data/Gonnord_S3D.csv")).values
-        self.fit_data = np.concatenate((data[:, 1], data[:, 2], data[:, 3], data[:, 6], data[:, 7], data[:, 8]))
+        self.fit_data = np.concatenate((data[:, 1], data[:, 2], data[:, 3], data[:, 6], data[:, 7], data[:, 8])) / 100.
         self.pre_IL7 = data[:, 0] / 17400.  # concentrations of IL7 used as pretreatment
         self.pre_IL4 = data[:, 5] / 14900.  # concentrations of IL4 used as pretreatment
 
@@ -116,8 +116,8 @@ class crosstalk:
         actVec_IL4stim = actVec_IL4stim  / (actVec_IL4stim + scales[0])
         actVec_IL7stim = actVec_IL7stim  / (actVec_IL7stim + scales[1])
 
-        case1 = (1-(actVec_IL4stim/IL4stim_no_pre)) * 100.    # % inhibition of IL4 act. after IL7 pre.
-        case2 = (1-(actVec_IL7stim/IL7stim_no_pre)) * 100.    # % inhibition of IL7 act. after IL4 pre.
+        case1 = (1-(actVec_IL4stim/IL4stim_no_pre))    # % inhibition of IL4 act. after IL7 pre.
+        case2 = (1-(actVec_IL7stim/IL7stim_no_pre))    # % inhibition of IL7 act. after IL4 pre.
         inh_vec = T.concatenate((case1, case1, case1, case2, case2, case2 ))   # mimic order of CSV file
 
         return inh_vec - self.fit_data
@@ -135,7 +135,7 @@ class build_model:
         M = pm.Model()
 
         with M:
-            kfwd = pm.Lognormal('kfwd', mu=np.log(0.00001), sd=1, shape=1)
+            kfwd = T.ones(1, dtype=np.float64) * 0.00448600766505774 # 0.09932580369085173
             nullRates = T.ones(6, dtype=np.float64) # associated with IL2 and IL15
             Tone = T.ones(1, dtype=np.float64)
             Tzero = T.zeros(1, dtype=np.float64)
@@ -160,12 +160,12 @@ class build_model:
 
             pm.Deterministic('Y_int', T.sum(T.square(Y_int)))
 
-            pm.Normal('fitD_int', sd=0.1, observed=Y_int)
+            pm.Normal('fitD_int', sd=T.std(Y_int), observed=Y_int)
 
             if self.pretreat is True:
                 Y_cross = self.cross.calc(unkVec, scales)   # fitting the data based on cross.calc
                 pm.Deterministic('Y_cross', T.sum(T.square(Y_cross)))
-                pm.Normal('fitD_cross', sd=0.1, observed=Y_cross)
+                pm.Normal('fitD_cross', sd=T.std(Y_cross), observed=Y_cross)
 
             # Save likelihood
             pm.Deterministic('logp', M.logpt)
@@ -174,7 +174,7 @@ class build_model:
 
     def sampling(self):
         """This is the sampling that actually runs the model."""
-        self.trace = pm.sample(init='advi', model=self.M, cores=1, chains=1)
+        self.trace = pm.sample(init='advi', model=self.M, cores=1, chains=1, tune=1000)
 
     def fit_ADVI(self):
         """ Running fit_advi instead of true sampling. """
