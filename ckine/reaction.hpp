@@ -190,4 +190,59 @@ void fullModel(const double * const y, const ratesS * const r, double *dydt) {
 		dydt[(halfL*2) + ii] -= y[(halfL*2) + ii] * r->kDeg;
 }
 
+
+std::array<double, Nspecies> solveAutocrine(const ratesS * const r) {
+	std::array<double, Nspecies> y0;
+	std::fill(y0.begin(), y0.end(), 0.0);
+
+	// Expand out trafficking terms
+	const double kRec = r->kRec*(1-r->sortF);
+	const double kDeg = r->kDeg*r->sortF;
+
+	// Assuming no autocrine ligand, so can solve steady state
+	// Add the species
+	for (size_t ii = 0; ii < recIDX.size(); ii++) {
+		y0[recIDX[ii] + halfL] = r->Rexpr[ii] / kDeg / internalFrac;
+		y0[recIDX[ii]] = (r->Rexpr[ii] + kRec*y0[recIDX[ii] + halfL]*internalFrac)/r->endo;
+	}
+
+	return y0;
+}
+
+
+/**
+ * @brief      Setup the autocrine state sensitivities.
+ *
+ * @param[in]  r     Rate parameters.
+ * @param      y0s   The autocrine state sensitivities.
+ */
+void solveAutocrineS (const ratesS * const r, N_Vector *y0s) {
+	std::array<double, Nspecies> y0 = solveAutocrine(r);
+
+	for (size_t is = 0; is < Nparams; is++)
+		N_VConst(0.0, y0s[is]);
+
+	for (size_t is : recIDX) {
+		// Endosomal amount doesn't depend on endo
+		NV_Ith_S(y0s[17], is) = -y0[is]/r->endo; // Endo (17)
+
+		// sortF (19)
+		NV_Ith_S(y0s[19], is + halfL) = -y0[is + halfL]/r->sortF;
+		NV_Ith_S(y0s[19], is) = r->kRec*internalFrac/r->endo*((1 - r->sortF)*NV_Ith_S(y0s[19], is + halfL) - y0[is + halfL]);
+
+		// Endosomal amount doesn't depend on kRec
+		NV_Ith_S(y0s[20], is) = (1-r->sortF)*y0[is + halfL]*internalFrac/r->endo; // kRec (20)
+
+		// kDeg (21)
+		NV_Ith_S(y0s[21], is + halfL) = -y0[is + halfL]/r->kDeg;
+		NV_Ith_S(y0s[21], is) = r->kRec*(1-r->sortF)*NV_Ith_S(y0s[21], is + halfL)*internalFrac/r->endo;
+	}
+
+	// Rexpr (22-30)
+	for (size_t ii = 0; ii < recIDX.size(); ii++) {
+		NV_Ith_S(y0s[22 + ii], recIDX[ii] + halfL) = y0[recIDX[ii] + halfL]/r->Rexpr[ii];
+		NV_Ith_S(y0s[22 + ii], recIDX[ii]) = 1/r->endo + NV_Ith_S(y0s[22 + ii], recIDX[ii] + halfL)*r->kRec*(1-r->sortF)*internalFrac/r->endo;
+	}
+}
+
 #endif

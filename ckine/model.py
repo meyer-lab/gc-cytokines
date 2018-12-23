@@ -9,7 +9,7 @@ import numpy as np
 filename = os.path.join(os.path.dirname(os.path.abspath(__file__)), "./ckine.so")
 libb = ct.cdll.LoadLibrary(filename)
 libb.fullModel_C.argtypes = (ct.POINTER(ct.c_double), ct.c_double, ct.POINTER(ct.c_double), ct.POINTER(ct.c_double))
-libb.runCkine.argtypes = (ct.POINTER(ct.c_double), ct.c_uint, ct.POINTER(ct.c_double), ct.POINTER(ct.c_double), ct.c_bool, ct.POINTER(ct.c_double))
+libb.runCkine.argtypes = (ct.POINTER(ct.c_double), ct.c_uint, ct.POINTER(ct.c_double), ct.POINTER(ct.c_double), ct.c_bool, ct.POINTER(ct.c_double), ct.c_bool)
 libb.runCkineParallel.argtypes = (ct.POINTER(ct.c_double), ct.c_double, ct.c_uint, ct.c_bool, ct.POINTER(ct.c_double), ct.POINTER(ct.c_double))
 libb.runCkinePretreat.argtypes = (ct.c_double, ct.c_double, ct.POINTER(ct.c_double), ct.POINTER(ct.c_double), ct.POINTER(ct.c_double))
 
@@ -71,11 +71,33 @@ def runCkineU (tps, rxntfr, sensi=False):
     else:
         sensP = ct.POINTER(ct.c_double)()
 
+    retVal = libb.runCkine(tps.ctypes.data_as(ct.POINTER(ct.c_double)), tps.size,
+                           yOut.ctypes.data_as(ct.POINTER(ct.c_double)),
+                           rxntfr.ctypes.data_as(ct.POINTER(ct.c_double)),
+                           sensi, sensP, False)
+
+    if sensi is True:
+        return (yOut, retVal, sensV)
+
+    return (yOut, retVal)
+
+def runCkineU_IL2 (tps, rxntfr, sensi=False):
+    """ Standard version of solver that returns species abundances given times and unknown rates. """
+    rxntfr = rxntfr.copy()
+    assert rxntfr.size == 10
+
+    yOut = np.zeros((tps.size, __nSpecies), dtype=np.float64)
+
+    if sensi is True:
+        sensV = np.zeros((__nSpecies, __nParams, tps.size), dtype=np.float64, order='F')
+        sensP = sensV.ctypes.data_as(ct.POINTER(ct.c_double))
+    else:
+        sensP = ct.POINTER(ct.c_double)()
 
     retVal = libb.runCkine(tps.ctypes.data_as(ct.POINTER(ct.c_double)), tps.size,
                            yOut.ctypes.data_as(ct.POINTER(ct.c_double)),
                            rxntfr.ctypes.data_as(ct.POINTER(ct.c_double)),
-                           sensi, sensP)
+                           sensi, sensP, True)
 
     if sensi is True:
         return (yOut, retVal, sensV)
