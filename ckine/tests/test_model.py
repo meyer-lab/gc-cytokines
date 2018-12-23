@@ -7,7 +7,7 @@ from hypothesis import given, settings
 from hypothesis.strategies import floats
 from hypothesis.extra.numpy import arrays as harrays
 from scipy.optimize.slsqp import approx_jacobian
-from ..model import fullModel, getTotalActiveCytokine, runCkineU, fullJacobian, nSpecies, runCkineUP
+from ..model import fullModel, getTotalActiveCytokine, runCkineU, fullJacobian, nSpecies, runCkineUP, runCkineU_IL2
 
 
 settings.register_profile("ci", max_examples=1000)
@@ -249,3 +249,24 @@ class TestModel(unittest.TestCase):
         self.assertTrue(np.greater(yOut_4[48:50], 0.0).all())
         self.assertTrue(np.greater(yOut_5[51:53], 0.0).all())
         self.assertTrue(np.greater(yOut_6[54:56], 0.0).all())
+
+    def test_runCkineU_IL2(self):
+        """ Make sure IL-2 activity is higher when its IL-2 binds tighter to IL-2Ra (k1rev (rxntfr[2]) is smaller). """
+        rxntfr_reg = np.ones(10)
+        rxntfr_loose = rxntfr_reg.copy()
+        rxntfr_gc = rxntfr_reg.copy()
+        rxntfr_gc[9] = 0.0 # set gc expression to 0
+        rxntfr_loose[1] = 10.0**-5 # "looser" dimerization occurs when kfwd is small
+
+        # find yOut vectors for both rxntfr's
+        y_reg, _ = runCkineU_IL2(self.ts, rxntfr_reg)
+        y_loose, _ = runCkineU_IL2(self.ts, rxntfr_loose)
+        y_gc, _ = runCkineU_IL2(self.ts, rxntfr_gc)
+
+        # get total amount of IL-2 derived active species at end of experiment (t=100000)
+        active_reg = getTotalActiveCytokine(0, y_reg[1, :])
+        active_loose = getTotalActiveCytokine(0, y_loose[1, :])
+        active_gc = getTotalActiveCytokine(0, y_gc[1, :])
+
+        self.assertLess(active_loose, active_reg) # lower dimerization rate leads to less active complex
+        self.assertLess(active_gc, active_reg) # no gc expression leads to less/no active complex

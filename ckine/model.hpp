@@ -1,6 +1,8 @@
 #include <array>
 #include <string>
 
+constexpr size_t Nparams = 30; // number of unknowns for the full model
+constexpr size_t NIL2params = 10; // number of unknowns for the IL2 model
 
 constexpr size_t Nlig = 6; // Number of ligands
 
@@ -67,70 +69,70 @@ public:
 		}
 	}
 
-	explicit ratesS(const double IL, const std::array<double, Nlig> rxntfR) {
-		std::fill(ILs.begin(), ILs.end(), 0.0);
-		ILs[0] = IL;
-		surface.kfwd = rxntfR[0];
-		surface.k1rev = rxntfR[1];
-		surface.k2rev = rxntfR[2];
-		surface.k4rev = rxntfR[3];
-		surface.k5rev = rxntfR[4];
-		surface.k11rev = rxntfR[5];
-		surface.k16rev = 1.0;
-		surface.k17rev = 1.0;
-		surface.k22rev = 1.0;
-		surface.k23rev = 1.0;
-		surface.k27rev = 1.0;
-		surface.k31rev = 1.0;
-		surface.k33rev = 1.0;
-		surface.k35rev = 1.0;
+	explicit ratesS(std::vector<double> rxntfR) {
+		if (rxntfR.size() == Nparams) {
+			std::copy_n(rxntfR.begin(), ILs.size(), ILs.begin());
+			surface.kfwd = rxntfR[6];
+			surface.k1rev = kfbnd * 10; // doi:10.1016/j.jmb.2004.04.038, 10 nM
+			surface.k2rev = kfbnd * 144; // doi:10.1016/j.jmb.2004.04.038, 144 nM
+			surface.k4rev = rxntfR[7];
+			surface.k5rev = rxntfR[8];
+			surface.k16rev = rxntfR[9];
+			surface.k17rev = rxntfR[10];
+			surface.k22rev = rxntfR[11];
+			surface.k23rev = rxntfR[12];
+			surface.k27rev = rxntfR[13];
+			surface.k31rev = rxntfR[14];
+			surface.k33rev = rxntfR[15];
+			surface.k35rev = rxntfR[16];
 
-		// These are probably measured in the literature
-		surface.k10rev = 12.0 * surface.k5rev / 1.5; // doi:10.1016/j.jmb.2004.04.038
+			// These are probably measured in the literature
+			surface.k10rev = 12.0 * surface.k5rev / 1.5; // doi:10.1016/j.jmb.2004.04.038
+			surface.k11rev = 63.0 * surface.k5rev / 1.5; // doi:10.1016/j.jmb.2004.04.038
 
-		std::array<double, 5> trafP = {0.08, 1.46, 0.18, 0.15, 0.017};
+			setTraffic(rxntfR.data() + 17);
 
-		setTraffic(trafP.data());
+			std::copy_n(rxntfR.data() + 22, 8, Rexpr.begin());
 
-		std::fill(Rexpr.begin(), Rexpr.end(), 0.0);
-		Rexpr[0] = rxntfR[6];
-		Rexpr[1] = rxntfR[7];
-		Rexpr[2] = rxntfR[8];
+			endosome = surface;
+		} else {
+			std::fill(ILs.begin(), ILs.end(), 0.0);
+			ILs[0] = rxntfR[0];
+			surface.kfwd = rxntfR[1];
+			surface.k1rev = rxntfR[2];
+			surface.k2rev = rxntfR[3];
+			surface.k4rev = rxntfR[4];
+			surface.k5rev = rxntfR[5];
+			surface.k11rev = rxntfR[6];
+			surface.k16rev = 1.0;
+			surface.k17rev = 1.0;
+			surface.k22rev = 1.0;
+			surface.k23rev = 1.0;
+			surface.k27rev = 1.0;
+			surface.k31rev = 1.0;
+			surface.k33rev = 1.0;
+			surface.k35rev = 1.0;
 
-		endosome = surface;
-		endosome.k1rev *= 5.0;
-		endosome.k2rev *= 5.0;
-		endosome.k4rev *= 5.0;
-		endosome.k5rev *= 5.0;
-		endosome.k10rev *= 5.0;
-		endosome.k11rev *= 5.0;
-	}
+			// These are probably measured in the literature
+			surface.k10rev = 12.0 * surface.k5rev / 1.5; // doi:10.1016/j.jmb.2004.04.038
 
-	explicit ratesS(const double * const rxntfR) {
-		std::copy_n(rxntfR, ILs.size(), ILs.begin());
-		surface.kfwd = rxntfR[6];
-		surface.k1rev = kfbnd * 10; // doi:10.1016/j.jmb.2004.04.038, 10 nM
-		surface.k2rev = kfbnd * 144; // doi:10.1016/j.jmb.2004.04.038, 144 nM
-		surface.k4rev = rxntfR[7];
-		surface.k5rev = rxntfR[8];
-		surface.k16rev = rxntfR[9];
-		surface.k17rev = rxntfR[10];
-		surface.k22rev = rxntfR[11];
-		surface.k23rev = rxntfR[12];
-		surface.k27rev = rxntfR[13];
-		surface.k31rev = rxntfR[14];
-		surface.k33rev = rxntfR[15];
-		surface.k35rev = rxntfR[16];
+			std::array<double, 5> trafP = {0.08, 1.46, 0.18, 0.15, 0.017};
 
-		// These are probably measured in the literature
-		surface.k10rev = 12.0 * surface.k5rev / 1.5; // doi:10.1016/j.jmb.2004.04.038
-		surface.k11rev = 63.0 * surface.k5rev / 1.5; // doi:10.1016/j.jmb.2004.04.038
+			setTraffic(trafP.data());
 
-		setTraffic(rxntfR + 17);
+			std::fill(Rexpr.begin(), Rexpr.end(), 0.0);
+			Rexpr[0] = rxntfR[7];
+			Rexpr[1] = rxntfR[8];
+			Rexpr[2] = rxntfR[9];
 
-		std::copy_n(rxntfR + 22, 8, Rexpr.begin());
-
-		endosome = surface;
+			endosome = surface;
+			endosome.k1rev *= 5.0;
+			endosome.k2rev *= 5.0;
+			endosome.k4rev *= 5.0;
+			endosome.k5rev *= 5.0;
+			endosome.k10rev *= 5.0;
+			endosome.k11rev *= 5.0;
+		}
 	}
 
 	void print() {
@@ -160,9 +162,8 @@ constexpr double tolIn = 1E-9;
 constexpr double internalV = 623.0; // Same as that used in TAM model
 constexpr double internalFrac = 0.5; // Same as that used in TAM model
 
-constexpr size_t Nparams = 30; // length of rxntfR vector
 constexpr size_t Nspecies = 62; // number of complexes in surface + endosome + free ligand
 constexpr size_t halfL = 28; // number of complexes on surface alone
 
-extern "C" int runCkine (double *tps, size_t ntps, double *out, const double * const rxnRatesIn, const bool sensi, double *sensiOut);
+extern "C" int runCkine (double *tps, size_t ntps, double *out, const double * const rxnRatesIn, const bool sensi, double *sensiOut, bool);
 extern "C" int runCkinePretreat (const double pret, const double tt, double * const out, const double * const rxnRatesIn, const double * const postStim);
