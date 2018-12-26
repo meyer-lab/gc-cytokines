@@ -140,6 +140,15 @@ public:
 			if (CVodeSetSensParams(cvode_mem, params.data(), paramArr.data(), nullptr) < 0) {
 				throw std::runtime_error(string("Error calling CVodeSetSensParams in solver_setup."));
 			}
+		} else {
+			// Call CVodeSetConstraints to initialize constraints
+			// Only possible without FSA
+			N_Vector constraints = N_VNew_Serial(static_cast<long>(Nspecies));
+			N_VConst(1.0, constraints); // all 1's for nonnegative solution values
+			if (CVodeSetConstraints(cvode_mem, constraints) < 0) {
+				throw std::runtime_error(string("Error calling CVodeSetConstraints in solver_setup."));
+			}
+			N_VDestroy(constraints);
 		}
 	}
 
@@ -191,7 +200,13 @@ static void errorHandler(int error_code, const char *module, const char *functio
 }
 
 
-int ewt(N_Vector y, N_Vector w, void *) {
+int ewt(N_Vector y, N_Vector w, void *ehdata) {
+	solver *sMem = static_cast<solver *>(ehdata);
+
+	double tolIn = 1E-7;
+
+	if (sMem->sensi) tolIn = 1E-3;
+
 	for (size_t i = 0; i < Nspecies; i++) {
 		NV_Ith_S(w, i) = 1.0/(fabs(NV_Ith_S(y, i))*tolIn + tolIn);
 	}

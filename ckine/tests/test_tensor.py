@@ -2,11 +2,14 @@
 Unit test file.
 """
 import unittest
+import warnings
 import numpy as np, cupy as cp
 import tensorly
 from ..Tensor_analysis import find_R2X, perform_decomposition, reorient_factors, scale_all
 from ..tensor_generation import findy
 tensorly.set_backend('cupy')
+
+warnings.filterwarnings("ignore", "CuPy solver failed", UserWarning, "tensorly")
 
 class TestModel(unittest.TestCase):
     '''Test Class for Tensor related work.'''
