@@ -76,7 +76,9 @@ testprofile: stats.dat
 	pyprof2calltree -i stats.dat -k
 
 testcpp: ckine/cppcheck
-	ckine/cppcheck
+	valgrind --xml=yes --xml-file=valgrind.xml --track-origins=yes --leak-check=yes ckine/cppcheck
+	valgrind --tool=callgrind ckine/cppcheck
+	gprof2dot -f callgrind callgrind.out.* | dot -Tsvg -o cprofile.svg
 
 doc:
 	doxygen Doxyfile

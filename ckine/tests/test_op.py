@@ -35,26 +35,27 @@ class TestOp(unittest.TestCase):
 
     def test_runCkineOp_T0(self):
         """ Verify the Jacobian for the core Op at t=0. """
-        utt.verify_grad(runCkineOp(np.array([0.0])), [self.unkV])
+        utt.verify_grad(runCkineOp(np.array([0.0])), [self.unkV], abs_tol=1.E-2, rel_tol=1.E-2)
 
     def test_runCkineOp(self):
         """ Verify the Jacobian for the core Op. """
-        utt.verify_grad(runCkineOp(np.array([100.])), [self.unkV])
+        utt.verify_grad(runCkineOp(np.array([100.])), [self.unkV], abs_tol=1.E-2, rel_tol=1.E-2)
 
     def test_runCkinePreSOp(self):
         """ Verify the Jacobian for the pre-stimulation Op. """
         utt.verify_grad(runCkinePreSOp(np.array([100.]), np.array([100.]),
-                                       np.array([0.0, 0.0, 1.0, 1.0, 0.0, 0.0])), [self.unkV])
+                                       np.array([0.0, 0.0, 1.0, 1.0, 0.0, 0.0])), [self.unkV],
+                                       abs_tol=1.E-2, rel_tol=1.E-2)
 
     def test_runCkineKineticOp(self):
         """ Verify kinetic Op Jacobian. """
-        utt.verify_grad(runCkineKineticOp(self.ts, self.cond), [self.unkV])
+        utt.verify_grad(runCkineKineticOp(self.ts, self.cond), [self.unkV], abs_tol=1.E-2, rel_tol=1.E-2)
 
     def test_runCkineDoseOp(self):
         """ Verify the Jacobian passed back by runCkineDoseOp. """
         Op = runCkineDoseOp(np.array(1.0), self.cond, self.conditions)
 
-        utt.verify_grad(Op, [self.doseUnkV])
+        utt.verify_grad(Op, [self.doseUnkV], abs_tol=1.E-2, rel_tol=1.E-2)
 
     def test_runCkineDoseOp_noActivity(self):
         """ Test that in the absence of ligand most values and gradients are zero. """

@@ -1,17 +1,30 @@
 pipeline {
   agent any
   stages {
-    stage('Clean') { steps { sh 'git clean -ffdx && make clean' } }
-    stage('Test C++') {
-      steps {
-        sh 'make ckine/cppcheck'
-		sh 'valgrind --xml=yes --xml-file=valgrind.xml --track-origins=yes --leak-check=yes ckine/cppcheck'
-        sh 'valgrind --tool=callgrind ckine/cppcheck'
-        sh 'gprof2dot -f callgrind callgrind.out.* | dot -Tsvg -o cprofile.svg'
+    stage('Clean')    { steps { sh 'git clean -ffdx && make clean' } }
+    stage('Test C++') { steps { sh 'make testcpp' } }
+    stage('Test')     { steps { sh 'make testcover' } }
+    stage('Build Figures') {
+      parallel {
+        stage('Build Fig 1') {
+          steps { sh 'make ./Manuscript/Figures/figure1.svg' }
+        }
+        stage('Build Fig 2') {
+          steps { sh 'make ./Manuscript/Figures/figure2.svg' }
+        }
+        stage('Build Fig 3') {
+          steps { sh 'make ./Manuscript/Figures/figure3.svg' }
+        }
+        stage('Build Fig 4') {
+          steps { sh 'make ./Manuscript/Figures/figure4.svg' }
+        }
       }
     }
-    stage('Test')  { steps { sh 'make testcover' } }
-    stage('Build') { steps { sh 'make' } }
+    stage('Build') {
+      steps {
+        sh 'make'
+      }
+    }
     stage('Lint')  { steps { sh '(pylint3 --rcfile=.pylintrc ckine > pylint.log || echo "pylint3 exited with $?")' } }
     stage('Report') {
       steps {
