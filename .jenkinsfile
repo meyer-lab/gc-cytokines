@@ -2,6 +2,14 @@ pipeline {
   agent any
   stages {
     stage('Clean') { steps { sh 'git clean -ffdx && make clean' } }
+    stage('Test C++') {
+      steps {
+        sh 'make ckine/cppcheck'
+		sh 'valgrind --xml=yes --xml-file=valgrind.xml --track-origins=yes --leak-check=yes ckine/cppcheck'
+        sh 'valgrind --tool=callgrind ckine/cppcheck'
+        sh 'gprof2dot -f callgrind callgrind.out.* | dot -Tsvg -o cprofile.svg'
+      }
+    }
     stage('Test')  { steps { sh 'make testcover' } }
     stage('Build') { steps { sh 'make' } }
     stage('Lint')  { steps { sh '(pylint3 --rcfile=.pylintrc ckine > pylint.log || echo "pylint3 exited with $?")' } }
@@ -10,8 +18,22 @@ pipeline {
         sh 'make doc'
         archiveArtifacts artifacts: 'doxy.log', onlyIfSuccessful: false
         archiveArtifacts artifacts: 'graph_all.svg', onlyIfSuccessful: true
+        archiveArtifacts artifacts: 'cprofile.svg', onlyIfSuccessful: true
         archiveArtifacts artifacts: 'Manuscript/Manuscript.pdf', onlyIfSuccessful: true
         archiveArtifacts artifacts: 'Manuscript/Figures/*.pdf', onlyIfSuccessful: true
+        publishValgrind([
+          pattern: 'valgrind.xml',
+          failThresholdInvalidReadWrite: '1',
+          failThresholdDefinitelyLost: '100',
+          failThresholdTotal: '1000',
+          unstableThresholdInvalidReadWrite: '1',
+          unstableThresholdDefinitelyLost: '100',
+          unstableThresholdTotal: '1000',
+          sourceSubstitutionPaths: '',
+          publishResultsForAbortedBuilds: false,
+          publishResultsForFailedBuilds: true,
+          failBuildOnMissingReports: true,
+          failBuildOnInvalidReports: true])
         publishHTML([
           allowMissing: false,
           alwaysLinkToLastBuild: false,

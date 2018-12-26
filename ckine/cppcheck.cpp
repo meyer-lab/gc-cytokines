@@ -56,7 +56,7 @@ protected:
 
 	array<double, Nparams> getParams() {
 		array<double, Nparams> rxnRatesIn;
-		lognormal_distribution<> dis(0.6, 0.25);
+		lognormal_distribution<> dis(0.1, 0.25);
 
 		generate(rxnRatesIn.begin(), rxnRatesIn.end(), [this, &dis]() { return dis(*this->gen); });
 
@@ -73,7 +73,7 @@ protected:
 		array<double, Nparams*Nspecies*tps.size()> soutput;
 		array<double, Nparams*Nspecies*tps.size()> soutput2;
 
-		for (size_t ii = 0; ii < 10; ii++) {
+		for (size_t ii = 0; ii < 3; ii++) {
 			rxnRatesIn = getParams();
 
 			int retVal = runCkine(tps.data(), tps.size(), output.data(), rxnRatesIn.data(), true, soutput.data(), false);
@@ -99,7 +99,7 @@ protected:
 		array<double, Nspecies> output2;
 		array<double, Nparams> rxnRatesIn;
 
-		for (size_t ii = 0; ii < 10; ii++) {
+		for (size_t ii = 0; ii < 3; ii++) {
 			rxnRatesIn = getParams();
 
 			int retVal = runCkinePretreat(10.0, 10.0, output.data(), rxnRatesIn.data(), postStim.data());

@@ -9,22 +9,6 @@ constexpr size_t Nlig = 6; // Number of ligands
 // Measured in the literature
 constexpr double kfbnd = 0.60; // Assuming on rate of 10^7 M-1 sec-1
 
-// Literature values for k values for IL-15
-constexpr double k13rev = kfbnd * 0.065; // based on the multiple papers suggesting 30-100 pM
-constexpr double k14rev = kfbnd * 438; // doi:10.1038/ni.2449, 438 nM
-
-// Literature values for IL-7
-constexpr double k25rev = kfbnd * 59; // DOI:10.1111/j.1600-065X.2012.01160.x, 59 nM
-
-// Literature value for IL-9
-constexpr double k29rev = kfbnd * 0.1; // DOI:10.1073/pnas.89.12.5690, ~100 pM
-
-// Literature value for IL-4
-constexpr double k32rev = kfbnd * 1.0; // DOI: 10.1126/scisignal.aal1253 (human)
-
-// Literature value for IL-21
-constexpr double k34rev = kfbnd * 0.07; // DOI: 10.1126/scisignal.aal1253 (human)
-
 
 struct bindingRates {
 	double kfwd;
@@ -34,13 +18,19 @@ struct bindingRates {
 	double k5rev;
 	double k10rev;
 	double k11rev;
+	double k13rev;
+	double k14rev;
 	double k16rev;
 	double k17rev;
 	double k22rev;
 	double k23rev;
+	double k25rev;
 	double k27rev;
+	double k29rev;
 	double k31rev;
+	double k32rev;
 	double k33rev;
+	double k34rev;
 	double k35rev;
 };
 
@@ -69,6 +59,27 @@ public:
 		}
 	}
 
+	void endosomeAdjust(bindingRates *endosome) {
+		endosome->k1rev *= 5.0;
+		endosome->k2rev *= 5.0;
+		endosome->k4rev *= 5.0;
+		endosome->k5rev *= 5.0;
+		endosome->k10rev *= 5.0;
+		endosome->k11rev *= 5.0;
+		endosome->k16rev *= 5.0;
+		endosome->k17rev *= 5.0;
+		endosome->k22rev *= 5.0;
+		endosome->k23rev *= 5.0;
+		endosome->k25rev *= 5.0;
+		endosome->k27rev *= 5.0;
+		endosome->k29rev *= 5.0;
+		endosome->k31rev *= 5.0;
+		endosome->k32rev *= 5.0;
+		endosome->k33rev *= 5.0;
+		endosome->k34rev *= 5.0;
+		endosome->k35rev *= 5.0;
+    }
+
 	explicit ratesS(std::vector<double> rxntfR) {
 		if (rxntfR.size() == Nparams) {
 			std::copy_n(rxntfR.begin(), ILs.size(), ILs.begin());
@@ -77,23 +88,28 @@ public:
 			surface.k2rev = kfbnd * 144; // doi:10.1016/j.jmb.2004.04.038, 144 nM
 			surface.k4rev = rxntfR[7];
 			surface.k5rev = rxntfR[8];
+			surface.k10rev = 12.0 * surface.k5rev / 1.5; // doi:10.1016/j.jmb.2004.04.038
+			surface.k11rev = 63.0 * surface.k5rev / 1.5; // doi:10.1016/j.jmb.2004.04.038
+			surface.k13rev = kfbnd * 0.065; // based on the multiple papers suggesting 30-100 pM
+			surface.k14rev = kfbnd * 438; // doi:10.1038/ni.2449, 438 nM
 			surface.k16rev = rxntfR[9];
 			surface.k17rev = rxntfR[10];
 			surface.k22rev = rxntfR[11];
 			surface.k23rev = rxntfR[12];
+			surface.k25rev = kfbnd * 59; // DOI:10.1111/j.1600-065X.2012.01160.x, 59 nM
 			surface.k27rev = rxntfR[13];
+			surface.k29rev = kfbnd * 0.1; // DOI:10.1073/pnas.89.12.5690, ~100 pM
 			surface.k31rev = rxntfR[14];
+			surface.k32rev = kfbnd * 1.0; // DOI: 10.1126/scisignal.aal1253 (human)
 			surface.k33rev = rxntfR[15];
+			surface.k34rev = kfbnd * 0.07; // DOI: 10.1126/scisignal.aal1253 (human)
 			surface.k35rev = rxntfR[16];
-
-			// These are probably measured in the literature
-			surface.k10rev = 12.0 * surface.k5rev / 1.5; // doi:10.1016/j.jmb.2004.04.038
-			surface.k11rev = 63.0 * surface.k5rev / 1.5; // doi:10.1016/j.jmb.2004.04.038
 
 			setTraffic(rxntfR.data() + 17);
 
 			std::copy_n(rxntfR.data() + 22, 8, Rexpr.begin());
 
+			// all reverse rates are 5x larger in the endosome
 			endosome = surface;
 		} else {
 			std::fill(ILs.begin(), ILs.end(), 0.0);
@@ -104,13 +120,19 @@ public:
 			surface.k4rev = rxntfR[4];
 			surface.k5rev = rxntfR[5];
 			surface.k11rev = rxntfR[6];
+			surface.k13rev = 1.0;
+			surface.k14rev = 1.0;
 			surface.k16rev = 1.0;
 			surface.k17rev = 1.0;
 			surface.k22rev = 1.0;
 			surface.k23rev = 1.0;
+			surface.k25rev = 1.0;
 			surface.k27rev = 1.0;
+			surface.k29rev = 1.0;
 			surface.k31rev = 1.0;
+			surface.k32rev = 1.0;
 			surface.k33rev = 1.0;
+			surface.k34rev = 1.0;
 			surface.k35rev = 1.0;
 
 			// These are probably measured in the literature
@@ -126,12 +148,7 @@ public:
 			Rexpr[2] = rxntfR[9];
 
 			endosome = surface;
-			endosome.k1rev *= 5.0;
-			endosome.k2rev *= 5.0;
-			endosome.k4rev *= 5.0;
-			endosome.k5rev *= 5.0;
-			endosome.k10rev *= 5.0;
-			endosome.k11rev *= 5.0;
+			endosomeAdjust(&endosome);
 		}
 	}
 
@@ -158,7 +175,7 @@ public:
 };
 
 
-constexpr double tolIn = 1E-9;
+constexpr double tolIn = 1E-7;
 constexpr double internalV = 623.0; // Same as that used in TAM model
 constexpr double internalFrac = 0.5; // Same as that used in TAM model
 
