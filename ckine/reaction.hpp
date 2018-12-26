@@ -66,7 +66,7 @@ double k8rev(const bindingRates * const r) {
  * @return     Value of k24rev.
  */
 double k24rev(const bindingRates * const r) {
-	return k13rev * r->k23rev / k14rev;
+	return r->k13rev * r->k23rev / r->k14rev;
 }
 
 
@@ -127,15 +127,15 @@ void dy_dt(const double * const y, const bindingRates * const r, double * const 
 	dydt[8] = r->kfwd * IL2_IL2Rb_gc * IL2Ra - k8rev(r) * IL2_IL2Ra_IL2Rb_gc + r->kfwd * IL2_IL2Ra_gc * IL2Rb - k9rev(r) * IL2_IL2Ra_IL2Rb_gc + r->kfwd * IL2_IL2Ra_IL2Rb * gc - r->k10rev * IL2_IL2Ra_IL2Rb_gc;
 
 	// IL15
-	dydt[9] = -kfbnd * IL15Ra * ILs[1] + k13rev * IL15_IL15Ra - r->kfwd * IL15Ra * IL15_IL2Rb_gc + k20rev(r) * IL15_IL15Ra_IL2Rb_gc - r->kfwd * IL15Ra * IL15_IL2Rb + k24rev(r) * IL15_IL15Ra_IL2Rb;
-	dydt[10] = -r->kfwd * IL15_IL15Ra * IL2Rb + r->k23rev * IL15_IL15Ra_IL2Rb - r->kfwd * IL15_IL15Ra * gc + r->k16rev * IL15_IL15Ra_gc + kfbnd * ILs[1] * IL15Ra - k13rev * IL15_IL15Ra;
-	dydt[11] = -r->kfwd * IL15_IL2Rb * IL15Ra + k24rev(r) * IL15_IL15Ra_IL2Rb - r->kfwd * IL15_IL2Rb * gc + r->k17rev * IL15_IL2Rb_gc + kfbnd * ILs[1] * IL2Rb - k14rev * IL15_IL2Rb;
+	dydt[9] = -kfbnd * IL15Ra * ILs[1] + r->k13rev * IL15_IL15Ra - r->kfwd * IL15Ra * IL15_IL2Rb_gc + k20rev(r) * IL15_IL15Ra_IL2Rb_gc - r->kfwd * IL15Ra * IL15_IL2Rb + k24rev(r) * IL15_IL15Ra_IL2Rb;
+	dydt[10] = -r->kfwd * IL15_IL15Ra * IL2Rb + r->k23rev * IL15_IL15Ra_IL2Rb - r->kfwd * IL15_IL15Ra * gc + r->k16rev * IL15_IL15Ra_gc + kfbnd * ILs[1] * IL15Ra - r->k13rev * IL15_IL15Ra;
+	dydt[11] = -r->kfwd * IL15_IL2Rb * IL15Ra + k24rev(r) * IL15_IL15Ra_IL2Rb - r->kfwd * IL15_IL2Rb * gc + r->k17rev * IL15_IL2Rb_gc + kfbnd * ILs[1] * IL2Rb - r->k14rev * IL15_IL2Rb;
 	dydt[12] = -r->kfwd * IL15_IL15Ra_IL2Rb * gc + r->k22rev * IL15_IL15Ra_IL2Rb_gc + r->kfwd * IL15_IL15Ra * IL2Rb - r->k23rev * IL15_IL15Ra_IL2Rb + r->kfwd * IL15_IL2Rb * IL15Ra - k24rev(r) * IL15_IL15Ra_IL2Rb;
 	dydt[13] = -r->kfwd * IL15_IL15Ra_gc * IL2Rb + k21rev(r) * IL15_IL15Ra_IL2Rb_gc + r->kfwd * IL15_IL15Ra * gc - r->k16rev * IL15_IL15Ra_gc;
 	dydt[14] = -r->kfwd * IL15_IL2Rb_gc * IL15Ra + k20rev(r) * IL15_IL15Ra_IL2Rb_gc + r->kfwd * gc * IL15_IL2Rb - r->k17rev * IL15_IL2Rb_gc;
 	dydt[15] =  r->kfwd * IL15_IL2Rb_gc * IL15Ra - k20rev(r) * IL15_IL15Ra_IL2Rb_gc + r->kfwd * IL15_IL15Ra_gc * IL2Rb - k21rev(r) * IL15_IL15Ra_IL2Rb_gc + r->kfwd * IL15_IL15Ra_IL2Rb * gc - r->k22rev * IL15_IL15Ra_IL2Rb_gc;
 	
-	dydt[1] = dydt[1] - kfbnd * IL2Rb * ILs[1] + k14rev * IL15_IL2Rb - r->kfwd * IL2Rb * IL15_IL15Ra_gc + k21rev(r) * IL15_IL15Ra_IL2Rb_gc - r->kfwd * IL2Rb * IL15_IL15Ra + r->k23rev * IL15_IL15Ra_IL2Rb;
+	dydt[1] = dydt[1] - kfbnd * IL2Rb * ILs[1] + r->k14rev * IL15_IL2Rb - r->kfwd * IL2Rb * IL15_IL15Ra_gc + k21rev(r) * IL15_IL15Ra_IL2Rb_gc - r->kfwd * IL2Rb * IL15_IL15Ra + r->k23rev * IL15_IL15Ra_IL2Rb;
 	dydt[2] = dydt[2] - r->kfwd * IL15_IL2Rb * gc + r->k17rev * IL15_IL2Rb_gc - r->kfwd * IL15_IL15Ra * gc + r->k16rev * IL15_IL15Ra_gc - r->kfwd * IL15_IL15Ra_IL2Rb * gc + r->k22rev * IL15_IL15Ra_IL2Rb_gc; 
 	
 	auto simpleCkine = [&](const size_t ij, const double revOne, const double revTwo, const double IL) {
@@ -145,10 +145,10 @@ void dy_dt(const double * const y, const bindingRates * const r, double * const 
 		dydt[ij+2] = r->kfwd * gc * y[ij+1] - revTwo * y[ij+2];
 	};
 
-	simpleCkine(16, k25rev, r->k27rev, ILs[2]);
-	simpleCkine(19, k29rev, r->k31rev, ILs[3]);
-	simpleCkine(22, k32rev, r->k33rev, ILs[4]);
-	simpleCkine(25, k34rev, r->k35rev, ILs[5]);
+	simpleCkine(16, r->k25rev, r->k27rev, ILs[2]);
+	simpleCkine(19, r->k29rev, r->k31rev, ILs[3]);
+	simpleCkine(22, r->k32rev, r->k33rev, ILs[4]);
+	simpleCkine(25, r->k34rev, r->k35rev, ILs[5]);
 }
 
 
