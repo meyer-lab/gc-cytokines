@@ -28,7 +28,8 @@ def ySolver(matIn, ts):
     rxntfR[12] = 0.151523448 #k23rev
     rxntfR[13] = 0.094763588 #k27rev
     rxntfR[15] = 0.095618346 #k33rev
-    rxntfR[[14, 16]] = 0.15  # From fitting IL9 and IL21: k4rev - k35rev
+    #TODO: Update parameters based on IL9&21.
+    rxntfR[[14, 16]] = 0.15  # From fitting IL9 and IL21: k4rev - k35rev 
     rxntfR[17] = 0.080084184 #endo
     rxntfR[18] = 1.474695447 #activeEndo
     rxntfR[19] = 0.179927669 #sortF
@@ -36,7 +37,7 @@ def ySolver(matIn, ts):
     rxntfR[21] = 0.017236595 #kDeg
 
     rxntfR[22:30] = matIn[6:14] # Receptor expression
-    rxntfR[0:6] = matIn[0:6] # Cytokine stimulation concentrations
+    rxntfR[0:6] = matIn[0:6] # Cytokine stimulation concentrations in the following order: IL2, 15, 7, 9, 4, 21, and in nM
 
     temp, retVal = runCkineU(ts, rxntfR)
     assert retVal >= 0
@@ -83,7 +84,7 @@ def findy(lig, n_timepoints):
 def reduce_values(y_of_combos):
     """Reduce y_of_combinations into necessary values."""
     active_list = [np.array([7, 8, 14, 15]),np.array([18]),np.array([21]),np.array([24]),np.array([27])] #active indices for all receptors relative to cytokine; Note we combined the activity of IL2 and IL15
-    values = np.zeros((y_of_combos.shape[0],y_of_combos.shape[1],21))
+    values = np.zeros((y_of_combos.shape[0],y_of_combos.shape[1],21)) #21 for receptors + ligands
     indices = [np.array([0, 3, 5, 6, 8]), np.array([1, 4, 5, 7, 8, 11, 12, 14, 15]), np.array([2, 6, 7, 8, 13, 14, 15, 18, 21]), np.array([9, 10, 12, 13, 15]), np.array([16, 17, 18]), np.array([19, 20, 21]), np.array([22, 23, 24]),np.array([25, 26, 27])]
     for i in range(5): #first 6 total active cytokines
         values[:,:,i] = np.sum(y_of_combos[:,:,active_list[i]], axis = 2) + internalStrength() * np.sum(y_of_combos[:,:,halfL()+active_list[i]], axis = 2)
