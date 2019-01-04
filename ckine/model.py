@@ -114,7 +114,7 @@ def runIL2simple(input, IL, CD25=1.0):
     rxntfr = np.array([IL, 0.00449, 0.6*10*input[0],
                        0.6*144*input[1], 8.6677, 0.1233,
                        63.0 * 0.1233 / 1.5 * input[1], 3.8704*CD25, 0.734, 1.7147])
-    
+
     yOut, retVal = runCkineU_IL2(tps, rxntfr)
     
     assert retVal == 0
