@@ -39,7 +39,7 @@ std::mutex print_mutex; // mutex to prevent threads printing on top of each othe
 
 extern "C" void dydt_C(double *y_in, double, double *dydt_out, double *rxn_in) {
 	std::vector<double> v(rxn_in, rxn_in + Nparams);
-	ratesS r(v);
+	ratesS<double> r(v);
 
 	dy_dt(y_in, &r.surface, dydt_out, r.ILs.data());
 }
@@ -47,7 +47,7 @@ extern "C" void dydt_C(double *y_in, double, double *dydt_out, double *rxn_in) {
 
 extern "C" void fullModel_C(const double * const y_in, double, double *dydt_out, double *rxn_in) {
 	std::vector<double> v(rxn_in, rxn_in + Nparams);
-	ratesS r(v);
+	ratesS<double> r(v);
 
 	fullModel(y_in, &r, dydt_out);
 }
@@ -69,7 +69,7 @@ public:
 		params = paramsIn;
 
 		// Setup state variable by solving for autocrine
-		ratesS rattes(params);
+		ratesS<double> rattes(params);
 		array<double, Nspecies> y0 = solveAutocrine(&rattes);
 		state = N_VNew_Serial(static_cast<long>(Nspecies));
 		std::copy_n(y0.data(), Nspecies, NV_DATA_S(state));
@@ -152,8 +152,8 @@ public:
 		}
 	}
 
-	ratesS getRates() {
-		return ratesS(params);
+	ratesS<double> getRates() {
+		return ratesS<double>(params);
 	}
 
 	void copyOutSensi(double *out) {
@@ -179,7 +179,7 @@ public:
 static void errorHandler(int error_code, const char *module, const char *function, char *msg, void *ehdata) {
 	if (error_code == CV_WARNING) return;
 	solver *sMem = static_cast<solver *>(ehdata);
-	ratesS ratt = sMem->getRates();
+	ratesS<double> ratt = sMem->getRates();
 
 	std::lock_guard<std::mutex> lock(print_mutex);
 
@@ -217,7 +217,7 @@ int ewt(N_Vector y, N_Vector w, void *ehdata) {
 
 int Jac(realtype, N_Vector y, N_Vector, SUNMatrix J, void *user_data, N_Vector, N_Vector, N_Vector) {
 	solver *sMem = static_cast<solver *>(user_data);
-	ratesS rattes = sMem->getRates();
+	ratesS<double> rattes = sMem->getRates();
 
 	Eigen::Map<JacMat> jac(SM_DATA_D(J));
 
@@ -232,7 +232,7 @@ int Jac(realtype, N_Vector y, N_Vector, SUNMatrix J, void *user_data, N_Vector, 
 
 int fullModelCVode(const double, const N_Vector xx, N_Vector dxxdt, void *user_data) {
 	solver *sMem = static_cast<solver *>(user_data);
-	ratesS rattes = sMem->getRates();
+	ratesS<double> rattes = sMem->getRates();
 
 	// Get the data in the right form
 	fullModel(NV_DATA_S(xx), &rattes, NV_DATA_S(dxxdt));
@@ -343,7 +343,7 @@ extern "C" int runCkineParallel (const double * const rxnRatesIn, double tp, siz
 
 extern "C" void fullJacobian_C(double *y_in, double, double *dydt, double *rxn_in) {
 	std::vector<double> v(rxn_in, rxn_in + Nparams);
-	ratesS r(v);
+	ratesS<double> r(v);
 
 	Eigen::Map<JacMat> out(dydt);
 

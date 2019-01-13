@@ -147,15 +147,6 @@ def runCkineUP (tp, rxntfr, sensi=False):
     return (yOut, retVal)
 
 
-def fullJacobian(y, t, rxntfR):
-    """ Calculates the Jacobian matrix for all species in our model. """
-    assert rxntfR.size == __nParams
-
-    yOut = np.zeros((__nSpecies, __nSpecies)) # size of the full Jacobian matrix
-
-    libb.fullJacobian_C(y.ctypes.data_as(ct.POINTER(ct.c_double)), ct.c_double(t), yOut.ctypes.data_as(ct.POINTER(ct.c_double)), rxntfR.ctypes.data_as(ct.POINTER(ct.c_double)))
-    return yOut
-
 def fullModel(y, t, rxntfr):
     """ Implement the full model based on dydt, trafficking, expression. """
     assert rxntfr.size == __nParams

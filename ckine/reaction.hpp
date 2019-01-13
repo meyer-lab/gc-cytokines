@@ -1,6 +1,8 @@
 #ifndef RXN_CODE_ONCE_
 #define RXN_CODE_ONCE_
 
+#include <nvector/nvector_serial.h>
+
 std::array<bool, halfL> __active_species_IDX() {
 	std::array<bool, halfL> __active_species_IDX;
 	std::fill(__active_species_IDX.begin(), __active_species_IDX.end(), false);
@@ -29,7 +31,8 @@ const std::array<size_t, 8> recIDX = {{0, 1, 2, 9, 16, 19, 22, 25}};
  *
  * @return     Value of k12rev.
  */
-double k12rev(const bindingRates * const r) {
+template <class T>
+T k12rev(const bindingRates<T> * const r) {
 	return r->k1rev * r->k11rev / r->k2rev; // loop for IL2_IL2Ra_IL2Rb
 }
 
@@ -41,7 +44,8 @@ double k12rev(const bindingRates * const r) {
  *
  * @return     Value of k9rev.
  */
-double k9rev(const bindingRates * const r) {
+template <class T>
+T k9rev(const bindingRates<T> * const r) {
 	return r->k10rev * r->k11rev / r->k4rev; // Based on formation of full complex (IL2_IL2Ra_IL2Rb_gc)
 }
 
@@ -53,7 +57,8 @@ double k9rev(const bindingRates * const r) {
  *
  * @return     Value of k8rev.
  */
-double k8rev(const bindingRates * const r) {
+template <class T>
+T k8rev(const bindingRates<T> * const r) {
 	return r->k10rev * k12rev(r) / r->k5rev; // Based on formation of full complex (IL2_IL2Ra_IL2Rb_gc)
 }
 
@@ -65,7 +70,8 @@ double k8rev(const bindingRates * const r) {
  *
  * @return     Value of k24rev.
  */
-double k24rev(const bindingRates * const r) {
+template <class T>
+T k24rev(const bindingRates<T> * const r) {
 	return r->k13rev * r->k23rev / r->k14rev;
 }
 
@@ -77,7 +83,8 @@ double k24rev(const bindingRates * const r) {
  *
  * @return     Value of k21rev.
  */
-double k21rev(const bindingRates * const r) {
+template <class T>
+T k21rev(const bindingRates<T> * const r) {
 	return r->k22rev * r->k23rev / r->k16rev;
 }
 
@@ -89,31 +96,33 @@ double k21rev(const bindingRates * const r) {
  *
  * @return     Value of k20rev.
  */
-double k20rev(const bindingRates * const r) {
+template <class T>
+T k20rev(const bindingRates<T> * const r) {
 	return r->k22rev * k24rev(r) / r->k17rev;
 }
 
 
-void dy_dt(const double * const y, const bindingRates * const r, double * const dydt, const double * const ILs) {
+template <class T, class YT, class RT, class LT>
+void dy_dt(const YT * const y, bindingRates<RT> * r, T *dydt, LT *ILs) {
 	// IL2 in nM
-	const double IL2Ra = y[0];
-	const double IL2Rb = y[1];
-	const double gc = y[2];
-	const double IL2_IL2Ra = y[3];
-	const double IL2_IL2Rb = y[4];
-	const double IL2_IL2Ra_IL2Rb = y[5];
-	const double IL2_IL2Ra_gc = y[6];
-	const double IL2_IL2Rb_gc = y[7];
-	const double IL2_IL2Ra_IL2Rb_gc = y[8];
+	const YT IL2Ra = y[0];
+	const YT IL2Rb = y[1];
+	const YT gc = y[2];
+	const YT IL2_IL2Ra = y[3];
+	const YT IL2_IL2Rb = y[4];
+	const YT IL2_IL2Ra_IL2Rb = y[5];
+	const YT IL2_IL2Ra_gc = y[6];
+	const YT IL2_IL2Rb_gc = y[7];
+	const YT IL2_IL2Ra_IL2Rb_gc = y[8];
 	
 	// IL15 in nM
-	const double IL15Ra = y[9];
-	const double IL15_IL15Ra = y[10];
-	const double IL15_IL2Rb = y[11];
-	const double IL15_IL15Ra_IL2Rb = y[12];
-	const double IL15_IL15Ra_gc = y[13];
-	const double IL15_IL2Rb_gc = y[14];
-	const double IL15_IL15Ra_IL2Rb_gc = y[15];
+	const YT IL15Ra = y[9];
+	const YT IL15_IL15Ra = y[10];
+	const YT IL15_IL2Rb = y[11];
+	const YT IL15_IL15Ra_IL2Rb = y[12];
+	const YT IL15_IL15Ra_gc = y[13];
+	const YT IL15_IL2Rb_gc = y[14];
+	const YT IL15_IL15Ra_IL2Rb_gc = y[15];
 		
 	// IL2
 	dydt[0] = -kfbnd * IL2Ra * ILs[0] + r->k1rev * IL2_IL2Ra - r->kfwd * IL2Ra * IL2_IL2Rb_gc + k8rev(r) * IL2_IL2Ra_IL2Rb_gc - r->kfwd * IL2Ra * IL2_IL2Rb + k12rev(r) * IL2_IL2Ra_IL2Rb;
@@ -138,7 +147,7 @@ void dy_dt(const double * const y, const bindingRates * const r, double * const 
 	dydt[1] = dydt[1] - kfbnd * IL2Rb * ILs[1] + r->k14rev * IL15_IL2Rb - r->kfwd * IL2Rb * IL15_IL15Ra_gc + k21rev(r) * IL15_IL15Ra_IL2Rb_gc - r->kfwd * IL2Rb * IL15_IL15Ra + r->k23rev * IL15_IL15Ra_IL2Rb;
 	dydt[2] = dydt[2] - r->kfwd * IL15_IL2Rb * gc + r->k17rev * IL15_IL2Rb_gc - r->kfwd * IL15_IL15Ra * gc + r->k16rev * IL15_IL15Ra_gc - r->kfwd * IL15_IL15Ra_IL2Rb * gc + r->k22rev * IL15_IL15Ra_IL2Rb_gc; 
 	
-	auto simpleCkine = [&](const size_t ij, const double revOne, const double revTwo, const double IL) {
+	auto simpleCkine = [&](const size_t ij, const T revOne, const T revTwo, const LT IL) {
 		dydt[2] += - r->kfwd * gc * y[ij+1] + revTwo * y[ij+2];
 		dydt[ij] = -kfbnd * y[ij] * IL + revOne * y[ij+1];
 		dydt[ij+1] = kfbnd * y[ij] * IL - revOne * y[ij+1] - r->kfwd * gc * y[ij+1] + revTwo * y[ij+2];
@@ -152,7 +161,8 @@ void dy_dt(const double * const y, const bindingRates * const r, double * const 
 }
 
 
-void fullModel(const double * const y, const ratesS * const r, double *dydt) {
+template <class T, class YT, class RT>
+void fullModel(const YT * const y, ratesS<RT> * const r, T *dydt) {
 	// Implement full model.
 	std::fill(dydt, dydt + Nspecies, 0.0);
 
@@ -162,13 +172,13 @@ void fullModel(const double * const y, const ratesS * const r, double *dydt) {
 
 	// Handle endosomal ligand balance.
 	// Must come before trafficking as we only calculate this based on reactions balance
-	double const * const dydti = dydt + halfL;
-	dydt[56] = -std::accumulate(dydti+3,  dydti+9, (double) 0.0) / internalV;
-	dydt[57] = -std::accumulate(dydti+10, dydti+16, (double) 0.0) / internalV;
-	dydt[58] = -std::accumulate(dydti+17, dydti+19, (double) 0.0) / internalV;
-	dydt[59] = -std::accumulate(dydti+20, dydti+22, (double) 0.0) / internalV;
-	dydt[60] = -std::accumulate(dydti+23, dydti+25, (double) 0.0) / internalV;
-	dydt[61] = -std::accumulate(dydti+26, dydti+28, (double) 0.0) / internalV;
+	T *dydti = dydt + halfL;
+	dydt[56] = -std::accumulate(dydti+3,  dydti+9, (T) 0.0) / internalV;
+	dydt[57] = -std::accumulate(dydti+10, dydti+16, (T) 0.0) / internalV;
+	dydt[58] = -std::accumulate(dydti+17, dydti+19, (T) 0.0) / internalV;
+	dydt[59] = -std::accumulate(dydti+20, dydti+22, (T) 0.0) / internalV;
+	dydt[60] = -std::accumulate(dydti+23, dydti+25, (T) 0.0) / internalV;
+	dydt[61] = -std::accumulate(dydti+26, dydti+28, (T) 0.0) / internalV;
 
 	// Actually calculate the trafficking
 	for (size_t ii = 0; ii < halfL; ii++) {
@@ -191,13 +201,14 @@ void fullModel(const double * const y, const ratesS * const r, double *dydt) {
 }
 
 
-std::array<double, Nspecies> solveAutocrine(const ratesS * const r) {
-	std::array<double, Nspecies> y0;
+template <class T>
+std::array<T, Nspecies> solveAutocrine(const ratesS<T> * const r) {
+	std::array<T, Nspecies> y0;
 	std::fill(y0.begin(), y0.end(), 0.0);
 
 	// Expand out trafficking terms
-	const double kRec = r->kRec*(1-r->sortF);
-	const double kDeg = r->kDeg*r->sortF;
+	const T kRec = r->kRec*(1-r->sortF);
+	const T kDeg = r->kDeg*r->sortF;
 
 	// Assuming no autocrine ligand, so can solve steady state
 	// Add the species
@@ -216,7 +227,7 @@ std::array<double, Nspecies> solveAutocrine(const ratesS * const r) {
  * @param[in]  r     Rate parameters.
  * @param      y0s   The autocrine state sensitivities.
  */
-void solveAutocrineS (const ratesS * const r, N_Vector *y0s) {
+void solveAutocrineS (const ratesS<double> * const r, N_Vector *y0s) {
 	std::array<double, Nspecies> y0 = solveAutocrine(r);
 
 	for (size_t is = 0; is < Nparams; is++)

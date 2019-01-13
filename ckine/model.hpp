@@ -10,43 +10,25 @@ constexpr size_t Nlig = 6; // Number of ligands
 constexpr double kfbnd = 0.60; // Assuming on rate of 10^7 M-1 sec-1
 
 
+template <class T>
 struct bindingRates {
-	double kfwd;
-	double k1rev;
-	double k2rev;
-	double k4rev;
-	double k5rev;
-	double k10rev;
-	double k11rev;
-	double k13rev;
-	double k14rev;
-	double k16rev;
-	double k17rev;
-	double k22rev;
-	double k23rev;
-	double k25rev;
-	double k27rev;
-	double k29rev;
-	double k31rev;
-	double k32rev;
-	double k33rev;
-	double k34rev;
-	double k35rev;
+	T kfwd, k1rev, k2rev, k4rev, k5rev, k10rev;
+	T k11rev, k13rev, k14rev, k16rev, k17rev;
+	T k22rev, k23rev, k25rev, k27rev, k29rev;
+	T k31rev, k32rev, k33rev, k34rev, k35rev;
 };
 
 
+template <class T>
 class ratesS {
 public:
-	std::array<double, Nlig> ILs; // IL2, 15, 7, 9, 4, 21
-	bindingRates surface, endosome;
-	double endo;
-	double activeEndo;
-	double sortF;
-	double kRec;
-	double kDeg;
-	std::array<double, 8> Rexpr; // Expression: IL2Ra, IL2Rb, gc, IL15Ra, IL7Ra, IL9R, IL4Ra, IL21Ra
+	std::array<T, Nlig> ILs; // IL2, 15, 7, 9, 4, 21
+	bindingRates<T> surface, endosome;
+	T endo, activeEndo;
+	T sortF, kRec, kDeg;
+	std::array<T, 8> Rexpr; // Expression: IL2Ra, IL2Rb, gc, IL15Ra, IL7Ra, IL9R, IL4Ra, IL21Ra
 
-	void setTraffic(const double * const traf) {
+	void setTraffic(T * traf) {
 		// Set the rates
 		endo = traf[0];
 		activeEndo = traf[1];
@@ -59,7 +41,7 @@ public:
 		}
 	}
 
-	void endosomeAdjust(bindingRates *endosome) {
+	void endosomeAdjust(bindingRates<T> *endosome) {
 		endosome->k1rev *= 5.0;
 		endosome->k2rev *= 5.0;
 		endosome->k4rev *= 5.0;
@@ -80,7 +62,7 @@ public:
 		endosome->k35rev *= 5.0;
     }
 
-	explicit ratesS(std::vector<double> rxntfR) {
+	explicit ratesS(std::vector<T> rxntfR) {
 		if (rxntfR.size() == Nparams) {
 			std::copy_n(rxntfR.begin(), ILs.size(), ILs.begin());
 			surface.kfwd = rxntfR[6];
@@ -138,7 +120,7 @@ public:
 			// These are probably measured in the literature
 			surface.k10rev = 12.0 * surface.k5rev / 1.5; // doi:10.1016/j.jmb.2004.04.038
 
-			std::array<double, 5> trafP = {0.08, 1.46, 0.18, 0.15, 0.017};
+			std::array<T, 5> trafP = {0.08, 1.46, 0.18, 0.15, 0.017};
 
 			setTraffic(trafP.data());
 

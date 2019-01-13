@@ -3,7 +3,7 @@
 typedef Eigen::Matrix<double, Nspecies, Nspecies, Eigen::RowMajor> JacMat;
 
 template <class T>
-void jacobian(const double * const y, const bindingRates * const r, T &out, const double * const ILs) {
+void jacobian(const double * const y, const bindingRates<double> * const r, T &out, const double * const ILs) {
 	// IL2 in nM
 	const double IL2Ra = y[0];
 	const double IL2Rb = y[1];
@@ -164,7 +164,7 @@ void jacobian(const double * const y, const bindingRates * const r, T &out, cons
 
 
 template <class T>
-void fullJacobian(const double * const y, const ratesS * const r, T &out) {
+void fullJacobian(const double * const y, const ratesS<double> * const r, T &out) {
 	
 	// unless otherwise specified, assume all partial derivatives are 0
 	out.setConstant(0.0);
