@@ -6,8 +6,7 @@ import numpy as np
 from hypothesis import given, settings
 from hypothesis.strategies import floats
 from hypothesis.extra.numpy import arrays as harrays
-from scipy.optimize.slsqp import approx_jacobian
-from ..model import fullModel, getTotalActiveCytokine, runCkineU, fullJacobian, nSpecies, runCkineUP, runCkineU_IL2
+from ..model import fullModel, getTotalActiveCytokine, runCkineU, nSpecies, runCkineUP, runCkineU_IL2
 
 
 settings.register_profile("ci", max_examples=1000)
@@ -142,22 +141,6 @@ class TestModel(unittest.TestCase):
         # test that all of the solutions returned are identical
         for ii in range(rxntfr.shape[0]):
             self.assertTrue(np.all(outt[0, :] == outt[ii, :]))
-
-    def test_fullJacobian(self):
-        """ Test that our analytical jacobian matches an approximate jacobian. """
-        analytical = fullJacobian(self.fully, 0.0, self.rxntfR)
-        approx = approx_jacobian(self.fully, lambda x: fullModel(x, 0.0, self.rxntfR), epsilon=1.0E-6)
-
-        self.assertTrue(analytical.shape == approx.shape)
-
-        closeness = np.isclose(analytical, approx, rtol=0.00001, atol=0.00001)
-        if not np.all(closeness):
-            IDXdiff = np.where(np.logical_not(closeness))
-            print(IDXdiff)
-            print(analytical[IDXdiff])
-            print(approx[IDXdiff])
-
-        self.assertTrue(np.all(closeness))
 
 
     def test_initial(self):

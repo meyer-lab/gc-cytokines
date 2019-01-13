@@ -5,6 +5,9 @@
 #include <array>
 #include <random>
 #include <algorithm>
+#include <adept.h>
+#include <Eigen/Core>
+#include <Eigen/Dense>
 
 #include <cppunit/ui/text/TestRunner.h>
 #include <cppunit/XmlOutputter.h>
@@ -14,6 +17,8 @@
 #include <cppunit/TestRunner.h>
 
 #include "model.hpp"
+#include "jacobian.hpp"
+#include "reaction.hpp"
 
 using namespace std;
 
@@ -38,7 +43,8 @@ public:
 			&interfaceTestCase::testrunCkine));
 		suiteOfTests->addTest(new CppUnit::TestCaller<interfaceTestCase>("testrunCkinePretreat",
 			&interfaceTestCase::testrunCkinePretreat));
-
+		suiteOfTests->addTest(new CppUnit::TestCaller<interfaceTestCase>("testJacobian",
+			&interfaceTestCase::testJacobian));
 		return suiteOfTests;
 	}
 
@@ -114,6 +120,40 @@ protected:
 			CPPUNIT_ASSERT(retVal2 >= 0);
 			CPPUNIT_ASSERT(std::equal(output.begin(), output.end(), output2.begin()));
 		}
+	}
+
+	// Compare the analytical to an autodiff jacobian
+	void testJacobian() {
+		using adept::adouble;
+
+		lognormal_distribution<> dis(0.1, 0.25);
+		array<double, Nspecies> yv;
+		array<double, Nparams> pIn = getParams();
+		vector<double> params(Nparams);
+		copy(pIn.begin(), pIn.end(), params.begin());
+		ratesS<double> rattes = ratesS<double>(params);
+		generate(yv.begin(), yv.end(), [this, &dis]() { return dis(*this->gen); });
+
+		adept::Stack stack;
+
+		array<adouble, Nspecies> y, dydt;
+
+		adept::set_values(&y[0], Nspecies, yv.data());
+
+		stack.new_recording();
+
+		// Get the data in the right form
+		fullModel(y.data(), &rattes, dydt.data());
+
+		stack.independent(&y[0], Nspecies);
+		stack.dependent(&dydt[0], Nspecies);
+
+		Eigen::Matrix<double, Nspecies, Nspecies> jac_Auto, jac_Ana;
+		stack.jacobian(jac_Auto.data());
+
+		fullJacobian(yv.data(), &rattes, jac_Ana);
+
+		CPPUNIT_ASSERT((jac_Auto - jac_Ana).squaredNorm() < 0.000001);
 	}
 };
 
