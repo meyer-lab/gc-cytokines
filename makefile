@@ -80,5 +80,8 @@ testcpp: ckine/cppcheck
 	valgrind --tool=callgrind ckine/cppcheck
 	gprof2dot -f callgrind callgrind.out.* | dot -Tsvg -o cprofile.svg
 
+cppcheck: ckine/cppcheck
+	ckine/cppcheck
+
 doc:
 	doxygen Doxyfile

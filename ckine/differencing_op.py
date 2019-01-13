@@ -4,52 +4,9 @@ Theano Op for using differencing for Jacobian calculation.
 import concurrent.futures
 import numpy as np
 from theano.tensor import dot, dmatrix, dvector, Op
-from .model import runCkineU, nSpecies, nParams, runCkineUP, runCkinePreT
+from .model import runCkineU, nSpecies, nParams, runCkineUP, runCkinePreT, runCkineS, runCkineSP
 
 pool = concurrent.futures.ThreadPoolExecutor()
-
-class runCkineOp(Op):
-    """ Runs model for a single time point and condition. """
-    itypes, otypes = [dvector], [dvector]
-
-    def __init__(self, ts):
-        self.dOp = runCkineOpDiff(ts)
-
-    def infer_shape(self, node, i0_shapes):
-        assert len(i0_shapes) == 1
-        return [(nSpecies(), )]
-
-    def perform(self, node, inputs, outputs, params=None):
-        outputs[0][0] = self.dOp.runCkine(inputs, False)
-
-    def grad(self, inputs, g):
-        """ Calculate the runCkineOp gradient. """
-        return [dot(g[0], self.dOp(inputs[0]))]
-
-
-class runCkineOpDiff(Op):
-    """ Gradient for a single time point and condition. """
-    itypes, otypes = [dvector], [dmatrix]
-
-    def __init__(self, ts):
-        if ts.size > 1:
-            raise NotImplementedError('This Op only works with a single time point.')
-
-        self.ts = ts
-
-    def runCkine(self, inputs, sensi):
-        """ function for runCkine """
-        outt = runCkineU(self.ts, inputs[0], sensi)
-        assert outt[1] >= 0
-        assert outt[0].size == nSpecies()
-
-        if sensi is True:
-            return np.squeeze(outt[2])
-
-        return np.squeeze(outt[0])
-
-    def perform(self, node, inputs, outputs, params=None):
-        outputs[0][0] = self.runCkine(inputs, True)
 
 
 class runCkinePreSOp(Op):
@@ -145,17 +102,16 @@ class runCkineOpKineticDiff(Op):
 
     def runCkine(self, inputs, sensi):
         """ function for runCkine """
-        outt = runCkineU(self.ts, inputs[0], sensi)
+        outt = runCkineU(self.ts, inputs[0])
         assert outt[0].shape == (self.ts.size, nSpecies())
         assert outt[1] >= 0
-
-        if sensi is True:
-            return np.dot(np.transpose(outt[2]), self.condense)
 
         return np.dot(outt[0], self.condense)
 
     def perform(self, node, inputs, outputs, params=None):
-        outputs[0][0] = self.runCkine(inputs, sensi=True)
+        outputs[0][0] = runCkineS(self.ts, inputs[0], self.condense)[2]
+        assert outputs[0][0].shape[0] == self.ts.size
+        assert outputs[0][0].shape[1] == inputs[0].size
 
 
 class runCkineDoseOp(Op):
@@ -194,15 +150,17 @@ class runCkineOpDoseDiff(Op):
         rxntfr = np.reshape(np.tile(inputs[0], self.conditions.shape[0]), (self.conditions.shape[0], -1))
         rxntfr = np.concatenate((self.conditions, rxntfr), axis=1)
 
-        outt = runCkineUP(self.ts, rxntfr, sensi)
-        assert outt[0].shape == (self.conditions.shape[0], nSpecies())
+        if sensi is False:
+            outt = runCkineUP(self.ts, rxntfr)
+            assert outt[1] >= 0
+            return np.dot(outt[0], self.condense)
+
+        outt = runCkineSP(self.ts, rxntfr, self.condense)
+        assert outt[0].shape == (self.conditions.shape[0], )
         assert outt[1] >= 0
 
-        if sensi is True:
-            # We override the ligands, so don't pass along their gradient
-            return np.dot(np.transpose(outt[2][:, 6::]), self.condense)
-
-        return np.dot(outt[0], self.condense)
+        # We override the ligands, so don't pass along their gradient
+        return outt[2][:, 6::]
 
     def perform(self, node, inputs, outputs, params=None):
         outputs[0][0] = self.runCkine(inputs, sensi=True)
