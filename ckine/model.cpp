@@ -33,10 +33,11 @@ using std::endl;
 using std::cout;
 using adept::adouble;
 
-constexpr double solveTol = 1.0E-6;
+constexpr double solveTol = 1.0E-5;
 
 static void errorHandler(int, const char *, const char *, char *, void *);
-int Jac(realtype, N_Vector, N_Vector, SUNMatrix, void *, N_Vector, N_Vector, N_Vector);
+int Jac(double, N_Vector, N_Vector, SUNMatrix, void *, N_Vector, N_Vector, N_Vector);
+int JacB(double, N_Vector, N_Vector, N_Vector, SUNMatrix, void *, N_Vector, N_Vector, N_Vector);
 int fullModelCVode (const double, const N_Vector, N_Vector, void *);
 static int fB(double, N_Vector y, N_Vector yB, N_Vector yBdot, void *user_dataB);
 static int fQB(double, N_Vector y, N_Vector yB, N_Vector qBdot, void *user_dataB);
@@ -186,7 +187,7 @@ public:
 		}
 
 		// Set the user-supplied Jacobian routine JacB
-		if (CVodeSetJacFnB(cvode_mem, indexB, NULL) < 0) {
+		if (CVodeSetJacFnB(cvode_mem, indexB, JacB) < 0) {
 			throw std::runtime_error(string("Error calling CVodeSetJacFnB in solver_setup."));
 		}
 
@@ -303,6 +304,21 @@ static int fB(double, N_Vector y, N_Vector yB, N_Vector yBdot, void *user_data) 
 }
 
 
+int JacB(double, N_Vector y, N_Vector, N_Vector, SUNMatrix J, void *user_data, N_Vector, N_Vector, N_Vector) {
+	ratesS<double> rattes = static_cast<solver *>(user_data)->getRates();
+
+	Eigen::Map<Eigen::Matrix<double, Nspecies, Nspecies>> jac(SM_DATA_D(J));
+
+	// Actually get the Jacobian
+	fullJacobian(NV_DATA_S(y), &rattes, jac);
+
+	jac = -jac;
+	jac.transposeInPlace();
+
+	return 0;
+}
+
+
 // fQB routine. Compute integrand for quadratures
 static int fQB(double, N_Vector y, N_Vector yB, N_Vector qBdot, void *user_dataB) {
 	solver *sMem = static_cast<solver *>(user_dataB);
@@ -364,9 +380,8 @@ static void errorHandler(int error_code, const char *module, const char *functio
 }
 
 
-int Jac(realtype, N_Vector y, N_Vector, SUNMatrix J, void *user_data, N_Vector, N_Vector, N_Vector) {
-	solver *sMem = static_cast<solver *>(user_data);
-	ratesS<double> rattes = sMem->getRates();
+int Jac(double, N_Vector y, N_Vector, SUNMatrix J, void *user_data, N_Vector, N_Vector, N_Vector) {
+	ratesS<double> rattes = static_cast<solver *>(user_data)->getRates();
 
 	Eigen::Map<Eigen::Matrix<double, Nspecies, Nspecies>> jac(SM_DATA_D(J));
 

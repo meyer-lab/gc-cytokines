@@ -81,7 +81,7 @@ protected:
 		array<double, Nspecies*tps.size()> output2;
 		array<double, Nparams> rxnRatesIn;
 
-		for (size_t ii = 0; ii < 3; ii++) {
+		for (size_t ii = 0; ii < 2; ii++) {
 			rxnRatesIn = getParams();
 
 			int retVal = runCkine(tps.data(), tps.size(), output.data(), rxnRatesIn.data(), false);
@@ -105,7 +105,7 @@ protected:
 		fill(actV.begin(), actV.end(), 0.0);
 		actV[10] = 1.0;
 
-		for (size_t ii = 0; ii < 3; ii++) {
+		for (size_t ii = 0; ii < 2; ii++) {
 			rxnRatesIn = getParams();
 
 			checkRetVal(runCkineS(tps.data(), tps.size(), output.data(), soutput.data(), actV.data(), rxnRatesIn.data(), false), rxnRatesIn);
@@ -127,7 +127,7 @@ protected:
 		array<double, Nspecies> output2;
 		array<double, Nparams> rxnRatesIn;
 
-		for (size_t ii = 0; ii < 3; ii++) {
+		for (size_t ii = 0; ii < 2; ii++) {
 			rxnRatesIn = getParams();
 
 			int retVal = runCkinePretreat(10.0, 10.0, output.data(), rxnRatesIn.data(), postStim.data());
