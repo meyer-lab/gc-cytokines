@@ -22,12 +22,16 @@
 
 using namespace std;
 
+constexpr array<double, 7> tps = {{0.1, 1.0, 10.0, 100.0, 1000.0, 10000.0, 100000.0}};
+
+
 class interfaceTestCase : public CppUnit::TestCase {
 public:
 	/// Setup method
 	void setUp() {
 		random_device rd;
 		gen = new mt19937(rd());
+		rxnRatesIn = getParams();
 	}
  
 	/// Teardown method
@@ -45,12 +49,15 @@ public:
 			&interfaceTestCase::testrunCkineS));
 		suiteOfTests->addTest(new CppUnit::TestCaller<interfaceTestCase>("testrunCkinePretreat",
 			&interfaceTestCase::testrunCkinePretreat));
+		suiteOfTests->addTest(new CppUnit::TestCaller<interfaceTestCase>("testrunCkineSPretreat",
+			&interfaceTestCase::testrunCkineSPretreat));
 		suiteOfTests->addTest(new CppUnit::TestCaller<interfaceTestCase>("testJacobian",
 			&interfaceTestCase::testJacobian));
 		return suiteOfTests;
 	}
 
 	mt19937 *gen;
+	array<double, Nparams> rxnRatesIn;
 
 protected:
 	void checkRetVal(int retVal, array<double, Nparams> &rxnRatesIn) {
@@ -76,70 +83,73 @@ protected:
 	}
 
 	void testrunCkine() {
-		array<double, 7> tps = {{0.1, 1.0, 10.0, 100.0, 1000.0, 10000.0, 100000.0}};
 		array<double, Nspecies*tps.size()> output;
 		array<double, Nspecies*tps.size()> output2;
-		array<double, Nparams> rxnRatesIn;
 
-		for (size_t ii = 0; ii < 2; ii++) {
-			rxnRatesIn = getParams();
+		int retVal = runCkine(tps.data(), tps.size(), output.data(), rxnRatesIn.data(), false, 0.0, nullptr);
 
-			int retVal = runCkine(tps.data(), tps.size(), output.data(), rxnRatesIn.data(), false);
+		// Run a second time to make sure we get the same thing
+		int retVal2 = runCkine(tps.data(), tps.size(), output2.data(), rxnRatesIn.data(), false, 0.0, nullptr);
 
-			// Run a second time to make sure we get the same thing
-			int retVal2 = runCkine(tps.data(), tps.size(), output2.data(), rxnRatesIn.data(), false);
+		checkRetVal(retVal, rxnRatesIn);
+		checkRetVal(retVal2, rxnRatesIn);
 
-			checkRetVal(retVal, rxnRatesIn);
-			checkRetVal(retVal2, rxnRatesIn);
-		}
+		CPPUNIT_ASSERT(std::equal(output.begin(), output.end(), output2.begin()));
 	}
 
 	void testrunCkineS() {
-		array<double, 9> tps = {{0.0, 0.01, 0.1, 1.0, 10.0, 100.0, 1000.0, 10000.0, 100000.0}};
 		array<double, tps.size()> output;
 		array<double, tps.size()> output2;
-		array<double, Nparams> rxnRatesIn;
 		array<double, Nparams*tps.size()> soutput;
 		array<double, Nparams*tps.size()> soutput2;
 		array<double, Nspecies> actV;
 		fill(actV.begin(), actV.end(), 0.0);
 		actV[10] = 1.0;
 
-		for (size_t ii = 0; ii < 2; ii++) {
-			rxnRatesIn = getParams();
+		checkRetVal(runCkineS(tps.data(), tps.size(), output.data(), soutput.data(), actV.data(), rxnRatesIn.data(), false, 0.0, nullptr), rxnRatesIn);
 
-			checkRetVal(runCkineS(tps.data(), tps.size(), output.data(), soutput.data(), actV.data(), rxnRatesIn.data(), false), rxnRatesIn);
+		// Run a second time to make sure we get the same thing
+		checkRetVal(runCkineS(tps.data(), tps.size(), output2.data(), soutput2.data(), actV.data(), rxnRatesIn.data(), false, 0.0, nullptr), rxnRatesIn);
 
-			// Run a second time to make sure we get the same thing
-			checkRetVal(runCkineS(tps.data(), tps.size(), output2.data(), soutput2.data(), actV.data(), rxnRatesIn.data(), false), rxnRatesIn);
-
-			CPPUNIT_ASSERT(std::equal(output.begin(), output.end(), output2.begin()));
-			// The sensitivities are non-deterministic for some reason
-			// CPPUNIT_ASSERT(std::equal(soutput.begin(), soutput.end(), soutput2.begin()));
-		}
+		CPPUNIT_ASSERT(std::equal(output.begin(), output.end(), output2.begin()));
+		// The sensitivities are non-deterministic for some reason
+		// CPPUNIT_ASSERT(std::equal(soutput.begin(), soutput.end(), soutput2.begin()));
 	}
 
 	void testrunCkinePretreat() {
-		lognormal_distribution<> dis(0.6, 0.25);
+		array<double, Nspecies*tps.size()> output;
+		array<double, Nspecies*tps.size()> output2;
+		array<double, Nlig> preL = {{0.1, 0.2, 0.1, 0.01, 0.3, 0.6}};
 
-		array<double, 6> postStim = {{0.1, 0.1, 0.0, 1.0, 1.0, 0.1}};
-		array<double, Nspecies> output;
-		array<double, Nspecies> output2;
-		array<double, Nparams> rxnRatesIn;
+		int retVal = runCkine(tps.data(), tps.size(), output.data(), rxnRatesIn.data(), false, 10.0, preL.data());
 
-		for (size_t ii = 0; ii < 2; ii++) {
-			rxnRatesIn = getParams();
+		// Run a second time to make sure we get the same thing
+		int retVal2 = runCkine(tps.data(), tps.size(), output2.data(), rxnRatesIn.data(), false, 10.0, preL.data());
 
-			int retVal = runCkinePretreat(10.0, 10.0, output.data(), rxnRatesIn.data(), postStim.data());
+		checkRetVal(retVal, rxnRatesIn);
+		checkRetVal(retVal2, rxnRatesIn);
 
-			// Run a second time to make sure we get the same thing
-			int retVal2 = runCkinePretreat(10.0, 10.0, output2.data(), rxnRatesIn.data(), postStim.data());
+		CPPUNIT_ASSERT(std::equal(output.begin(), output.end(), output2.begin()));
+	}
 
-			checkRetVal(retVal, rxnRatesIn);
-			checkRetVal(retVal2, rxnRatesIn);
+	void testrunCkineSPretreat() {
+		array<double, tps.size()> output;
+		array<double, tps.size()> output2;
+		array<double, Nparams*tps.size()> soutput;
+		array<double, Nparams*tps.size()> soutput2;
+		array<double, Nspecies> actV;
+		array<double, Nlig> preL = {{0.1, 0.2, 0.1, 0.01, 0.3, 0.6}};
+		fill(actV.begin(), actV.end(), 0.0);
+		actV[10] = 1.0;
 
-			CPPUNIT_ASSERT(std::equal(output.begin(), output.end(), output2.begin()));
-		}
+		checkRetVal(runCkineS(tps.data(), tps.size(), output.data(), soutput.data(), actV.data(), rxnRatesIn.data(), false, 10.0, preL.data()), rxnRatesIn);
+
+		// Run a second time to make sure we get the same thing
+		checkRetVal(runCkineS(tps.data(), tps.size(), output2.data(), soutput2.data(), actV.data(), rxnRatesIn.data(), false, 10.0, preL.data()), rxnRatesIn);
+
+		CPPUNIT_ASSERT(std::equal(output.begin(), output.end(), output2.begin()));
+		// The sensitivities are non-deterministic for some reason
+		// CPPUNIT_ASSERT(std::equal(soutput.begin(), soutput.end(), soutput2.begin()));
 	}
 
 	// Compare the analytical to an autodiff jacobian

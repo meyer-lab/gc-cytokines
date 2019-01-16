@@ -8,7 +8,7 @@ import numpy as np
 import seaborn as sns
 import pandas as pd
 from .figureCommon import subplotLabel, getSetup, traf_names, plot_conf_int, import_samples_4_7
-from ..model import nParams, getTotalActiveSpecies, runCkineU, getSurfaceGCSpecies, runCkinePreT, getTotalActiveCytokine
+from ..model import nParams, getTotalActiveSpecies, runCkineU, getSurfaceGCSpecies, getTotalActiveCytokine
 
 def makeFigure():
     """Get a list of the axis objects and create a figure"""
@@ -139,10 +139,10 @@ def pretreat_calc(unkVec, scales, pre_conc):
         """ Calculate for single case. """
         unkVec2 = unkVec.copy()
         unkVec2[pre_cytokine] = pre_conc
-        ligands = np.zeros((6))
-        ligands[stim_cytokine] = stim_conc
+        unkVec2[stim_cytokine] = stim_conc
+        ligands = np.zeros(6)
         ligands[pre_cytokine] = pre_conc # pretreatment ligand stays in system
-        returnn, retVal = runCkinePreT(ts, ts, unkVec2, ligands)
+        returnn, retVal = runCkineU(ts, unkVec2, preT=ts, prestim=ligands)
         assert retVal >= 0
         return getTotalActiveCytokine(stim_cytokine, np.squeeze(returnn)) # only look at active species associated with IL4
 

@@ -79,11 +79,15 @@ public:
 	vector<double> params;
 	array<double, Nspecies> activities;
 	adept::Stack stack;
+	double preT;
+	const double *preL;
 
-	void commonSetup(vector<double> paramsIn) {
+	void commonSetup(vector<double> paramsIn, const double preTin, const double * const preLin) {
 		stack.deactivate();
 		tret = 0.0;
 		params = paramsIn;
+		preT = preTin;
+		preL = preLin;
 
 		// Setup state variable by solving for autocrine
 		ratesS<double> rattes(params);
@@ -137,15 +141,15 @@ public:
 	}
 
 
-	solver(vector<double> paramsIn) {
+	solver(vector<double> paramsIn, const double preTin, const double * const preLin) {
 		sensi = false;
-		commonSetup(paramsIn);
+		commonSetup(paramsIn, preTin, preLin);
 	}
 
-	solver(vector<double> paramsIn, array<double, Nspecies> actIn) {
+	solver(vector<double> paramsIn, array<double, Nspecies> actIn, const double preTin, const double * const preLin) {
 		sensi = true;
 		std::copy(actIn.begin(), actIn.end(), activities.begin());
-		commonSetup(paramsIn);
+		commonSetup(paramsIn, preTin, preLin);
 
 		// CVodeAdjInit to update CVODES memory block by allocting the internal memory needed for backward integration
 		constexpr int steps = 10; // no. of integration steps between two consecutive ckeckpoints
@@ -287,8 +291,12 @@ public:
 
 
 // fB routine. Compute fB(t,y,yB). 
-static int fB(double, N_Vector y, N_Vector yB, N_Vector yBdot, void *user_data) {
-	ratesS<double> rattes = static_cast<solver *>(user_data)->getRates();
+static int fB(double t, N_Vector y, N_Vector yB, N_Vector yBdot, void *user_data) {
+	solver *sMem = static_cast<solver *>(user_data);
+	ratesS<double> rattes = sMem->getRates();
+
+	if (t < sMem->preT)
+		std::copy_n(sMem->preL, Nlig, rattes.ILs.data());
 
 	eigenVC yBv(NV_DATA_S(yB), Nspecies);
 	eigenVC yBdotv(NV_DATA_S(yBdot), Nspecies);
@@ -304,8 +312,12 @@ static int fB(double, N_Vector y, N_Vector yB, N_Vector yBdot, void *user_data) 
 }
 
 
-int JacB(double, N_Vector y, N_Vector, N_Vector, SUNMatrix J, void *user_data, N_Vector, N_Vector, N_Vector) {
-	ratesS<double> rattes = static_cast<solver *>(user_data)->getRates();
+int JacB(double t, N_Vector y, N_Vector, N_Vector, SUNMatrix J, void *user_data, N_Vector, N_Vector, N_Vector) {
+	solver *sMem = static_cast<solver *>(user_data);
+	ratesS<double> rattes = sMem->getRates();
+
+	if (t < sMem->preT)
+		std::copy_n(sMem->preL, Nlig, rattes.ILs.data());
 
 	Eigen::Map<Eigen::Matrix<double, Nspecies, Nspecies>> jac(SM_DATA_D(J));
 
@@ -320,7 +332,7 @@ int JacB(double, N_Vector y, N_Vector, N_Vector, SUNMatrix J, void *user_data, N
 
 
 // fQB routine. Compute integrand for quadratures
-static int fQB(double, N_Vector y, N_Vector yB, N_Vector qBdot, void *user_dataB) {
+static int fQB(double t, N_Vector y, N_Vector yB, N_Vector qBdot, void *user_dataB) {
 	solver *sMem = static_cast<solver *>(user_dataB);
 
 	size_t Np = sMem->params.size();
@@ -329,6 +341,9 @@ static int fQB(double, N_Vector y, N_Vector yB, N_Vector qBdot, void *user_dataB
 
 	vector<adouble> X(Np);
 	adept::set_values(&X[0], Np, sMem->params.data());
+
+	if (t < sMem->preT)
+		adept::set_values(&X[0], Nlig, sMem->preL);
 
 	sMem->stack.new_recording();
 
@@ -380,8 +395,12 @@ static void errorHandler(int error_code, const char *module, const char *functio
 }
 
 
-int Jac(double, N_Vector y, N_Vector, SUNMatrix J, void *user_data, N_Vector, N_Vector, N_Vector) {
-	ratesS<double> rattes = static_cast<solver *>(user_data)->getRates();
+int Jac(double t, N_Vector y, N_Vector, SUNMatrix J, void *user_data, N_Vector, N_Vector, N_Vector) {
+	solver *sMem = static_cast<solver *>(user_data);
+	ratesS<double> rattes = sMem->getRates();
+
+	if (t < sMem->preT)
+		std::copy_n(sMem->preL, Nlig, rattes.ILs.data());
 
 	Eigen::Map<Eigen::Matrix<double, Nspecies, Nspecies>> jac(SM_DATA_D(J));
 
@@ -392,9 +411,12 @@ int Jac(double, N_Vector y, N_Vector, SUNMatrix J, void *user_data, N_Vector, N_
 }
 
 
-int fullModelCVode(const double, const N_Vector xx, N_Vector dxxdt, void *user_data) {
+int fullModelCVode(const double t, const N_Vector xx, N_Vector dxxdt, void *user_data) {
 	solver *sMem = static_cast<solver *>(user_data);
 	ratesS<double> rattes = sMem->getRates();
+
+	if (t < sMem->preT)
+		std::copy_n(sMem->preL, Nlig, rattes.ILs.data());
 
 	// Get the data in the right form
 	fullModel(NV_DATA_S(xx), &rattes, NV_DATA_S(dxxdt));
@@ -403,7 +425,7 @@ int fullModelCVode(const double, const N_Vector xx, N_Vector dxxdt, void *user_d
 }
 
 
-extern "C" int runCkine (double * const tps, const size_t ntps, double * const out, const double * const rxnRatesIn, bool IL2case) {
+extern "C" int runCkine (const double * const tps, const size_t ntps, double * const out, const double * const rxnRatesIn, bool IL2case, const double preT, const double * const preL) {
 	size_t itps = 0;
 
 	std::vector<double> v;
@@ -414,16 +436,16 @@ extern "C" int runCkine (double * const tps, const size_t ntps, double * const o
 		v = std::vector<double>(rxnRatesIn, rxnRatesIn + Nparams);
 	}
 
-	solver sMem(v);
+	solver sMem(v, preT, preL);
 
-	if (tps[0] < std::numeric_limits<double>::epsilon()) {
+	if (tps[0] + preT < std::numeric_limits<double>::epsilon()) {
 		std::copy_n(NV_DATA_S(sMem.state), Nspecies, out);
 
 		itps = 1;
 	}
 
 	for (; itps < ntps; itps++) {
-		if (sMem.CVodeRun(tps[itps]) < 0) return -1;
+		if (sMem.CVodeRun(tps[itps] + preT) < 0) return -1;
 
 		// Copy out result
 		std::copy_n(NV_DATA_S(sMem.state), Nspecies, out + Nspecies*itps);
@@ -458,7 +480,7 @@ x0JacM xNotp (vector<double> &params) {
 
 
 
-extern "C" int runCkineS (const double * const tps, const size_t ntps, double * const out, double * const Sout, const double * const actV, const double * const rxnRatesIn, const bool IL2case) {
+extern "C" int runCkineS (const double * const tps, const size_t ntps, double * const out, double * const Sout, const double * const actV, const double * const rxnRatesIn, const bool IL2case, const double preT, const double * const preL) {
 	size_t itps = 0;
 
 	std::vector<double> v;
@@ -467,62 +489,42 @@ extern "C" int runCkineS (const double * const tps, const size_t ntps, double * 
 
 	v = std::vector<double>(rxnRatesIn, rxnRatesIn + Nparams);
 
-	solver sMem(v, actVv);
+	solver sMem(v, actVv, preT, preL);
 
-	if (tps[0] < std::numeric_limits<double>::epsilon()) {
+	if (tps[0] + preT < std::numeric_limits<double>::epsilon()) {
 		out[0] = sMem.getActivity();
 
 		itps = 1;
 	}
 
 	for (; itps < ntps; itps++) {
-		if (sMem.CVodeRun(tps[itps]) < 0) return -1;
+		if (sMem.CVodeRun(tps[itps] + preT) < 0) return -1;
 
 		// Copy out result
 		out[itps] = sMem.getActivity();
 	}
 
-	sMem.backward(tps[ntps-1]);
+	sMem.backward(tps[ntps-1] + preT);
 
 	x0JacM x0p = xNotp(sMem.params);
 
 	// Get sensitivities
 	for (int bitps = ntps - 1; bitps >= 0; bitps--) {
-		if (sMem.getAdjSens(tps[bitps], Sout + sMem.params.size()*bitps, x0p)) return -1;
+		if (sMem.getAdjSens(tps[bitps] + preT, Sout + sMem.params.size()*bitps, x0p)) return -1;
 	}
-
-	return 0;
-}
-
-
-extern "C" int runCkinePretreat (const double pret, const double tt, double * const out, const double * const rxnRatesIn, const double * const postStim) {
-	solver sMem(std::vector<double>(rxnRatesIn, rxnRatesIn + Nparams));
-
-	if (sMem.CVodeRun(pret) < 0) return -1;
-
-	std::copy_n(postStim, Nlig, sMem.params.begin()); // Copy in stimulation ligands
-
-	CVodeReInit(sMem.cvode_mem, pret, sMem.state);
-    
-	if (tt > std::numeric_limits<double>::epsilon()) {
-		if (sMem.CVodeRun(pret + tt) < 0) return -1;
-	}
-
-	// Copy out result
-	std::copy_n(NV_DATA_S(sMem.state), Nspecies, out);
 
 	return 0;
 }
 
 ThreadPool pool;
 
-extern "C" int runCkineParallel (const double * const rxnRatesIn, double tp, size_t nDoses, double *out) {
+extern "C" int runCkineParallel (const double * const rxnRatesIn, double tp, size_t nDoses, double *out, const double preT, const double * const preL) {
 	int retVal = 1000;
 	std::list<std::future<int>> results;
 
 	// Actually run the simulations
 	for (size_t ii = 0; ii < nDoses; ii++)
-		results.push_back(pool.enqueue(runCkine, &tp, 1, out + Nspecies*ii, rxnRatesIn + ii*Nparams, false));
+		results.push_back(pool.enqueue(runCkine, &tp, 1, out + Nspecies*ii, rxnRatesIn + ii*Nparams, false, preT, preL));
 
 	// Synchronize all threads
 	for (std::future<int> &th:results) retVal = std::min(th.get(), retVal);
@@ -532,13 +534,13 @@ extern "C" int runCkineParallel (const double * const rxnRatesIn, double tp, siz
 }
 
 
-extern "C" int runCkineSParallel (const double * const rxnRatesIn, const double tp, const size_t nDoses, double * const out, double * const Sout, double * const actV) {
+extern "C" int runCkineSParallel (const double * const rxnRatesIn, const double tp, const size_t nDoses, double * const out, double * const Sout, double * const actV, const double preT, const double * const preL) {
 	int retVal = 1000;
 	std::list<std::future<int>> results;
 
 	// Actually run the simulations
 	for (size_t ii = 0; ii < nDoses; ii++) {
-		results.push_back(pool.enqueue(runCkineS, &tp, 1, out + ii, Sout + Nparams*ii, actV, rxnRatesIn + Nparams*ii, false));
+		results.push_back(pool.enqueue(runCkineS, &tp, 1, out + ii, Sout + Nparams*ii, actV, rxnRatesIn + Nparams*ii, false, preT, preL));
 	}
 
 	// Synchronize all threads
@@ -546,14 +548,4 @@ extern "C" int runCkineSParallel (const double * const rxnRatesIn, const double 
 
 	// Get the worst case to return
 	return retVal;
-}
-
-
-extern "C" void fullJacobian_C(double *y_in, double, double *dydt, double *rxn_in) {
-	std::vector<double> v(rxn_in, rxn_in + Nparams);
-	ratesS<double> r(v);
-
-	Eigen::Map<JacMat> out(dydt);
-
-	fullJacobian(y_in, &r, out);
 }
