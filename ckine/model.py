@@ -34,6 +34,11 @@ def internalStrength():
     """Returns the internalStrength of endosomal activity."""
     return __internalStrength
 
+__internalV = 623.0 # endosomal volume
+def internalV():
+    """ Returns __internalV. """
+    return __internalV
+
 __nRxn = 17
 def nRxn():
     """ Returns the length of the rxn rates vector (doesn't include traf rates). """
@@ -225,3 +230,11 @@ def surfaceReceptors(y):
 def totalReceptors(yVec):
     """This function takes in a vector y and returns the amounts of all 8 receptors in both cell compartments"""
     return surfaceReceptors(yVec) + __internalStrength * surfaceReceptors(yVec[__halfL:__halfL*2])
+
+def ligandDeg_IL2(yVec, sortF, kDeg):
+    """ This function calculates rate of IL-2's total degradation. """
+    # all indices are shifted by __halfL in order to get endosomal species
+    yVec = yVec[__halfL::].copy()
+    sum_inactive = np.sum(yVec[3:7]) * sortF # indexes 3-6 have IL2 bound but are inactive, only inactive species deal with sortF
+    sum_active = np.sum(yVec[7:9]) # indices 7,8 have IL2 bound and are active
+    return kDeg * (((sum_inactive + sum_active) * __internalStrength) + (yVec[__halfL] * __internalV)) # can assume all free ligand and active species are degraded at rate kDeg
