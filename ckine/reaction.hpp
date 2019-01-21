@@ -206,6 +206,15 @@ std::array<T, Nspecies> solveAutocrine(const ratesS<T> * const r) {
 	std::array<T, Nspecies> y0;
 	std::fill(y0.begin(), y0.end(), 0.0);
 
+	// Check if we're working with the no trafficking model
+	if (r->endo == 0.0) {
+		for (size_t ii = 0; ii < recIDX.size(); ii++) {
+			y0[recIDX[ii]] = r->Rexpr[ii];
+		}
+
+		return y0;
+	}
+
 	// Expand out trafficking terms
 	const T kRec = r->kRec*(1-r->sortF);
 	const T kDeg = r->kDeg*r->sortF;
