@@ -6,7 +6,7 @@ import numpy as np
 from hypothesis import given, settings
 from hypothesis.strategies import floats
 from hypothesis.extra.numpy import arrays as harrays
-from ..model import fullModel, getTotalActiveCytokine, runCkineU, nSpecies, runCkineUP, runCkineU_IL2
+from ..model import fullModel, getTotalActiveCytokine, runCkineU, nSpecies, runCkineUP, runCkineU_IL2, ligandDeg_IL2
 
 
 settings.register_profile("ci", max_examples=1000)
@@ -253,6 +253,19 @@ class TestModel(unittest.TestCase):
 
         self.assertLess(active_loose, active_reg) # lower dimerization rate leads to less active complex
         self.assertLess(active_gc, active_reg) # no gc expression leads to less/no active complex
+
+    def test_ligandDeg_IL2(self):
+        """ Verify that ligand degradation increases when sortF and kDeg increase. """
+        y, _ = runCkineU_IL2(self.ts, np.ones(10))
+        sortF, kDeg = 0.5, 1.0
+        reg = ligandDeg_IL2(y[1,:], sortF, kDeg)
+        high_sortF = ligandDeg_IL2(y[1,:], 0.9, kDeg)
+        high_kDeg = ligandDeg_IL2(y[1,:], sortF, kDeg*10)
+        low_kDeg = ligandDeg_IL2(y[1,:], sortF, kDeg*0.1)
+
+        self.assertGreater(high_sortF, reg)
+        self.assertGreater(high_kDeg, reg)
+        self.assertGreater(reg, low_kDeg)
 
     def test_noTraff(self):
         """ Make sure no endosomal species are found when endo=0. """
