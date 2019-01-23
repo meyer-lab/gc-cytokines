@@ -12,9 +12,9 @@ Our model accounted for endosomal trafficking, allowing all species to be endocy
 
 The rate of change for free receptors and complexes were modeled through ordinary differential equations (ODEs). There were 28 ODEs that represented the rate of change for free receptors and complexes on the cell surface, 28 ODEs that represented the rate of change for free receptors and complexes in the endosome, and 6 ODEs that represented the rate of change of ligand concentration. For a complex ($C$) that forms through the binding of ligand ($L$) to free receptor ($R$) with a forward reaction rate ($k_f$) and a reverse reaction rate ($k_r$), the ODE would be:
 
-$$dC/dt=(kf*L*R)-(kr*C)$$ 
+$$dC/dt=(k_{f}*L*R)-(k_{r}*C)$$ 
 
-In this example, $\delta C/\delta t$ is in units of number / cell * min, $L$ is in units of molarity, $R$ is in number / cell, $C$ is in number / cell, $kf$ is in 1 / nM * min, and $kr$ is in 1 / min. For our model, all of the free receptors and complexes were measured in units of number per cell and all ligands were measured in units of concentration (nM). Due to these unit choices for our species, the rate constants for ligand binding to a free receptors had units of 1 / nM * min, rate constants for the forward dimerization of free receptor to complex had units of 1 / min * number per cell, and the dissociation of a complex into another complex and free receptor had units of 1 / min.
+In this example, $\delta C/\delta t$ is in units of number / cell * min, $L$ is in units of molarity, $R$ is in number / cell, $C$ is in number / cell, $k_f$ is in 1 / nM * min, and $k_r$ is in 1 / min. For our model, all of the free receptors and complexes were measured in units of number per cell and all ligands were measured in units of concentration (nM). Due to these unit choices for our species, the rate constants for ligand binding to a free receptors had units of 1 / nM * min, rate constants for the forward dimerization of free receptor to complex had units of 1 / min * number per cell, and the dissociation of a complex into another complex and free receptor had units of 1 / min.
 
 Type I cytokine signaling follows the JAK-STAT signaling pathway which is initiated when two JAK subunits come in contact with one another. JAK proteins are found on the intracellular regions of the γ~c~, IL-2Rβ, IL-4Rα, IL-7Rα, IL-9R, and IL-21Rα receptors; therefore all complexes which contained at least two of those receptors were deemed to be active species.
 
@@ -25,49 +25,49 @@ We wrote conservation of species and equilibrium unit tests to ensure that all s
 
 ### Parameters and assumptions
 
-All ligand-receptor binding processes had a forward rate constant of $kfbnd$ which was assumed to be on rate of 10^7 M-1 sec-1 (0.6 nM-1 min-1); the only exception to this assumption was the binding of free ligand to γ~c~, which was assumed to not occur in our model due to weak affinity [@Voss2428]. All forward dimerization reaction rates were represented by $k_{fwd}$. All reverse reaction rates were unique. We used detailed balance to eliminate 8 unknown reverse reaction rate constants. Detailed balance loops were based on formation of full complexes and initial assembly. Each forward and reverse reaction rate was related through an equilibrium dissociation constant ($Kd$). Many of these equilibrium dissociation constants were found in published surface plasmon resonance and isothermal calorimetry experiments.
+All ligand-receptor binding processes had a forward rate constant of $k_{bnd}$ which was assumed to be on rate of $10^7$ M-1 sec-1 (0.6 nM-1 min-1); the only exception to this assumption was the binding of free ligand to γ~c~, which was assumed to not occur in our model due to weak affinity [@Voss2428]. All forward dimerization reaction rates were represented by $k_{fwd}$. All reverse reaction rates were unique. We used detailed balance to eliminate 8 unknown reverse reaction rate constants. Detailed balance loops were based on formation of full complexes and initial assembly. Each forward and reverse reaction rate was related through an equilibrium dissociation constant ($K_d$). Many of these equilibrium dissociation constants were found in published surface plasmon resonance and isothermal calorimetry experiments.
 
 
-+------------------+------------------+--------------------------------------+
-| $Kd$             | Value            | Reference                            |
-+==================+==================+======================================+
-| IL-2                                                                       |
-+------------------+------------------+--------------------------------------+
-| $k1rev$/$kfbnd$  | 10 nM            | [@Rickert_receptor_const]            |
-+------------------+------------------+--------------------------------------+
-| $k2rev$/$kfbnd$  | 144 nM           | [@Rickert_receptor_const]            |
-+------------------+------------------+--------------------------------------+
-| $k10rev$/$kfwd$  | 12 nM            | [@Rickert_receptor_const]            |
-+------------------+------------------+--------------------------------------+
-| $k11rev$/$kfwd$  | 63 nM            | [@Rickert_receptor_const]            |
-+------------------+------------------+--------------------------------------+
-| $k5rev$/$kfwd$   | 1.5 nM           | [@Rickert_receptor_const]            |
-+------------------+------------------+--------------------------------------+
-| IL-15                                                                      |
-+------------------+------------------+--------------------------------------+
-| $k13rev$/$kfbnd$ | 0.065 nM         | multiple papers suggesting 30-100 pM |
-+------------------+------------------+--------------------------------------+
-| $k14rev$/$kfbnd$ | 438 nM           | [@ring_mechanistic_2012]             |
-+------------------+------------------+--------------------------------------+
-| IL-4                                                                       |
-+------------------+------------------+--------------------------------------+
-| $k32rev$/$kfbnd$ | 1.0 nM           | [@Gonnordeaal1253]                   |
-+------------------+------------------+--------------------------------------+
-| IL-7                                                                       |
-+------------------+------------------+--------------------------------------+
-| $k25rev$/$kfbnd$ | 59 nM            | [@Walsh_IL7_2012]                    |
-+------------------+------------------+--------------------------------------+
-| IL-9                                                                       |
-+------------------+------------------+--------------------------------------+
-| $k29rev$/$kfbnd$ | 0.1 nM           | [@Renauld5690]                       |
-+------------------+------------------+--------------------------------------+
-| IL-21                                                                      |
-+------------------+------------------+--------------------------------------+
-| $k34rev$/$kfbnd$ | 0.07 nM          | [@Gonnordeaal1253]                   |
-+------------------+------------------+--------------------------------------+
++-----------------+------------------+--------------------------------------+
+| $K_D$           | Value            | Reference                            |
++=================+==================+======================================+
+| IL-2                                                                      |
++-----------------+------------------+--------------------------------------+
+| $k1 / k_{bnd}$  | 10 nM            | [@Rickert_receptor_const]            |
++-----------------+------------------+--------------------------------------+
+| $k2 / k_{bnd}$  | 144 nM           | [@Rickert_receptor_const]            |
++-----------------+------------------+--------------------------------------+
+| $k10 / k_{fwd}$ | 12 nM            | [@Rickert_receptor_const]            |
++-----------------+------------------+--------------------------------------+
+| $k11 / k_{fwd}$ | 63 nM            | [@Rickert_receptor_const]            |
++-----------------+------------------+--------------------------------------+
+| $k5 / k_{fwd}$  | 1.5 nM           | [@Rickert_receptor_const]            |
++-----------------+------------------+--------------------------------------+
+| IL-15                                                                     |
++-----------------+------------------+--------------------------------------+
+| $k13 / k_{bnd}$ | 0.065 nM         | multiple papers suggesting 30-100 pM |
++-----------------+------------------+--------------------------------------+
+| $k14 / k_{bnd}$ | 438 nM           | [@ring_mechanistic_2012]             |
++-----------------+------------------+--------------------------------------+
+| IL-4                                                                      |
++-----------------+------------------+--------------------------------------+
+| $k32 / k_{bnd}$ | 1.0 nM           | [@Gonnordeaal1253]                   |
++-----------------+------------------+--------------------------------------+
+| IL-7                                                                      |
++-----------------+------------------+--------------------------------------+
+| $k25 / k_{bnd}$ | 59 nM            | [@Walsh_IL7_2012]                    |
++-----------------+------------------+--------------------------------------+
+| IL-9                                                                      |
++-----------------+------------------+--------------------------------------+
+| $k29 / k_{bnd}$ | 0.1 nM           | [@Renauld5690]                       |
++-----------------+------------------+--------------------------------------+
+| IL-21                                                                     |
++-----------------+------------------+--------------------------------------+
+| $k34 / k_{bnd}$ | 0.07 nM          | [@Gonnordeaal1253]                   |
++-----------------+------------------+--------------------------------------+
 
 
-The rate of endocytosis is quantified by a constant of $activeEndo$ for active complexes and $endo$ for all other species. The fraction of all endosomal species sent to lysosomes is $sortF$. All endosomal species not sent to lysosomes are recycled back to the cell surface. The rate constants to quantify degradation and recycling are $kDeg$ and $kRec$, respectively. There is no autocrine ligand produced by the cells. Receptors can be synthesized by the cells and placed on the cell surface; receptor synthesis rates are specific to each receptor. The volume of the entire endosome was 10 fl and the surface area of the endosome is half the size of the cell surface [@MEYER201525].
+The rate of endocytosis is quantified by a constant of $activeEndo$ for active complexes and $endo$ for all other species. The fraction of all endosomal species sent to lysosomes is $f_{sort}$. All endosomal species not sent to lysosomes are recycled back to the cell surface. The rate constants to quantify degradation and recycling are $k_{Deg}$ and $k_{Rec}$, respectively. There is no autocrine ligand produced by the cells. Receptors can be synthesized by the cells and placed on the cell surface; receptor synthesis rates are specific to each receptor. The volume of the entire endosome was 10 fl and the surface area of the endosome is half the size of the cell surface [@MEYER201525].
 
 
 ### Model fitting
@@ -82,7 +82,7 @@ We built a function that calculated the Jacobian matrix for all free receptors, 
 
 ### Tensor generation
 
-After fitting the model and obtaining the posterior distributions of the unknown parameters, we generated a multi-dimensional dataset for the receptor-complex concentrations at different timepoints for various combinations of receptor expression rates and initial ligand concentrations. The receptor expression rates are those of IL-2Rα, IL-2Rβ, γ~c~, IL-15Rα, IL7R, and IL9R, and they range from $10^{-3}$ to $10^2$ nM/min. The initial ligand concentrations to stimulate the cells with include IL-2, IL-15, IL-7, and IL-9, and they cover from $10^{-3}$ to $10^3$ nM. Each combination of these initial conditions, when inputted into the model, results in a matrix of size 1000 timepoints by 56 concentration values. In order to interpret the concentration values at different timepoints, we reduced the 56 values to 16, four of which include the amount of surface and endosomal active species per cytokine, six include the surface receptor concentrations, and another six encompass the total receptor amounts (both surface and endosomal). As a result, from running X combinations, the final dataset is a tensor of dimensions X combinations by 1000 timepoints by 16 values. From there, further tensor decomposition methods such as tensor factorization were employed in order to achieve intuitive representation and handling of higher dimensional data without losing the structural characteristics of the data itself. 
+After fitting the model and obtaining the posterior distributions of the unknown parameters, we generated a multi-dimensional dataset for the receptor-complex concentrations at different timepoints for various combinations of receptor expression rates and initial ligand concentrations. The receptor expression rates are those of IL-2Rα, IL-2Rβ, γ~c~, IL-15Rα, IL-7Rα, and IL-9R, and they range from $10^{-3}$ to $10^2$ nM/min. The initial ligand concentrations to stimulate the cells with include IL-2, IL-15, IL-7, and IL-9, and they cover from $10^{-3}$ to $10^3$ nM. Each combination of these initial conditions, when inputted into the model, results in a matrix of size 1000 timepoints by 56 concentration values. In order to interpret the concentration values at different timepoints, we reduced the 56 values to 16, four of which include the amount of surface and endosomal active species per cytokine, six include the surface receptor concentrations, and another six encompass the total receptor amounts (both surface and endosomal). As a result, from running X combinations, the final dataset is a tensor of dimensions X combinations by 1000 timepoints by 16 values. From there, further tensor decomposition methods such as tensor factorization were employed in order to achieve intuitive representation and handling of higher dimensional data without losing the structural characteristics of the data itself. 
 
 ### Tensor factorization
 
@@ -100,5 +100,5 @@ From the R2X values, we determined that 8 components were needed to explain 90 p
 
 ### Correlation Coefficients
 
-As mentioned above, we generated the tensor using 10 input variables. To calculate the correlation coefficients between these input variables and the 8 components to which the tensor was decomposed to, we use the Pearson product-moment correlation coefficient. This is done through numpy.corrcoef between all possible values of each input, i.e. IL-2Rα, IL-2Rβ, γ~c~, IL-15Rα, IL-7Rα, and IL9R expression rates and IL-2, IL-15, IL-7, and IL-9 ligand concentrations, and each column of the combination decomposition factor matrix. 
+As mentioned above, we generated the tensor using 10 input variables. To calculate the correlation coefficients between these input variables and the 8 components to which the tensor was decomposed to, we use the Pearson product-moment correlation coefficient. This is done through numpy.corrcoef between all possible values of each input, i.e. IL-2Rα, IL-2Rβ, γ~c~, IL-15Rα, IL-7Rα, and IL-9R expression rates and IL-2, IL-15, IL-7, and IL-9 ligand concentrations, and each column of the combination decomposition factor matrix. 
 
