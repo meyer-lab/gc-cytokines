@@ -7,7 +7,7 @@ def input_IL2_15(final_conc, num):
     '''Function that creates the input for the solver. Takes in 1nM or 500nM for final_conc.'''
     Rexpr = np.array([3.8704, 0.734, 1.7147, 0.32010875, 0.0, 0.0, 0.0, 0.0]) #Il2ra, Il2rb, Il2rg, Il15ra, Il7r, Il9r, IL4Ra, IL21Ra in that order
     ligand_conc = np.zeros((num, 6)) # Cytokine stimulation concentrations in the following order: IL2, 15, 7, 9, 4, 21, and in nM.
-    xaxis = np.linspace(-3,3,num)
+    xaxis = np.linspace(-6,6,num)
     for idx, C_2 in enumerate(xaxis):
         A = np.array([[1,1],[1,-10**C_2]])
         B = np.array([final_conc,0])

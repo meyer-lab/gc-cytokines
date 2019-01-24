@@ -141,7 +141,7 @@ def R2X_split_ligand(values, factors):
     return R2X_by_ligand
 
 def split_values_by_ligand(tensor):
-    """ Takes in tensor, either values, or values reconstructed, and returns a list of each split tensor in a list. """
+    """Takes in tensor, either values, or values reconstructed, and returns a list of each split tensor in a list. """
     return np.split(tensor, tensor.shape[3], axis=3)
 
 def percent_reduction_by_ligand(values, factors):

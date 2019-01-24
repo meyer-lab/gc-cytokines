@@ -30,7 +30,7 @@ def makeFigure():
     with open(factors_filename,'rb') as ff:
         two_files = pickle.load(ff)
     
-    values = cp.asnumpy(tensorly.tucker_to_tensor(two_files[1][0], two_files[1][1])) #This reconstruvts our values tensor from the decomposed one that we used to store our data in.
+    values = cp.asnumpy(tensorly.tucker_to_tensor(two_files[1][0], two_files[1][1])) #This reconstructs our values tensor from the decomposed one that we used to store our data in.
     values = values[:,:,:,[0,1,2,3,4]]
     rank_list = [2,10,8,5]
     out = perform_tucker(values, rank_list)

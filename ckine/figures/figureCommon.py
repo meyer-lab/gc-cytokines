@@ -55,7 +55,7 @@ def plot_conf_int(ax, x_axis, y_axis, color, label):
     y_axis_bot = np.percentile(y_axis, 2.5, axis=1)
     ax.fill_between(x_axis, y_axis_top, y_axis_bot, color=color, alpha=0.5, label=label)
 
-def plot_values(ax1, factors, component_x, component_y, ax_pos):
+def plot_values(ax1, factors, component_x, component_y, ax_pos, legend = True):
     """Plot the values decomposition factors matrix."""
     #Generate a plot for component x vs component y of the factors[3] above representing our values
     # The markers are for the following elements in order: 'IL2 & IL15 Combined', 'IL7', 'IL9', 'IL4','IL21','IL2Ra', 'IL2Rb', 'gc', 'IL15Ra', 'IL7Ra', 'IL9R', 'IL4Ra','IL21Ra','IL2Ra', 'IL2Rb', 'gc', 'IL15Ra', 'IL7Ra', 'IL9R', 'IL4Ra','IL21Ra.'
@@ -66,9 +66,12 @@ def plot_values(ax1, factors, component_x, component_y, ax_pos):
 
     for q,p in zip(factors[0:5, component_x - 1], factors[0:5, component_y - 1]):
             ax1.plot(q, p, linestyle = '', c = 'm', marker = next(markersLigand), label = next(labelLigand))
-
-    if ax_pos == 3:
-        ax1.legend(loc='upper left', bbox_to_anchor=(1.2, 1.025))
+    if legend:
+        if ax_pos == 3:
+            ax1.legend(loc='upper left', bbox_to_anchor=(1.2, 1.025))
+    else:
+        if ax_pos == 11:
+            ax1.legend(loc='upper left', bbox_to_anchor=(1.2, 1.025))
 
 
 def plot_timepoint(ax, factors, component_x, component_y):
@@ -77,18 +80,20 @@ def plot_timepoint(ax, factors, component_x, component_y):
     ax.plot(factors[:, component_x - 1], factors[:, component_y - 1], color = 'k')
     ax.scatter(factors[-1, component_x - 1], factors[-1, component_y - 1], s = 12, color = 'b')
 
-def plot_cells(ax, factors, component_x, component_y, cell_names, ax_pos):
+def plot_cells(ax, factors, component_x, component_y, cell_names, ax_pos, legend = True):
     """This function plots the combination decomposition based on cell type."""
     colors = cm.rainbow(np.linspace(0, 1, len(cell_names)))
     markersCells = ['^', '*', 'D', 's', 'X', 'o', '^', '4', 'P', '*', 'D', 's', 'X' ,'o', 'd', '1', '2', '3', '4', 'h', 'H', 'X', 'v', '*', '+', '8', 'P', 'p', 'D', '_','D', 's', 'X', 'o']
 
     for ii in range(len(factors[:, component_x - 1])):
         ax.scatter(factors[ii, component_x - 1], factors[ii, component_y - 1], c = colors[ii], marker = markersCells[ii], label = cell_names[ii])
-    if ax_pos == 5 and factors.shape[1] <= 10:
-        ax.legend(loc='upper left', bbox_to_anchor=(3.6, 1.7))
+    
+    if legend: 
+        if ax_pos == 5 and factors.shape[1] <= 10:
+            ax.legend(loc='upper left', bbox_to_anchor=(3.6, 1.7))
 
-    elif ax_pos == 5:
-        ax.legend(loc='upper left', bbox_to_anchor=(3.6, 0.5))
+        elif ax_pos == 5:
+            ax.legend(loc='upper left', bbox_to_anchor=(3.6, 0.5))
 
 def plot_ligands(ax, factors, component_x, component_y):
     "This function is to plot the ligand combination dimension of the values tensor."
