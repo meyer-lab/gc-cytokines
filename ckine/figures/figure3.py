@@ -10,18 +10,19 @@ import string
 from scipy import stats
 from sklearn.decomposition.pca import PCA
 import matplotlib.cm as cm
-from .figureCommon import subplotLabel, getSetup
-from ..Tensor_analysis import find_R2X, split_one_comp, split_types_R2X, R2X_remove_one, percent_reduction_by_ligand, R2X_split_ligand, reorient_factors
+from .figureCommon import subplotLabel, getSetup, plot_cells, plot_ligands, plot_values, plot_timepoints
+from ..Tensor_analysis import find_R2X, split_one_comp, split_types_R2X, R2X_remove_one, percent_reduction_by_ligand, R2X_split_ligand, reorient_factors, scale_all
 from tensorly.decomposition import tucker
 tensorly.set_backend('cupy')
 
 def makeFigure():
     """Get a list of the axis objects and create a figure"""
     # Get list of axis objects
-    x, y = 3, 4
+    x, y = 4, 4
     ax, f = getSetup((16, 14), (x, y))
     # Blank out for the cartoon
     ax[0].axis('off')
+    ax[12].axis('off')
 
     fileDir = os.path.dirname(os.path.realpath('__file__'))
 
@@ -46,6 +47,7 @@ def makeFigure():
     n_comps = 5
     factors_activ = factors_activity[n_comps]
     newfactors_activ = reorient_factors(factors_activ)
+    newfactors = scale_all(newfactors_activ)
 
     PCA_receptor(ax[1], ax[2], cell_names, Receptor_data)
     plot_R2X(ax[3], values, factors_activity, n_comps = 6)
@@ -54,6 +56,26 @@ def makeFigure():
     # Add subplot labels
     for ii, item in enumerate(ax):
         subplotLabel(item, string.ascii_uppercase[ii])
+
+    plot_timepoints(ax[8], newfactors[0])
+
+    for row in range(2,4):
+        subplotLabel(ax[row], string.ascii_uppercase[row]) # Add subplot labels
+        compNum = 2*(row-1) + 1
+        plot_cells(ax[row*y + 1], newfactors[1], compNum, compNum+1, cell_names, ax_pos = (row-1)*y + 1, legend=False)
+        plot_ligands(ax[row*y + 2], newfactors[2], compNum, compNum+1)
+        plot_values(ax[row*y + 3] , newfactors[3], compNum, compNum+1, ax_pos = (row-1)*y + 3, legend = False)
+
+        # Set axes to center on the origin, and add labels
+        for col in range(1,y):
+            ax[row*y + col].set_xlabel('Component ' + str(compNum))
+            ax[row*y + col].set_ylabel('Component ' + str(compNum+1))
+
+            x_max = np.max(np.absolute(np.asarray(ax[row*y + col].get_xlim())))*1.1
+            y_max = np.max(np.absolute(np.asarray(ax[row*y + col].get_ylim())))*1.1
+
+            ax[row*y + col].set_xlim(-x_max, x_max)
+            ax[row*y + col].set_ylim(-y_max, y_max)
 
     #f.tight_layout()
 
