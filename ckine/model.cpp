@@ -33,7 +33,7 @@ using std::endl;
 using std::cout;
 using adept::adouble;
 
-constexpr double solveTol = 1.0E-5;
+constexpr double solveTol = 1.0E-3;
 
 static void errorHandler(int, const char *, const char *, char *, void *);
 int Jac(double, N_Vector, N_Vector, SUNMatrix, void *, N_Vector, N_Vector, N_Vector);
@@ -516,15 +516,15 @@ extern "C" int runCkineS (const double * const tps, const size_t ntps, double * 
 	return 0;
 }
 
-ThreadPool pool;
 
-extern "C" int runCkineParallel (const double * const rxnRatesIn, double tp, size_t nDoses, double *out, const double preT, const double * const preL) {
+extern "C" int runCkineParallel (const double * const rxnRatesIn, const double * const tps, const size_t ntps, size_t nDoses, double *out, const double preT, const double * const preL) {
+	ThreadPool pool;
 	int retVal = 1000;
 	std::list<std::future<int>> results;
 
 	// Actually run the simulations
 	for (size_t ii = 0; ii < nDoses; ii++)
-		results.push_back(pool.enqueue(runCkine, &tp, 1, out + Nspecies*ii, rxnRatesIn + ii*Nparams, false, preT, preL));
+		results.push_back(pool.enqueue(runCkine, tps, ntps, out + Nspecies*ii*ntps, rxnRatesIn + ii*Nparams, false, preT, preL));
 
 	// Synchronize all threads
 	for (std::future<int> &th:results) retVal = std::min(th.get(), retVal);
@@ -534,13 +534,14 @@ extern "C" int runCkineParallel (const double * const rxnRatesIn, double tp, siz
 }
 
 
-extern "C" int runCkineSParallel (const double * const rxnRatesIn, const double tp, const size_t nDoses, double * const out, double * const Sout, double * const actV, const double preT, const double * const preL) {
+extern "C" int runCkineSParallel (const double * const rxnRatesIn, const double * const tps, const size_t ntps, const size_t nDoses, double * const out, double * const Sout, double * const actV, const double preT, const double * const preL) {
+	ThreadPool pool;
 	int retVal = 1000;
 	std::list<std::future<int>> results;
 
 	// Actually run the simulations
 	for (size_t ii = 0; ii < nDoses; ii++) {
-		results.push_back(pool.enqueue(runCkineS, &tp, 1, out + ii, Sout + Nparams*ii, actV, rxnRatesIn + Nparams*ii, false, preT, preL));
+		results.push_back(pool.enqueue(runCkineS, tps, ntps, out + ii*ntps, Sout + Nparams*ii*ntps, actV, rxnRatesIn + Nparams*ii, false, preT, preL));
 	}
 
 	// Synchronize all threads

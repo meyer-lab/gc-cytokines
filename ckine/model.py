@@ -10,9 +10,9 @@ filename = os.path.join(os.path.dirname(os.path.abspath(__file__)), "./ckine.so"
 libb = ct.cdll.LoadLibrary(filename)
 libb.fullModel_C.argtypes = (ct.POINTER(ct.c_double), ct.c_double, ct.POINTER(ct.c_double), ct.POINTER(ct.c_double))
 libb.runCkine.argtypes = (ct.POINTER(ct.c_double), ct.c_uint, ct.POINTER(ct.c_double), ct.POINTER(ct.c_double), ct.c_bool, ct.c_double, ct.POINTER(ct.c_double))
-libb.runCkineParallel.argtypes = (ct.POINTER(ct.c_double), ct.c_double, ct.c_uint, ct.POINTER(ct.c_double), ct.c_double, ct.POINTER(ct.c_double))
+libb.runCkineParallel.argtypes = (ct.POINTER(ct.c_double), ct.POINTER(ct.c_double), ct.c_uint, ct.c_uint, ct.POINTER(ct.c_double), ct.c_double, ct.POINTER(ct.c_double))
 libb.runCkineS.argtypes = (ct.POINTER(ct.c_double), ct.c_uint, ct.POINTER(ct.c_double), ct.POINTER(ct.c_double), ct.POINTER(ct.c_double), ct.POINTER(ct.c_double), ct.c_bool, ct.c_double, ct.POINTER(ct.c_double))
-libb.runCkineSParallel.argtypes = (ct.POINTER(ct.c_double), ct.c_double, ct.c_uint, ct.POINTER(ct.c_double), ct.POINTER(ct.c_double), ct.POINTER(ct.c_double), ct.c_double, ct.POINTER(ct.c_double))
+libb.runCkineSParallel.argtypes = (ct.POINTER(ct.c_double), ct.POINTER(ct.c_double), ct.c_uint, ct.c_uint, ct.POINTER(ct.c_double), ct.POINTER(ct.c_double), ct.POINTER(ct.c_double), ct.c_double, ct.POINTER(ct.c_double))
 
 __nSpecies = 62
 def nSpecies():
@@ -119,44 +119,47 @@ def runIL2simple(input, IL, CD25=1.0):
     return active
 
 
-def runCkineUP (tp, rxntfr, preT=0.0, prestim=None):
+def runCkineUP (tps, rxntfr, preT=0.0, prestim=None):
     """ Version of runCkine that runs in parallel. """
+    tps = np.array(tps)
     assert rxntfr.size % __nParams == 0
     assert rxntfr.shape[1] == __nParams
     assert (rxntfr[:, 19] < 1.0).all() # Check that sortF won't throw
 
-    yOut = np.zeros((rxntfr.shape[0], __nSpecies), dtype=np.float64)
+    yOut = np.zeros((rxntfr.shape[0]*tps.size, __nSpecies), dtype=np.float64)
 
     if preT != 0.0:
         assert preT > 0.0
         assert prestim.size == 6
         prestim = prestim.ctypes.data_as(ct.POINTER(ct.c_double))
 
-    retVal = libb.runCkineParallel(rxntfr.ctypes.data_as(ct.POINTER(ct.c_double)), tp, rxntfr.shape[0],
+    retVal = libb.runCkineParallel(rxntfr.ctypes.data_as(ct.POINTER(ct.c_double)),
+                                   tps.ctypes.data_as(ct.POINTER(ct.c_double)), tps.size, rxntfr.shape[0],
                                    yOut.ctypes.data_as(ct.POINTER(ct.c_double)), preT, prestim)
 
     return (yOut, retVal)
 
 
-def runCkineSP (tp, rxntfr, actV, preT=0.0, prestim=None):
+def runCkineSP (tps, rxntfr, actV, preT=0.0, prestim=None):
     """ Version of runCkine that runs in parallel. """
+    tps = np.array(tps)
     assert rxntfr.size % __nParams == 0
     assert rxntfr.shape[1] == __nParams
     assert (rxntfr[:, 19] < 1.0).all() # Check that sortF won't throw
 
-    yOut = np.zeros((rxntfr.shape[0]), dtype=np.float64)
-
-    sensV = np.zeros((rxntfr.shape[0], __nParams), dtype=np.float64, order='C')
+    yOut = np.zeros((rxntfr.shape[0]*tps.size), dtype=np.float64)
+    sensV = np.zeros((rxntfr.shape[0]*tps.size, __nParams), dtype=np.float64, order='C')
 
     if preT != 0.0:
         assert preT > 0.0
         assert prestim.size == 6
         prestim = prestim.ctypes.data_as(ct.POINTER(ct.c_double))
 
-    retVal = libb.runCkineSParallel(rxntfr.ctypes.data_as(ct.POINTER(ct.c_double)), tp, rxntfr.shape[0],
-                                   yOut.ctypes.data_as(ct.POINTER(ct.c_double)),
-                                   sensV.ctypes.data_as(ct.POINTER(ct.c_double)),
-                                   actV.ctypes.data_as(ct.POINTER(ct.c_double)), preT, prestim)
+    retVal = libb.runCkineSParallel(rxntfr.ctypes.data_as(ct.POINTER(ct.c_double)),
+                                    tps.ctypes.data_as(ct.POINTER(ct.c_double)), tps.size, rxntfr.shape[0],
+                                    yOut.ctypes.data_as(ct.POINTER(ct.c_double)),
+                                    sensV.ctypes.data_as(ct.POINTER(ct.c_double)),
+                                    actV.ctypes.data_as(ct.POINTER(ct.c_double)), preT, prestim)
 
     return (yOut, retVal, sensV)
 
