@@ -6,7 +6,7 @@ import theano
 import theano.tensor as T
 from theano.tests import unittest_tools as utt
 import numpy as np
-from ..differencing_op import runCkineKineticOp, runCkineDoseOp
+from ..differencing_op import runCkineDoseOp
 from ..model import nSpecies, nParams, getTotalActiveSpecies
 
 
@@ -31,25 +31,27 @@ class TestOp(unittest.TestCase):
         self.doseUnkV = self.unkV[6::]
         self.cond = np.full(nSpecies(), 0.1)
         self.conditions = np.full((3, 6), 10.)
-        self.ts = np.logspace(-3, 3)
-
-    def test_runCkineKineticOp(self):
-        """ Verify kinetic Op Jacobian. """
-        theano.config.compute_test_value = 'ignore'
-        utt.verify_grad(runCkineKineticOp(self.ts, self.cond), [self.unkV])
+        self.ts = np.logspace(-3, 3, num=10)
 
     def test_runCkineDoseOp(self):
         """ Verify the Jacobian passed back by runCkineDoseOp. """
         theano.config.compute_test_value = 'ignore'
         Op = runCkineDoseOp(np.array(1.0), self.cond, self.conditions)
 
-        utt.verify_grad(Op, [self.doseUnkV])
+        utt.verify_grad(Op, [self.doseUnkV], abs_tol=0.01, rel_tol=0.01)
+
+    def test_runCkineDoseTpsOp(self):
+        """ Verify the Jacobian passed back by runCkineDoseOp. """
+        theano.config.compute_test_value = 'ignore'
+        Op = runCkineDoseOp(self.ts, self.cond, self.conditions)
+
+        utt.verify_grad(Op, [self.doseUnkV], abs_tol=0.01, rel_tol=0.01)
 
     def test_runCkineDosePrestimOp(self):
         """ Verify the Jacobian passed back by runCkineDoseOp with prestimulation. """
         Op = runCkineDoseOp(np.array(1.0), self.cond, self.conditions, 10.0, np.ones(6)*10.0)
 
-        utt.verify_grad(Op, [self.doseUnkV])
+        utt.verify_grad(Op, [self.doseUnkV], abs_tol=0.01, rel_tol=0.01)
 
     def test_runCkineDoseOp_noActivity(self):
         """ Test that in the absence of ligand most values and gradients are zero. """

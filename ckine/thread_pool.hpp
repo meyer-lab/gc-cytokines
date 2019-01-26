@@ -15,7 +15,11 @@ class ThreadPool {
 public:
 	// the constructor just launches some amount of workers
 	inline ThreadPool() : stop(false) {
+#ifdef __APPLE__
+		for(size_t i = 0; i < 1; ++i)
+#else
 		for(size_t i = 0; i < std::thread::hardware_concurrency(); ++i)
+#endif
 			workers.emplace_back( [this] {
 					for(;;) {
 						std::function<void()> task;
