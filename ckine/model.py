@@ -104,18 +104,18 @@ def runIL2simple(input, IL, CD25=1.0):
     """ Version to focus on IL2Ra/Rb affinity adjustment. """
     # TODO: Update parameters based on distinct endosomal fitting.
     tps = np.array([500.0])
-    
+
     # IL, kfwd, k1rev, k2rev, k4rev, k5rev, k11rev, R, R, R
     rxntfr = np.array([IL, 0.00449, 0.6*10*input[0],
                        0.6*144*input[1], 8.6677, 0.1233,
                        63.0 * 0.1233 / 1.5 * input[1], 3.8704*CD25, 0.734, 1.7147])
 
     yOut, retVal = runCkineU_IL2(tps, rxntfr)
-    
+
     assert retVal == 0
-    
+
     active = getTotalActiveCytokine(0, np.squeeze(yOut))
-    
+
     return active
 
 
