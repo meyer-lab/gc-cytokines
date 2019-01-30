@@ -42,7 +42,7 @@ def relativeGC(ax, unkVec2, unkVec4):
     k10rev = 12.0 * k5rev / 1.5 # doi:10.1016/j.jmb.2004.04.038
 
     # add each rate duo as separate column in dataframe
-    df = pd.DataFrame({'2-2Ra': k4rev, '2-2Rb': k5rev, '2-2Ra-2Rb': k10rev, '15-15Ra': k16rev, '15-2Rb': k17rev, '15-15Ra-2Rb': k22rev, '7-7Ra': k27rev, '4-4Ra': k33rev})
+    df = pd.DataFrame({'2·2Rα': k4rev, '2·2Rβ': k5rev, '2·2Rα·2Rβ': k10rev, '15·15Rα': k16rev, '15·2Rβ': k17rev, '15·15Rα·2Rβ': k22rev, '7·7Rα': k27rev, '4·4Rα': k33rev})
 
     col_list = ["violet", "violet", "violet", "goldenrod", "goldenrod", "goldenrod", "blue", "lightblue"]
     col_list_palette = sns.xkcd_palette(col_list)
@@ -50,7 +50,7 @@ def relativeGC(ax, unkVec2, unkVec4):
 
     a = sns.violinplot(data=np.log10(df), ax=ax, linewidth=0, bw=10, cmap=cmap, scale='width')
     a.set_xticklabels(a.get_xticklabels(), rotation=40, rotation_mode="anchor", ha="right", fontsize=8, position=(0, 0.075))
-    a.set(title="Relative gc affinity", ylabel="log10 of 1/nM/min")
+    a.set(title=r"Relative $\gamma_{c}$ affinity", ylabel=r"$\mathrm{log_{10}(\frac{1}{nM * min})}$")
 
 def single_cell_act(unkVec, cytokC):
     """ Cytokine activity for all IL2 doses for single cell line. """
@@ -75,7 +75,7 @@ def all_cells(ax, cell_data, cell_names, unkVec):
         ax.plot(np.log10(cytokC), act, label=cell_names[ii], c=colors[ii])
 
     ax.legend(loc='upper left', bbox_to_anchor=(1.05, 1.2))
-    ax.set(title="Cell Response to IL-2", ylabel="Relative pSTAT5 activity (% x 1)", xlabel="log10 IL-2 conc. (nM)")
+    ax.set(title="Cell Response to IL-2", ylabel="pSTAT5 (% of max)", xlabel=r'IL-2 concentration (log$_{10}$[nM])')
 
 def IL2_receptor_activity(ax, unkVec):
     """ Shows how IL2-pSTAT dose response curves change with receptor expression rates. """
@@ -97,15 +97,15 @@ def IL2_receptor_activity(ax, unkVec):
         plot_conf_int(ax[r], np.log10(cytokC), activity[:,:,2,r], "darkviolet", "1x")
         plot_conf_int(ax[r], np.log10(cytokC), activity[:,:,3,r], "deeppink", "10x")
         plot_conf_int(ax[r], np.log10(cytokC), activity[:,:,4,r], "red", "100x")
-        ax[r].set(xlabel="log10 of IL-2 conc. (nM)", ylabel="Total pSTAT activity")
+        ax[r].set(xlabel=r'IL-2 concentration (log$_{10}$[nM])', ylabel="Total pSTAT")
 
-    ax[0].set_title("IL2Ra")
-    ax[1].set_title("IL2Rb")
-    ax[2].set_title("Gamma chain")
+    ax[0].set_title("IL-2Rα")
+    ax[1].set_title("IL-2Rβ")
+    ax[2].set_title(r'$\gamma_{c}$')
     ax[2].legend(loc='upper left', bbox_to_anchor=(1.05, 0.75))
 
 def rec_act_singleCalc(unkVec, cytokine, conc):
-    """ Calculates the surface IL2Rb over time for one condition. """
+    """ Calculates pSTAT activity over time for one condition. """
     unkVec = unkVec.copy()
     unkVec[cytokine] = conc
     ts = np.array([500.])
@@ -116,7 +116,7 @@ def rec_act_singleCalc(unkVec, cytokine, conc):
     return np.dot(returnn, activity)
 
 def rec_act_calc(unkVec, cytokC):
-    '''This function uses an unkVec that has the same elements as the unkVec in fit.py'''
+    ''' Finds pSTAT activity for all cytokine concentrations given. '''
     actVec = np.fromiter((rec_act_singleCalc(unkVec, 0, x) for x in cytokC), np.float64)
 
     return actVec

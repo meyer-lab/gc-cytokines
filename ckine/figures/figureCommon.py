@@ -47,9 +47,9 @@ def subplotLabel(ax, letter, hstretch=1):
 
 def traf_names():
     """ Returns a list of the trafficking parameters in order they appear within unkVec. """
-    return ['endo', 'activeEndo', 'sortF', 'kRec', 'kDeg']
+    return [r'$k_{endo}$', r'$k_{endo,a}$', r'$f_{sort}$', r'$k_{rec}$', r'$k_{deg}$']
 
-def plot_conf_int(ax, x_axis, y_axis, color, label):
+def plot_conf_int(ax, x_axis, y_axis, color, label=None):
     """ Calculates the 95% confidence interval for y-axis data and then plots said interval. The percentiles are found along axis=1. """
     y_axis_top = np.percentile(y_axis, 97.5, axis=1)
     y_axis_bot = np.percentile(y_axis, 2.5, axis=1)
@@ -62,7 +62,7 @@ def plot_values(ax1, factors, component_x, component_y, ax_pos, legend = True):
     #Set Active to color red. Set Surface to color blue. Set Total to color black
     markersLigand = itertools.cycle(('^', 'D', 's', 'X', 'o'))
 
-    labelLigand = itertools.cycle(('Combined IL2-15 Activity', 'IL7 Activity', 'IL9 Activity', 'IL4 Activity', 'IL21 Activity'))
+    labelLigand = itertools.cycle(('IL-2 & IL-15 Activity', 'IL-7 Activity', 'IL-9 Activity', 'IL-4 Activity', 'IL-21 Activity'))
 
     for q,p in zip(factors[0:5, component_x - 1], factors[0:5, component_y - 1]):
             ax1.plot(q, p, linestyle = '', c = 'm', marker = next(markersLigand), label = next(labelLigand))

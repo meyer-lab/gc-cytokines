@@ -28,46 +28,46 @@ We wrote conservation of species and equilibrium unit tests to ensure that all s
 All ligand-receptor binding processes had a forward rate constant of $k_{bnd}$ which was assumed to be on rate of $10^7$ M-1 sec-1 (0.6 nM-1 min-1); the only exception to this assumption was the binding of free ligand to γ~c~, which was assumed to not occur in our model due to weak affinity [@Voss2428]. All forward dimerization reaction rates were represented by $k_{fwd}$. All reverse reaction rates were unique. We used detailed balance to eliminate 8 unknown reverse reaction rate constants. Detailed balance loops were based on formation of full complexes and initial assembly. Each forward and reverse reaction rate was related through an equilibrium dissociation constant ($K_d$). Many of these equilibrium dissociation constants were found in published surface plasmon resonance and isothermal calorimetry experiments.
 
 
-+-----------------+------------------+--------------------------------------+
-| $K_D$           | Value            | Reference                            |
-+=================+==================+======================================+
-| IL-2                                                                      |
-+-----------------+------------------+--------------------------------------+
-| $k1 / k_{bnd}$  | 10 nM            | [@Rickert_receptor_const]            |
-+-----------------+------------------+--------------------------------------+
-| $k2 / k_{bnd}$  | 144 nM           | [@Rickert_receptor_const]            |
-+-----------------+------------------+--------------------------------------+
-| $k10 / k_{fwd}$ | 12 nM            | [@Rickert_receptor_const]            |
-+-----------------+------------------+--------------------------------------+
-| $k11 / k_{fwd}$ | 63 nM            | [@Rickert_receptor_const]            |
-+-----------------+------------------+--------------------------------------+
-| $k5 / k_{fwd}$  | 1.5 nM           | [@Rickert_receptor_const]            |
-+-----------------+------------------+--------------------------------------+
-| IL-15                                                                     |
-+-----------------+------------------+--------------------------------------+
-| $k13 / k_{bnd}$ | 0.065 nM         | multiple papers suggesting 30-100 pM |
-+-----------------+------------------+--------------------------------------+
-| $k14 / k_{bnd}$ | 438 nM           | [@ring_mechanistic_2012]             |
-+-----------------+------------------+--------------------------------------+
-| IL-4                                                                      |
-+-----------------+------------------+--------------------------------------+
-| $k32 / k_{bnd}$ | 1.0 nM           | [@Gonnordeaal1253]                   |
-+-----------------+------------------+--------------------------------------+
-| IL-7                                                                      |
-+-----------------+------------------+--------------------------------------+
-| $k25 / k_{bnd}$ | 59 nM            | [@Walsh_IL7_2012]                    |
-+-----------------+------------------+--------------------------------------+
-| IL-9                                                                      |
-+-----------------+------------------+--------------------------------------+
-| $k29 / k_{bnd}$ | 0.1 nM           | [@Renauld5690]                       |
-+-----------------+------------------+--------------------------------------+
-| IL-21                                                                     |
-+-----------------+------------------+--------------------------------------+
-| $k34 / k_{bnd}$ | 0.07 nM          | [@Gonnordeaal1253]                   |
-+-----------------+------------------+--------------------------------------+
++--------------------+------------------+--------------------------------------+
+| $K_D$              | Value            | Reference                            |
++====================+==================+======================================+
+| IL-2                                                                         |
++--------------------+------------------+--------------------------------------+
+| $k_{1} / k_{bnd}$  | 10 nM            | [@Rickert_receptor_const]            |
++--------------------+------------------+--------------------------------------+
+| $k_{2} / k_{bnd}$  | 144 nM           | [@Rickert_receptor_const]            |
++--------------------+------------------+--------------------------------------+
+| $k_{10} / k_{fwd}$ | 12 nM            | [@Rickert_receptor_const]            |
++--------------------+------------------+--------------------------------------+
+| $k_{11} / k_{fwd}$ | 63 nM            | [@Rickert_receptor_const]            |
++--------------------+------------------+--------------------------------------+
+| $k_{5} / k_{fwd}$  | 1.5 nM           | [@Rickert_receptor_const]            |
++--------------------+------------------+--------------------------------------+
+| IL-15                                                                        |
++--------------------+------------------+--------------------------------------+
+| $k_{13} / k_{bnd}$ | 0.065 nM         | multiple papers suggesting 30-100 pM |
++--------------------+------------------+--------------------------------------+
+| $k_{14} / k_{bnd}$ | 438 nM           | [@ring_mechanistic_2012]             |
++--------------------+------------------+--------------------------------------+
+| IL-4                                                                         |
++--------------------+------------------+--------------------------------------+
+| $k_{32} / k_{bnd}$ | 1.0 nM           | [@Gonnordeaal1253]                   |
++--------------------+------------------+--------------------------------------+
+| IL-7                                                                         |
++--------------------+------------------+--------------------------------------+
+| $k_{25} / k_{bnd}$ | 59 nM            | [@Walsh_IL7_2012]                    |
++--------------------+------------------+--------------------------------------+
+| IL-9                                                                         |
++--------------------+------------------+--------------------------------------+
+| $k_{29} / k_{bnd}$ | 0.1 nM           | [@Renauld5690]                       |
++--------------------+------------------+--------------------------------------+
+| IL-21                                                                        |
++--------------------+------------------+--------------------------------------+
+| $k_{34} / k_{bnd}$ | 0.07 nM          | [@Gonnordeaal1253]                   |
++--------------------+------------------+--------------------------------------+
 
 
-The rate of endocytosis is quantified by a constant of $activeEndo$ for active complexes and $endo$ for all other species. The fraction of all endosomal species sent to lysosomes is $f_{sort}$. All endosomal species not sent to lysosomes are recycled back to the cell surface. The rate constants to quantify degradation and recycling are $k_{Deg}$ and $k_{Rec}$, respectively. There is no autocrine ligand produced by the cells. Receptors can be synthesized by the cells and placed on the cell surface; receptor synthesis rates are specific to each receptor. The volume of the entire endosome was 10 fl and the surface area of the endosome is half the size of the cell surface [@MEYER201525].
+The rate of endocytosis is quantified by a constant of $k_{endo,a}$ for active complexes and $k_{endo}$ for all other species. The fraction of all endosomal species sent to lysosomes is $f_{sort}$. All endosomal species not sent to lysosomes are recycled back to the cell surface. The rate constants to quantify degradation and recycling are $k_{deg}$ and $k_{rec}$, respectively. There is no autocrine ligand produced by the cells. Receptors can be synthesized by the cells and placed on the cell surface; receptor synthesis rates are specific to each receptor. The volume of the entire endosome was 10 fl and the surface area of the endosome is half the size of the cell surface [@MEYER201525].
 
 
 ### Model fitting
