@@ -29,7 +29,7 @@ def ySolver(matIn, ts):
     rxntfR[13] = 0.094763588 #k27rev
     rxntfR[15] = 0.095618346 #k33rev
     #TODO: Update parameters based on IL9&21.
-    rxntfR[[14, 16]] = 0.15  # From fitting IL9 and IL21: k4rev - k35rev 
+    rxntfR[[14, 16]] = 0.15  # From fitting IL9 and IL21: k4rev - k35rev
     rxntfR[17] = 0.080084184 #endo
     rxntfR[18] = 1.474695447 #activeEndo
     rxntfR[19] = 0.179927669 #sortF

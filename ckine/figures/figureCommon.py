@@ -6,7 +6,7 @@ from os.path import join
 import string
 import pickle
 import itertools
-import pymc3 as pm, os
+import pymc3 as pm
 import seaborn as sns
 import numpy as np
 import pandas as pds
@@ -59,7 +59,7 @@ def plot_values(ax1, factors, component_x, component_y, ax_pos, legend = True):
     """Plot the values decomposition factors matrix."""
     #Generate a plot for component x vs component y of the factors[3] above representing our values
     # The markers are for the following elements in order: 'IL2 & IL15 Combined', 'IL7', 'IL9', 'IL4','IL21','IL2Ra', 'IL2Rb', 'gc', 'IL15Ra', 'IL7Ra', 'IL9R', 'IL4Ra','IL21Ra','IL2Ra', 'IL2Rb', 'gc', 'IL15Ra', 'IL7Ra', 'IL9R', 'IL4Ra','IL21Ra.'
-    #Set Active to color red. Set Surface to color blue. Set Total to color black
+    #Set Active to color red. Set Surface to color blue. Set Total to color black.
     markersLigand = itertools.cycle(('^', 'D', 's', 'X', 'o'))
 
     labelLigand = itertools.cycle(('IL-2 & IL-15 Activity', 'IL-7 Activity', 'IL-9 Activity', 'IL-4 Activity', 'IL-21 Activity'))
@@ -87,8 +87,8 @@ def plot_cells(ax, factors, component_x, component_y, cell_names, ax_pos, legend
 
     for ii in range(len(factors[:, component_x - 1])):
         ax.scatter(factors[ii, component_x - 1], factors[ii, component_y - 1], c = colors[ii], marker = markersCells[ii], label = cell_names[ii])
-    
-    if legend: 
+
+    if legend:
         if ax_pos == 5 and factors.shape[1] <= 10:
             ax.legend(loc='upper left', bbox_to_anchor=(3.6, 1.7))
 

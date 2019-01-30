@@ -155,7 +155,7 @@ def percent_reduction_by_ligand(values, factors):
         new_factors = list()
         for jj in range(4): #4 because decomposed tensor into 4 factor matrices
             new_factors.append(np.delete(factors[jj], ii, 1))
-    
+
         new_factors = [cp.array(new_factors[0]), cp.array(new_factors[1]), cp.array(new_factors[2]), cp.array(new_factors[3])]
         overall_reconstructed = cp.asnumpy(tensorly.kruskal_to_tensor(new_factors))
         AllLigandReconstructed = split_values_by_ligand(overall_reconstructed)

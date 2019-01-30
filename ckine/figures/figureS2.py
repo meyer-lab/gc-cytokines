@@ -1,6 +1,8 @@
 """
 This creates Figure S2.
 """
+from .figureCommon import subplotLabel, getSetup, plot_timepoint, plot_cells, plot_ligands, plot_values, plot_timepoints
+from ..Tensor_analysis import perform_tucker, find_R2X_tucker
 import string
 import os
 import pickle
@@ -9,8 +11,6 @@ import pandas as pds
 import tensorly
 from tensorly.decomposition import tucker
 tensorly.set_backend('cupy')
-from .figureCommon import subplotLabel, getSetup, plot_timepoint, plot_cells, plot_ligands, plot_values, plot_timepoints
-from ..Tensor_analysis import perform_tucker, find_R2X_tucker
 
 def makeFigure():
     """Get a list of the axis objects and create a figure"""
@@ -29,7 +29,7 @@ def makeFigure():
 
     with open(factors_filename,'rb') as ff:
         two_files = pickle.load(ff)
-    
+
     values = cp.asnumpy(tensorly.tucker_to_tensor(two_files[1][0], two_files[1][1])) #This reconstructs our values tensor from the decomposed one that we used to store our data in.
     values = values[:,:,:,[0,1,2,3,4]]
     rank_list = [2,10,8,5]
@@ -49,7 +49,7 @@ def makeFigure():
 
         if row > np.floor(rank_list[3]/2):
             ax[row*y +3].axis('off')
-        
+
         plot_cells(ax[row*y + 1], cp.asnumpy(factors[1]), compNum, compNum+1, cell_names, ax_pos = row*y + 1)
         if compNum < rank_list[2]:
             plot_ligands(ax[row*y + 2], cp.asnumpy(factors[2]), compNum, compNum+1)
