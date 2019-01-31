@@ -3,7 +3,6 @@ This creates Figure 3.
 """
 import os
 import pickle
-import itertools
 import string
 import tensorly
 import numpy as np, pandas as pds, cupy as cp
@@ -12,7 +11,7 @@ from sklearn.decomposition.pca import PCA
 import matplotlib.cm as cm
 from tensorly.decomposition import tucker
 from .figureCommon import subplotLabel, getSetup, plot_cells, plot_ligands, plot_values, plot_timepoints
-from ..Tensor_analysis import find_R2X, split_one_comp, split_types_R2X, R2X_remove_one, percent_reduction_by_ligand, R2X_split_ligand, reorient_factors, scale_all
+from ..Tensor_analysis import find_R2X, percent_reduction_by_ligand, R2X_split_ligand, reorient_factors, scale_all
 tensorly.set_backend('cupy')
 
 def makeFigure():
