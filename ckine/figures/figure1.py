@@ -58,16 +58,16 @@ def surf_perc(ax, species, unkVec):
     size = len(ts)
     results = np.zeros((size, 500, 4, 2)) # 3rd dim is cell condition (IL2Ra+/- and cytokC), 4th dim is cytok species
 
-    for ii in range(0,500):
-        output = surf.calc(unkVec[:, ii], ts) * y_max
-        results[:, ii, 2, 0] = output[0:(size)]
-        results[:, ii, 3, 0] = output[(size):(size*2)]
-        results[:, ii, 0, 0] = output[(size*2):(size*3)]
-        results[:, ii, 1, 0] = output[(size*3):(size*4)]
-        results[:, ii, 2, 1] = output[(size*4):(size*5)]
-        results[:, ii, 3, 1] = output[(size*5):(size*6)]
-        results[:, ii, 0, 1] = output[(size*6):(size*7)]
-        results[:, ii, 1, 1] = output[(size*7):(size*8)]
+    output = surf.calc(unkVec, ts) * y_max # run the simulation
+    # split according to experimental conditions
+    results[:, :, 2, 0] = output[:, 0:(size)].T
+    results[:, :, 3, 0] = output[:, (size):(size*2)].T
+    results[:, :, 0, 0] = output[:, (size*2):(size*3)].T
+    results[:, :, 1, 0] = output[:, (size*3):(size*4)].T
+    results[:, :, 2, 1] = output[:, (size*4):(size*5)].T
+    results[:, :, 3, 1] = output[:, (size*5):(size*6)].T
+    results[:, :, 0, 1] = output[:, (size*6):(size*7)].T
+    results[:, :, 1, 1] = output[:, (size*7):(size*8)].T
 
     for n in range(4):
         # plot results within confidence intervals
@@ -87,18 +87,17 @@ def pstat_act(ax, unkVec):
     PTS = 30
     cytokC = np.logspace(-3.3, 2.7, PTS)
     y_max = 100.
-    IL2_plus = np.zeros((PTS, 500))
+    IL2_plus = np.zeros((500, PTS))
     IL15_minus = IL2_plus.copy()
     IL15_plus = IL2_plus.copy()
     IL2_minus = IL2_plus.copy()
 
-    # calculate activity for each unkVec for all conc.
-    for ii in range(0,500):
-        output = pstat5.calc(unkVec[:, ii], cytokC) * y_max
-        IL2_plus[:, ii] = output[0:PTS]
-        IL2_minus[:, ii] = output[PTS:(PTS*2)]
-        IL15_plus[:, ii] = output[(PTS*2):(PTS*3)]
-        IL15_minus[:, ii] = output[(PTS*3):(PTS*4)]
+    output = pstat5.calc(unkVec, cytokC) * y_max # calculate activity for all unkVecs and concs
+    # split according to experimental condition
+    IL2_plus = output[:, 0:PTS].T
+    IL2_minus = output[:, PTS:(PTS*2)].T
+    IL15_plus = output[:, (PTS*2):(PTS*3)].T
+    IL15_minus = output[:, (PTS*3):(PTS*4)].T
 
     # plot confidence intervals based on model predictions
     plot_conf_int(ax, np.log10(cytokC), IL2_minus, "darkorchid", "IL-2")
@@ -133,10 +132,8 @@ def violinPlots(ax, unkVec):
     c.set_xticklabels(c.get_xticklabels(), rotation=40, rotation_mode="anchor", ha="right", fontsize=8, position=(0, 0.075))
     c.set(title="Receptor expression rates", ylabel=r"$\mathrm{log_{10}(\frac{num}{cell * min})}$")
 
-
 def rateComp(ax, unkVec):
     """ This function compares the analogous reverse rxn distributions from IL2 and IL15 in a violin plot. """
-
     # assign values from unkVec
     k4rev, k5rev, k16rev, k17rev, k22rev, k23rev = unkVec[7, :], unkVec[8, :], unkVec[9, :], unkVec[10, :], unkVec[11, :], unkVec[12, :]
 
