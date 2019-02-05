@@ -78,7 +78,7 @@ testprofile: stats.dat
 testcpp: ckine/cppcheck
 	valgrind --xml=yes --xml-file=valgrind.xml --track-origins=yes --leak-check=yes ckine/cppcheck
 	valgrind --tool=callgrind ckine/cppcheck
-	gprof2dot -f callgrind callgrind.out.* | dot -Tsvg -o cprofile.svg
+	gprof2dot -f callgrind -n 2.0 callgrind.out.* | dot -Tsvg -o cprofile.svg
 
 cppcheck: ckine/cppcheck
 	ckine/cppcheck

@@ -20,7 +20,7 @@ def makeFigure():
         subplotLabel(item, string.ascii_uppercase[ii])
 
     data, cell_names = load_cells()
-    unkVec_2_15 = import_samples_2_15()
+    unkVec_2_15, _ = import_samples_2_15()
     unkVec_4_7, scales = import_samples_4_7()
     relativeGC(ax[0], unkVec_2_15, unkVec_4_7)
     all_cells(ax[1], data, cell_names, unkVec_2_15[:, 0])

@@ -23,10 +23,10 @@ class IL2Rb_trafficking:
         # times from experiment are hard-coded into this function
         self.ts = np.array([0., 2., 5., 15., 30., 60., 90.])
 
-        slicingg = np.array([1, 5, 2, 6])
+        slicingg = (1, 5, 2, 6)
 
         # Concatted data
-        self.data = np.concatenate((numpy_data[:, slicingg], numpy_data2[:, slicingg])).flatten(order='F')/10.
+        self.data = np.concatenate((numpy_data[:, slicingg].flatten(order='F'), numpy_data2[:, slicingg].flatten(order='F')))/10.
 
         self.cytokM = np.zeros((4, 6), dtype=np.float64)
         self.cytokM[0, 0] = 1.
@@ -56,7 +56,7 @@ class IL2_15_activity:
         self.cytokM[0:self.cytokC.size, 0] = self.cytokC
         self.cytokM[self.cytokC.size::, 1] = self.cytokC
 
-    def calc(self, unkVec):
+    def calc(self, unkVec, scale):
         """ Simulate the STAT5 measurements and return residuals between model prediction and experimental data. """
 
         # IL2Ra- cells have same IL15 activity, so we can just reuse same solution
@@ -64,11 +64,14 @@ class IL2_15_activity:
 
         unkVecIL2RaMinus = T.set_subtensor(unkVec[16], 0.0) # Set IL2Ra to zero
 
-        # Normalize to the maximal activity, put together into one vector
+        # put together into one vector
         actCat = T.concatenate((Op(unkVec), Op(unkVecIL2RaMinus)))
 
-        # return the residual
-        return self.fit_data - (actCat / T.max(actCat))
+        # account for pSTAT5 saturation
+        actCat = actCat / (actCat + scale)
+
+        # normalize from 0 to 1 and return the residual
+        return self.fit_data - actCat / T.max(actCat)
 
 
 class build_model:
@@ -83,24 +86,31 @@ class build_model:
         M = pm.Model()
 
         with M:
-            kfwd = pm.Lognormal('kfwd', mu=np.log(0.001), sd=1, shape=1)
-            rxnrates = pm.Lognormal('rxn', mu=np.log(0.1), sd=1, shape=6) # there are 6 reverse rxn rates associated with IL2 and IL15
+            kfwd = pm.Lognormal('kfwd', mu=np.log(0.001), sd=0.5, shape=1)
+            rxnrates = pm.Lognormal('rxn', mu=np.log(0.01), sd=0.5, shape=6) # 6 reverse rxn rates for IL2/IL15
             nullRates = T.ones(4, dtype=np.float64) # k27rev, k31rev, k33rev, k35rev
-            endo_activeEndo = pm.Lognormal('endo', mu=np.log(0.1), sd=0.1, shape=2)
-            kRec_kDeg = pm.Lognormal('kRec_kDeg', mu=np.log(0.1), sd=0.1, shape=2)
-            Rexpr = pm.Lognormal('IL2Raexpr', sd=0.1, shape=4) # Expression: IL2Ra, IL2Rb, gc, IL15Ra
-            sortF = pm.Beta('sortF', alpha=10, beta=40, testval=0.25, shape=1)
+            endo = pm.Lognormal('endo', mu=np.log(0.1), sd=0.1, shape=1)
+            activeEndo = pm.Lognormal('activeEndo', mu=np.log(1.0), sd=0.1, shape=1)
+            kRec = pm.Lognormal('kRec', mu=np.log(0.1), sd=0.5, shape=1)
+            kDeg = pm.Lognormal('kDeg', mu=np.log(0.02), sd=0.5, shape=1)
+            Rexpr = pm.Lognormal('IL2Raexpr', mu=np.log(0.1), sd=0.5, shape=4) # Expression: IL2Ra, IL2Rb, gc, IL15Ra
+            sortF = pm.Beta('sortF', alpha=12, beta=80, shape=1)
+            scale = pm.Lognormal('scales', mu=np.log(100.), sd=1, shape=1) # create scaling constant for activity measurements
 
-            unkVec = T.concatenate((kfwd, rxnrates, nullRates, endo_activeEndo, sortF, kRec_kDeg, Rexpr, nullRates*0.0))
+            unkVec = T.concatenate((kfwd, rxnrates, nullRates, endo, activeEndo, sortF, kRec, kDeg, Rexpr, nullRates*0.0))
 
-            Y_15 = self.dst15.calc(unkVec) # fitting the data based on dst15.calc for the given parameters
+            Y_15 = self.dst15.calc(unkVec, scale) # fitting the data based on dst15.calc for the given parameters
             Y_int = self.IL2Rb.calc(unkVec) # fitting the data based on dst.calc for the given parameters
+
+            # Add bounds for the stderr to help force the fitting solution
+            sd_15 = T.minimum(T.std(Y_15), 0.03)
+            sd_int = T.minimum(T.std(Y_int), 0.02)
 
             pm.Deterministic('Y_15', T.sum(T.square(Y_15)))
             pm.Deterministic('Y_int', T.sum(T.square(Y_int)))
 
-            pm.Normal('fitD_15', sd=0.05, observed=Y_15) # experimental-derived stderr is used
-            pm.Normal('fitD_int', sd=0.02, observed=Y_int)
+            pm.Normal('fitD_15', sd=sd_15, observed=Y_15) # experimental-derived stderr is used
+            pm.Normal('fitD_int', sd=sd_int, observed=Y_int)
 
             # Save likelihood
             pm.Deterministic('logp', M.logpt)
@@ -109,4 +119,9 @@ class build_model:
 
     def sampling(self):
         """This is the sampling that actually runs the model."""
-        self.trace = pm.sample(init='ADVI', model=self.M)
+        nstep = int(1E6)
+        callback = [pm.callbacks.CheckParametersConvergence()]
+
+        with self.M:
+            approx = pm.fit(nstep, method='fullrank_advi', callbacks=callback)
+            self.trace = approx.sample()

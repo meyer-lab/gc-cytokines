@@ -93,6 +93,7 @@ public:
 
 			// all reverse rates are 5x larger in the endosome
 			endosome = surface;
+			//endosomeAdjust(&endosome);
 		} else {
 			std::fill(ILs.begin(), ILs.end(), 0.0);
 			ILs[0] = rxntfR[0];

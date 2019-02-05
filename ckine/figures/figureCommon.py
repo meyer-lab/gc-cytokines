@@ -135,16 +135,19 @@ def import_samples_2_15():
     trace = pm.backends.text.load(join(path, '../../IL2_model_results'), bmodel.M)
     kfwd = trace.get_values('kfwd', chains=[0])
     rxn = trace.get_values('rxn', chains=[0])
-    endo_activeEndo = trace.get_values('endo', chains=[0])
+    endo = trace.get_values('endo', chains=[0])
+    activeEndo = trace.get_values('activeEndo', chains=[0])
     sortF = trace.get_values('sortF', chains=[0])
-    kRec_kDeg = trace.get_values('kRec_kDeg', chains=[0])
+    kRec = trace.get_values('kRec', chains=[0])
+    kDeg = trace.get_values('kDeg', chains=[0])
     exprRates = trace.get_values('IL2Raexpr', chains=[0])
+    scales = trace.get_values('scales', chains=[0])
 
     unkVec = np.zeros((n_params, 500))
     for ii in range (0, 500):
-        unkVec[:, ii] = np.array([0., 0., 0., 0., 0., 0., kfwd[ii], rxn[ii, 0], rxn[ii, 1], rxn[ii, 2], rxn[ii, 3], rxn[ii, 4], rxn[ii, 5], 1., 1., 1., 1., endo_activeEndo[ii, 0], endo_activeEndo[ii, 1], sortF[ii], kRec_kDeg[ii, 0], kRec_kDeg[ii, 1], exprRates[ii, 0], exprRates[ii, 1], exprRates[ii, 2], exprRates[ii, 3], 0., 0., 0., 0.])
+        unkVec[:, ii] = np.array([0., 0., 0., 0., 0., 0., kfwd[ii], rxn[ii, 0], rxn[ii, 1], rxn[ii, 2], rxn[ii, 3], rxn[ii, 4], rxn[ii, 5], 1., 1., 1., 1., endo[ii], activeEndo[ii], sortF[ii], kRec[ii], kDeg[ii], exprRates[ii, 0], exprRates[ii, 1], exprRates[ii, 2], exprRates[ii, 3], 0., 0., 0., 0.])
 
-    return unkVec
+    return unkVec, scales
 
 def import_samples_4_7():
     ''' This function imports the csv results of IL4-7 fitting into a numpy array called unkVec. '''

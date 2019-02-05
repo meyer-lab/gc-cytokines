@@ -21,8 +21,8 @@ def makeFigure():
     for ii, item in enumerate(ax):
         subplotLabel(item, string.ascii_uppercase[ii])
 
-    unkVec = import_samples_2_15()
-    pstat_act(ax[1], unkVec)
+    unkVec, scales = import_samples_2_15()
+    pstat_act(ax[1], unkVec, scales)
     surf_perc(ax[2:4], 'IL-2Rβ', unkVec)
     violinPlots(ax[6:8], unkVec)
     rateComp(ax[8], unkVec)
@@ -81,7 +81,7 @@ def surf_perc(ax, species, unkVec):
     ax[0].set_ylim(0,115)
 
 
-def pstat_act(ax, unkVec):
+def pstat_act(ax, unkVec, scales):
     """ This function generates the pSTAT activation levels for each combination of parameters in unkVec. The results are plotted and then overlayed with the values measured by Ring et al. """
     pstat5 = pstat()
     PTS = 30
@@ -92,7 +92,7 @@ def pstat_act(ax, unkVec):
     IL15_plus = IL2_plus.copy()
     IL2_minus = IL2_plus.copy()
 
-    output = pstat5.calc(unkVec, cytokC) * y_max # calculate activity for all unkVecs and concs
+    output = pstat5.calc(unkVec, scales, cytokC) * y_max # calculate activity for all unkVecs and concs
     # split according to experimental condition
     IL2_plus = output[:, 0:PTS].T
     IL2_minus = output[:, PTS:(PTS*2)].T
