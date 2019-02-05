@@ -71,7 +71,7 @@ class pstat:
         assert retVal >= 0
         return np.dot(returnn, self.activity)
 
-    def calc(self, unkVec, cytokC):
+    def calc(self, unkVec, scale, cytokC):
         '''This function uses an unkVec that has the same elements as the unkVec in fit.py'''
         assert unkVec.shape[0] == nParams()
         K = unkVec.shape[1]
@@ -91,8 +91,9 @@ class pstat:
             actVec_IL15[:, x] = self.parallelCalc(unkVec, 1, conc)
             actVec_IL15_IL2Raminus[:, x] = self.parallelCalc(unkVec_IL2Raminus, 1, conc)
 
-        # put together into one vector
+        # put together into one vector & normalize by scale
         actVec = np.concatenate((actVec_IL2, actVec_IL2_IL2Raminus, actVec_IL15, actVec_IL15_IL2Raminus), axis=1)
+        actVec = actVec / (actVec + scale)
 
         for ii in range(K):
             actVec[ii] = actVec[ii] / np.max(actVec[ii]) # normalize by the max value of each row
