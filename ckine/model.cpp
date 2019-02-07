@@ -289,6 +289,13 @@ public:
 	}
 };
 
+void preTreat(double tDiff, std::array<double, Nlig> &ILs, const double *preL) {
+	tDiff = fabs(60*tDiff); // Scale this to be on the order of seconds
+
+	for (size_t ii = 0; ii < Nlig; ii++) {
+		ILs[ii] = preL[ii] + (ILs[ii] - preL[ii])*exp(-tDiff);
+	}
+}
 
 // fB routine. Compute fB(t,y,yB). 
 static int fB(double t, N_Vector y, N_Vector yB, N_Vector yBdot, void *user_data) {
@@ -296,7 +303,7 @@ static int fB(double t, N_Vector y, N_Vector yB, N_Vector yBdot, void *user_data
 	ratesS<double> rattes = sMem->getRates();
 
 	if (t < sMem->preT)
-		std::copy_n(sMem->preL, Nlig, rattes.ILs.data());
+		preTreat(t - sMem->preT, rattes.ILs, sMem->preL);
 
 	eigenVC yBv(NV_DATA_S(yB), Nspecies);
 	eigenVC yBdotv(NV_DATA_S(yBdot), Nspecies);
@@ -317,7 +324,7 @@ int JacB(double t, N_Vector y, N_Vector, N_Vector, SUNMatrix J, void *user_data,
 	ratesS<double> rattes = sMem->getRates();
 
 	if (t < sMem->preT)
-		std::copy_n(sMem->preL, Nlig, rattes.ILs.data());
+		preTreat(t - sMem->preT, rattes.ILs, sMem->preL);
 
 	Eigen::Map<Eigen::Matrix<double, Nspecies, Nspecies>> jac(SM_DATA_D(J));
 
@@ -400,7 +407,7 @@ int Jac(double t, N_Vector y, N_Vector, SUNMatrix J, void *user_data, N_Vector, 
 	ratesS<double> rattes = sMem->getRates();
 
 	if (t < sMem->preT)
-		std::copy_n(sMem->preL, Nlig, rattes.ILs.data());
+		preTreat(t - sMem->preT, rattes.ILs, sMem->preL);
 
 	Eigen::Map<Eigen::Matrix<double, Nspecies, Nspecies>> jac(SM_DATA_D(J));
 
@@ -416,7 +423,7 @@ int fullModelCVode(const double t, const N_Vector xx, N_Vector dxxdt, void *user
 	ratesS<double> rattes = sMem->getRates();
 
 	if (t < sMem->preT)
-		std::copy_n(sMem->preL, Nlig, rattes.ILs.data());
+		preTreat(t - sMem->preT, rattes.ILs, sMem->preL);
 
 	// Get the data in the right form
 	fullModel(NV_DATA_S(xx), &rattes, NV_DATA_S(dxxdt));
