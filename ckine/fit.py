@@ -14,6 +14,22 @@ def load_data(filename):
     return pds.read_csv(join(path, filename)).values
 
 
+def sampling(M):
+    """ This is the sampling that actually runs the model. """
+    return pm.sample(init="ADVI", chains=2, model=M)
+
+
+def commonTraf():
+    """ Set the common trafficking parameter priors. """
+    kfwd = pm.Lognormal('kfwd', mu=np.log(0.001), sd=0.5, shape=1)
+    endo = pm.Lognormal('endo', mu=np.log(0.1), sd=0.1, shape=1)
+    activeEndo = pm.Lognormal('activeEndo', sd=0.1, shape=1)
+    kRec = pm.Lognormal('kRec', mu=np.log(0.1), sd=0.1, shape=1)
+    kDeg = pm.Lognormal('kDeg', mu=np.log(0.01), sd=0.2, shape=1)
+    sortF = pm.Beta('sortF', alpha=12, beta=80, shape=1)
+    return kfwd, endo, activeEndo, kRec, kDeg, sortF
+
+
 class IL2Rb_trafficking:
     """ Calculating the percent of IL2Rb on cell surface under IL2 and IL15 stimulation according to Ring et al."""
     def __init__(self):
@@ -86,15 +102,10 @@ class build_model:
         M = pm.Model()
 
         with M:
-            kfwd = pm.Lognormal('kfwd', mu=np.log(0.001), sd=0.5, shape=1)
-            rxnrates = pm.Lognormal('rxn', mu=np.log(0.01), sd=0.5, shape=6) # 6 reverse rxn rates for IL2/IL15
+            kfwd, endo, activeEndo, kRec, kDeg, sortF = commonTraf()
+            rxnrates = pm.Lognormal('rxn', sd=0.5, shape=6) # 6 reverse rxn rates for IL2/IL15
             nullRates = T.ones(4, dtype=np.float64) # k27rev, k31rev, k33rev, k35rev
-            endo = pm.Lognormal('endo', mu=np.log(0.1), sd=0.1, shape=1)
-            activeEndo = pm.Lognormal('activeEndo', mu=np.log(1.0), sd=0.1, shape=1)
-            kRec = pm.Lognormal('kRec', mu=np.log(0.1), sd=0.5, shape=1)
-            kDeg = pm.Lognormal('kDeg', mu=np.log(0.02), sd=0.5, shape=1)
-            Rexpr = pm.Lognormal('IL2Raexpr', mu=np.log(0.1), sd=0.5, shape=4) # Expression: IL2Ra, IL2Rb, gc, IL15Ra
-            sortF = pm.Beta('sortF', alpha=12, beta=80, shape=1)
+            Rexpr = pm.Lognormal('IL2Raexpr', sd=0.5, shape=4) # Expression: IL2Ra, IL2Rb, gc, IL15Ra
             scale = pm.Lognormal('scales', mu=np.log(100.), sd=1, shape=1) # create scaling constant for activity measurements
 
             unkVec = T.concatenate((kfwd, rxnrates, nullRates, endo, activeEndo, sortF, kRec, kDeg, Rexpr, nullRates*0.0))
@@ -116,12 +127,3 @@ class build_model:
             pm.Deterministic('logp', M.logpt)
 
         return M
-
-    def sampling(self):
-        """This is the sampling that actually runs the model."""
-        nstep = int(1E6)
-        callback = [pm.callbacks.CheckParametersConvergence()]
-
-        with self.M:
-            approx = pm.fit(nstep, method='fullrank_advi', callbacks=callback)
-            self.trace = approx.sample()
