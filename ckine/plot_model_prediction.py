@@ -63,14 +63,6 @@ class pstat:
         assert retVal >= 0
         return np.dot(returnn, self.activity)
 
-    def singleCalc(self, unkVec, cytokine, conc):
-        """ Calculates the pSTAT activity for one unkVec condition. """
-        unkVec = unkVec.copy()
-        unkVec[cytokine] = conc
-        returnn, retVal = runCkineU(self.ts, unkVec)
-        assert retVal >= 0
-        return np.dot(returnn, self.activity)
-
     def calc(self, unkVec, scale, cytokC):
         '''This function uses an unkVec that has the same elements as the unkVec in fit.py'''
         assert unkVec.shape[0] == nParams()
