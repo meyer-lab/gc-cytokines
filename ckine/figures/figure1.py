@@ -7,7 +7,7 @@ import string
 import numpy as np
 import seaborn as sns
 import pandas as pd
-from .figureCommon import subplotLabel, getSetup, traf_names, plot_conf_int, import_samples_2_15
+from .figureCommon import subplotLabel, getSetup, traf_names, plot_conf_int, import_samples_2_15, kfwd_info
 from ..plot_model_prediction import surf_IL2Rb, pstat, surf_gc
 
 def makeFigure():
@@ -22,6 +22,8 @@ def makeFigure():
         subplotLabel(item, string.ascii_uppercase[ii])
 
     unkVec, scales = import_samples_2_15()
+    kfwd_avg, kfwd_std = kfwd_info(unkVec)
+    print("kfwd = " + str(kfwd_avg) + " +/- " + str(kfwd_std))
     pstat_act(ax[1], unkVec, scales)
     surf_perc(ax[2:4], 'IL-2Rβ', unkVec)
     violinPlots(ax[6:8], unkVec)
@@ -56,7 +58,7 @@ def surf_perc(ax, species, unkVec):
     y_max = 100.
     ts = np.array([0., 2., 5., 15., 30., 60., 90.])
     size = len(ts)
-    results = np.zeros((size, 500, 4, 2)) # 3rd dim is cell condition (IL2Ra+/- and cytokC), 4th dim is cytok species
+    results = np.zeros((size, unkVec.shape[1], 4, 2)) # 3rd dim is cell condition (IL2Ra+/- and cytokC), 4th dim is cytok species
 
     output = surf.calc(unkVec, ts) * y_max # run the simulation
     # split according to experimental conditions
@@ -87,7 +89,7 @@ def pstat_act(ax, unkVec, scales):
     PTS = 30
     cytokC = np.logspace(-3.3, 2.7, PTS)
     y_max = 100.
-    IL2_plus = np.zeros((500, PTS))
+    IL2_plus = np.zeros((unkVec.shape[1], PTS))
     IL15_minus = IL2_plus.copy()
     IL15_plus = IL2_plus.copy()
     IL2_minus = IL2_plus.copy()
@@ -136,13 +138,13 @@ def rateComp(ax, unkVec):
     """ This function compares the analogous reverse rxn distributions from IL2 and IL15 in a violin plot. """
     # assign values from unkVec
     k4rev, k5rev, k16rev, k17rev, k22rev, k23rev = unkVec[7, :], unkVec[8, :], unkVec[9, :], unkVec[10, :], unkVec[11, :], unkVec[12, :]
-
+    split = unkVec.shape[1]
     # plug in values from measured constants into arrays of size 500
     kfbnd = 0.60 # Assuming on rate of 10^7 M-1 sec-1
-    k1rev = np.full((500), (kfbnd * 10))    # doi:10.1016/j.jmb.2004.04.038, 10 nM
-    k2rev = np.full((500), (kfbnd * 144))   # doi:10.1016/j.jmb.2004.04.038, 144 nM
-    k13rev = np.full((500), (kfbnd * 0.065))    # based on the multiple papers suggesting 30-100 pM
-    k14rev = np.full((500), (kfbnd * 438))  # doi:10.1038/ni.2449, 438 nM
+    k1rev = np.full((split), (kfbnd * 10))    # doi:10.1016/j.jmb.2004.04.038, 10 nM
+    k2rev = np.full((split), (kfbnd * 144))   # doi:10.1016/j.jmb.2004.04.038, 144 nM
+    k13rev = np.full((split), (kfbnd * 0.065))    # based on the multiple papers suggesting 30-100 pM
+    k14rev = np.full((split), (kfbnd * 438))  # doi:10.1038/ni.2449, 438 nM
 
     # proportions known through measurements
     k10rev = 12.0 * k5rev / 1.5 # doi:10.1016/j.jmb.2004.04.038
@@ -161,7 +163,7 @@ def rateComp(ax, unkVec):
 
     # add labels for IL2 and IL15
     df['cytokine'] = 'IL-2'
-    df.loc[500:1000, 'cytokine'] = 'IL-15'
+    df.loc[split:(split*2), 'cytokine'] = 'IL-15'
 
     # melt into long form and take log value
     melted = pd.melt(df, id_vars='cytokine', var_name='rate', value_name=r"$\mathrm{log_{10}(\frac{1}{nM * min})}$")

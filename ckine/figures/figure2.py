@@ -7,7 +7,7 @@ import string
 import numpy as np
 import seaborn as sns
 import pandas as pd
-from .figureCommon import subplotLabel, getSetup, traf_names, plot_conf_int, import_samples_4_7
+from .figureCommon import subplotLabel, getSetup, traf_names, plot_conf_int, import_samples_4_7, kfwd_info
 from ..model import nParams, getTotalActiveSpecies, runCkineUP, getSurfaceGCSpecies, getTotalActiveCytokine
 
 def makeFigure():
@@ -22,6 +22,8 @@ def makeFigure():
         subplotLabel(item, string.ascii_uppercase[ii])
 
     unkVec, scales = import_samples_4_7()
+    kfwd_avg, kfwd_std = kfwd_info(unkVec)
+    print("kfwd = " + str(kfwd_avg) + " +/- " + str(kfwd_std))
     pstat_plot(ax[1], unkVec, scales)
     plot_pretreat(ax[2], unkVec, scales, "Cross-talk pSTAT inhibition")
     surf_gc(ax[3], 100., unkVec)

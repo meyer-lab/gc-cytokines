@@ -133,18 +133,19 @@ def import_samples_2_15():
 
     path = os.path.dirname(os.path.abspath(__file__))
     trace = pm.backends.text.load(join(path, '../../IL2_model_results'), bmodel.M)
-    kfwd = trace.get_values('kfwd', chains=[0])
-    rxn = trace.get_values('rxn', chains=[0])
-    endo = trace.get_values('endo', chains=[0])
-    activeEndo = trace.get_values('activeEndo', chains=[0])
-    sortF = trace.get_values('sortF', chains=[0])
-    kRec = trace.get_values('kRec', chains=[0])
-    kDeg = trace.get_values('kDeg', chains=[0])
-    exprRates = trace.get_values('IL2Raexpr', chains=[0])
-    scales = trace.get_values('scales', chains=[0])
+    kfwd = trace.get_values('kfwd')
+    rxn = trace.get_values('rxn')
+    endo = trace.get_values('endo')
+    activeEndo = trace.get_values('activeEndo')
+    sortF = trace.get_values('sortF')
+    kRec = trace.get_values('kRec')
+    kDeg = trace.get_values('kDeg')
+    exprRates = trace.get_values('IL2Raexpr')
+    scales = trace.get_values('scales')
+    num = scales.size
 
-    unkVec = np.zeros((n_params, 500))
-    for ii in range (0, 500):
+    unkVec = np.zeros((n_params, num))
+    for ii in range(num):
         unkVec[:, ii] = np.array([0., 0., 0., 0., 0., 0., kfwd[ii], rxn[ii, 0], rxn[ii, 1], rxn[ii, 2], rxn[ii, 3], rxn[ii, 4], rxn[ii, 5], 1., 1., 1., 1., endo[ii], activeEndo[ii], sortF[ii], kRec[ii], kDeg[ii], exprRates[ii, 0], exprRates[ii, 1], exprRates[ii, 2], exprRates[ii, 3], 0., 0., 0., 0.])
 
     return unkVec, scales
@@ -156,20 +157,23 @@ def import_samples_4_7():
 
     path = os.path.dirname(os.path.abspath(__file__))
     trace = pm.backends.text.load(join(path, '../../IL4-7_model_results'), bmodel.M)
-    kfwd = 0.00448600766505774
-    k27rev = trace.get_values('k27rev', chains=[0])
-    k33rev = trace.get_values('k33rev', chains=[0])
-    endo_activeEndo = np.array([0.080189183, 1.463922832])
-    sortF = 0.179757424
-    kRec_kDeg = np.array([0.154753853, 0.017205254])
-    scales = trace.get_values('scales', chains=[0])
-    GCexpr = (328. * endo_activeEndo[0]) / (1. + ((kRec_kDeg[0]*(1.-sortF)) / (kRec_kDeg[1]*sortF))) # constant according to measured number per cell
-    IL7Raexpr = (2591. * endo_activeEndo[0]) / (1. + ((kRec_kDeg[0]*(1.-sortF)) / (kRec_kDeg[1]*sortF))) # constant according to measured number per cell
-    IL4Raexpr = (254. * endo_activeEndo[0]) / (1. + ((kRec_kDeg[0]*(1.-sortF)) / (kRec_kDeg[1]*sortF))) # constant according to measured number per cell
+    kfwd = trace.get_values('kfwd')
+    k27rev = trace.get_values('k27rev')
+    k33rev = trace.get_values('k33rev')
+    endo = trace.get_values('endo')
+    activeEndo = trace.get_values('activeEndo')
+    sortF = trace.get_values('sortF')
+    kRec = trace.get_values('kRec')
+    kDeg = trace.get_values('kDeg')
+    scales = trace.get_values('scales')
+    GCexpr = (328. * endo) / (1. + ((kRec*(1.-sortF)) / (kDeg*sortF))) # constant according to measured number per cell
+    IL7Raexpr = (2591. * endo[0]) / (1. + ((kRec*(1.-sortF)) / (kDeg*sortF))) # constant according to measured number per cell
+    IL4Raexpr = (254. * endo) / (1. + ((kRec*(1.-sortF)) / (kDeg*sortF))) # constant according to measured number per cell
+    num = scales.shape[0]
 
-    unkVec = np.zeros((n_params, 500))
-    for ii in range (0, 500):
-        unkVec[:, ii] = np.array([0., 0., 0., 0., 0., 0., kfwd, 1., 1., 1., 1., 1., 1., k27rev[ii], 1., k33rev[ii], 1., endo_activeEndo[0], endo_activeEndo[1], sortF, kRec_kDeg[0], kRec_kDeg[1], 0., 0., np.squeeze(GCexpr), 0., np.squeeze(IL7Raexpr), 0., np.squeeze(IL4Raexpr), 0.])
+    unkVec = np.zeros((n_params, num))
+    for ii in range(num):
+        unkVec[:, ii] = np.array([0., 0., 0., 0., 0., 0., kfwd[ii], 1., 1., 1., 1., 1., 1., k27rev[ii], 1., k33rev[ii], 1., endo[ii], activeEndo[ii], sortF[ii], kRec[ii], kDeg[ii], 0., 0., GCexpr[ii], 0., IL7Raexpr[ii], 0., IL4Raexpr[ii], 0.])
 
     return unkVec, scales
 
@@ -180,3 +184,9 @@ def load_cells():
     data = pds.read_csv(expr_filename) # Every column in the data represents a specific cell
     cell_names = data.columns.values.tolist()[1::] #returns the cell names from the pandas dataframe (which came from csv)
     return data, cell_names
+
+def kfwd_info(unkVec):
+    """ Gives the mean and standard deviation of a kfwd distribution. We need this since we are not using violin plots for this rate. """
+    mean = np.mean(unkVec[6])
+    std = np.std(unkVec[6])
+    return mean, std
