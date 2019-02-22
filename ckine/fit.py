@@ -92,7 +92,8 @@ class IL2_15_activity:
 
 class build_model:
     """ Build the overall model handling Ring et al. """
-    def __init__(self):
+    def __init__(self, traf = True):
+        self.traf = traf
         self.dst15 = IL2_15_activity()
         self.IL2Rb = IL2Rb_trafficking()
         self.M = self.build()
@@ -102,7 +103,17 @@ class build_model:
         M = pm.Model()
 
         with M:
-            kfwd, endo, activeEndo, kRec, kDeg, sortF = commonTraf()
+            if self.traf:
+                kfwd, endo, activeEndo, kRec, kDeg, sortF = commonTraf()
+            else:
+                kfwd = pm.Lognormal('kfwd', mu=np.log(0.001), sd=0.5, shape=1)
+                # Assigning trafficking to zero to fit without trafficking
+                endo = T.zeros(1, dtype=np.float64)
+                activeEndo = T.zeros(1, dtype=np.float64)
+                kRec = T.zeros(1, dtype=np.float64)
+                kDeg = T.zeros(1, dtype=np.float64)
+                sortF = T.ones(1, dtype=np.float64) * 0.5
+
             rxnrates = pm.Lognormal('rxn', sd=0.5, shape=6) # 6 reverse rxn rates for IL2/IL15
             nullRates = T.ones(4, dtype=np.float64) # k27rev, k31rev, k33rev, k35rev
             Rexpr = pm.Lognormal('IL2Raexpr', sd=0.5, shape=4) # Expression: IL2Ra, IL2Rb, gc, IL15Ra
