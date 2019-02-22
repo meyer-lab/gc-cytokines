@@ -9,7 +9,7 @@ from hypothesis.extra.numpy import arrays as harrays
 from ..model import fullModel, getTotalActiveCytokine, runCkineU, nSpecies, runCkineUP, runCkineU_IL2, ligandDeg_IL2
 
 
-settings.register_profile("ci", max_examples=1000)
+settings.register_profile("ci", max_examples=1000, deadline=None)
 settings.load_profile("ci")
 
 conservation_IDX = [np.array([1, 4, 5, 7, 8, 11, 12, 14, 15]), # IL2Rb
