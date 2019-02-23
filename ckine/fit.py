@@ -95,7 +95,8 @@ class build_model:
     def __init__(self, traf = True):
         self.traf = traf
         self.dst15 = IL2_15_activity()
-        self.IL2Rb = IL2Rb_trafficking()
+        if self.traf:
+            self.IL2Rb = IL2Rb_trafficking()
         self.M = self.build()
 
     def build(self):
@@ -122,17 +123,15 @@ class build_model:
             unkVec = T.concatenate((kfwd, rxnrates, nullRates, endo, activeEndo, sortF, kRec, kDeg, Rexpr, nullRates*0.0))
 
             Y_15 = self.dst15.calc(unkVec, scale) # fitting the data based on dst15.calc for the given parameters
-            Y_int = self.IL2Rb.calc(unkVec) # fitting the data based on dst.calc for the given parameters
-
-            # Add bounds for the stderr to help force the fitting solution
-            sd_15 = T.minimum(T.std(Y_15), 0.03)
-            sd_int = T.minimum(T.std(Y_int), 0.02)
-
+            sd_15 = T.minimum(T.std(Y_15), 0.03) # Add bounds for the stderr to help force the fitting solution
             pm.Deterministic('Y_15', T.sum(T.square(Y_15)))
-            pm.Deterministic('Y_int', T.sum(T.square(Y_int)))
-
             pm.Normal('fitD_15', sd=sd_15, observed=Y_15) # experimental-derived stderr is used
-            pm.Normal('fitD_int', sd=sd_int, observed=Y_int)
+
+            if self.traf:
+                Y_int = self.IL2Rb.calc(unkVec) # fitting the data based on dst.calc for the given parameters
+                sd_int = T.minimum(T.std(Y_int), 0.02) # Add bounds for the stderr to help force the fitting solution
+                pm.Deterministic('Y_int', T.sum(T.square(Y_int)))
+                pm.Normal('fitD_int', sd=sd_int, observed=Y_int)
 
             # Save likelihood
             pm.Deterministic('logp', M.logpt)
