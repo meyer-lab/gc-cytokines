@@ -100,7 +100,7 @@ def runCkineU_IL2 (tps, rxntfr):
     return (yOut, retVal)
 
 
-def runIL2simple(input, IL, CD25=1.0, ligandDeg=False):
+def runIL2simple(input, IL, CD25=1.0, ligandDegradation=False):
     """ Version to focus on IL2Ra/Rb affinity adjustment. """
     # TODO: Update parameters based on distinct endosomal fitting.
     tps = np.array([500.0])
@@ -114,8 +114,8 @@ def runIL2simple(input, IL, CD25=1.0, ligandDeg=False):
 
     assert retVal == 0
 
-    if ligandDeg == True:
-        ligDeg = ligandDeg_IL2(yOut[0], sortF = 0.1458139959859, kDeg = 0.006544333)
+    if ligandDegradation == True:
+        ligDeg = ligandDeg(yOut[0], sortF = 0.1458139959859, kDeg = 0.006544333, cytokineIDX=0)
         return ligDeg # rate of ligand degradation
     else:
         active = getTotalActiveCytokine(0, np.squeeze(yOut))
@@ -239,10 +239,13 @@ def totalReceptors(yVec):
     """This function takes in a vector y and returns the amounts of all 8 receptors in both cell compartments"""
     return surfaceReceptors(yVec) + __internalStrength * surfaceReceptors(yVec[__halfL:__halfL*2])
 
-def ligandDeg_IL2(yVec, sortF, kDeg):
-    """ This function calculates rate of IL-2's total degradation. """
-    # all indices are shifted by __halfL in order to get endosomal species
-    yVec2 = yVec[__halfL::].copy()
-    sum_inactive = np.sum(yVec2[3:7]) * sortF # indexes 3-6 have IL2 bound but are inactive, only inactive species deal with sortF
-    sum_active = np.sum(yVec2[7:9]) # indices 7,8 have IL2 bound and are active
-    return kDeg * (((sum_inactive + sum_active) * __internalStrength) + (yVec2[__halfL] * __internalV)) # can assume all free ligand and active species are degraded at rate kDeg
+def ligandDeg(yVec, sortF, kDeg, cytokineIDX):
+    """ This function calculates rate of total ligand degradation. """
+    yVec_endo_species = yVec[__halfL:(__halfL*2)].copy() # get all endosomal complexes
+    yVec_endo_lig = yVec[(__halfL*2)::].copy() # get all endosomal ligands
+    sum_active = np.sum(getActiveCytokine(cytokineIDX, yVec_endo_species))
+    __cytok_species_IDX = np.zeros(__halfL, dtype=np.bool) # create array of size halfL
+    __cytok_species_IDX[getCytokineSpecies()[cytokineIDX]] = 1 # assign 1's for species corresponding to the cytokineIDX
+    sum_total = np.sum(yVec_endo_species * __cytok_species_IDX)
+    sum_inactive = (sum_total - sum_active) * sortF # scale the inactive species by sortF
+    return kDeg * (((sum_inactive + sum_active) * __internalStrength) + (yVec_endo_lig[cytokineIDX] * __internalV)) # can assume all free ligand and active species are degraded at rate kDeg
