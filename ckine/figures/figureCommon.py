@@ -126,23 +126,36 @@ def plot_timepoints(ax, factors):
     ax.set_ylabel('Component')
     ax.legend()
 
-def import_samples_2_15():
+def import_samples_2_15(Fig1 = True):
     """ This function imports the csv results of IL2-15 fitting into a numpy array called unkVec. """
     bmodel = build_model_2_15()
     n_params = nParams()
 
     path = os.path.dirname(os.path.abspath(__file__))
-    trace = pm.backends.text.load(join(path, '../../IL2_model_results'), bmodel.M)
-    kfwd = trace.get_values('kfwd')
-    rxn = trace.get_values('rxn')
-    endo = trace.get_values('endo')
-    activeEndo = trace.get_values('activeEndo')
-    sortF = trace.get_values('sortF')
-    kRec = trace.get_values('kRec')
-    kDeg = trace.get_values('kDeg')
-    exprRates = trace.get_values('IL2Raexpr')
+
+    if Fig1:
+        trace = pm.backends.text.load(join(path, '../../IL2_model_results'), bmodel.M)
+    else:
+        trace = pm.backends.text.load(join(path, '../../IL2_15_no_traf'), bmodel.M)
+
     scales = trace.get_values('scales')
     num = scales.size
+    kfwd = trace.get_values('kfwd')
+    rxn = trace.get_values('rxn')
+    exprRates = trace.get_values('IL2Raexpr')
+
+    if Fig1:
+        endo = trace.get_values('endo')
+        activeEndo = trace.get_values('activeEndo')
+        sortF = trace.get_values('sortF')
+        kRec = trace.get_values('kRec')
+        kDeg = trace.get_values('kDeg')
+    else:
+        endo = np.zeros((num))
+        activeEndo = np.zeros((num))
+        sortF = np.zeros((num))
+        kRec = np.zeros((num))
+        kDeg = np.zeros((num))
 
     unkVec = np.zeros((n_params, num))
     for ii in range(num):
