@@ -83,7 +83,7 @@ def surf_perc(ax, species, unkVec):
     ax[0].set_ylim(0,115)
 
 
-def pstat_act(ax, unkVec, scales):
+def pstat_act(ax, unkVec, scales, Fig1 = True):
     """ This function generates the pSTAT activation levels for each combination of parameters in unkVec. The results are plotted and then overlayed with the values measured by Ring et al. """
     pstat5 = pstat()
     PTS = 30
@@ -115,22 +115,29 @@ def pstat_act(ax, unkVec, scales):
     ax.scatter(data[:,0], data[:,6], color='darkorchid', marker='o', edgecolors='k', zorder=102, label="IL-2, 2Rα+") # IL2 in 2Ra+
     ax.scatter(data[:,0], data[:,7], color='goldenrod', marker='o', edgecolors='k', zorder=103, label="IL-15, 2Rα+") # IL15 in 2Ra+
     ax.set(ylabel='pSTAT5 (% of max)', xlabel=r'Cytokine concentration (log$_{10}$[nM])', title='YT-1 cell activity')
-    ax.legend(loc='upper left', bbox_to_anchor=(1.5, 1))
+    if Fig1:
+        ax.legend(loc='upper left', bbox_to_anchor=(1.5, 1))
+    else:
+        ax.legend(loc='upper left', bbox_to_anchor=(1, 1))
 
-def violinPlots(ax, unkVec):
+def violinPlots(ax, unkVec, Fig1 = True):
     """ Create violin plots of model posterior. """
     unkVec = unkVec.transpose()
 
     traf = pd.DataFrame(unkVec[:, 17:22])
     Rexpr = pd.DataFrame(unkVec[:, 22:26])
-
-    traf.columns = traf_names()
-    b = sns.violinplot(data=np.log10(traf), ax=ax[0], linewidth=0, bw=10)
-    b.set_xticklabels(b.get_xticklabels(), rotation=40, rotation_mode="anchor", ha="right", fontsize=8, position=(0, 0.075))
-    b.set(title="Trafficking parameters", ylabel=r"$\mathrm{log_{10}(\frac{1}{min})}$")
+    if Fig1:
+        traf.columns = traf_names()
+        b = sns.violinplot(data=np.log10(traf), ax=ax[0], linewidth=0, bw=10)
+        b.set_xticklabels(b.get_xticklabels(), rotation=40, rotation_mode="anchor", ha="right", fontsize=8, position=(0, 0.075))
+        b.set(title="Trafficking parameters", ylabel=r"$\mathrm{log_{10}(\frac{1}{min})}$")
 
     Rexpr.columns = ['IL-2Rα', 'IL-2Rβ', r'$\gamma_{c}$', 'IL-15Rα']
-    c = sns.violinplot(data=np.log10(Rexpr), ax=ax[1], linewidth=0, bw=10)
+
+    if Fig1:
+        c = sns.violinplot(data=np.log10(Rexpr), ax=ax[1], linewidth=0, bw=10)
+    else:
+        c = sns.violinplot(data=np.log10(Rexpr), ax=ax, linewidth=0, bw=10)
     c.set_xticklabels(c.get_xticklabels(), rotation=40, rotation_mode="anchor", ha="right", fontsize=8, position=(0, 0.075))
     c.set(title="Receptor expression rates", ylabel=r"$\mathrm{log_{10}(\frac{num}{cell * min})}$")
 
