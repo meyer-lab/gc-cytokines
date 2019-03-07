@@ -13,7 +13,7 @@ from ..plot_model_prediction import surf_IL2Rb, pstat, surf_gc
 def makeFigure():
     """Get a list of the axis objects and create a figure"""
     # Get list of axis objects
-    ax, f = getSetup((10, 7), (3, 4), mults=[0, 10], multz={0: 2, 10: 2}, empts=[3])
+    ax, f = getSetup((10, 7), (3, 4), mults=[0, 6], multz={0: 2, 6: 2}, empts=[3])
 
     # blank out first two axes for cartoon
     ax[0].axis('off')
@@ -26,8 +26,8 @@ def makeFigure():
     print("kfwd = " + str(kfwd_avg) + " +/- " + str(kfwd_std))
     pstat_act(ax[1], unkVec, scales)
     surf_perc(ax[2:4], 'IL-2Rβ', unkVec)
-    violinPlots(ax[6:8], unkVec)
-    rateComp(ax[8], unkVec)
+    violinPlots(ax[5:8], unkVec, scales)
+    rateComp(ax[4], unkVec)
 
 
     f.tight_layout()
@@ -83,7 +83,7 @@ def surf_perc(ax, species, unkVec):
     ax[0].set_ylim(0,115)
 
 
-def pstat_act(ax, unkVec, scales, Fig1 = True):
+def pstat_act(ax, unkVec, scales, Fig1=True):
     """ This function generates the pSTAT activation levels for each combination of parameters in unkVec. The results are plotted and then overlayed with the values measured by Ring et al. """
     pstat5 = pstat()
     PTS = 30
@@ -118,28 +118,36 @@ def pstat_act(ax, unkVec, scales, Fig1 = True):
     if Fig1:
         ax.legend(loc='upper left', bbox_to_anchor=(1.5, 1))
     else:
-        ax.legend(loc='upper left', bbox_to_anchor=(1, 1))
+        ax.legend(loc='upper left', bbox_to_anchor=(0.25, -0.5))
 
-def violinPlots(ax, unkVec, Fig1 = True):
+def violinPlots(ax, unkVec, scales, Fig1=True):
     """ Create violin plots of model posterior. """
     unkVec = unkVec.transpose()
-
     traf = pd.DataFrame(unkVec[:, 17:22])
     Rexpr = pd.DataFrame(unkVec[:, 22:26])
+    scales = pd.DataFrame(scales)
+
     if Fig1:
         traf.columns = traf_names()
-        b = sns.violinplot(data=np.log10(traf), ax=ax[0], linewidth=0, bw=10)
+        b = sns.violinplot(data=np.log10(traf), ax=ax[0], linewidth=0.5)
         b.set_xticklabels(b.get_xticklabels(), rotation=40, rotation_mode="anchor", ha="right", fontsize=8, position=(0, 0.075))
         b.set(title="Trafficking parameters", ylabel=r"$\mathrm{log_{10}(\frac{1}{min})}$")
 
     Rexpr.columns = ['IL-2Rα', 'IL-2Rβ', r'$\gamma_{c}$', 'IL-15Rα']
-
     if Fig1:
-        c = sns.violinplot(data=np.log10(Rexpr), ax=ax[1], linewidth=0, bw=10)
+        c = sns.violinplot(data=np.log10(Rexpr), ax=ax[1], linewidth=0.5)
     else:
-        c = sns.violinplot(data=np.log10(Rexpr), ax=ax, linewidth=0, bw=10)
+        c = sns.violinplot(data=np.log10(Rexpr), ax=ax[0], linewidth=0.5)
     c.set_xticklabels(c.get_xticklabels(), rotation=40, rotation_mode="anchor", ha="right", fontsize=8, position=(0, 0.075))
     c.set(title="Receptor expression rates", ylabel=r"$\mathrm{log_{10}(\frac{num}{cell * min})}$")
+
+    sc_ax = 1 # subplot number for the scaling constant
+    if Fig1:
+        sc_ax = 2
+    scales.columns = [r'$C_{5}$']
+    d = sns.violinplot(data=scales, ax=ax[sc_ax], linewidth=0.5)
+    d.set_title("value")
+    d.set_title("pSTAT5 scaling constant")
 
 def rateComp(ax, unkVec):
     """ This function compares the analogous reverse rxn distributions from IL2 and IL15 in a violin plot. """
@@ -173,15 +181,15 @@ def rateComp(ax, unkVec):
     df.loc[split:(split*2), 'cytokine'] = 'IL-15'
 
     # melt into long form and take log value
-    melted = pd.melt(df, id_vars='cytokine', var_name='rate', value_name=r"$\mathrm{log_{10}(\frac{1}{nM * min})}$")
-    melted.loc[:, r"$\mathrm{log_{10}(\frac{1}{nM * min})}$"] = np.log10(melted.loc[:, r"$\mathrm{log_{10}(\frac{1}{nM * min})}$"])
+    melted = pd.melt(df, id_vars='cytokine', var_name='rate', value_name=r"$\mathrm{log_{10}(\frac{1}{min})}$")
+    melted.loc[:, r"$\mathrm{log_{10}(\frac{1}{min})}$"] = np.log10(melted.loc[:, r"$\mathrm{log_{10}(\frac{1}{min})}$"])
 
     col_list = ["violet", "goldenrod"]
     col_list_palette = sns.xkcd_palette(col_list)
     cmap = sns.set_palette(col_list_palette)
 
     # plot with hue being cytokine species
-    a = sns.violinplot(x='rate', y=r"$\mathrm{log_{10}(\frac{1}{nM * min})}$", data=melted, hue='cytokine', ax=ax, cmap=cmap, linewidth=0, bw=15, scale='width')
+    a = sns.violinplot(x='rate', y=r"$\mathrm{log_{10}(\frac{1}{min})}$", data=melted, hue='cytokine', ax=ax, cmap=cmap, linewidth=0, scale='width')
     a.scatter(-0.3, np.log10(kfbnd * 10), color="darkviolet")   # overlay point for k1rev
     a.scatter(0.1, np.log10(kfbnd * 0.065), color='goldenrod') # overlay point for k13rev
     a.scatter(0.7, np.log10(kfbnd * 144), color="darkviolet")   # overlay point for k2rev

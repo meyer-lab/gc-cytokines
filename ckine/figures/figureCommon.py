@@ -126,7 +126,7 @@ def plot_timepoints(ax, factors):
     ax.set_ylabel('Component')
     ax.legend()
 
-def import_samples_2_15(Fig1 = True):
+def import_samples_2_15(Fig1=True):
     """ This function imports the csv results of IL2-15 fitting into a numpy array called unkVec. """
     bmodel = build_model_2_15()
     n_params = nParams()

@@ -34,21 +34,21 @@ def relativeGC(ax, unkVec2, unkVec4):
     """ This function compares the relative complex affinities for GC. The rates included in this violing plot will be k4rev, k10rev, k17rev, k22rev, k27rev, and k33rev. We're currently ignoring k31rev (IL9) and k35rev (IL21) since we don't fit to any of its data. """
 
     # assign values from unkVec
-    k4rev, k5rev, k16rev, k17rev, k22rev, k27rev, k33rev = unkVec2[7, :], unkVec2[8, :], unkVec2[9, :], unkVec2[10, :], unkVec2[11, :], unkVec4[13, :], unkVec4[15, :]
+    kfwd_2, kfwd_4, k4rev, k5rev, k16rev, k17rev, k22rev, k27rev, k33rev = unkVec2[6, :], unkVec4[6, :], unkVec2[7, :], unkVec2[8, :], unkVec2[9, :], unkVec2[10, :], unkVec2[11, :], unkVec4[13, :], unkVec4[15, :]
 
     # back-out k10 with ratio
     k10rev = 12.0 * k5rev / 1.5 # doi:10.1016/j.jmb.2004.04.038
 
     # add each rate duo as separate column in dataframe
-    df = pd.DataFrame({'2·2Rα': k4rev, '2·2Rβ': k5rev, '2·2Rα·2Rβ': k10rev, '15·15Rα': k16rev, '15·2Rβ': k17rev, '15·15Rα·2Rβ': k22rev, '7·7Rα': k27rev, '4·4Rα': k33rev})
+    df = pd.DataFrame({'2·2Rα': kfwd_2/k4rev, '2·2Rβ': kfwd_2/k5rev, '2·2Rα·2Rβ': kfwd_2/k10rev, '15·15Rα': kfwd_2/k16rev, '15·2Rβ': kfwd_2/k17rev, '15·15Rα·2Rβ': kfwd_2/k22rev, '7·7Rα': kfwd_4/k27rev, '4·4Rα': kfwd_4/k33rev})
 
     col_list = ["violet", "violet", "violet", "goldenrod", "goldenrod", "goldenrod", "blue", "lightblue"]
     col_list_palette = sns.xkcd_palette(col_list)
     cmap = sns.set_palette(col_list_palette)
 
-    a = sns.violinplot(data=np.log10(df), ax=ax, linewidth=0, bw=10, cmap=cmap, scale='width')
+    a = sns.violinplot(data=np.log10(df), ax=ax, linewidth=0, cmap=cmap, scale='width')
     a.set_xticklabels(a.get_xticklabels(), rotation=40, rotation_mode="anchor", ha="right", fontsize=8, position=(0, 0.075))
-    a.set(title=r"Relative $\gamma_{c}$ affinity", ylabel=r"$\mathrm{log_{10}(\frac{1}{nM * min})}$")
+    a.set(title=r"Relative $\gamma_{c}$ affinity", ylabel=r"$\mathrm{log_{10}(K_{a})}$")
 
 def cell_act(unkVec, cytokC, scale):
     """ Cytokine activity for all IL2 doses for single cell line. """
