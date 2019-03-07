@@ -26,8 +26,8 @@ def makeFigure():
     print("kfwd = " + str(kfwd_avg) + " +/- " + str(kfwd_std))
     pstat_plot(ax[1], unkVec, scales)
     plot_pretreat(ax[2], unkVec, scales, "Cross-talk pSTAT inhibition")
-    surf_gc(ax[3], 100., unkVec)
-    violinPlots(ax[4:8], unkVec, scales)
+    surf_gc(ax[7], 100., unkVec)
+    violinPlots(ax[3:7], unkVec, scales)
 
     unkVec_noActiveEndo = unkVec.copy()
     unkVec_noActiveEndo[18] = 0.0   # set activeEndo rate to 0
@@ -114,24 +114,25 @@ def violinPlots(ax, unkVec, scales):
     scales = pd.DataFrame(scales)
 
     rxn.columns = [r'$k_{27}$', r'$k_{33}$']
-    a = sns.violinplot(data=np.log10(rxn), ax=ax[0])  # creates names based on dataframe columns
-    a.set_ylabel(r"$\mathrm{log_{10}(\frac{1}{nM * min})}$")
+    a = sns.violinplot(data=np.log10(rxn), ax=ax[0], linewidth=0.5)  # creates names based on dataframe columns
+    a.set_ylabel(r"$\mathrm{log_{10}(\frac{1}{min})}$")
     a.set_title("Reverse reaction rates")
 
     traf.columns = traf_names()
-    b = sns.violinplot(data=traf, ax=ax[1])
+    b = sns.violinplot(data=np.log10(traf), ax=ax[1], linewidth=0.5)
     b.set_xticklabels(b.get_xticklabels(), rotation=40, rotation_mode="anchor", ha="right", fontsize=8, position=(0,0.045))
     b.set_ylabel(r"$\mathrm{log_{10}(\frac{1}{min})}$")
     b.set_title("Trafficking parameters")
 
     Rexpr.columns = [r'$\gamma_{c}$', 'IL-7Rα', 'IL-4Rα']
-    c = sns.violinplot(data=Rexpr, ax=ax[2])
+    c = sns.violinplot(data=np.log10(Rexpr), ax=ax[2], linewidth=0.5)
     c.set_xticklabels(c.get_xticklabels(), rotation=40, rotation_mode="anchor", ha="right", fontsize=8, position=(0,0.045))
     c.set_ylabel(r"$\mathrm{log_{10}(\frac{num}{cell * min})}$")
     c.set_title("Receptor expression rates")
 
     scales.columns = [r'$C_{6}$', r'$C_{5}$']
-    d = sns.violinplot(data=scales, ax=ax[3])
+    d = sns.violinplot(data=scales, ax=ax[3], linewidth=0.5)
+    d.set_ylabel("value")
     d.set_title("pSTAT scaling constants")
 
 def pretreat_calc(unkVec, scales, pre_conc):
