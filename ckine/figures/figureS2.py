@@ -4,7 +4,7 @@ This creates Figure S2.
 import string
 import os
 import pickle
-import numpy as np, cupy as cp
+import numpy as np
 import pandas as pds
 import tensorly as tl
 from .figureCommon import subplotLabel, getSetup, plot_cells, plot_ligands, plot_values, plot_timepoints

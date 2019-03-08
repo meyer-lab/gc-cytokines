@@ -2,8 +2,6 @@
 Analyze tensor from tensor_generation and plotting.
 """
 import numpy as np
-import pandas as pd
-import cupy as cp
 import tensorly as tl
 from tensorly.decomposition import parafac
 from tensorly.decomposition import tucker

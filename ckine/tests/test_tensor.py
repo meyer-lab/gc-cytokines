@@ -2,7 +2,6 @@
 Unit test file.
 """
 import unittest
-import warnings
 import numpy as np
 import tensorly as tl
 from ..Tensor_analysis import find_R2X, perform_decomposition, reorient_factors, scale_all
