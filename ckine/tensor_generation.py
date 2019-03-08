@@ -76,7 +76,7 @@ def findy(lig, n_timepoints):
     y_of_combos = np.zeros((len(new_mat), ts.size, nSpecies()))
 
     # Iterate through every combination of values and store solver values in a y matrix
-    for ii in range(new_mat.shape[0]):
+    for ii in trange(new_mat.shape[0]):
         y_of_combos[ii] = ySolver(new_mat[ii,:], ts)
 
     return y_of_combos, new_mat, mat, mats, cell_names
