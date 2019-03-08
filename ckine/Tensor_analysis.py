@@ -13,7 +13,7 @@ def tensorly_backend(bknd):
     elif bknd == 1:
         tl.set_backend('tensorflow')
 
-backend = 1 #Only place to choose what the backend should be. numpy = 0. cupy = 1. other backends we desire = 2, ... 
+backend = 0 #Only place to choose what the backend should be. numpy = 0. cupy = 1. other backends we desire = 2, ... 
 tensorly_backend(bknd = backend) #Set the backend within every file that imports from Tensor_analysis.py
 
 def tl_var(matrix):
