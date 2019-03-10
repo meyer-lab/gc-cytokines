@@ -72,25 +72,6 @@ def find_R2X(values, factors, subt):
     values_reconstructed = tl.kruskal_to_tensor(factors)
     return R2X(values_reconstructed, z_values)
 
-def R2X_remove_one(values, factors, n_comps):
-    """Generate additional R2X plot for removing single components from final factorization."""
-    z_values = z_score_values(values)
-    LigandTensor = z_values[:,:,:]
-
-    R2X_singles_arr = tl.zeros((2, n_comps)) #0 is ligand; 1 is overall
-    for ii in range(n_comps):
-        new_factors = list()
-        for jj in range(3): #3 because decomposed tensor into 3 factor matrices
-            new_factors.append(tl.tensor(np.delete(tl.to_numpy(factors[jj], ii, 1))))
-
-        overall_reconstructed = tl.kruskal_to_tensor(new_factors)
-        Ligand_reconstructed = overall_reconstructed[:,:,:]
-
-        R2X_singles_arr[0,ii] = 1 - tl_var(Ligand_reconstructed - LigandTensor) / tl_var(LigandTensor)
-        R2X_singles_arr[1,ii] = 1 - tl_var(overall_reconstructed - z_values) / tl_var(z_values)
-
-    return R2X_singles_arr
-
 def scale_time_factors(factors, component_index):
     """Scale the timepoint factor component by dividing the mean and then in the values plot multiply the values by that same number."""
     scale_factor = tl.mean(factors[0][:, component_index])
