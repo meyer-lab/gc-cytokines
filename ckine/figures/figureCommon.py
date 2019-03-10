@@ -57,11 +57,6 @@ def plot_conf_int(ax, x_axis, y_axis, color, label=None):
     y_axis_bot = np.percentile(y_axis, 2.5, axis=1)
     ax.fill_between(x_axis, y_axis_top, y_axis_bot, color=color, alpha=0.5, label=label)
 
-def plot_timepoint(ax, factors, component_x, component_y):
-    """Plot the timepoint decomposition in the first column of figS2."""
-    ax.plot(factors[:, component_x - 1], factors[:, component_y - 1], color = 'k')
-    ax.scatter(factors[-1, component_x - 1], factors[-1, component_y - 1], s = 12, color = 'b')
-
 def plot_cells(ax, factors, component_x, component_y, cell_names, ax_pos, legend = True):
     """This function plots the combination decomposition based on cell type."""
     colors = cm.rainbow(np.linspace(0, 1, len(cell_names)))
