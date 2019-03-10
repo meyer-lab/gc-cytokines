@@ -1,8 +1,9 @@
 """
 This file includes the classes and functions necessary to fit the IL4 and IL7 model to experimental data.
 """
-import pymc3 as pm, theano.tensor as T, os
+import os
 from os.path import join
+import pymc3 as pm, theano.tensor as T
 import numpy as np, pandas as pds
 from .model import getTotalActiveSpecies, nSpecies, getActiveSpecies, internalStrength, halfL, getCytokineSpecies
 from .differencing_op import runCkineDoseOp
