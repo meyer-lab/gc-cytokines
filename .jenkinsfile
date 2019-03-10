@@ -2,8 +2,16 @@ pipeline {
   agent any
   stages {
     stage('Clean')    { steps { sh 'git clean -ffdx && make clean' } }
-    stage('Test C++') { steps { sh 'make testcpp' } }
-    stage('Test')     { steps { sh 'make testcover' } }
+    stage('Test/Lint/Doc') {
+      parallel {
+        stage('Test C++') { steps { sh 'make testcpp' } }
+        stage('Test') { steps { sh 'make testcover' } }
+        stage('Lint') {
+          steps { sh '(pylint3 --rcfile=.pylintrc ckine > pylint.log || echo "pylint3 exited with $?")' }
+        }
+        stage('Doc') { steps { sh 'make doc' } }
+      }
+    }
     stage('Build Figures') {
       parallel {
         stage('Build Fig 1') {
@@ -20,15 +28,9 @@ pipeline {
         }
       }
     }
-    stage('Build') {
-      steps {
-        sh 'make'
-      }
-    }
-    stage('Lint')  { steps { sh '(pylint3 --rcfile=.pylintrc ckine > pylint.log || echo "pylint3 exited with $?")' } }
+    stage('Finish Build') { steps { sh 'make' } }
     stage('Report') {
       steps {
-        sh 'make doc'
         archiveArtifacts artifacts: 'doxy.log', onlyIfSuccessful: false
         archiveArtifacts artifacts: 'graph_all.svg', onlyIfSuccessful: true
         archiveArtifacts artifacts: 'cprofile.svg', onlyIfSuccessful: true
@@ -76,7 +78,7 @@ pipeline {
   }
   post {
     always {
-      junit 'nosetests.xml'
+      junit allowEmptyResults: true, testResults: 'junit.xml'
     }
   }
 }
