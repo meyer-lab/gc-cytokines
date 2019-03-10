@@ -10,8 +10,18 @@ import numpy as np, pandas as pds
 from tqdm import trange
 from .model import runCkineU, nParams, nSpecies, internalStrength, halfL
 
+#Load the data from csv file
 path = os.path.dirname(os.path.abspath(__file__))
-data = pds.read_csv(join(path, 'data/expr_table.csv')) # Every column in the data represents a specific cell
+data = pds.read_csv(join(path, 'data/Preliminary receptor levels.csv')) # Every row in the data represents a specific cell
+numpy_data = data.values[:,1:] # returns data values in a numpy array
+cell_names = list(data.values[:,0]) #returns the cell names from the pandas dataframe (which came from csv). 8 cells. 
+#['Il2ra' 'Il2rb' 'Il2rg' 'Il15ra'] in that order from Receptor levels. CD25, CD122, CD132, CD215
+
+#Set the following variables for multiple functions to use
+endo = 0.080084184
+kRec = 0.155260036
+sortF = 0.179927669
+kDeg = 0.017236595
 
 def ySolver(matIn, ts):
     """ This generates all the solutions of the tensor. """
@@ -30,13 +40,14 @@ def ySolver(matIn, ts):
     rxntfR[15] = 0.095618346 #k33rev
     #TODO: Update parameters based on IL9&21.
     rxntfR[[14, 16]] = 0.15  # From fitting IL9 and IL21: k4rev - k35rev
-    rxntfR[17] = 0.080084184 #endo
+    rxntfR[17] = endo #endo
     rxntfR[18] = 1.474695447 #activeEndo
-    rxntfR[19] = 0.179927669 #sortF
-    rxntfR[20] = 0.155260036 #kRec
-    rxntfR[21] = 0.017236595 #kDeg
+    rxntfR[19] = sortF #sortF
+    rxntfR[20] = kRec #kRec
+    rxntfR[21] = kDeg #kDeg
 
     rxntfR[22:30] = matIn[6:14] # Receptor expression
+    
     rxntfR[0:6] = matIn[0:6] # Cytokine stimulation concentrations in the following order: IL2, 15, 7, 9, 4, 21, and in nM
 
     temp, retVal = runCkineU(ts, rxntfR)
@@ -47,25 +58,20 @@ def ySolver(matIn, ts):
 
 def findy(lig, n_timepoints):
     """A function to find the different values of y at different timepoints and different initial conditions. Takes in how many ligand concentrations and expression rates to iterate over."""
-    #Receptor expression levels were determined from the following cells through ImmGen
-    #Expression Value Normalized by DESeq2, and we have 34 types of cells
-    #Load the data from csv file
-    path = os.path.dirname(os.path.abspath(__file__))
-    data = pds.read_csv(join(path, 'data/expr_table.csv')) # Every column in the data represents a specific cell
-    numpy_data = data.values # returns data values in a numpy array
-    cell_names = data.columns.values.tolist()[1::] #returns the cell names from the pandas dataframe (which came from csv)
-
-    #np.delete removes the first column of the data which only includes the name of the receptors (6x35 to 6x34)
-    #['Il2ra' 'Il2rb' 'Il2rg' 'Il15ra' 'Il7r' 'Il9r', 'IL4Ra, 'IL21Ra'] in that order
-    data_numbers = np.delete(numpy_data, 0, 1)
 
     ILs = np.logspace(-3., 2., num=lig) # Cytokine stimulation concentrations
     # Goal is to make one cell expression levels by len(mat) for every cell
     # Make mesh grid of all combinations of ligand
-    mat = np.array(np.meshgrid(ILs, ILs, ILs, ILs, ILs, ILs)).T.reshape(-1, 6)
+    mat = np.array(np.meshgrid(ILs, ILs, 0, 0, 0, 0)).T.reshape(-1, 6) #Set interleukins other than IL2&15 to zero
+    mats = np.tile(mat, (len(cell_names), 1)) # Repeat the cytokine stimulations (mat) an X amount of times where X here is number of cells (8)
 
-    mats = np.tile(mat, (len(cell_names), 1)) # Repeat the cytokine stimulations (mat) an X amount of times where X here is number of cells (34)
-    receptor_repeats = np.repeat(data_numbers.T,len(mat), 0) #Create an array that repeats the receptor expression levels 'len(mat)' times
+    no_expression = np.ones((numpy_data.shape[0], 8 - numpy_data.shape[1])) * 0.5 #Set receptor levels for IL7Ra, IL9R, IL4Ra, IL21Ra to one. We won't use them for IL2-15 model. Second argument can also be set to 4 since we only have IL2Ra, IL2Rb, gc, IL15Ra measured. 
+    #need to convert numbers to expression values
+    for ii in range(numpy_data.shape[1]):
+        numpy_data[:,ii] = (numpy_data[:,ii] * endo) / (1. + ((kRec*(1.-sortF)) / (kDeg*sortF))) # constant according to measured number per cell
+    all_receptors = np.concatenate((numpy_data, no_expression), axis = 1) #Expression: IL2Ra, IL2Rb, gc, IL15Ra, IL7Ra, IL9R, IL4Ra, IL21Ra in order
+    receptor_repeats = np.repeat(all_receptors,len(mat), 0) #Create an array that repeats the receptor expression levels 'len(mat)' times
+
     new_mat = np.concatenate((mats, receptor_repeats), axis = 1) #concatenate to obtain the new meshgrid
 
     # generate n_timepoints evenly spaced timepoints to 4 hrs
@@ -84,14 +90,10 @@ def findy(lig, n_timepoints):
 def reduce_values(y_of_combos):
     """Reduce y_of_combinations into necessary values."""
     active_list = [np.array([7, 8, 14, 15]),np.array([18]),np.array([21]),np.array([24]),np.array([27])] #active indices for all receptors relative to cytokine; Note we combined the activity of IL2 and IL15
-    values = np.zeros((y_of_combos.shape[0],y_of_combos.shape[1],21)) #21 for receptors + ligands
+    values = np.zeros((y_of_combos.shape[0],y_of_combos.shape[1],5)) #Select 5 for IL2+15, IL7, IL9, IL4, IL21
     indices = [np.array([0, 3, 5, 6, 8]), np.array([1, 4, 5, 7, 8, 11, 12, 14, 15]), np.array([2, 6, 7, 8, 13, 14, 15, 18, 21]), np.array([9, 10, 12, 13, 15]), np.array([16, 17, 18]), np.array([19, 20, 21]), np.array([22, 23, 24]),np.array([25, 26, 27])]
     for i in range(5): #first 6 total active cytokines
-        values[:,:,i] = np.sum(y_of_combos[:,:,active_list[i]], axis = 2) + internalStrength() * np.sum(y_of_combos[:,:,halfL()+active_list[i]], axis = 2)
-    for j in range(len(indices)):
-        values[:,:,5+j] = np.sum(y_of_combos[:,:,indices[j]], axis = 2)
-    for k in range(len(indices)):
-        values[:,:,5+len(indices)+k] = values[:,:,5+k] + internalStrength() * np.sum(y_of_combos[:,:,halfL(): halfL() * 2][:,:,indices[k]], axis = 2)
+        values[:,:,i] = np.sum(y_of_combos[:,:,active_list[i]], axis = 2) + internalStrength()*np.sum(y_of_combos[:,:,halfL()+active_list[i]], axis = 2)
     return values
 
 def prepare_tensor(lig, n_timepoints = 100):
@@ -99,7 +101,7 @@ def prepare_tensor(lig, n_timepoints = 100):
     y_of_combos, new_mat, mat, mats, cell_names = findy(lig, n_timepoints) #mat here is basically the 2^lig cytokine stimulation; mats
 
     values = reduce_values(y_of_combos)
-    tensor4D = np.zeros((values.shape[1],len(cell_names),len(mat),values.shape[2]))
-    for ii in range(tensor4D.shape[0]):
-        tensor4D[ii] = values[:,ii,:].reshape(tensor4D.shape[1:4])
-    return tensor4D, new_mat, mat, mats, cell_names
+    tensor3D = np.zeros((values.shape[1],len(cell_names),len(mat)))
+    for ii in range(tensor3D.shape[0]):
+        tensor3D[ii] = values[:,ii,0].reshape(tensor3D.shape[1:3])
+    return tensor3D, new_mat, mat, mats, cell_names

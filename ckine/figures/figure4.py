@@ -18,11 +18,9 @@ def makeFigure():
     for ii, item in enumerate(ax):
         subplotLabel(item, string.ascii_uppercase[ii])
 
-    data, cell_names = load_cells()
     unkVec_2_15, scales_2_15 = import_samples_2_15()
     unkVec_4_7, scales_4_7 = import_samples_4_7()
     relativeGC(ax[0], unkVec_2_15, unkVec_4_7)
-    all_cells(ax[1], data, cell_names, unkVec_2_15[:, 0], scales_2_15[0])
     IL2_receptor_activity(ax[2:5], unkVec_2_15, scales_2_15)
 
     f.tight_layout(w_pad=0.1, h_pad=1.0)
@@ -64,27 +62,6 @@ def cell_act(unkVec, cytokC, scale):
         act[num] = act[num] / np.max(act[num])
 
     return act
-
-def all_cells(ax, cell_data, cell_names, unkVec, scale):
-    """ Loops through all cell types and calculates activities. """
-    cell_data = cell_data.values    # convert to numpy array
-    PTS = 60    # number of cytokine concentrations that are used
-    cytokC = np.logspace(-5, 0, PTS)
-    numCells = cell_data.shape[1] - 1   # first column is receptor names
-
-    colors = cm.rainbow(np.linspace(0, 1, numCells))
-
-    newVec = np.tile(unkVec, (numCells, 1)) # copy unkVec numCells times to create a 2D array
-    newVec[:, 22:30] = cell_data[:, 1:].T # place cell data into newVec
-    scaleVec = np.repeat(scale, numCells) # create an array of scale to match size of newVec
-
-    act = cell_act(newVec, cytokC, scaleVec) # run simulations
-
-    # plot results
-    for ii in range(act.shape[0]):
-        ax.plot(np.log10(cytokC), act[ii], label=cell_names[ii], c=colors[ii])
-    ax.legend(loc='upper left', bbox_to_anchor=(1.05, 1.2))
-    ax.set(title="Cell Response to IL-2", ylabel="pSTAT5 (% of max)", xlabel=r'IL-2 concentration (log$_{10}$[nM])')
 
 def IL2_receptor_activity(ax, unkVec, scales):
     """ Shows how IL2-pSTAT dose response curves change with receptor expression rates. """
