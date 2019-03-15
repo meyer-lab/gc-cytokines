@@ -4,6 +4,7 @@ This file contains functions that are used in multiple figures.
 import os
 from os.path import join
 import itertools
+import tensorly as tl
 import pymc3 as pm
 import seaborn as sns
 import numpy as np
@@ -13,6 +14,12 @@ from matplotlib import gridspec, pyplot as plt
 from ..model import nParams
 from ..fit import build_model as build_model_2_15
 from ..fit_others import build_model as build_model_4_7
+from ..tensor_generation import prepare_tensor
+
+n_ligands = 4
+values, _, mat, _, _ = prepare_tensor(n_ligands)
+values = tl.tensor(values)
+
 
 def getSetup(figsize, gridd, mults=None, multz=None, empts=None):
     """ Establish figure set-up with subplots. """
@@ -42,6 +49,28 @@ def getSetup(figsize, gridd, mults=None, multz=None, empts=None):
 
     return (ax, f)
 
+def plot_ligands(ax, factors, component_x, component_y, ax_pos):
+    "This function is to plot the ligand combination dimension of the values tensor."
+    markers = ['^', '*', 'D', 's', 'X', 'o', '4', 'H', 'P', '*', 'D', 's', 'X' ,'o', 'd', '1', '2', '3', '4', 'h', 'H', 'X', 'v', '*', '+', '8', 'P', 'p', 'D', '_','D', 's', 'X', 'o']
+    markers = markers[0:n_ligands]
+    colors = cm.rainbow(np.linspace(0, 1, n_ligands))
+    labels2 = [("%1.2e " + "nM IL2") % ii for ii in mat[0:n_ligands,1]]
+    labels15 = [("%1.2e " + "nM IL15") % ii for ii in mat[0:n_ligands,1]]
+    for ii in range(n_ligands):
+        start = ii*n_ligands
+        end = start + n_ligands
+        for idx, pos in enumerate(range(start,end)): #First two columns to plot IL2 and IL15 based on concentration.
+            if ii < 1:
+                ax.scatter(factors[pos,component_x - 1], factors[pos,component_y - 1], marker = markers[idx], c = colors[ii], label = labels15[idx])
+            else:
+                ax.scatter(factors[pos,component_x - 1], factors[pos,component_y - 1], marker = markers[idx], c = colors[ii])
+    ax.set_title('Ligands')
+    if ax_pos == 2:
+        ax.legend()
+    
+    if ax_pos == 6:
+        ax.legend()
+
 def subplotLabel(ax, letter, hstretch=1):
     """ Label each subplot """
     ax.text(-0.2 / hstretch, 1.2, letter, transform=ax.transAxes,
@@ -57,7 +86,7 @@ def plot_conf_int(ax, x_axis, y_axis, color, label=None):
     y_axis_bot = np.percentile(y_axis, 2.5, axis=1)
     ax.fill_between(x_axis, y_axis_top, y_axis_bot, color=color, alpha=0.5, label=label)
 
-def plot_cells(ax, factors, component_x, component_y, cell_names, ax_pos, legend = True):
+def plot_cells(ax, factors, component_x, component_y, cell_names, ax_pos):
     """This function plots the combination decomposition based on cell type."""
     colors = cm.rainbow(np.linspace(0, 1, len(cell_names)))
     markersCells = ['^', '*', 'D', 's', 'X', 'o', '4', 'H'] # 'P', '*', 'D', 's', 'X' ,'o', 'd', '1', '2', '3', '4', 'h', 'H', 'X', 'v', '*', '+', '8', 'P', 'p', 'D', '_','D', 's', 'X', 'o'
@@ -65,16 +94,13 @@ def plot_cells(ax, factors, component_x, component_y, cell_names, ax_pos, legend
     for ii in range(len(factors[:, component_x - 1])):
         ax.scatter(factors[ii, component_x - 1], factors[ii, component_y - 1], c = colors[ii], marker = markersCells[ii], label = cell_names[ii])
 
-    if legend:
-        if ax_pos == 1:
-            ax.legend(loc='upper left', bbox_to_anchor=(2.5, 1))
+    if ax_pos == 1:
+        ax.legend()
 
-        elif ax_pos == 5:
-            ax.legend(loc='upper left', bbox_to_anchor=(3.6, 0.5))
+    elif ax_pos == 5:
+        ax.legend(fontsize = 8, labelspacing = 0, handlelength = 0)
+    ax.set_title('Cells')
 
-def plot_ligands(ax, factors, component_x, component_y):
-    "This function is to plot the ligand combination dimension of the values tensor."
-    ax.scatter(factors[:,component_x - 1], factors[:,component_y - 1])
 
 def overlayCartoon(figFile, cartoonFile, x, y, scalee=1):
     """ Add cartoon to a figure file. """
@@ -100,6 +126,7 @@ def plot_timepoints(ax, factors):
 
     ax.set_xlabel('Time (min)')
     ax.set_ylabel('Component')
+    ax.set_title('Time')
     ax.legend()
 
 def import_samples_2_15(Fig1=True):
