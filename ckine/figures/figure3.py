@@ -11,19 +11,15 @@ import numpy as np, pandas as pds
 from scipy import stats
 from sklearn.decomposition.pca import PCA
 import matplotlib.cm as cm
-from .figureCommon import subplotLabel, getSetup, plot_cells, plot_ligands, plot_timepoints
+from .figureCommon import subplotLabel, getSetup, plot_cells, plot_ligands, plot_timepoints, values, mat
 from ..Tensor_analysis import find_R2X, scale_all, perform_decomposition, perform_tucker, find_R2X_tucker
-from ..tensor_generation import data, prepare_tensor
-
-n_ligands = 4
-values, _, mat, _, _ = prepare_tensor(n_ligands)
-values = tl.tensor(values)
+from ..tensor_generation import data
 
 def makeFigure():
     """Get a list of the axis objects and create a figure"""
     # Get list of axis objects
     x, y = 3, 4
-    ax, f = getSetup((16, 14), (x, y))
+    ax, f = getSetup((10, 7), (x, y))
     # Blank out for the cartoon
     ax[0].axis('off')
     ax[8].axis('off')
@@ -39,7 +35,7 @@ def makeFigure():
 
 
     numpy_data = data.values[:,1:] # returns data values in a numpy array
-    cell_names = list(data.values[:,0]) #returns the cell names from the pandas dataframe (which came from csv). 8 cells. 
+    cell_names = ['Naive Th', 'Mem Th', 'Naive Treg', 'Mem Treg','Naive CD8+', 'Mem CD8+','NK','NKT']
     #['Il2ra' 'Il2rb' 'Il2rg' 'Il15ra'] in that order from Receptor levels. CD25, CD122, CD132, CD215
 
     n_comps = 4
@@ -59,8 +55,8 @@ def makeFigure():
     for row in range(1,3):
         subplotLabel(ax[row], string.ascii_uppercase[row]) # Add subplot labels
         compNum = 2*(row-1) + 1
-        plot_cells(ax[row*y + 1], newfactors[1], compNum, compNum+1, cell_names, ax_pos = row*y + 1, legend=True)
-        plot_ligands(ax[row*y + 2], newfactors[2], compNum, compNum+1)
+        plot_cells(ax[row*y + 1], newfactors[1], compNum, compNum+1, cell_names, ax_pos = row*y + 1)
+        plot_ligands(ax[row*y + 2], newfactors[2], compNum, compNum+1, ax_pos = row*y + 2)
 
         # Set axes to center on the origin, and add labels
         for col in range(1,y):
@@ -73,7 +69,7 @@ def makeFigure():
             ax[row*y + col].set_xlim(-x_max, x_max)
             ax[row*y + col].set_ylim(-y_max, y_max)
 
-    #f.tight_layout()
+    f.tight_layout()
 
     return f
 
@@ -107,7 +103,7 @@ def PCA_receptor(ax1, ax2, cell_names, data):
     ax1.set_xlabel('PC1 (' + str(round(expVar[0]*100, 2))+ '%)')
     ax1.set_ylabel('PC2 (' + str(round(expVar[1]*100, 2))+ '%)')
     ax1.set_title('Scores')
-    ax1.legend(loc='upper left', bbox_to_anchor=(3.5, 1.0))
+    ax1.legend(loc = 9, fontsize = 7, labelspacing = 0, handlelength = 0)
 
     ax2.set_xlim(-x_max2, x_max2)
     ax2.set_ylim(-y_max2, y_max2)

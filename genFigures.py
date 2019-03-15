@@ -23,6 +23,6 @@ if __name__ == '__main__':
     if sys.argv[1] == '3':
         # Overlay Figure 3 cartoon
         overlayCartoon(fdir + 'figure3.svg',
-                       './ckine/data/tensor.svg', 10, 150, scalee=0.37)
+                       './ckine/data/tensor.svg', 10, 10, scalee=0.2)
 
     print(nameOut + ' is done.')
