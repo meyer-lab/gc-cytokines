@@ -89,7 +89,7 @@ def runCkineS (tps, rxntfr, condense):
 def runCkineU_IL2 (tps, rxntfr):
     """ Standard version of solver that returns species abundances given times and unknown rates. """
     rxntfr = rxntfr.copy()
-    assert rxntfr.size == 10
+    assert rxntfr.size == 15
 
     yOut = np.zeros((tps.size, __nSpecies), dtype=np.float64)
 
@@ -105,10 +105,19 @@ def runIL2simple(input, IL, CD25=1.0, ligandDegradation=False):
     # TODO: Update parameters based on distinct endosomal fitting.
     tps = np.array([500.0])
 
+    kfwd = 0.00449
+    k1rev = 0.6*10*input[0]
+    k2rev = 0.6*144*input[1]
+    k4rev = 8.6677
+    k5rev = 0.1233
+    k11rev = 63.0 * k5rev / 1.5 * input[1]
+    IL2Ra = 3.8704*CD25
+    IL2Rb = 0.734
+    gc = 1.7147
     # IL, kfwd, k1rev, k2rev, k4rev, k5rev, k11rev, R, R, R
-    rxntfr = np.array([IL, 0.00449, 0.6*10*input[0],
-                       0.6*144*input[1], 8.6677, 0.1233,
-                       63.0 * 0.1233 / 1.5 * input[1], 3.8704*CD25, 0.734, 1.7147])
+    rxntfr = np.array([IL, kfwd, k1rev, k2rev, k4rev, k5rev, k11rev,
+                      IL2Ra, IL2Rb, gc,
+                      k1rev*input[2], k2rev*input[2], k4rev*input[2], k5rev*input[2], k11rev*input[2]]) # input[2] represents endosomal binding affinity relative to surface affinity
 
     yOut, retVal = runCkineU_IL2(tps, rxntfr)
 
