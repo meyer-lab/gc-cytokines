@@ -6,7 +6,7 @@ import numpy as np
 from hypothesis import given, settings
 from hypothesis.strategies import floats
 from hypothesis.extra.numpy import arrays as harrays
-from ..model import fullModel, getTotalActiveCytokine, runCkineU, nSpecies, runCkineUP, runCkineU_IL2, ligandDeg
+from ..model import fullModel, getTotalActiveCytokine, runCkineU, nSpecies, runCkineUP, runCkineU_IL2, ligandDeg, runIL2simple
 
 
 settings.register_profile("ci", max_examples=1000, deadline=None)
@@ -235,7 +235,7 @@ class TestModel(unittest.TestCase):
 
     def test_runCkineU_IL2(self):
         """ Make sure IL-2 activity is higher when its IL-2 binds tighter to IL-2Ra (k1rev (rxntfr[2]) is smaller). """
-        rxntfr_reg = np.ones(10)
+        rxntfr_reg = np.ones(15)
         rxntfr_loose = rxntfr_reg.copy()
         rxntfr_gc = rxntfr_reg.copy()
         rxntfr_gc[9] = 0.0 # set gc expression to 0
@@ -257,7 +257,7 @@ class TestModel(unittest.TestCase):
     def test_ligandDeg_All(self):
         """ Verify that ligand degradation increases when sortF and kDeg increase. """
         # case for IL2
-        y, _ = runCkineU_IL2(self.ts, np.ones(10))
+        y, _ = runCkineU_IL2(self.ts, np.ones(15))
         sortF, kDeg = 0.5, 1.0
         reg = ligandDeg(y[1,:], sortF, kDeg, 0)
         high_sortF = ligandDeg(y[1,:], 0.9, kDeg, 0)
@@ -281,3 +281,13 @@ class TestModel(unittest.TestCase):
         yOut, retVal = runCkineU(self.ts, rxntfR)
         tot_endo = np.sum(yOut[1, 28::])
         self.assertEqual(tot_endo, 0.0)
+
+    def test_IL2_endo_binding(self):
+        """ Make sure that the runIL2simple works and that increasing the endosomal reverse reaction rates causes tighter binding (less ligand degradation). """
+        inp_normal = np.array([1.0, 1.0, 5.0])
+        inp_tight = np.array([1.0, 1.0, 1.0]) # lower reverse rates in the endosome
+
+        out_norm = runIL2simple(inp_normal, 1.0, ligandDegradation=True)
+        out_tight = runIL2simple(inp_tight, 1.0, ligandDegradation=True)
+
+        self.assertLess(out_tight, out_norm) # tighter binding will have a lower rate of ligand degradation since all free ligand is degraded
