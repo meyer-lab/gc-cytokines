@@ -36,19 +36,6 @@ pipeline {
         archiveArtifacts artifacts: 'cprofile.svg', onlyIfSuccessful: true
         archiveArtifacts artifacts: 'Manuscript/Manuscript.pdf', onlyIfSuccessful: true
         archiveArtifacts artifacts: 'Manuscript/Figures/*.pdf', onlyIfSuccessful: true
-        publishValgrind([
-          pattern: 'valgrind.xml',
-          failThresholdInvalidReadWrite: '1',
-          failThresholdDefinitelyLost: '100',
-          failThresholdTotal: '1000',
-          unstableThresholdInvalidReadWrite: '1',
-          unstableThresholdDefinitelyLost: '100',
-          unstableThresholdTotal: '1000',
-          sourceSubstitutionPaths: '',
-          publishResultsForAbortedBuilds: false,
-          publishResultsForFailedBuilds: true,
-          failBuildOnMissingReports: true,
-          failBuildOnInvalidReports: true])
         publishHTML([
           allowMissing: false,
           alwaysLinkToLastBuild: false,
@@ -57,20 +44,8 @@ pipeline {
           reportFiles: 'index.html',
           reportName: 'Manuscript',
           reportTitles: ''])
-        step([
-          $class: 'CoberturaPublisher',
-          autoUpdateHealth: true,
-          autoUpdateStability: true,
-          coberturaReportFile: 'coverage.xml',
-          failNoReports: true,
-          failUnhealthy: true,
-          failUnstable: true,
-          sourceEncoding: 'UTF_8',
-          zoomCoverageChart: true])
-        step([$class:'TasksPublisher', canComputeNew:false, defaultEncoding:'', excludePattern:'',
-          healthy:'', high:'TODO,FIXME,XXX', low:'', normal:'CITE', pattern:'**/*.py, **/*.md', unHealthy:''])
-        step([$class:'WarningsPublisher', parserConfigurations: [[parserName:'PYLint', pattern:'pylint.log']],
-          unstableTotalAll:'75', usePreviousBuildAsReference:true])
+        cobertura coberturaReportFile: 'coverage.xml', failUnhealthy: false, failUnstable: false, maxNumberOfBuilds: 0, onlyStable: false, sourceEncoding: 'ASCII', zoomCoverageChart: false
+        recordIssues minimumSeverity: 'HIGH', tools: [pyLint(pattern: 'pylint.log')], unhealthy: 10
         publishHTML([allowMissing:false, alwaysLinkToLastBuild:false, keepAll:true,
           reportDir:'html', reportFiles:'index.html', reportName:'Documentation', reportTitles:''])
       }
