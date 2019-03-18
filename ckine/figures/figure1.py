@@ -29,8 +29,7 @@ def makeFigure():
     violinPlots(ax[5:8], unkVec, scales)
     rateComp(ax[4], unkVec)
 
-
-    f.tight_layout()
+    f.tight_layout(w_pad=1.3)
 
     return f
 
@@ -83,7 +82,7 @@ def surf_perc(ax, species, unkVec):
     ax[0].set_ylim(0,115)
 
 
-def pstat_act(ax, unkVec, scales, Fig1=True):
+def pstat_act(ax, unkVec, scales):
     """ This function generates the pSTAT activation levels for each combination of parameters in unkVec. The results are plotted and then overlayed with the values measured by Ring et al. """
     pstat5 = pstat()
     PTS = 30
@@ -115,10 +114,8 @@ def pstat_act(ax, unkVec, scales, Fig1=True):
     ax.scatter(data[:,0], data[:,6], color='darkorchid', marker='o', edgecolors='k', zorder=102, label="IL-2, 2Rα+") # IL2 in 2Ra+
     ax.scatter(data[:,0], data[:,7], color='goldenrod', marker='o', edgecolors='k', zorder=103, label="IL-15, 2Rα+") # IL15 in 2Ra+
     ax.set(ylabel='pSTAT5 (% of max)', xlabel=r'Cytokine concentration (log$_{10}$[nM])', title='YT-1 cell activity')
-    if Fig1:
-        ax.legend(loc='upper left', bbox_to_anchor=(1.5, 1))
-    else:
-        ax.legend(loc='upper left', bbox_to_anchor=(0.25, -0.5))
+
+    ax.legend()
 
 def violinPlots(ax, unkVec, scales, Fig1=True):
     """ Create violin plots of model posterior. """
@@ -186,10 +183,10 @@ def rateComp(ax, unkVec):
 
     col_list = ["violet", "goldenrod"]
     col_list_palette = sns.xkcd_palette(col_list)
-    cmap = sns.set_palette(col_list_palette)
+    sns.set_palette(col_list_palette)
 
     # plot with hue being cytokine species
-    a = sns.violinplot(x='rate', y=r"$\mathrm{log_{10}(\frac{1}{min})}$", data=melted, hue='cytokine', ax=ax, cmap=cmap, linewidth=0, scale='width')
+    a = sns.violinplot(x='rate', y=r"$\mathrm{log_{10}(\frac{1}{min})}$", data=melted, hue='cytokine', ax=ax, linewidth=0, scale='width')
     a.scatter(-0.3, np.log10(kfbnd * 10), color="darkviolet")   # overlay point for k1rev
     a.scatter(0.1, np.log10(kfbnd * 0.065), color='goldenrod') # overlay point for k13rev
     a.scatter(0.7, np.log10(kfbnd * 144), color="darkviolet")   # overlay point for k2rev

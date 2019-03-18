@@ -5,3 +5,8 @@ B) Posterior distributions of analogous reverse reaction rates for IL-2 and IL-1
 C) Posterior distributions for receptor expression rates in no-trafficking model. Units are $\mathrm{\frac{number}{cell * minute}}$ and the y-axis is scaled by log~10~ for plotting purposes.
 D) Posterior distribution for the pSTAT5 activity scaling constant in no-trafficking model. ](./Figures/figureS1.svg){#fig:supp1}
 
+![**Receptor quantification on PBMC-derived immune cell types.** XXX](./Figures/figureS2.svg){#fig:supp2}
+
+![**Tucker factorization of immune cell type responses.** XXX](./Figures/figureS3.svg){#fig:supp3}
+
+![**Full panel of predicted versus actual immune cell type responses.** XXX](./Figures/figureS4.svg){#fig:supp4}

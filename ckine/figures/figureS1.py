@@ -17,7 +17,7 @@ def makeFigure():
     unkVec, scales = import_samples_2_15(Fig1=False)
     kfwd_avg, kfwd_std = kfwd_info(unkVec)
     print("kfwd = " + str(kfwd_avg) + " +/- " + str(kfwd_std))
-    pstat_act(ax[0], unkVec, scales, Fig1=False)
+    pstat_act(ax[0], unkVec, scales)
     rateComp(ax[1], unkVec)
     violinPlots(ax[2:4], unkVec, scales, Fig1=False)
 

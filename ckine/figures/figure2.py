@@ -13,7 +13,7 @@ from ..model import nParams, getTotalActiveSpecies, runCkineUP, getSurfaceGCSpec
 def makeFigure():
     """Get a list of the axis objects and create a figure"""
     # Get list of axis objects
-    ax, f = getSetup((10, 9), (3, 3))
+    ax, f = getSetup((10, 7), (3, 3))
 
     # Blank out for the cartoon
     ax[0].axis('off')

@@ -3,7 +3,7 @@ Theano Op for using differencing for Jacobian calculation.
 """
 import numpy as np
 from theano.tensor import dot, dmatrix, dvector, Op
-from .model import runCkineU, nSpecies, nParams, runCkineUP, runCkineS, runCkineSP
+from .model import nSpecies, nParams, runCkineUP, runCkineSP
 
 
 class runCkineDoseOp(Op):
