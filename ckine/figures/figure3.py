@@ -1,18 +1,13 @@
 """
 This creates Figure 3.
 """
-import os
-from os.path import join
-import pickle
 import string
-import time
-import tensorly as tl
-import numpy as np, pandas as pds
+import numpy as np
 from scipy import stats
 from sklearn.decomposition.pca import PCA
 import matplotlib.cm as cm
 from .figureCommon import subplotLabel, getSetup, plot_cells, plot_ligands, plot_timepoints, values, mat
-from ..Tensor_analysis import find_R2X, scale_all, perform_decomposition, perform_tucker, find_R2X_tucker
+from ..Tensor_analysis import find_R2X, scale_all, perform_decomposition
 from ..tensor_generation import data
 
 def makeFigure():
@@ -26,13 +21,8 @@ def makeFigure():
 
     factors_activity = []
     for jj in range(len(mat) - 1):
-        tic = time.clock()
-        print(jj)
         factors = perform_decomposition(values , jj+1)
         factors_activity.append(factors)
-    toc = time.clock()
-    print(toc - tic)
-
 
     numpy_data = data.values[:,1:] # returns data values in a numpy array
     cell_names = ['Naive Th', 'Mem Th', 'Naive Treg', 'Mem Treg','Naive CD8+', 'Mem CD8+','NK','NKT']

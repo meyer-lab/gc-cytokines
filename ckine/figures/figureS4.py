@@ -1,5 +1,5 @@
 """
-This creates Figure S2, which should contain the full panel of receptor quantification.
+This creates Figure S4. Full panel of measured vs simulated.
 """
 from .figureCommon import subplotLabel, getSetup
 

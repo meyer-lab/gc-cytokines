@@ -42,9 +42,9 @@ def relativeGC(ax, unkVec2, unkVec4):
 
     col_list = ["violet", "violet", "violet", "goldenrod", "goldenrod", "goldenrod", "blue", "lightblue"]
     col_list_palette = sns.xkcd_palette(col_list)
-    cmap = sns.set_palette(col_list_palette)
+    sns.set_palette(col_list_palette)
 
-    a = sns.violinplot(data=np.log10(df), ax=ax, linewidth=0, cmap=cmap, scale='width')
+    a = sns.violinplot(data=np.log10(df), ax=ax, linewidth=0, scale='width')
     a.set_xticklabels(a.get_xticklabels(), rotation=40, rotation_mode="anchor", ha="right", fontsize=8, position=(0, 0.075))
     a.set(title=r"Relative $\gamma_{c}$ affinity", ylabel=r"$\mathrm{log_{10}(K_{a})}$")
 

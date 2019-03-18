@@ -1,19 +1,18 @@
 \documentclass[11pt]{article}
 
-\usepackage{libertine}
-\usepackage{amssymb,amsmath,mathtools}
-\usepackage{ifxetex,ifluatex}
-\usepackage{microtype}
+\usepackage{amssymb, amsmath, mathtools, color, fontspec}
+\usepackage{ifxetex, ifluatex, microtype}
 
-% To allow Ryan to show alterations he has made to the manuscript using colored text:
-\usepackage{color}
+\setsansfont{Roboto}
+\setmainfont{Roboto}
+
 \usepackage[affil-it]{authblk}
 
 \PassOptionsToPackage{hyphens}{url} % url is loaded by hyperref
 
 \usepackage[unicode=true]{hyperref}
 
-\PassOptionsToPackage{usenames,dvipsnames}{color} % color is loaded by hyperref
+\PassOptionsToPackage{usenames, dvipsnames}{color} % color is loaded by hyperref
 
 \hypersetup{
 $if(title-meta)$
@@ -63,10 +62,6 @@ $if(graphics)$
 % margins by default, and it is still possible to overwrite the defaults
 % using explicit options in \includegraphics[width, height, ...]{}
 \setkeys{Gin}{width=\maxwidth,height=\maxheight,keepaspectratio}
-$endif$
-$if(links-as-notes)$
-% Make links footnotes instead of hotlinks:
-\renewcommand{\href}[2]{#2\footnote{\url{#1}}}
 $endif$
 $if(strikeout)$
 \usepackage[normalem]{ulem}
