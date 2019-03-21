@@ -3,7 +3,6 @@ This file contains functions that are used in multiple figures.
 """
 import os
 from os.path import join
-import itertools
 import tensorly as tl
 import pymc3 as pm
 import seaborn as sns
@@ -51,19 +50,14 @@ def getSetup(figsize, gridd, mults=None, multz=None, empts=None):
 
 def plot_ligands(ax, factors, component_x, component_y, ax_pos):
     "This function is to plot the ligand combination dimension of the values tensor."
-    markers = ['^', '*', 'D', 's', 'X', 'o', '4', 'H', 'P', '*', 'D', 's', 'X' ,'o', 'd', '1', '2', '3', '4', 'h', 'H', 'X', 'v', '*', '+', '8', 'P', 'p', 'D', '_','D', 's', 'X', 'o']
-    markers = markers[0:n_ligands]
-    colors = cm.rainbow(np.linspace(0, 1, n_ligands))
-    labels2 = [("%1.2e " + "nM IL2") % ii for ii in mat[0:n_ligands,1]]
-    labels15 = [("%1.2e " + "nM IL15") % ii for ii in mat[0:n_ligands,1]]
-    for ii in range(n_ligands):
-        start = ii*n_ligands
-        end = start + n_ligands
-        for idx, pos in enumerate(range(start,end)): #First two columns to plot IL2 and IL15 based on concentration.
-            if ii < 1:
-                ax.scatter(factors[pos,component_x - 1], factors[pos,component_y - 1], marker = markers[idx], c = colors[ii], label = labels15[idx])
-            else:
-                ax.scatter(factors[pos,component_x - 1], factors[pos,component_y - 1], marker = markers[idx], c = colors[ii])
+    markers = ['^', '*', 'x']
+    
+    cmap = sns.color_palette("hls", n_ligands)
+
+    for ii in range(int(factors.shape[0] / n_ligands)):
+        idx = range(ii*n_ligands, (ii+1)*n_ligands)
+        sns.scatterplot(x=factors[idx, component_x - 1], y=factors[idx, component_y - 1], marker=markers[ii], hue=np.log10(np.sum(mat[idx,:], axis=1)), ax=ax, palette=cmap, s=100)
+
     ax.set_title('Ligands')
     if ax_pos == 2:
         ax.legend()

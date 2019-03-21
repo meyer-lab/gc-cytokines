@@ -14,7 +14,7 @@ def makeFigure():
     """Get a list of the axis objects and create a figure"""
     # Get list of axis objects
     x, y = 3, 4
-    ax, f = getSetup((10, 7), (x, y))
+    ax, f = getSetup((12, 9), (x, y))
     # Blank out for the cartoon
     ax[0].axis('off')
     ax[8].axis('off')
@@ -34,7 +34,7 @@ def makeFigure():
     newfactors = scale_all(newfactors_activ)
 
     PCA_receptor(ax[1], ax[2], cell_names, numpy_data.T)
-    plot_R2X(ax[3], values, factors_activity, n_comps = 14)
+    plot_R2X(ax[3], values, factors_activity, n_comps=5)
 
     # Add subplot labels
     for ii, item in enumerate(ax):
@@ -42,7 +42,7 @@ def makeFigure():
 
     plot_timepoints(ax[4], newfactors[0]) #Change final input value depending on need
 
-    for row in range(1,3):
+    for row in range(1, 3):
         subplotLabel(ax[row], string.ascii_uppercase[row]) # Add subplot labels
         compNum = 2*(row-1) + 1
         plot_cells(ax[row*y + 1], newfactors[1], compNum, compNum+1, cell_names, ax_pos = row*y + 1)
