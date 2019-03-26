@@ -10,6 +10,7 @@ import numpy as np
 import pandas as pds
 import matplotlib.cm as cm
 from matplotlib import gridspec, pyplot as plt
+from matplotlib.lines import Line2D
 from ..model import nParams
 from ..fit import build_model as build_model_2_15
 from ..fit_others import build_model as build_model_4_7
@@ -48,22 +49,35 @@ def getSetup(figsize, gridd, mults=None, multz=None, empts=None):
 
     return (ax, f)
 
-def plot_ligands(ax, factors, component_x, component_y, ax_pos):
+def plot_ligands(ax, factors, component_x, component_y, ax_pos, fig3 = True):
     "This function is to plot the ligand combination dimension of the values tensor."
     markers = ['^', '*', 'x']
-    
     cmap = sns.color_palette("hls", n_ligands)
+
+    legend_shape = [Line2D([0], [0], color='k', marker = markers[0], label='IL-2', linestyle = ''),
+                   Line2D([0], [0], color='k', label='IL-15',marker=markers[1], linestyle = ''),
+                   Line2D([0], [0], color='k', label='IL-2 mut',marker=markers[2], linestyle = '')]
 
     for ii in range(int(factors.shape[0] / n_ligands)):
         idx = range(ii*n_ligands, (ii+1)*n_ligands)
-        sns.scatterplot(x=factors[idx, component_x - 1], y=factors[idx, component_y - 1], marker=markers[ii], hue=np.log10(np.sum(mat[idx,:], axis=1)), ax=ax, palette=cmap, s=100)
-
+        if ii == 0 and ax_pos == 6 and fig3:
+            legend = "full"
+        elif ii == 0 and ax_pos == 2 and fig3 is False:
+            legend = "full"
+        else:
+            legend = False
+        sns.scatterplot(x=factors[idx, component_x - 1], y=factors[idx, component_y - 1], marker=markers[ii], hue=np.log10(np.sum(mat[idx,:], axis=1)), ax=ax, palette=cmap, s=100, legend = legend)
+        if ax_pos==6 or ax_pos==2:
+            h, l = ax.get_legend_handles_labels()
+            legend1 = ax.legend(handles=h, loc=2)
+            ax.add_artist(legend1)
+            if ax_pos==6:
+                legend2 = ax.legend(handles=legend_shape, loc=3)
+            elif ax_pos==2:
+                legend2 = ax.legend(handles=legend_shape, loc=9)
+            ax.add_artist(legend2)
     ax.set_title('Ligands')
-    if ax_pos == 2:
-        ax.legend()
-    
-    if ax_pos == 6:
-        ax.legend()
+
 
 def subplotLabel(ax, letter, hstretch=1):
     """ Label each subplot """
@@ -92,7 +106,7 @@ def plot_cells(ax, factors, component_x, component_y, cell_names, ax_pos):
         ax.legend()
 
     elif ax_pos == 5:
-        ax.legend(fontsize = 8, labelspacing = 0, handlelength = 0)
+        ax.legend()
     ax.set_title('Cells')
 
 
