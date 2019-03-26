@@ -6,7 +6,7 @@ import numpy as np
 from scipy import stats
 import seaborn as sns
 import matplotlib.cm as cm
-from .figureCommon import subplotLabel, getSetup, plot_cells, plot_ligands, plot_timepoints, values, mat
+from .figureCommon import subplotLabel, getSetup, plot_cells, plot_ligands, plot_timepoints, values, mat, set_bounds
 from ..Tensor_analysis import find_R2X, scale_all, perform_decomposition
 from ..tensor_generation import data, cell_names
 
@@ -50,16 +50,8 @@ def makeFigure():
         plot_cells(ax[row*y + 1], newfactors[1], compNum, compNum+1, cell_names, ax_pos = row*y + 1)
         plot_ligands(ax[row*y + 2], newfactors[2], compNum, compNum+1, ax_pos = row*y + 2)
 
-        # Set axes to center on the origin, and add labels
-        for col in range(1,y):
-            ax[row*y + col].set_xlabel('Component ' + str(compNum))
-            ax[row*y + col].set_ylabel('Component ' + str(compNum+1))
-
-            x_max = np.max(np.absolute(np.asarray(ax[row*y + col].get_xlim())))*1.1
-            y_max = np.max(np.absolute(np.asarray(ax[row*y + col].get_ylim())))*1.1
-
-            ax[row*y + col].set_xlim(-x_max, x_max)
-            ax[row*y + col].set_ylim(-y_max, y_max)
+        # Add labels and bounds
+        set_bounds(row, y, ax, compNum)
 
     f.tight_layout()
 
