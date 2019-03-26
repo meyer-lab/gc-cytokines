@@ -49,6 +49,17 @@ def getSetup(figsize, gridd, mults=None, multz=None, empts=None):
 
     return (ax, f)
 
+def set_bounds(row, y, ax, compNum):
+    for col in range(1,y):
+        ax[row*y + col].set_xlabel('Component ' + str(compNum))
+        ax[row*y + col].set_ylabel('Component ' + str(compNum+1))
+
+        x_max = np.max(np.absolute(np.asarray(ax[row*y + col].get_xlim())))*1.1
+        y_max = np.max(np.absolute(np.asarray(ax[row*y + col].get_ylim())))*1.1
+
+        ax[row*y + col].set_xlim(-x_max, x_max)
+        ax[row*y + col].set_ylim(-y_max, y_max)    
+
 def plot_ligands(ax, factors, component_x, component_y, ax_pos, fig3 = True):
     "This function is to plot the ligand combination dimension of the values tensor."
     markers = ['^', '*', 'x']
@@ -71,10 +82,7 @@ def plot_ligands(ax, factors, component_x, component_y, ax_pos, fig3 = True):
             h, l = ax.get_legend_handles_labels()
             legend1 = ax.legend(handles=h, loc=2)
             ax.add_artist(legend1)
-            if ax_pos==6:
-                legend2 = ax.legend(handles=legend_shape, loc=3)
-            elif ax_pos==2:
-                legend2 = ax.legend(handles=legend_shape, loc=9)
+            legend2 = ax.legend(handles=legend_shape, loc=3)
             ax.add_artist(legend2)
     ax.set_title('Ligands')
 
