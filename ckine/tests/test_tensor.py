@@ -4,7 +4,7 @@ Unit test file.
 import unittest
 import numpy as np
 import tensorly as tl
-from ..Tensor_analysis import find_R2X, perform_decomposition, scale_all
+from ..Tensor_analysis import find_R2X, perform_decomposition
 from ..tensor_generation import findy
 
 class TestModel(unittest.TestCase):
@@ -22,12 +22,3 @@ class TestModel(unittest.TestCase):
         #confirm R2X is >= 0 and <=1
         self.assertGreaterEqual(tl.min(arr), 0)
         self.assertLessEqual(tl.max(arr), 1)
-
-    def test_rescale_all(self, n_comp = 20):
-        """Test if rescaling every component keeps the tensor the same."""
-        tensor = tl.tensor(np.random.rand(20, 35, n_comp))
-        factors = perform_decomposition(tensor, n_comp-1)
-        reconstruct_old = tl.kruskal_to_tensor(factors)
-        newfactors = scale_all(factors)
-        reconstruct_new = tl.kruskal_to_tensor(newfactors)
-        np.testing.assert_almost_equal(tl.to_numpy(reconstruct_old), tl.to_numpy(reconstruct_new))

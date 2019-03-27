@@ -7,7 +7,7 @@ from scipy import stats
 import seaborn as sns
 import matplotlib.cm as cm
 from .figureCommon import subplotLabel, getSetup, plot_cells, plot_ligands, plot_timepoints, values, mat, set_bounds
-from ..Tensor_analysis import find_R2X, scale_all, perform_decomposition
+from ..Tensor_analysis import find_R2X, perform_decomposition
 from ..tensor_generation import data, cell_names
 
 def makeFigure():
@@ -32,8 +32,6 @@ def makeFigure():
 
     n_comps = 4
     factors_activ = factors_activity[n_comps-1]
-    newfactors_activ = factors_activ
-    newfactors = scale_all(newfactors_activ)
 
     bar_receptors(ax[2], data)
     plot_R2X(ax[3], values, factors_activity, n_comps=5)
@@ -42,13 +40,13 @@ def makeFigure():
     for ii, item in enumerate(ax):
         subplotLabel(item, string.ascii_uppercase[ii])
 
-    plot_timepoints(ax[4], newfactors[0]) #Change final input value depending on need
+    plot_timepoints(ax[4], factors_activ[0]) #Change final input value depending on need
 
     for row in range(1, 3):
         subplotLabel(ax[row], string.ascii_uppercase[row]) # Add subplot labels
         compNum = 2*(row-1) + 1
-        plot_cells(ax[row*y + 1], newfactors[1], compNum, compNum+1, cell_names, ax_pos = row*y + 1)
-        plot_ligands(ax[row*y + 2], newfactors[2], compNum, compNum+1, ax_pos = row*y + 2)
+        plot_cells(ax[row*y + 1], factors_activ[1], compNum, compNum+1, cell_names, ax_pos = row*y + 1)
+        plot_ligands(ax[row*y + 2], factors_activ[2], compNum, compNum+1, ax_pos = row*y + 2)
 
         # Add labels and bounds
         set_bounds(row, y, ax, compNum)
