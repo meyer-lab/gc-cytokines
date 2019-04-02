@@ -49,16 +49,16 @@ def getSetup(figsize, gridd, mults=None, multz=None, empts=None):
 
     return (ax, f)
 
-def set_bounds(row, y, ax, compNum):
-    for col in range(1,y):
-        ax[row*y + col].set_xlabel('Component ' + str(compNum))
-        ax[row*y + col].set_ylabel('Component ' + str(compNum+1))
+def set_bounds(ax, compNum):
+    """Add labels and bounds"""
+    ax.set_xlabel('Component ' + str(compNum))
+    ax.set_ylabel('Component ' + str(compNum+1))
 
-        x_max = np.max(np.absolute(np.asarray(ax[row*y + col].get_xlim())))*1.1
-        y_max = np.max(np.absolute(np.asarray(ax[row*y + col].get_ylim())))*1.1
+    x_max = np.max(np.absolute(np.asarray(ax.get_xlim())))*1.1
+    y_max = np.max(np.absolute(np.asarray(ax.get_ylim())))*1.1
 
-        ax[row*y + col].set_xlim(-x_max, x_max)
-        ax[row*y + col].set_ylim(-y_max, y_max)    
+    ax.set_xlim(-x_max, x_max)
+    ax.set_ylim(-y_max, y_max)    
 
 def plot_ligands(ax, factors, component_x, component_y, ax_pos, fig3 = True):
     "This function is to plot the ligand combination dimension of the values tensor."
@@ -71,7 +71,7 @@ def plot_ligands(ax, factors, component_x, component_y, ax_pos, fig3 = True):
 
     for ii in range(int(factors.shape[0] / n_ligands)):
         idx = range(ii*n_ligands, (ii+1)*n_ligands)
-        if ii == 0 and ax_pos == 6 and fig3:
+        if ii == 0 and ax_pos == 5 and fig3:
             legend = "full"
         elif ii == 0 and ax_pos == 2 and fig3 is False:
             legend = "full"
@@ -85,6 +85,7 @@ def plot_ligands(ax, factors, component_x, component_y, ax_pos, fig3 = True):
             legend2 = ax.legend(handles=legend_shape, loc=3)
             ax.add_artist(legend2)
     ax.set_title('Ligands')
+    set_bounds(ax, component_x)
 
 
 def subplotLabel(ax, letter, hstretch=1):
@@ -102,7 +103,7 @@ def plot_conf_int(ax, x_axis, y_axis, color, label=None):
     y_axis_bot = np.percentile(y_axis, 2.5, axis=1)
     ax.fill_between(x_axis, y_axis_top, y_axis_bot, color=color, alpha=0.5, label=label)
 
-def plot_cells(ax, factors, component_x, component_y, cell_names, ax_pos):
+def plot_cells(ax, factors, component_x, component_y, cell_names, ax_pos, fig3 = True):
     """This function plots the combination decomposition based on cell type."""
     colors = cm.rainbow(np.linspace(0, 1, len(cell_names)))
     markersCells = ['^', '*', 'D', 's', 'X', 'o', '4', 'H'] # 'P', '*', 'D', 's', 'X' ,'o', 'd', '1', '2', '3', '4', 'h', 'H', 'X', 'v', '*', '+', '8', 'P', 'p', 'D', '_','D', 's', 'X', 'o'
@@ -113,9 +114,11 @@ def plot_cells(ax, factors, component_x, component_y, cell_names, ax_pos):
     if ax_pos == 1:
         ax.legend()
 
-    elif ax_pos == 5:
+    elif ax_pos == 4 and fig3:
         ax.legend()
     ax.set_title('Cells')
+    
+    set_bounds(ax, component_x)
 
 
 def overlayCartoon(figFile, cartoonFile, x, y, scalee=1):

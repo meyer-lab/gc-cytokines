@@ -1,5 +1,3 @@
 ## Tensor Factorization Maps Response-Space of the Gamma Chain Family
 
-
-![**Tensor factorization to map possible cytokine response.** A) XXX. B) XXX. C) XXX. D) XXX. E) XXX.](./Figures/figure3.svg){#fig:tfac}
-
+![**Tensor factorization to map possible cytokine response.** A) Schematic representation of CP decomposition.  B) Average experimental receptor level measurements in units of #/cell for IL-2Rα, IL-2Rβ, γ~c~, and IL-15Rα on 8 cell types. C) $R^2X$ using non-negative CP decomposition plotted against the number of components the tensor was decomposed into. D) Timepoint decomposition plot showing component values against time for each factorization component after decomposing the tensor into 4 components. E,G) Decomposition plot along the second (cell) dimension showing the eight cell type values along each component.  F,H) Ligand decomposition plot along third dimension revealing each ligand according to its shape and concentration reflected by its color.](./Figures/figure3.svg){#fig:tfac}
