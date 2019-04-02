@@ -14,13 +14,9 @@ def makeFigure():
     """Get a list of the axis objects and create a figure"""
     # Get list of axis objects
     x, y = 3, 4
-    ax, f = getSetup((12, 9), (x, y))
+    ax, f = getSetup((12, 9), (x, y), mults=[0], multz={0:2}, empts=[7,8,11])
     # Blank out for the cartoon
     ax[0].axis('off')
-    ax[1].axis('off')
-    ax[7].axis('off')
-    ax[8].axis('off')
-    ax[11].axis('off')
 
     factors_activity = []
     for jj in range(len(mat) - 1):
@@ -33,23 +29,19 @@ def makeFigure():
     n_comps = 4
     factors_activ = factors_activity[n_comps-1]
 
-    bar_receptors(ax[2], data)
-    plot_R2X(ax[3], values, factors_activity, n_comps=5)
+    bar_receptors(ax[1], data)
+    plot_R2X(ax[2], values, factors_activity, n_comps=5)
 
     # Add subplot labels
     for ii, item in enumerate(ax):
-        subplotLabel(item, string.ascii_uppercase[ii])
+        subplotLabel(item, string.ascii_uppercase[ii]) # Add subplot labels
 
-    plot_timepoints(ax[4], factors_activ[0]) #Change final input value depending on need
+    plot_timepoints(ax[3], factors_activ[0]) #Change final input value depending on need
 
     for row in range(1, 3):
-        subplotLabel(ax[row], string.ascii_uppercase[row]) # Add subplot labels
         compNum = 2*(row-1) + 1
-        plot_cells(ax[row*y + 1], factors_activ[1], compNum, compNum+1, cell_names, ax_pos = row*y + 1)
-        plot_ligands(ax[row*y + 2], factors_activ[2], compNum, compNum+1, ax_pos = row*y + 2)
-
-        # Add labels and bounds
-        set_bounds(row, y, ax, compNum)
+        plot_cells(ax[row*2 + 2], factors_activ[1], compNum, compNum+1, cell_names, ax_pos = row*2 + 2)
+        plot_ligands(ax[row*2 +3], factors_activ[2], compNum, compNum+1, ax_pos = row*2 +3)
 
     f.tight_layout()
 
