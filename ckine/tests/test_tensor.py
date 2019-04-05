@@ -5,7 +5,6 @@ import unittest
 import numpy as np
 import tensorly as tl
 from ..Tensor_analysis import find_R2X, perform_decomposition
-from ..tensor_generation import findy
 
 class TestModel(unittest.TestCase):
     '''Test Class for Tensor related work.'''
