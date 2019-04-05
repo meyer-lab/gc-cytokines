@@ -4,9 +4,11 @@ This file includes the classes and functions necessary to fit the IL2 and IL15 m
 from os.path import join, dirname, abspath
 import pymc3 as pm
 import theano.tensor as T
-import numpy as np, pandas as pds
+import numpy as np
+import pandas as pds
 from .model import getTotalActiveSpecies, getSurfaceIL2RbSpecies
 from .differencing_op import runCkineDoseOp
+
 
 def load_data(filename):
     """ Return path of CSV files. """
@@ -32,6 +34,7 @@ def commonTraf():
 
 class IL2Rb_trafficking:
     """ Calculating the percent of IL2Rb on cell surface under IL2 and IL15 stimulation according to Ring et al."""
+
     def __init__(self):
         numpy_data = load_data('data/IL2Ra+_surface_IL2RB_datasets.csv')
         numpy_data2 = load_data('data/IL2Ra-_surface_IL2RB_datasets.csv')
@@ -42,7 +45,7 @@ class IL2Rb_trafficking:
         slicingg = (1, 5, 2, 6)
 
         # Concatted data
-        self.data = np.concatenate((numpy_data[:, slicingg].flatten(order='F'), numpy_data2[:, slicingg].flatten(order='F')))/10.
+        self.data = np.concatenate((numpy_data[:, slicingg].flatten(order='F'), numpy_data2[:, slicingg].flatten(order='F'))) / 10.
 
         self.cytokM = np.zeros((4, 6), dtype=np.float64)
         self.cytokM[0, 0] = 1.
@@ -64,11 +67,12 @@ class IL2Rb_trafficking:
 
 class IL2_15_activity:
     """ Calculating the pSTAT activity residuals for IL2 and IL15 stimulation in Ring et al. """
+
     def __init__(self):
         data = load_data('./data/IL2_IL15_extracted_data.csv')
-        self.fit_data = np.concatenate((data[:, 6], data[:, 7], data[:, 2], data[:, 3])) / 100. #the IL15_IL2Ra- data is within the 4th column (index 3)
-        self.cytokC = np.logspace(-3.3, 2.7, 8) # 8 log-spaced values between our two endpoints
-        self.cytokM = np.zeros((self.cytokC.size*2, 6), dtype=np.float64)
+        self.fit_data = np.concatenate((data[:, 6], data[:, 7], data[:, 2], data[:, 3])) / 100.  # the IL15_IL2Ra- data is within the 4th column (index 3)
+        self.cytokC = np.logspace(-3.3, 2.7, 8)  # 8 log-spaced values between our two endpoints
+        self.cytokM = np.zeros((self.cytokC.size * 2, 6), dtype=np.float64)
         self.cytokM[0:self.cytokC.size, 0] = self.cytokC
         self.cytokM[self.cytokC.size::, 1] = self.cytokC
 
@@ -78,7 +82,7 @@ class IL2_15_activity:
         # IL2Ra- cells have same IL15 activity, so we can just reuse same solution
         Op = runCkineDoseOp(tt=np.array(500.), condense=getTotalActiveSpecies().astype(np.float64), conditions=self.cytokM)
 
-        unkVecIL2RaMinus = T.set_subtensor(unkVec[16], 0.0) # Set IL2Ra to zero
+        unkVecIL2RaMinus = T.set_subtensor(unkVec[16], 0.0)  # Set IL2Ra to zero
 
         # put together into one vector
         actCat = T.concatenate((Op(unkVec), Op(unkVecIL2RaMinus)))
@@ -92,7 +96,8 @@ class IL2_15_activity:
 
 class build_model:
     """ Build the overall model handling Ring et al. """
-    def __init__(self, traf = True):
+
+    def __init__(self, traf=True):
         self.traf = traf
         self.dst15 = IL2_15_activity()
         if self.traf:
@@ -115,21 +120,21 @@ class build_model:
                 kDeg = T.zeros(1, dtype=np.float64)
                 sortF = T.ones(1, dtype=np.float64) * 0.5
 
-            rxnrates = pm.Lognormal('rxn', sd=0.5, shape=6) # 6 reverse rxn rates for IL2/IL15
-            nullRates = T.ones(4, dtype=np.float64) # k27rev, k31rev, k33rev, k35rev
-            Rexpr = pm.Lognormal('IL2Raexpr', sd=0.5, shape=4) # Expression: IL2Ra, IL2Rb, gc, IL15Ra
-            scale = pm.Lognormal('scales', mu=np.log(100.), sd=1, shape=1) # create scaling constant for activity measurements
+            rxnrates = pm.Lognormal('rxn', sd=0.5, shape=6)  # 6 reverse rxn rates for IL2/IL15
+            nullRates = T.ones(4, dtype=np.float64)  # k27rev, k31rev, k33rev, k35rev
+            Rexpr = pm.Lognormal('IL2Raexpr', sd=0.5, shape=4)  # Expression: IL2Ra, IL2Rb, gc, IL15Ra
+            scale = pm.Lognormal('scales', mu=np.log(100.), sd=1, shape=1)  # create scaling constant for activity measurements
 
-            unkVec = T.concatenate((kfwd, rxnrates, nullRates, endo, activeEndo, sortF, kRec, kDeg, Rexpr, nullRates*0.0))
+            unkVec = T.concatenate((kfwd, rxnrates, nullRates, endo, activeEndo, sortF, kRec, kDeg, Rexpr, nullRates * 0.0))
 
-            Y_15 = self.dst15.calc(unkVec, scale) # fitting the data based on dst15.calc for the given parameters
-            sd_15 = T.minimum(T.std(Y_15), 0.03) # Add bounds for the stderr to help force the fitting solution
+            Y_15 = self.dst15.calc(unkVec, scale)  # fitting the data based on dst15.calc for the given parameters
+            sd_15 = T.minimum(T.std(Y_15), 0.03)  # Add bounds for the stderr to help force the fitting solution
             pm.Deterministic('Y_15', T.sum(T.square(Y_15)))
-            pm.Normal('fitD_15', sd=sd_15, observed=Y_15) # experimental-derived stderr is used
+            pm.Normal('fitD_15', sd=sd_15, observed=Y_15)  # experimental-derived stderr is used
 
             if self.traf:
-                Y_int = self.IL2Rb.calc(unkVec) # fitting the data based on dst.calc for the given parameters
-                sd_int = T.minimum(T.std(Y_int), 0.02) # Add bounds for the stderr to help force the fitting solution
+                Y_int = self.IL2Rb.calc(unkVec)  # fitting the data based on dst.calc for the given parameters
+                sd_int = T.minimum(T.std(Y_int), 0.02)  # Add bounds for the stderr to help force the fitting solution
                 pm.Deterministic('Y_int', T.sum(T.square(Y_int)))
                 pm.Normal('fitD_int', sd=sd_int, observed=Y_int)
 

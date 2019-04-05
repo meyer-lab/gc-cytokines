@@ -2,11 +2,12 @@
 This file is responsible for performing calculations that allow us to compare our fitting results with the Ring paper in figure1.py
 """
 import numpy as np
-from .model import getTotalActiveSpecies, runCkineU, runCkineUP, getSurfaceIL2RbSpecies, nParams, getSurfaceGCSpecies
+from .model import getTotalActiveSpecies, runCkineUP, getSurfaceIL2RbSpecies, nParams, getSurfaceGCSpecies
 
 
 class surf_IL2Rb:
     '''Generate values to match the surface IL2Rb measurements used in fitting'''
+
     def __init__(self):
         # import function returns from model.py
         self.IL2Rb_species_IDX = getSurfaceIL2RbSpecies()
@@ -15,7 +16,7 @@ class surf_IL2Rb:
         """ Calculates the surface IL2Rb over time in parallel for one condition. """
         unkVec = unkVec.copy()
         unkVec[cytokine, :] = conc
-        unkVec = np.transpose(unkVec).copy() # transpose the matrix (save view as a new copy)
+        unkVec = np.transpose(unkVec).copy()  # transpose the matrix (save view as a new copy)
         returnn, retVal = runCkineUP(t, unkVec)
         assert retVal >= 0
         return np.dot(returnn, self.IL2Rb_species_IDX)
@@ -44,21 +45,23 @@ class surf_IL2Rb:
 
         catVec = np.concatenate((a, b, c, d, e, f, g, h), axis=1)
         for ii in range(K):
-            catVec[ii] = catVec[ii] / a[ii, 0] # normalize by a[0] for each row
+            catVec[ii] = catVec[ii] / a[ii, 0]  # normalize by a[0] for each row
         return catVec
+
 
 class pstat:
     '''Generate values to match the pSTAT5 measurements used in fitting'''
+
     def __init__(self):
         # import function returns from model.py
         self.activity = getTotalActiveSpecies().astype(np.float64)
-        self.ts = np.array([500.]) # was 500. in literature
+        self.ts = np.array([500.])  # was 500. in literature
 
     def parallelCalc(self, unkVec, cytokine, conc):
         """ Calculates the pSTAT activities in parallel for a 2-D array of unkVec. """
         unkVec = unkVec.copy()
         unkVec[cytokine, :] = conc
-        unkVec = np.transpose(unkVec).copy() # transpose the matrix (save view as a new copy)
+        unkVec = np.transpose(unkVec).copy()  # transpose the matrix (save view as a new copy)
         returnn, retVal = runCkineUP(self.ts, unkVec)
         assert retVal >= 0
         return np.dot(returnn, self.activity)
@@ -69,7 +72,7 @@ class pstat:
         K = unkVec.shape[1]
 
         unkVec_IL2Raminus = unkVec.copy()
-        unkVec_IL2Raminus[22, :] = np.zeros((K)) # set IL2Ra expression rates to 0
+        unkVec_IL2Raminus[22, :] = np.zeros((K))  # set IL2Ra expression rates to 0
 
         actVec_IL2 = np.zeros((K, len(cytokC)))
         actVec_IL2_IL2Raminus = actVec_IL2.copy()
@@ -88,12 +91,14 @@ class pstat:
         actVec = actVec / (actVec + scale)
 
         for ii in range(K):
-            actVec[ii] = actVec[ii] / np.max(actVec[ii]) # normalize by the max value of each row
+            actVec[ii] = actVec[ii] / np.max(actVec[ii])  # normalize by the max value of each row
 
         return actVec
 
+
 class surf_gc:
     """ This class is responsible for calculating the percent of gamma chain on the cell surface. The experimental conditions match those of the surface IL2Rb measurements in Ring et al. """
+
     def __init__(self):
         # import function returns from model.py
         self.gc_species_IDX = getSurfaceGCSpecies()
@@ -102,7 +107,7 @@ class surf_gc:
         """ Calculates the surface gc over time for one condition. """
         unkVec = unkVec.copy()
         unkVec[cytokine, :] = conc
-        unkVec = np.transpose(unkVec).copy() # transpose the matrix (save view as a new copy)
+        unkVec = np.transpose(unkVec).copy()  # transpose the matrix (save view as a new copy)
         returnn, retVal = runCkineUP(t, unkVec)
         assert retVal >= 0
         return np.dot(returnn, self.gc_species_IDX)
@@ -129,7 +134,7 @@ class surf_gc:
         g = self.parallelCalc(unkVecIL2RaMinus, 1, 1., t).reshape((K, N))
         h = self.parallelCalc(unkVecIL2RaMinus, 1, 500., t).reshape((K, N))
 
-        catVec = np.concatenate((a, b, c, d, e, f, g, h), axis=1) # combine in one array
+        catVec = np.concatenate((a, b, c, d, e, f, g, h), axis=1)  # combine in one array
         for ii in range(K):
-            catVec[ii] = catVec[ii] / a[ii, 0] # normalize by a[0] for each row
+            catVec[ii] = catVec[ii] / a[ii, 0]  # normalize by a[0] for each row
         return catVec

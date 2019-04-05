@@ -6,7 +6,7 @@ compile_opts = -std=c++14 -mavx -march=native -Wall -pthread
 
 flist = 1 2 3 4 5 S1 S2 S3 S4 B1 B2 B3 B4 B5
 
-.PHONY: clean test all testprofile testcover doc testcpp
+.PHONY: clean test all testprofile testcover doc testcpp autopep
 
 all: ckine/ckine.so Manuscript/index.html Manuscript/Manuscript.pdf Manuscript/Manuscript.docx Manuscript/CoverLetter.docx
 
@@ -67,6 +67,9 @@ Manuscript/CoverLetter.docx: Manuscript/CoverLetter.md
 
 Manuscript/CoverLetter.pdf: Manuscript/CoverLetter.md
 	pandoc --pdf-engine=xelatex --template=/Users/asm/.pandoc/letter-templ.tex $< -o $@
+
+autopep:
+	autopep8 -i -a --max-line-length 200 ckine/*.py ckine/figures/*.py
 
 clean:
 	rm -f ./Manuscript/Manuscript.* ./Manuscript/index.html Manuscript/CoverLetter.docx Manuscript/CoverLetter.pdf ckine/libckine.debug.so

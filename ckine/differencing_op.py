@@ -16,7 +16,7 @@ class runCkineDoseOp(Op):
     def infer_shape(self, node, i0_shapes):
         """ infering shape """
         assert len(i0_shapes) == 1
-        return [(self.dOp.conditions.shape[0]*self.dOp.ts.size, )]
+        return [(self.dOp.conditions.shape[0] * self.dOp.ts.size, )]
 
     def perform(self, node, inputs, outputs, params=None):
         outputs[0][0] = self.dOp.runCkine(inputs, sensi=False)
@@ -36,8 +36,8 @@ class runCkineOpDoseDiff(Op):
         if preT > 0.0:
             assert prestim.size == 6
 
-        assert condense.size == nSpecies() # Check that we're condensing a species vector
-        assert conditions.shape[1] == 6 # Check that this is a matrix of ligands
+        assert condense.size == nSpecies()  # Check that we're condensing a species vector
+        assert conditions.shape[1] == 6  # Check that this is a matrix of ligands
 
     def runCkine(self, inputs, sensi):
         """ function for runCkine """
@@ -51,7 +51,7 @@ class runCkineOpDoseDiff(Op):
             return np.dot(outt[0], self.condense)
 
         outt = runCkineSP(self.ts, rxntfr, self.condense, self.preT, self.prestim)
-        assert outt[0].shape == (self.conditions.shape[0]*self.ts.size, )
+        assert outt[0].shape == (self.conditions.shape[0] * self.ts.size, )
         assert outt[1] >= 0
 
         # We override the ligands, so don't pass along their gradient

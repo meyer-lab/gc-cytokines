@@ -11,45 +11,64 @@ libb = ct.cdll.LoadLibrary(filename)
 libb.fullModel_C.argtypes = (ct.POINTER(ct.c_double), ct.c_double, ct.POINTER(ct.c_double), ct.POINTER(ct.c_double))
 libb.runCkine.argtypes = (ct.POINTER(ct.c_double), ct.c_uint, ct.POINTER(ct.c_double), ct.POINTER(ct.c_double), ct.c_bool, ct.c_double, ct.POINTER(ct.c_double))
 libb.runCkineParallel.argtypes = (ct.POINTER(ct.c_double), ct.POINTER(ct.c_double), ct.c_uint, ct.c_uint, ct.POINTER(ct.c_double), ct.c_double, ct.POINTER(ct.c_double))
-libb.runCkineS.argtypes = (ct.POINTER(ct.c_double), ct.c_uint, ct.POINTER(ct.c_double), ct.POINTER(ct.c_double), ct.POINTER(ct.c_double), ct.POINTER(ct.c_double), ct.c_bool, ct.c_double, ct.POINTER(ct.c_double))
-libb.runCkineSParallel.argtypes = (ct.POINTER(ct.c_double), ct.POINTER(ct.c_double), ct.c_uint, ct.c_uint, ct.POINTER(ct.c_double), ct.POINTER(ct.c_double), ct.POINTER(ct.c_double), ct.c_double, ct.POINTER(ct.c_double))
+libb.runCkineS.argtypes = (ct.POINTER(ct.c_double), ct.c_uint, ct.POINTER(ct.c_double), ct.POINTER(ct.c_double),
+                           ct.POINTER(ct.c_double), ct.POINTER(ct.c_double), ct.c_bool, ct.c_double, ct.POINTER(ct.c_double))
+libb.runCkineSParallel.argtypes = (ct.POINTER(ct.c_double), ct.POINTER(ct.c_double), ct.c_uint, ct.c_uint, ct.POINTER(ct.c_double),
+                                   ct.POINTER(ct.c_double), ct.POINTER(ct.c_double), ct.c_double, ct.POINTER(ct.c_double))
 
 __nSpecies = 62
+
+
 def nSpecies():
     """ Returns the total number of species in the model. """
     return __nSpecies
 
+
 __halfL = 28
+
+
 def halfL():
     """ Returns the number of species on the surface alone. """
     return __halfL
 
+
 __nParams = 30
+
+
 def nParams():
     """ Returns the length of the rxntfR vector. """
     return __nParams
 
-__internalStrength = 0.5 # strength of endosomal activity relative to surface
+
+__internalStrength = 0.5  # strength of endosomal activity relative to surface
+
+
 def internalStrength():
     """Returns the internalStrength of endosomal activity."""
     return __internalStrength
 
-__internalV = 623.0 # endosomal volume
+
+__internalV = 623.0  # endosomal volume
+
+
 def internalV():
     """ Returns __internalV. """
     return __internalV
 
+
 __nRxn = 17
+
+
 def nRxn():
     """ Returns the length of the rxn rates vector (doesn't include traf rates). """
     return __nRxn
 
 
-def runCkineU (tps, rxntfr, preT=0.0, prestim=None):
+def runCkineU(tps, rxntfr, preT=0.0, prestim=None):
     """ Standard version of solver that returns species abundances given times and unknown rates. """
     rxntfr = rxntfr.copy()
     assert rxntfr.size == __nParams
-    assert rxntfr[19] < 1.0 # Check that sortF won't throw
+    assert rxntfr[19] < 1.0  # Check that sortF won't throw
 
     yOut = np.zeros((tps.size, __nSpecies), dtype=np.float64)
 
@@ -65,11 +84,11 @@ def runCkineU (tps, rxntfr, preT=0.0, prestim=None):
     return (yOut, retVal)
 
 
-def runCkineS (tps, rxntfr, condense):
+def runCkineS(tps, rxntfr, condense):
     """ Standard version of solver that returns species abundances given times and unknown rates. """
     rxntfr = rxntfr.copy()
     assert rxntfr.size == __nParams
-    assert rxntfr[19] < 1.0 # Check that sortF won't throw
+    assert rxntfr[19] < 1.0  # Check that sortF won't throw
 
     assert condense.size == __nSpecies
 
@@ -86,7 +105,7 @@ def runCkineS (tps, rxntfr, condense):
     return (yOut, retVal, sensV)
 
 
-def runCkineU_IL2 (tps, rxntfr):
+def runCkineU_IL2(tps, rxntfr):
     """ Standard version of solver that returns species abundances given times and unknown rates. """
     rxntfr = rxntfr.copy()
     assert rxntfr.size == 15
@@ -106,41 +125,41 @@ def runIL2simple(input, IL, CD25=1.0, ligandDegradation=False):
     tps = np.array([500.0])
 
     kfwd = 0.00449
-    k1rev = 0.6*10*input[0]
-    k2rev = 0.6*144*input[1]
+    k1rev = 0.6 * 10 * input[0]
+    k2rev = 0.6 * 144 * input[1]
     k4rev = 8.6677
     k5rev = 0.1233
     k11rev = 63.0 * k5rev / 1.5 * input[1]
-    IL2Ra = 3.8704*CD25
+    IL2Ra = 3.8704 * CD25
     IL2Rb = 0.734
     gc = 1.7147
     # IL, kfwd, k1rev, k2rev, k4rev, k5rev, k11rev, R, R, R
     rxntfr = np.array([IL, kfwd, k1rev, k2rev, k4rev, k5rev, k11rev,
-                      IL2Ra, IL2Rb, gc,
-                      k1rev*input[2], k2rev*input[2], k4rev*input[2], k5rev*input[2], k11rev*input[2]]) # input[2] represents endosomal binding affinity relative to surface affinity
+                       IL2Ra, IL2Rb, gc,
+                       k1rev * input[2], k2rev * input[2], k4rev * input[2], k5rev * input[2], k11rev * input[2]])  # input[2] represents endosomal binding affinity relative to surface affinity
 
     yOut, retVal = runCkineU_IL2(tps, rxntfr)
 
     assert retVal == 0
 
     if ligandDegradation == True:
-        ligDeg = ligandDeg(yOut[0], sortF = 0.1458139959859, kDeg = 0.006544333, cytokineIDX=0)
-        return ligDeg # rate of ligand degradation
+        ligDeg = ligandDeg(yOut[0], sortF=0.1458139959859, kDeg=0.006544333, cytokineIDX=0)
+        return ligDeg  # rate of ligand degradation
     else:
         active = getTotalActiveCytokine(0, np.squeeze(yOut))
         return active
 
 
-def runCkineUP (tps, rxntfr, preT=0.0, prestim=None):
+def runCkineUP(tps, rxntfr, preT=0.0, prestim=None):
     """ Version of runCkine that runs in parallel. """
     tps = np.array(tps)
     assert rxntfr.size % __nParams == 0
     assert rxntfr.shape[1] == __nParams
 
-    assert (rxntfr[:, 19] < 1.0).all() # Check that sortF won't throw
-    assert np.all(np.any(rxntfr > 0.0, axis=1)) # make sure at least one element is >0 for all rows
+    assert (rxntfr[:, 19] < 1.0).all()  # Check that sortF won't throw
+    assert np.all(np.any(rxntfr > 0.0, axis=1))  # make sure at least one element is >0 for all rows
 
-    yOut = np.zeros((rxntfr.shape[0]*tps.size, __nSpecies), dtype=np.float64)
+    yOut = np.zeros((rxntfr.shape[0] * tps.size, __nSpecies), dtype=np.float64)
 
     if preT != 0.0:
         assert preT > 0.0
@@ -154,15 +173,15 @@ def runCkineUP (tps, rxntfr, preT=0.0, prestim=None):
     return (yOut, retVal)
 
 
-def runCkineSP (tps, rxntfr, actV, preT=0.0, prestim=None):
+def runCkineSP(tps, rxntfr, actV, preT=0.0, prestim=None):
     """ Version of runCkine that runs in parallel. """
     tps = np.array(tps)
     assert rxntfr.size % __nParams == 0
     assert rxntfr.shape[1] == __nParams
-    assert (rxntfr[:, 19] < 1.0).all() # Check that sortF won't throw
+    assert (rxntfr[:, 19] < 1.0).all()  # Check that sortF won't throw
 
-    yOut = np.zeros((rxntfr.shape[0]*tps.size), dtype=np.float64)
-    sensV = np.zeros((rxntfr.shape[0]*tps.size, __nParams), dtype=np.float64, order='C')
+    yOut = np.zeros((rxntfr.shape[0] * tps.size), dtype=np.float64)
+    sensV = np.zeros((rxntfr.shape[0] * tps.size, __nParams), dtype=np.float64, order='C')
 
     if preT != 0.0:
         assert preT > 0.0
@@ -204,15 +223,18 @@ def getTotalActiveSpecies():
     activity = getActiveSpecies()
     return np.concatenate((activity, __internalStrength * activity, np.zeros(6)))
 
+
 def getCytokineSpecies():
     """ Returns a list of vectors for which species are bound to which cytokines. """
     return list((np.arange(3, 9), np.arange(10, 16), np.arange(17, 19), np.arange(20, 22), np.arange(23, 25), np.arange(26, 28)))
+
 
 def getSurfaceIL2RbSpecies():
     """ Returns a list of vectors for which surface species contain the IL2Rb receptor. """
     condense = np.zeros(__nSpecies)
     condense[np.array([1, 4, 5, 7, 8, 11, 12, 14, 15])] = 1
     return condense
+
 
 def getSurfaceGCSpecies():
     """ Returns a list of vectors for which surface species contain the gc receptor. """
@@ -229,7 +251,7 @@ def getActiveCytokine(cytokineIDX, yVec):
 def getTotalActiveCytokine(cytokineIDX, yVec):
     """ Get amount of surface and endosomal active species. """
     assert yVec.ndim == 1
-    return getActiveCytokine(cytokineIDX, yVec[0:__halfL]) + __internalStrength * getActiveCytokine(cytokineIDX, yVec[__halfL:__halfL*2])
+    return getActiveCytokine(cytokineIDX, yVec[0:__halfL]) + __internalStrength * getActiveCytokine(cytokineIDX, yVec[__halfL:__halfL * 2])
 
 
 def surfaceReceptors(y):
@@ -244,17 +266,19 @@ def surfaceReceptors(y):
     IL21Ra = np.sum(y[np.array([25, 26, 27])])
     return np.array([IL2Ra, IL2Rb, gc, IL15Ra, IL7Ra, IL9R, IL4Ra, IL21Ra])
 
+
 def totalReceptors(yVec):
     """This function takes in a vector y and returns the amounts of all 8 receptors in both cell compartments"""
-    return surfaceReceptors(yVec) + __internalStrength * surfaceReceptors(yVec[__halfL:__halfL*2])
+    return surfaceReceptors(yVec) + __internalStrength * surfaceReceptors(yVec[__halfL:__halfL * 2])
+
 
 def ligandDeg(yVec, sortF, kDeg, cytokineIDX):
     """ This function calculates rate of total ligand degradation. """
-    yVec_endo_species = yVec[__halfL:(__halfL*2)].copy() # get all endosomal complexes
-    yVec_endo_lig = yVec[(__halfL*2)::].copy() # get all endosomal ligands
+    yVec_endo_species = yVec[__halfL:(__halfL * 2)].copy()  # get all endosomal complexes
+    yVec_endo_lig = yVec[(__halfL * 2)::].copy()  # get all endosomal ligands
     sum_active = np.sum(getActiveCytokine(cytokineIDX, yVec_endo_species))
-    __cytok_species_IDX = np.zeros(__halfL, dtype=np.bool) # create array of size halfL
-    __cytok_species_IDX[getCytokineSpecies()[cytokineIDX]] = 1 # assign 1's for species corresponding to the cytokineIDX
+    __cytok_species_IDX = np.zeros(__halfL, dtype=np.bool)  # create array of size halfL
+    __cytok_species_IDX[getCytokineSpecies()[cytokineIDX]] = 1  # assign 1's for species corresponding to the cytokineIDX
     sum_total = np.sum(yVec_endo_species * __cytok_species_IDX)
-    sum_inactive = (sum_total - sum_active) * sortF # scale the inactive species by sortF
-    return kDeg * (((sum_inactive + sum_active) * __internalStrength) + (yVec_endo_lig[cytokineIDX] * __internalV)) # can assume all free ligand and active species are degraded at rate kDeg
+    sum_inactive = (sum_total - sum_active) * sortF  # scale the inactive species by sortF
+    return kDeg * (((sum_inactive + sum_active) * __internalStrength) + (yVec_endo_lig[cytokineIDX] * __internalV))  # can assume all free ligand and active species are degraded at rate kDeg
