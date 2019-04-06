@@ -3,7 +3,7 @@ This creates Figure 3.
 """
 import string
 import numpy as np
-from .figureCommon import subplotLabel, getSetup, plot_cells, plot_ligands, plot_timepoints, values, mat, set_bounds
+from .figureCommon import subplotLabel, getSetup, plot_cells, plot_ligands, plot_timepoints, values, mat
 from ..Tensor_analysis import find_R2X, perform_decomposition
 from ..tensor_generation import data, cell_names
 
@@ -20,9 +20,6 @@ def makeFigure():
     for jj in range(len(mat) - 1):
         factors = perform_decomposition(values, jj + 1)
         factors_activity.append(factors)
-
-    numpy_data = data.values[:, 1:]  # returns data values in a numpy array
-    # ['Il2ra' 'Il2rb' 'Il2rg' 'Il15ra'] in that order from Receptor levels. CD25, CD122, CD132, CD215
 
     n_comps = 4
     factors_activ = factors_activity[n_comps - 1]
