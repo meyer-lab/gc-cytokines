@@ -146,7 +146,7 @@ class TestModel(unittest.TestCase):
     def test_initial(self):
         """ Test that there is at least 1 non-zero species at T=0. """
         temp, retVal = runCkineU(self.ts, self.rxntfR)
-        self.assertGreater(np.count_nonzero(temp[0,:]), 0)
+        self.assertGreater(np.count_nonzero(temp[0, :]), 0)
         self.assertGreaterEqual(retVal, 0)
 
     def test_gc(self):
@@ -259,10 +259,10 @@ class TestModel(unittest.TestCase):
         # case for IL2
         y, _ = runCkineU_IL2(self.ts, np.ones(15))
         sortF, kDeg = 0.5, 1.0
-        reg = ligandDeg(y[1,:], sortF, kDeg, 0)
-        high_sortF = ligandDeg(y[1,:], 0.9, kDeg, 0)
-        high_kDeg = ligandDeg(y[1,:], sortF, kDeg*10, 0)
-        low_kDeg = ligandDeg(y[1,:], sortF, kDeg*0.1, 0)
+        reg = ligandDeg(y[1, :], sortF, kDeg, 0)
+        high_sortF = ligandDeg(y[1, :], 0.9, kDeg, 0)
+        high_kDeg = ligandDeg(y[1, :], sortF, kDeg*10, 0)
+        low_kDeg = ligandDeg(y[1, :], sortF, kDeg*0.1, 0)
 
         self.assertGreater(high_sortF, reg)
         self.assertGreater(high_kDeg, reg)
@@ -270,8 +270,8 @@ class TestModel(unittest.TestCase):
 
         # case for IL15
         y, _ = runCkineU(self.ts, self.rxntfR)
-        reg = ligandDeg(y[1,:], sortF, kDeg, 1)
-        high_kDeg = ligandDeg(y[1,:], sortF, kDeg*10, 1)
+        reg = ligandDeg(y[1, :], sortF, kDeg, 1)
+        high_kDeg = ligandDeg(y[1, :], sortF, kDeg*10, 1)
         self.assertGreater(high_kDeg, reg)
 
     def test_noTraff(self):
