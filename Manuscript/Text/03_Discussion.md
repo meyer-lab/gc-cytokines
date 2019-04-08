@@ -6,3 +6,4 @@
     - Methods can be applied to identify spatio-temporal specificity of signaling (first need to build a PDE model to represent said behavior before decomposition) [@Li543].
     - hGH affinities do not correlate well with cell stimulation levels because of endosomal trafficking. [@Haugh2004]
     - EGFRs are being targeted in cancer therapies due to their increased expression in tumor cells. [@CIARDIELLO20031348]
+    - large receptor families evolve to have many interconnected, crossreactive components that individually produce noisy signals [@KOMOROWSKI201976]
