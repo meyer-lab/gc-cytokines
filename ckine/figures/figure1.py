@@ -174,8 +174,11 @@ def rateComp(ax, unkVec):
     k20rev = k22rev * k24rev / k17rev
 
     # add each rate duo as separate column in dataframe
-    df = pd.DataFrame({r'$k_{1}, k_{13}$': np.append(k1rev, k13rev), r'$k_{2}, k_{14}$': np.append(k2rev, k14rev), r'$k_{4}, k_{16}$': np.append(k4rev, k16rev), r'$k_{5}, k_{17}$': np.append(k5rev, k17rev), r'$k_{8}, k_{20}$': np.append(
-        k8rev, k20rev), r'$k_{9}, k_{21}$': np.append(k9rev, k21rev), r'$k_{10}, k_{22}$': np.append(k10rev, k22rev), r'$k_{11}, k_{23}$': np.append(k11rev, k23rev), r'$k_{12}, k_{24}$': np.append(k12rev, k24rev)})
+    df = pd.DataFrame({r'$k_{1}, k_{13}$': np.append(k1rev, k13rev), r'$k_{2}, k_{14}$': np.append(k2rev, k14rev),
+                       r'$k_{4}, k_{16}$': np.append(k4rev, k16rev), r'$k_{5}, k_{17}$': np.append(k5rev, k17rev),
+                       r'$k_{8}, k_{20}$': np.append(k8rev, k20rev), r'$k_{9}, k_{21}$': np.append(k9rev, k21rev),
+                       r'$k_{10}, k_{22}$': np.append(k10rev, k22rev), r'$k_{11}, k_{23}$': np.append(k11rev, k23rev),
+                       r'$k_{12}, k_{24}$': np.append(k12rev, k24rev)})
 
     # add labels for IL2 and IL15
     df['cytokine'] = 'IL-2'
