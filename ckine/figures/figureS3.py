@@ -18,6 +18,7 @@ def makeFigure():
 
     rank_list = [3, 2 * x, 2 * x]
     out = perform_tucker(values, rank_list)
+    print(out[0])
     print(find_R2X_tucker(values, out))
 
     factors = out[1]
