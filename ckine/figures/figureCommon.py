@@ -155,17 +155,21 @@ def plot_timepoints(ax, factors):
     ax.legend()
 
 
-def import_samples_2_15(Fig1=True):
+def import_samples_2_15(Traf=True, ret_trace=False):
     """ This function imports the csv results of IL2-15 fitting into a numpy array called unkVec. """
-    bmodel = build_model_2_15()
+    bmodel = build_model_2_15(traf=Traf)
     n_params = nParams()
 
     path = os.path.dirname(os.path.abspath(__file__))
 
-    if Fig1:
+    if Traf:
         trace = pm.backends.text.load(join(path, '../../IL2_model_results'), bmodel.M)
     else:
         trace = pm.backends.text.load(join(path, '../../IL2_15_no_traf'), bmodel.M)
+
+    # option to return trace instead of numpy array
+    if ret_trace:
+        return trace
 
     scales = trace.get_values('scales')
     num = scales.size
@@ -173,7 +177,7 @@ def import_samples_2_15(Fig1=True):
     rxn = trace.get_values('rxn')
     exprRates = trace.get_values('IL2Raexpr')
 
-    if Fig1:
+    if Traf:
         endo = trace.get_values('endo')
         activeEndo = trace.get_values('activeEndo')
         sortF = trace.get_values('sortF')

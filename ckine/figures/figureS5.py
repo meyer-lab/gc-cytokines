@@ -1,11 +1,11 @@
 """
-This creates Figure 3.
+This creates Figure S4. Full panel of measured vs simulated.
 """
 from .figureCommon import subplotLabel, getSetup
 
 
 def makeFigure():
-    """ Build the figure. """
+    """Get a list of the axis objects and create a figure"""
     # Get list of axis objects
     ax, f = getSetup((7, 6), (3, 4))
 
