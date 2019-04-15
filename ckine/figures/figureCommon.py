@@ -80,12 +80,18 @@ def plot_ligands(ax, factors, component_x, component_y, ax_pos, fig3=True):
         else:
             legend = False
         sns.scatterplot(x=factors[idx, component_x - 1], y=factors[idx, component_y - 1], marker=markers[ii], hue=np.log10(np.sum(mat[idx, :], axis=1)), ax=ax, palette=cmap, s=100, legend=legend)
-        if ax_pos in (5, 2):
-            h, l = ax.get_legend_handles_labels()
+        h, l = ax.get_legend_handles_labels()
+        if ax_pos == 5 and fig3:
             legend1 = ax.legend(handles=h, loc=2)
             ax.add_artist(legend1)
             legend2 = ax.legend(handles=legend_shape, loc=3)
             ax.add_artist(legend2)
+        elif ax_pos == 2 and not fig3:
+            legend1 = ax.legend(handles=h, loc=2)
+            ax.add_artist(legend1)
+            legend2 = ax.legend(handles=legend_shape, loc=3)
+            ax.add_artist(legend2)
+
     ax.set_title('Ligands')
     set_bounds(ax, component_x)
 
