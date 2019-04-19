@@ -16,7 +16,7 @@ def setupJacobian(Op, unk):
     fexpr = Op(a)
 
     # Calculate the Jacobian
-    J = theano.scan(lambda i, y, x : T.grad(fexpr[i], a), sequences=T.arange(fexpr.shape[0]), non_sequences=[fexpr, a])[0]
+    J = theano.scan(lambda i, y, x: T.grad(fexpr[i], a), sequences=T.arange(fexpr.shape[0]), non_sequences=[fexpr, a])[0]
 
     f = theano.function([a], fexpr)
     fprime = theano.function([a], J)
@@ -26,6 +26,7 @@ def setupJacobian(Op, unk):
 
 class TestOp(unittest.TestCase):
     """ Test Theano Ops. """
+
     def setUp(self):
         self.unkV = np.full(nParams(), 0.3)
         self.doseUnkV = self.unkV[6::]
@@ -49,7 +50,7 @@ class TestOp(unittest.TestCase):
 
     def test_runCkineDosePrestimOp(self):
         """ Verify the Jacobian passed back by runCkineDoseOp with prestimulation. """
-        Op = runCkineDoseOp(np.array(1.0), self.cond, self.conditions, 10.0, np.ones(6)*10.0)
+        Op = runCkineDoseOp(np.array(1.0), self.cond, self.conditions, 10.0, np.ones(6) * 10.0)
 
         utt.verify_grad(Op, [self.doseUnkV], abs_tol=0.01, rel_tol=0.01)
 

@@ -80,7 +80,7 @@ def plot_ligands(ax, factors, component_x, component_y, ax_pos, fig3=True):
         else:
             legend = False
         sns.scatterplot(x=factors[idx, component_x - 1], y=factors[idx, component_y - 1], marker=markers[ii], hue=np.log10(np.sum(mat[idx, :], axis=1)), ax=ax, palette=cmap, s=100, legend=legend)
-        h, l = ax.get_legend_handles_labels()
+        h, _ = ax.get_legend_handles_labels()
         if ax_pos == 5 and fig3:
             legend1 = ax.legend(handles=h, loc=2)
             ax.add_artist(legend1)
@@ -117,12 +117,12 @@ def plot_conf_int(ax, x_axis, y_axis, color, label=None):
 def plot_cells(ax, factors, component_x, component_y, cell_names, ax_pos, fig3=True):
     """This function plots the combination decomposition based on cell type."""
     colors = cm.rainbow(np.linspace(0, 1, len(cell_names)))
-    markersCells = ['^', '*', 'D', 's', 'X', 'o', '4', 'H', 'P', '*', 'D', 's', 'X'] #'o', 'd', '1', '2', '3', '4', 'h', 'H', 'X', 'v', '*', '+', '8', 'P', 'p', 'D', '_','D', 's', 'X', 'o'
+    markersCells = ['^', '*', 'D', 's', 'X', 'o', '4', 'H', 'P', '*', 'D', 's', 'X']  # 'o', 'd', '1', '2', '3', '4', 'h', 'H', 'X', 'v', '*', '+', '8', 'P', 'p', 'D', '_','D', 's', 'X', 'o'
 
     for ii in range(len(factors[:, component_x - 1])):
-        ax.scatter(factors[ii, component_x - 1], factors[ii, component_y - 1], c = [colors[ii]], marker = markersCells[ii], label = cell_names[ii])
+        ax.scatter(factors[ii, component_x - 1], factors[ii, component_y - 1], c=[colors[ii]], marker=markersCells[ii], label=cell_names[ii])
 
-    if ax_pos == 1:
+    if ax_pos == 1 or ax_pos == 2:
         ax.legend()
 
     elif ax_pos == 4 and fig3:
@@ -233,25 +233,33 @@ def import_samples_4_7():
     return unkVec, scales
 
 
-def load_cells():
-    """ Loads CSV file that gives Rexpr levels for different cell types. """
-    fileDir = os.path.dirname(os.path.realpath('__file__'))
-    expr_filename = os.path.join(fileDir, './ckine/data/expr_table.csv')
-    data = pds.read_csv(expr_filename)  # Every column in the data represents a specific cell
-    cell_names = data.columns.values.tolist()[1::]  # returns the cell names from the pandas dataframe (which came from csv)
-    return data, cell_names
-
-
 def kfwd_info(unkVec):
     """ Gives the mean and standard deviation of a kfwd distribution. We need this since we are not using violin plots for this rate. """
     mean = np.mean(unkVec[6])
     std = np.std(unkVec[6])
     return mean, std
 
+
 def import_Rexpr():
     """ Loads CSV file containing Rexpr levels from preliminary Visterra data. """
     path = os.path.dirname(os.path.dirname(__file__))
-    data = pds.read_csv(join(path, 'data/Receptor_levels_4_8_19.csv')) # Every row in the data represents a specific cell
-    numpy_data = data.values[:, 1:] # returns data values in a numpy array
+    data = pds.read_csv(join(path, 'data/Receptor_levels_4_8_19.csv'))  # Every row in the data represents a specific cell
+    numpy_data = data.values[:, 1:]  # returns data values in a numpy array
     cell_names = list(data.values[:, 0])
     return numpy_data, cell_names
+
+
+def import_pstat():
+    """ Loads CSV file containing pSTAT5 levels from Visterra data. """
+    path = os.path.dirname(os.path.dirname(__file__))
+    data = np.array(pds.read_csv(join(path, 'data/median_pSTAT5_3_20.csv'), encoding='latin1'))
+    ckineConc = data[1, 2:14]
+    # 4 time points, 11 cell types, 12 concentrations
+    IL2_data = np.zeros((44, 12))
+    IL15_data = np.zeros((44, 12))
+    cell_names = list()
+    for i in range(11):
+        cell_names.append(data[12 * i, 1])
+        IL2_data[4 * i:4 * (i + 1), :] = data[3 + (12 * i):7 + (12 * i), 2:14]
+        IL15_data[4 * i:4 * (i + 1), :] = data[7 + (12 * i):11 + (12 * i), 2:14]
+    return ckineConc, cell_names, IL2_data, IL15_data

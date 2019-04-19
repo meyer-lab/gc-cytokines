@@ -10,6 +10,7 @@ from .figureCommon import subplotLabel, getSetup, import_samples_2_15, import_sa
 from ..plot_model_prediction import pstat
 from ..model import runCkineUP, getTotalActiveSpecies
 
+
 def makeFigure():
     """Get a list of the axis objects and create a figure"""
     # Get list of axis objects
@@ -26,10 +27,10 @@ def makeFigure():
     relativeGC(ax[0], unkVec_2_15, unkVec_4_7)
     #IL2_receptor_activity(ax[2:5], unkVec_2_15, scales_2_15)
     for i in range(data_Visterra.shape[0]):
-        if i == (data_Visterra.shape[0] - 1): # only plot the legend for the last entry
-            IL2_dose_response(ax[1+i], unkVec_2_15, cell_names_Visterra[i], data_Visterra[i], legend=True)
+        if i == (data_Visterra.shape[0] - 1):  # only plot the legend for the last entry
+            IL2_dose_response(ax[1 + i], unkVec_2_15, cell_names_Visterra[i], data_Visterra[i], legend=True)
         else:
-            IL2_dose_response(ax[1+i], unkVec_2_15, cell_names_Visterra[i], data_Visterra[i])
+            IL2_dose_response(ax[1 + i], unkVec_2_15, cell_names_Visterra[i], data_Visterra[i])
 
     f.tight_layout(w_pad=0.1, h_pad=1.0)
 
@@ -117,18 +118,19 @@ def receptor_expression(receptor_abundance, endo, kRec, sortF, kDeg):
     rec_ex = (receptor_abundance * endo) / (1. + ((kRec * (1. - sortF)) / (kDeg * sortF)))
     return rec_ex
 
+
 def IL2_dose_response(ax, unkVec, cell_type, cell_data, legend=False):
     """ Shows activity for a given cell type at various IL2 concentrations """
     tps = np.array([15., 30., 60., 240.])
-    PTS = 6 # number of cytokine concentrations
-    cytokC = np.logspace(-4.0, 2.0, PTS) # vary cytokine concentration from 1 pm to 100 nm
+    PTS = 6  # number of cytokine concentrations
+    cytokC = np.logspace(-4.0, 2.0, PTS)  # vary cytokine concentration from 1 pm to 100 nm
     colors = cm.rainbow(np.linspace(0, 1, tps.size))
 
     rxntfr = unkVec.T.copy()
-    split = rxntfr.shape[0] # number of parameter sets used (& thus the number of yOut replicates)
+    split = rxntfr.shape[0]  # number of parameter sets used (& thus the number of yOut replicates)
     total_activity = np.zeros((PTS, split, tps.size))
 
-     # loop for each IL2 concentration
+    # loop for each IL2 concentration
     for i in range(PTS):
         for ii in range(rxntfr.shape[0]):
             rxntfr[ii, 0] = cytokC[i]
@@ -137,10 +139,10 @@ def IL2_dose_response(ax, unkVec, cell_type, cell_data, legend=False):
             rxntfr[ii, 23] = receptor_expression(cell_data[1], rxntfr[ii, 17], rxntfr[ii, 20], rxntfr[ii, 19], rxntfr[ii, 21])
             rxntfr[ii, 24] = receptor_expression(cell_data[2], rxntfr[ii, 17], rxntfr[ii, 20], rxntfr[ii, 19], rxntfr[ii, 21])
         yOut, retVal = runCkineUP(tps, rxntfr)
-        assert retVal >= 0 # make sure solver is working
+        assert retVal >= 0  # make sure solver is working
         activity = np.dot(yOut, getTotalActiveSpecies().astype(np.float))
         for j in range(split):
-            total_activity[i, j, :] = activity[(4*j):((j+1)*4)] # save the activity from this concentration for all 4 tps
+            total_activity[i, j, :] = activity[(4 * j):((j + 1) * 4)]  # save the activity from this concentration for all 4 tps
 
     # plot the values with each time as a separate color
     for tt in range(tps.size):
