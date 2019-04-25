@@ -7,7 +7,7 @@ import string
 import numpy as np
 import seaborn as sns
 import pandas as pd
-from .figureCommon import subplotLabel, getSetup, traf_names, plot_conf_int, import_samples_4_7, kfwd_info
+from .figureCommon import subplotLabel, getSetup, traf_names, plot_conf_int, import_samples_4_7, import_samples_2_15, kfwd_info
 from ..model import nParams, getTotalActiveSpecies, runCkineUP, getSurfaceGCSpecies, getTotalActiveCytokine
 
 
@@ -22,17 +22,22 @@ def makeFigure():
     for ii, item in enumerate(ax):
         subplotLabel(item, string.ascii_uppercase[ii])
 
-    unkVec, scales = import_samples_4_7()
-    kfwd_avg, kfwd_std = kfwd_info(unkVec)
-    print("kfwd = " + str(kfwd_avg) + " +/- " + str(kfwd_std))
-    pstat_plot(ax[1], unkVec, scales)
-    plot_pretreat(ax[2], unkVec, scales, "Cross-talk pSTAT inhibition")
-    surf_gc(ax[7], 100., unkVec)
-    violinPlots(ax[3:7], unkVec, scales)
+    unkVec_2_15, _ = import_samples_2_15()
+    unkVec_4_7, scales_4_7 = import_samples_4_7()
 
-    unkVec_noActiveEndo = unkVec.copy()
+    kfwd_avg, kfwd_std = kfwd_info(unkVec_4_7)
+    print("kfwd = " + str(kfwd_avg) + " +/- " + str(kfwd_std))
+    pstat_plot(ax[1], unkVec_4_7, scales_4_7)
+    plot_pretreat(ax[2], unkVec_4_7, scales_4_7, "Cross-talk pSTAT inhibition")
+    traf_violin(ax[4], unkVec_4_7)
+    rexpr_violin(ax[5], unkVec_4_7)
+    scales_violin(ax[6], scales_4_7)
+    surf_gc(ax[7], 100., unkVec_4_7)
+    unkVec_noActiveEndo = unkVec_4_7.copy()
     unkVec_noActiveEndo[18] = 0.0   # set activeEndo rate to 0
-    plot_pretreat(ax[8], unkVec_noActiveEndo, scales, "Inhibition without active endocytosis")
+    plot_pretreat(ax[8], unkVec_noActiveEndo, scales_4_7, "Inhibition without active endocytosis")
+
+    relativeGC(ax[3], unkVec_2_15, unkVec_4_7)  # plot last to avoid coloring all other violins purple
 
     f.tight_layout()
 
@@ -80,9 +85,8 @@ def pstat_plot(ax, unkVec, scales):
     cytokC_4 = np.array([5., 50., 500., 5000., 50000., 250000.]) / 14900.  # 14.9 kDa according to sigma aldrich
     cytokC_7 = np.array([1., 10., 100., 1000., 10000., 100000.]) / 17400.  # 17.4 kDa according to prospec bio
     cytokC_common = np.logspace(-3.8, 1.5, num=PTS)
-    path = os.path.dirname(os.path.abspath(__file__))
-    dataIL4 = pd.read_csv(join(path, "../data/Gonnord_S3B.csv")).values  # imports IL4 file into pandas array
-    dataIL7 = pd.read_csv(join(path, "../data/Gonnord_S3C.csv")).values  # imports IL7 file into pandas array
+    dataIL4 = pd.read_csv(join(os.path.dirname(os.path.abspath(__file__)), "../data/Gonnord_S3B.csv")).values  # imports IL4 file into pandas array
+    dataIL7 = pd.read_csv(join(os.path.dirname(os.path.abspath(__file__)), "../data/Gonnord_S3C.csv")).values  # imports IL7 file into pandas array
     IL4_data_max = np.amax(np.concatenate((dataIL4[:, 1], dataIL4[:, 2])))
     IL7_data_max = np.amax(np.concatenate((dataIL7[:, 1], dataIL7[:, 2])))
 
@@ -104,40 +108,40 @@ def pstat_plot(ax, unkVec, scales):
     ax.legend()
 
 
-def violinPlots(ax, unkVec, scales):
-    """ Create violin plots of model posterior. """
+def traf_violin(ax, unkVec):
+    """ Create violin plot of trafficking parameters. """
     unkVec = unkVec.transpose()
-
-    rxn = np.array([unkVec[:, 13], unkVec[:, 15]])  # k27rev, k33rev
-    rxn = rxn.transpose()
-    rxn = pd.DataFrame(rxn)
     traf = pd.DataFrame(unkVec[:, 17:22])
+
+    traf.columns = traf_names()
+    a = sns.violinplot(data=np.log10(traf), ax=ax, linewidth=0.5)
+    a.set_xticklabels(a.get_xticklabels(), rotation=40, rotation_mode="anchor", ha="right", fontsize=8, position=(0, 0.045))
+    a.set_ylabel(r"$\mathrm{log_{10}(\frac{1}{min})}$")
+    a.set_title("Trafficking parameters")
+
+
+def rexpr_violin(ax, unkVec):
+    """ Create violin plot of receptor expression rates. """
+    unkVec = unkVec.transpose()
     Rexpr = np.array([unkVec[:, 24], unkVec[:, 26], unkVec[:, 28]])
     Rexpr = Rexpr.transpose()
     Rexpr = pd.DataFrame(Rexpr)
-    scales = pd.DataFrame(scales)
-
-    rxn.columns = [r'$k_{27}$', r'$k_{33}$']
-    a = sns.violinplot(data=np.log10(rxn), ax=ax[0], linewidth=0.5)  # creates names based on dataframe columns
-    a.set_ylabel(r"$\mathrm{log_{10}(\frac{1}{min})}$")
-    a.set_title("Reverse reaction rates")
-
-    traf.columns = traf_names()
-    b = sns.violinplot(data=np.log10(traf), ax=ax[1], linewidth=0.5)
-    b.set_xticklabels(b.get_xticklabels(), rotation=40, rotation_mode="anchor", ha="right", fontsize=8, position=(0, 0.045))
-    b.set_ylabel(r"$\mathrm{log_{10}(\frac{1}{min})}$")
-    b.set_title("Trafficking parameters")
 
     Rexpr.columns = [r'$\gamma_{c}$', 'IL-7Rα', 'IL-4Rα']
-    c = sns.violinplot(data=np.log10(Rexpr), ax=ax[2], linewidth=0.5)
-    c.set_xticklabels(c.get_xticklabels(), rotation=40, rotation_mode="anchor", ha="right", fontsize=8, position=(0, 0.045))
-    c.set_ylabel(r"$\mathrm{log_{10}(\frac{num}{cell * min})}$")
-    c.set_title("Receptor expression rates")
+    a = sns.violinplot(data=np.log10(Rexpr), ax=ax, linewidth=0.5)
+    a.set_xticklabels(a.get_xticklabels(), rotation=40, rotation_mode="anchor", ha="right", fontsize=8, position=(0, 0.045))
+    a.set_ylabel(r"$\mathrm{log_{10}(\frac{num}{cell * min})}$")
+    a.set_title("Receptor expression rates")
+
+
+def scales_violin(ax, scales):
+    """ Create violin plot of activity scaling constants. """
+    scales = pd.DataFrame(scales)
 
     scales.columns = [r'$C_{6}$', r'$C_{5}$']
-    d = sns.violinplot(data=scales, ax=ax[3], linewidth=0.5)
-    d.set_ylabel("value")
-    d.set_title("pSTAT scaling constants")
+    a = sns.violinplot(data=scales, ax=ax, linewidth=0.5)
+    a.set_ylabel("value")
+    a.set_title("pSTAT scaling constants")
 
 
 def pretreat_calc(unkVec, scales, pre_conc):
@@ -274,3 +278,27 @@ def data_path():
     dataIL7 = pd.read_csv(join(path, "../data/Gonnord_S3C.csv")).values
     data_pretreat = pd.read_csv(join(path, "../data/Gonnord_S3D.csv")).values
     return (dataIL4, dataIL7, data_pretreat)
+
+
+def relativeGC(ax, unkVec2, unkVec4):
+    """ This function compares the relative complex affinities for GC. The rates included in this violing plot will be k4rev, k10rev,
+    k17rev, k22rev, k27rev, and k33rev. We're currently ignoring k31rev (IL9) and k35rev (IL21) since we don't fit to any of its data. """
+
+    # assign values from unkVec
+    kfwd_2, kfwd_4, k4rev, k5rev = unkVec2[6, :], unkVec4[6, :], unkVec2[7, :], unkVec2[8, :]
+    k16rev, k17rev, k22rev, k27rev, k33rev = unkVec2[9, :], unkVec2[10, :], unkVec2[11, :], unkVec4[13, :], unkVec4[15, :]
+
+    # back-out k10 with ratio
+    k10rev = 12.0 * k5rev / 1.5  # doi:10.1016/j.jmb.2004.04.038
+
+    # add each rate duo as separate column in dataframe
+    df = pd.DataFrame({'2·2Rα': kfwd_2 / k4rev, '2·2Rβ': kfwd_2 / k5rev, '2·2Rα·2Rβ': kfwd_2 / k10rev, '15·15Rα': kfwd_2 / k16rev,
+                       '15·2Rβ': kfwd_2 / k17rev, '15·15Rα·2Rβ': kfwd_2 / k22rev, '7·7Rα': kfwd_4 / k27rev, '4·4Rα': kfwd_4 / k33rev})
+
+    col_list = ["violet", "violet", "violet", "goldenrod", "goldenrod", "goldenrod", "blue", "lightblue"]
+    col_list_palette = sns.xkcd_palette(col_list)
+    sns.set_palette(col_list_palette)
+
+    a = sns.violinplot(data=np.log10(df), ax=ax, linewidth=0, scale='width')
+    a.set_xticklabels(a.get_xticklabels(), rotation=40, rotation_mode="anchor", ha="right", fontsize=8, position=(0, 0.075))
+    a.set(title=r"Relative $\gamma_{c}$ affinity", ylabel=r"$\mathrm{log_{10}(K_{a})}$")
