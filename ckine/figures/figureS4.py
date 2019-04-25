@@ -13,7 +13,7 @@ from ..tensor_generation import cell_names
 def makeFigure():
     """Get a list of the axis objects and create a figure"""
     x, y = 2, 3
-    ax, f = getSetup((7.5, 5), (x, y), empts=[3])
+    ax, f = getSetup((7.5, 5), (x, y))
 
     for ii, item in enumerate(ax):
         subplotLabel(item, string.ascii_uppercase[ii])  # Add subplot labels

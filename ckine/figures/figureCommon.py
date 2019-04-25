@@ -40,9 +40,11 @@ def getSetup(figsize, gridd, mults=None, multz=None, empts=None):
     # Make grid
     gs1 = gridspec.GridSpec(*gridd)
 
+    # ax = []
+
     # Get list of axis objects
     if mults is None:
-        ax = [f.add_subplot(gs1[x]) for x in range(gridd[0] * gridd[1])]
+        ax = [f.add_subplot(gs1[x]) for x in range(gridd[0] * gridd[1]) if x not in empts]
     else:
         ax = [f.add_subplot(gs1[x]) if x not in mults else f.add_subplot(gs1[x:x + multz[x]]) for x in range(
             gridd[0] * gridd[1]) if not any([x - j in mults for j in range(1, max(multz.values()))]) and x not in empts]

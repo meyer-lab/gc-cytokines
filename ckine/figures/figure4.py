@@ -2,11 +2,9 @@
 This creates Figure 4.
 """
 import string
-import pandas as pd
 import numpy as np
-import seaborn as sns
 import matplotlib.cm as cm
-from .figureCommon import subplotLabel, getSetup, import_samples_2_15, import_samples_4_7, plot_conf_int, import_Rexpr
+from .figureCommon import subplotLabel, getSetup, import_samples_2_15, plot_conf_int, import_Rexpr
 from ..plot_model_prediction import pstat
 from ..model import runCkineUP, getTotalActiveSpecies
 
@@ -14,51 +12,25 @@ from ..model import runCkineUP, getTotalActiveSpecies
 def makeFigure():
     """Get a list of the axis objects and create a figure"""
     # Get list of axis objects
-    ax, f = getSetup((7, 6), (4, 4), mults=[0], multz={0: 2}, empts=[15])
+    ax, f = getSetup((7, 6), (4, 4), empts=[13, 14, 15])
 
     # Add subplot labels
     for ii, item in enumerate(ax):
         subplotLabel(item, string.ascii_uppercase[ii])
 
     data_Visterra, cell_names_Visterra = import_Rexpr()
-    unkVec_2_15, scales_2_15 = import_samples_2_15()
-    unkVec_4_7, scales_4_7 = import_samples_4_7()
+    unkVec_2_15, _ = import_samples_2_15()
 
-    relativeGC(ax[0], unkVec_2_15, unkVec_4_7)
-    #IL2_receptor_activity(ax[2:5], unkVec_2_15, scales_2_15)
+    # IL2_receptor_activity(ax[2:5], unkVec_2_15, scales_2_15)
     for i in range(data_Visterra.shape[0]):
         if i == (data_Visterra.shape[0] - 1):  # only plot the legend for the last entry
-            IL2_dose_response(ax[1 + i], unkVec_2_15, cell_names_Visterra[i], data_Visterra[i], legend=True)
+            IL2_dose_response(ax[i], unkVec_2_15, cell_names_Visterra[i], data_Visterra[i], legend=True)
         else:
-            IL2_dose_response(ax[1 + i], unkVec_2_15, cell_names_Visterra[i], data_Visterra[i])
+            IL2_dose_response(ax[i], unkVec_2_15, cell_names_Visterra[i], data_Visterra[i])
 
     f.tight_layout(w_pad=0.1, h_pad=1.0)
 
     return f
-
-
-def relativeGC(ax, unkVec2, unkVec4):
-    """ This function compares the relative complex affinities for GC. The rates included in this violing plot will be k4rev, k10rev,
-    k17rev, k22rev, k27rev, and k33rev. We're currently ignoring k31rev (IL9) and k35rev (IL21) since we don't fit to any of its data. """
-
-    # assign values from unkVec
-    kfwd_2, kfwd_4, k4rev, k5rev = unkVec2[6, :], unkVec4[6, :], unkVec2[7, :], unkVec2[8, :]
-    k16rev, k17rev, k22rev, k27rev, k33rev = unkVec2[9, :], unkVec2[10, :], unkVec2[11, :], unkVec4[13, :], unkVec4[15, :]
-
-    # back-out k10 with ratio
-    k10rev = 12.0 * k5rev / 1.5  # doi:10.1016/j.jmb.2004.04.038
-
-    # add each rate duo as separate column in dataframe
-    df = pd.DataFrame({'2·2Rα': kfwd_2 / k4rev, '2·2Rβ': kfwd_2 / k5rev, '2·2Rα·2Rβ': kfwd_2 / k10rev, '15·15Rα': kfwd_2 / k16rev,
-                       '15·2Rβ': kfwd_2 / k17rev, '15·15Rα·2Rβ': kfwd_2 / k22rev, '7·7Rα': kfwd_4 / k27rev, '4·4Rα': kfwd_4 / k33rev})
-
-    col_list = ["violet", "violet", "violet", "goldenrod", "goldenrod", "goldenrod", "blue", "lightblue"]
-    col_list_palette = sns.xkcd_palette(col_list)
-    sns.set_palette(col_list_palette)
-
-    a = sns.violinplot(data=np.log10(df), ax=ax, linewidth=0, scale='width')
-    a.set_xticklabels(a.get_xticklabels(), rotation=40, rotation_mode="anchor", ha="right", fontsize=8, position=(0, 0.075))
-    a.set(title=r"Relative $\gamma_{c}$ affinity", ylabel=r"$\mathrm{log_{10}(K_{a})}$")
 
 
 def cell_act(unkVec, cytokC, scale):
