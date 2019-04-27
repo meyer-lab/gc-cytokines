@@ -49,19 +49,23 @@ def plot_geweke(ax, traf):
     ax[0].legend()
 
     # plot the scores for receptor expression rates
-    rexpr_len = len(score[0]['IL2Raexpr'])
-    rexpr_names = ['IL-2Rα', 'IL-2Rβ', r'$\gamma_{c}$', 'IL-15Rα']
+    rexpr_names = ['IL-2Rα', 'IL-2Rβ', 'IL-15Rα']
+    rexpr_len = len(rexpr_names)
     colors = cm.rainbow(np.linspace(0, 1, rexpr_len))
-    for ii in range(rexpr_len):
-        ax[1].scatter(score[0]['IL2Raexpr'][ii][:, 0], score[0]['IL2Raexpr'][ii][:, 1], marker='o', s=25, color=colors[ii], label=rexpr_names[ii])
+
+    # plot IL2Ra and IL2Rb
+    for ii in range(rexpr_len - 1):
+        ax[1].scatter(score[0]['Rexpr_2Ra_2Rb'][ii][:, 0], score[0]['Rexpr_2Ra_2Rb'][ii][:, 1], marker='o', s=25, color=colors[ii], label=rexpr_names[ii])
+    # plot IL15Ra
+    ax[1].scatter(score[0]['Rexpr_15Ra'][:, 0], score[0]['Rexpr_15Ra'][:, 1], marker='o', s=25, color=colors[2], label=rexpr_names[2])
     ax[1].axhline(-1., c='r')
     ax[1].axhline(1., c='r')
-    ax[1].set(ylim=(-1.25, 1.25), xlim=(0 - 10, .5 * trace['IL2Raexpr'].shape[0] / 2 + 10),
+    ax[1].set(ylim=(-1.25, 1.25), xlim=(0 - 10, .5 * trace['Rexpr_2Ra_2Rb'].shape[0] / 2 + 10),
               xlabel="Position in Chain", ylabel="Geweke Score")
     if traf:
         ax[1].set_title('Trafficking Model: Receptor Expression Rates')
     else:
-        ax[1].set_title('No-Trafficking Model: Receptor Expression Rates')
+        ax[1].set_title('No-Trafficking Model: Receptor Abundance Levels')
     ax[1].legend()
 
     # plot the scores for scaling constant and kfwd

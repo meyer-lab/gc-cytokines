@@ -119,34 +119,34 @@ def pstat_act(ax, unkVec, scales):
     ax.legend()
 
 
-def violinPlots(ax, unkVec, scales, Fig1=True):
+def violinPlots(ax, unkVec, scales, Traf=True):
     """ Create violin plots of model posterior. """
     unkVec = unkVec.transpose()
     traf = pd.DataFrame(unkVec[:, 17:22])
     Rexpr = pd.DataFrame(unkVec[:, 22:26])
     scales = pd.DataFrame(scales)
 
-    if Fig1:
+    if Traf:
         traf.columns = traf_names()
         b = sns.violinplot(data=np.log10(traf), ax=ax[0], linewidth=0.5)
         b.set_xticklabels(b.get_xticklabels(), rotation=40, rotation_mode="anchor", ha="right", fontsize=8, position=(0, 0.075))
         b.set(title="Trafficking parameters", ylabel=r"$\mathrm{log_{10}(\frac{1}{min})}$")
 
     Rexpr.columns = ['IL-2Rα', 'IL-2Rβ', r'$\gamma_{c}$', 'IL-15Rα']
-    if Fig1:
+    if Traf:
         c = sns.violinplot(data=np.log10(Rexpr), ax=ax[1], linewidth=0.5)
+        c.set(title="Receptor expression rates", ylabel=r"$\mathrm{log_{10}(\frac{num}{cell * min})}$")
     else:
         c = sns.violinplot(data=np.log10(Rexpr), ax=ax[0], linewidth=0.5)
+        c.set(title="Receptor abundance levels", ylabel=r"$\mathrm{log_{10}(\frac{num}{cell})}$")
     c.set_xticklabels(c.get_xticklabels(), rotation=40, rotation_mode="anchor", ha="right", fontsize=8, position=(0, 0.075))
-    c.set(title="Receptor expression rates", ylabel=r"$\mathrm{log_{10}(\frac{num}{cell * min})}$")
 
     sc_ax = 1  # subplot number for the scaling constant
-    if Fig1:
+    if Traf:
         sc_ax = 2
     scales.columns = [r'$C_{5}$']
     d = sns.violinplot(data=scales, ax=ax[sc_ax], linewidth=0.5)
-    d.set_title("value")
-    d.set_title("pSTAT5 scaling constant")
+    d.set(ylabel="value", title="pSTAT5 scaling constant")
 
 
 def rateComp(ax, unkVec):

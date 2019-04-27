@@ -12,7 +12,7 @@ import matplotlib.cm as cm
 from matplotlib import gridspec, pyplot as plt
 from matplotlib.lines import Line2D
 from ..model import nParams
-from ..fit import build_model as build_model_2_15
+from ..fit import build_model as build_model_2_15, find_gc
 from ..fit_others import build_model as build_model_4_7
 from ..tensor_generation import prepare_tensor
 
@@ -183,7 +183,8 @@ def import_samples_2_15(Traf=True, ret_trace=False):
     num = scales.size
     kfwd = trace.get_values('kfwd')
     rxn = trace.get_values('rxn')
-    exprRates = trace.get_values('IL2Raexpr')
+    Rexpr_2 = trace.get_values('Rexpr_2Ra_2Rb')
+    Rexpr_15 = trace.get_values('Rexpr_15Ra')
 
     if Traf:
         endo = trace.get_values('endo')
@@ -191,17 +192,19 @@ def import_samples_2_15(Traf=True, ret_trace=False):
         sortF = trace.get_values('sortF')
         kRec = trace.get_values('kRec')
         kDeg = trace.get_values('kDeg')
+        Rexpr_gc = find_gc(Traf, endo, kRec, sortF, kDeg)
     else:
         endo = np.zeros((num))
         activeEndo = np.zeros((num))
         sortF = np.zeros((num))
         kRec = np.zeros((num))
         kDeg = np.zeros((num))
+        Rexpr_gc = np.ones((num), dtype=float) * find_gc(Traf, endo, kRec, sortF, kDeg)
 
     unkVec = np.zeros((n_params, num))
     for ii in range(num):
         unkVec[:, ii] = np.array([0., 0., 0., 0., 0., 0., kfwd[ii], rxn[ii, 0], rxn[ii, 1], rxn[ii, 2], rxn[ii, 3], rxn[ii, 4], rxn[ii, 5], 1., 1., 1., 1., endo[ii],
-                                  activeEndo[ii], sortF[ii], kRec[ii], kDeg[ii], exprRates[ii, 0], exprRates[ii, 1], exprRates[ii, 2], exprRates[ii, 3], 0., 0., 0., 0.])
+                                  activeEndo[ii], sortF[ii], kRec[ii], kDeg[ii], Rexpr_2[ii, 0], Rexpr_2[ii, 1], Rexpr_gc[ii], Rexpr_15[ii], 0., 0., 0., 0.])
 
     return unkVec, scales
 

@@ -282,3 +282,9 @@ def ligandDeg(yVec, sortF, kDeg, cytokineIDX):
     sum_total = np.sum(yVec_endo_species * __cytok_species_IDX)
     sum_inactive = (sum_total - sum_active) * sortF  # scale the inactive species by sortF
     return kDeg * (((sum_inactive + sum_active) * __internalStrength) + (yVec_endo_lig[cytokineIDX] * __internalV))  # can assume all free ligand and active species are degraded at rate kDeg
+
+
+def receptor_expression(receptor_abundance, endo, kRec, sortF, kDeg):
+    """ Uses receptor abundance (from flow) and trafficking rates to calculate receptor expression rate at steady state. """
+    rec_ex = (receptor_abundance * endo) / (1. + ((kRec * (1. - sortF)) / (kDeg * sortF)))
+    return rec_ex

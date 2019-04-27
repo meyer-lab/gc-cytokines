@@ -6,7 +6,7 @@ import pymc3 as pm
 import theano.tensor as T
 import numpy as np
 import pandas as pds
-from .model import getTotalActiveSpecies, getSurfaceIL2RbSpecies
+from .model import getTotalActiveSpecies, getSurfaceIL2RbSpecies, receptor_expression
 from .differencing_op import runCkineDoseOp
 
 
@@ -30,6 +30,14 @@ def commonTraf():
     kDeg = pm.Lognormal('kDeg', mu=np.log(0.01), sd=0.2, shape=1)
     sortF = pm.Beta('sortF', alpha=12, beta=80, shape=1)
     return kfwd, endo, activeEndo, kRec, kDeg, sortF
+
+def find_gc(traf=True, endo=0, kRec=0, sortF=0, kDeg=0):
+    """ Calculates gc expression rate for YT-1 cells using data file and receptor_expression function. If 'traf' is false then we just return the receptor abundance level. """
+    data = load_data("data/YT_1_receptor_levels.csv")  # data = [['YT-1', -1, -1, gc, -1]] where data[0, 3] represents the gc level
+    if traf:
+        return receptor_expression(data[0, 3], endo, kRec, sortF, kDeg)
+    else:
+        return data[0, 3]
 
 
 class IL2Rb_trafficking:
@@ -120,12 +128,15 @@ class build_model:
                 kDeg = T.zeros(1, dtype=np.float64)
                 sortF = T.ones(1, dtype=np.float64) * 0.5
 
+            gc_value = find_gc(self.traf, endo, kRec, sortF, kDeg)  # find rate of gc expression or gc abundance (depending on traf)
+            Rexpr_gc = T.ones(1, dtype=np.float64) * gc_value
             rxnrates = pm.Lognormal('rxn', sd=0.5, shape=6)  # 6 reverse rxn rates for IL2/IL15
             nullRates = T.ones(4, dtype=np.float64)  # k27rev, k31rev, k33rev, k35rev
-            Rexpr = pm.Lognormal('IL2Raexpr', sd=0.5, shape=4)  # Expression: IL2Ra, IL2Rb, gc, IL15Ra
+            Rexpr_2Ra_2Rb = pm.Lognormal('Rexpr_2Ra_2Rb', sd=0.5, shape=2)  # Expression: IL2Ra, IL2Rb, gc
+            Rexpr_15Ra = pm.Lognormal('Rexpr_15Ra', sd=0.5, shape=1)  # Expression: IL15Ra
             scale = pm.Lognormal('scales', mu=np.log(100.), sd=1, shape=1)  # create scaling constant for activity measurements
 
-            unkVec = T.concatenate((kfwd, rxnrates, nullRates, endo, activeEndo, sortF, kRec, kDeg, Rexpr, nullRates * 0.0))
+            unkVec = T.concatenate((kfwd, rxnrates, nullRates, endo, activeEndo, sortF, kRec, kDeg, Rexpr_2Ra_2Rb, Rexpr_gc, Rexpr_15Ra, nullRates * 0.0))
 
             Y_15 = self.dst15.calc(unkVec, scale)  # fitting the data based on dst15.calc for the given parameters
             sd_15 = T.minimum(T.std(Y_15), 0.03)  # Add bounds for the stderr to help force the fitting solution
