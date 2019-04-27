@@ -6,7 +6,7 @@ import numpy as np
 import matplotlib.cm as cm
 from .figureCommon import subplotLabel, getSetup, import_samples_2_15, plot_conf_int, import_Rexpr
 from ..plot_model_prediction import pstat
-from ..model import runCkineUP, getTotalActiveSpecies
+from ..model import runCkineUP, getTotalActiveSpecies, receptor_expression
 
 
 def makeFigure():
@@ -83,12 +83,6 @@ def IL2_receptor_activity(ax, unkVec, scales):
     ax[1].set_title("IL-2Rβ")
     ax[2].set_title(r'$\gamma_{c}$')
     ax[2].legend(loc='upper left', bbox_to_anchor=(1.05, 0.75))
-
-
-def receptor_expression(receptor_abundance, endo, kRec, sortF, kDeg):
-    """ Uses receptor abundance (from flow) and trafficking rates to calculate receptor expression rate at steady state. """
-    rec_ex = (receptor_abundance * endo) / (1. + ((kRec * (1. - sortF)) / (kDeg * sortF)))
-    return rec_ex
 
 
 def IL2_dose_response(ax, unkVec, cell_type, cell_data, legend=False):

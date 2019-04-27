@@ -20,7 +20,7 @@ def makeFigure():
     print("kfwd = " + str(kfwd_avg) + " +/- " + str(kfwd_std))
     pstat_act(ax[0], unkVec, scales)
     rateComp(ax[1], unkVec)
-    violinPlots(ax[2:4], unkVec, scales, Fig1=False)
+    violinPlots(ax[2:4], unkVec, scales, Traf=False)
 
     f.tight_layout()
 
