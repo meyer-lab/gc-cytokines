@@ -10,6 +10,7 @@ from .figureCommon import subplotLabel, getSetup, plot_cells, set_bounds, import
 from .figure3 import plot_R2X
 from ..Tensor_analysis import perform_decomposition
 
+cell_dim = 0 #For this figure, the cell dimension is along the first [python index 0].
 
 def makeFigure():
     """Get a list of the axis objects and create a figure"""
@@ -29,9 +30,9 @@ def makeFigure():
 
     factors_activity = []
     for jj in range(measured_tensor.shape[2] - 1):
-        factors = perform_decomposition(measured_tensor, jj + 1)
+        factors = perform_decomposition(measured_tensor, jj + 1, cell_dim)
         factors_activity.append(factors)
-    plot_R2X(ax[0], measured_tensor, factors_activity, n_comps=5)
+    plot_R2X(ax[0], measured_tensor, factors_activity, n_comps=5, cells_dim = cell_dim)
 
     n_comps = 2
     factors_activ = factors_activity[n_comps - 1]  # First dimension is cells. Second is time. Third is ligand.
