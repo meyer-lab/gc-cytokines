@@ -7,6 +7,7 @@ from .figureCommon import subplotLabel, getSetup, plot_cells, plot_ligands, plot
 from ..Tensor_analysis import find_R2X, perform_decomposition
 from ..tensor_generation import data, cell_names
 
+cell_dim = 1 #For this figure, the cell dimension is along the second [python index 1].
 
 def makeFigure():
     """Get a list of the axis objects and create a figure"""
@@ -18,14 +19,14 @@ def makeFigure():
 
     factors_activity = []
     for jj in range(len(mat) - 1):
-        factors = perform_decomposition(values, jj + 1)
+        factors = perform_decomposition(values, jj + 1, cell_dim)
         factors_activity.append(factors)
 
     n_comps = 4
     factors_activ = factors_activity[n_comps - 1]
 
     bar_receptors(ax[1], data)
-    plot_R2X(ax[2], values, factors_activity, n_comps=5)
+    plot_R2X(ax[2], values, factors_activity, n_comps=5, cells_dim = cell_dim)
 
     # Add subplot labels
     for ii, item in enumerate(ax):
@@ -50,12 +51,12 @@ def bar_receptors(ax, data):
     ax.set_ylabel("Surface Receptor [# / cell]")
 
 
-def plot_R2X(ax, tensor, factors_list, n_comps):
+def plot_R2X(ax, tensor, factors_list, n_comps, cells_dim):
     """Function to plot R2X bar graph."""
     R2X_array = list()
     for n in range(n_comps):
         factors = factors_list[n]
-        R2X = find_R2X(tensor, factors)
+        R2X = find_R2X(tensor, factors, cells_dim)
         R2X_array.append(R2X)
     ax.plot(range(1, n_comps + 1), R2X_array, 'ko', label='Overall R2X')
     ax.set_ylabel('R2X')

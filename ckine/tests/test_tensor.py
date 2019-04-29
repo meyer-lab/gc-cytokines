@@ -15,8 +15,8 @@ class TestModel(unittest.TestCase):
         tensor = tl.tensor(np.random.rand(12, 10, 15))
         arr = []
         for i in range(1, 8):
-            factors = perform_decomposition(tensor, i)
-            R2X = find_R2X(tensor, factors)
+            factors = perform_decomposition(tensor, i, cell_dim = 1)
+            R2X = find_R2X(tensor, factors, cell_dim = 1)
             arr.append(R2X)
         for j in range(len(arr) - 1):
             self.assertTrue(arr[j] < arr[j + 1])
