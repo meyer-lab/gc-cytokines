@@ -1,59 +1,38 @@
 pipeline {
   agent any
+  options {
+    timeout(time: 1, unit: 'HOURS')
+    parallelsAlwaysFailFast()
+  }
   stages {
-    stage('Clean')    { steps { sh 'git clean -ffdx && make clean' } }
-    stage('Test/Lint/Doc') {
+    stage('Clean') { steps { sh 'git clean -ffdx && make clean' } }
+    stage('Venv') { steps { sh 'make venv' } }
+    stage('Run') {
       parallel {
         stage('Test C++') { steps { sh 'make testcpp' } }
-        stage('Test') { steps { sh 'make testcover' } }
-        stage('Lint') {
-          steps { sh '(pylint3 --rcfile=.pylintrc ckine > pylint.log || echo "pylint3 exited with $?")' }
+        stage('Test') {
+          steps {
+            sh 'make testcover'
+            junit allowEmptyResults: true, testResults: 'junit.xml'
+            cobertura coberturaReportFile: 'coverage.xml', failUnhealthy: false, failUnstable: false, maxNumberOfBuilds: 0, onlyStable: false, sourceEncoding: 'ASCII', zoomCoverageChart: false
+          }
         }
-        stage('Doc') { steps { sh 'make doc' } }
+        /* stage('Doc') { // Aren't really using docs at the moment.
+          steps {
+            sh 'make doc'
+            archiveArtifacts artifacts: 'doxy.log', onlyIfSuccessful: false
+            publishHTML([allowMissing:false, alwaysLinkToLastBuild:false, keepAll:true, reportDir:'html', reportFiles:'index.html', reportName:'Docs'])
+          }
+        } */
+        stage('Build') {
+          steps {
+            sh 'make -j 6'
+            archiveArtifacts artifacts: 'Manuscript/Figures/*.pdf, Manuscript/Manuscript.pdf', onlyIfSuccessful: true
+            publishHTML([allowMissing: false, alwaysLinkToLastBuild: false, keepAll: false, reportDir: 'Manuscript', reportFiles: 'index.html', reportName: 'Manuscript', reportTitles: ''])
+            recordIssues qualityGates: [[threshold: 1, type: 'TOTAL_HIGH', unstable: true], [threshold: 20, type: 'TOTAL_NORMAL', unstable: true], [threshold: 40, type: 'TOTAL_LOW', unstable: true]], tools: [pyLint(pattern: 'pylint.log')]
+          }
+        }
       }
-    }
-    stage('Build Figures') {
-      parallel {
-        stage('Build Fig 1') {
-          steps { sh 'make ./Manuscript/Figures/figure1.svg' }
-        }
-        stage('Build Fig 2') {
-          steps { sh 'make ./Manuscript/Figures/figure2.svg' }
-        }
-        stage('Build Fig 3') {
-          steps { sh 'make ./Manuscript/Figures/figure3.svg' }
-        }
-        stage('Build Fig 4') {
-          steps { sh 'make ./Manuscript/Figures/figure4.svg' }
-        }
-      }
-    }
-    stage('Finish Build') { steps { sh 'make' } }
-    stage('Report') {
-      steps {
-        archiveArtifacts artifacts: 'doxy.log', onlyIfSuccessful: false
-        archiveArtifacts artifacts: 'graph_all.svg', onlyIfSuccessful: true
-        archiveArtifacts artifacts: 'cprofile.svg', onlyIfSuccessful: true
-        archiveArtifacts artifacts: 'Manuscript/Manuscript.pdf', onlyIfSuccessful: true
-        archiveArtifacts artifacts: 'Manuscript/Figures/*.pdf', onlyIfSuccessful: true
-        publishHTML([
-          allowMissing: false,
-          alwaysLinkToLastBuild: false,
-          keepAll: false,
-          reportDir: 'Manuscript',
-          reportFiles: 'index.html',
-          reportName: 'Manuscript',
-          reportTitles: ''])
-        cobertura coberturaReportFile: 'coverage.xml', failUnhealthy: false, failUnstable: false, maxNumberOfBuilds: 0, onlyStable: false, sourceEncoding: 'ASCII', zoomCoverageChart: false
-        recordIssues qualityGates: [[threshold: 1, type: 'TOTAL_HIGH', unstable: true], [threshold: 20, type: 'TOTAL_NORMAL', unstable: true], [threshold: 40, type: 'TOTAL_LOW', unstable: true]], tools: [pyLint(pattern: 'pylint.log')]
-        publishHTML([allowMissing:false, alwaysLinkToLastBuild:false, keepAll:true,
-          reportDir:'html', reportFiles:'index.html', reportName:'Documentation', reportTitles:''])
-      }
-    }
-  }
-  post {
-    always {
-      junit allowEmptyResults: true, testResults: 'junit.xml'
     }
   }
 }
