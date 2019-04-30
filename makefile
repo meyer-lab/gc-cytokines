@@ -8,7 +8,7 @@ flist = 1 2 3 4 5 S1 S2 S3 S4 S5 B1 B2 B3 B4 B5
 
 .PHONY: clean test all testprofile testcover doc testcpp autopep
 
-all: ckine/ckine.so Manuscript/index.html Manuscript/Manuscript.pdf Manuscript/Manuscript.docx Manuscript/CoverLetter.docx
+all: ckine/ckine.so Manuscript/index.html Manuscript/Manuscript.pdf Manuscript/Manuscript.docx Manuscript/CoverLetter.docx pylint.log
 
 UNAME_S := $(shell uname -s)
 ifeq ($(UNAME_S),Linux)
@@ -81,14 +81,16 @@ test: venv ckine/ckine.so
 	. venv/bin/activate; pytest
 
 testcover: venv ckine/ckine.so
-	. venv/bin/activate; pytest -n 8 --junitxml=junit.xml --cov-branch --cov=ckine --cov-report xml:coverage.xml
+	. venv/bin/activate; pytest --junitxml=junit.xml --cov-branch --cov=ckine --cov-report xml:coverage.xml
 
 testcpp: ckine/cppcheck
-	valgrind --tool=callgrind ckine/cppcheck
-	gprof2dot -f callgrind -n 2.0 callgrind.out.* | dot -Tsvg -o cprofile.svg
+	valgrind ckine/cppcheck
 
 cppcheck: ckine/cppcheck
 	ckine/cppcheck
+	
+pylint.log: .pylintrc
+	(pylint3 --rcfile=.pylintrc ckine > pylint.log || echo "pylint3 exited with $?")
 
 doc:
 	doxygen Doxyfile

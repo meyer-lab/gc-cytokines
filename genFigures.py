@@ -1,14 +1,18 @@
 #!/usr/bin/env python3
 
-from ckine.figures.figureCommon import overlayCartoon
 import sys
+import logging
+import time
 import matplotlib
 matplotlib.use('AGG')
+from ckine.figures.figureCommon import overlayCartoon
 
 fdir = './Manuscript/Figures/'
 
+logging.basicConfig(format='%(levelname)s:%(message)s', level=logging.INFO)
 
 if __name__ == '__main__':
+    start = time.time()
     nameOut = 'figure' + sys.argv[1]
 
     exec('from ckine.figures import ' + nameOut)
@@ -25,4 +29,4 @@ if __name__ == '__main__':
         overlayCartoon(fdir + 'figure3.svg',
                        './ckine/data/tensor.svg', 35, 30, scalee=0.65)
 
-    print(nameOut + ' is done.')
+    logging.info('%s is done after %s seconds.', nameOut, time.time() - start)
