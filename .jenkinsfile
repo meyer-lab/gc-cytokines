@@ -9,7 +9,12 @@ pipeline {
     stage('Venv') { steps { sh 'make venv' } }
     stage('Run') {
       parallel {
-        stage('Test C++') { steps { sh 'make testcpp' } }
+        stage('Test C++') {
+          steps {
+            sh 'make testcpp'
+            archiveArtifacts artifacts: 'cprofile.svg', onlyIfSuccessful: true
+          }
+        }
         stage('Test') {
           steps {
             sh 'make testcover'
