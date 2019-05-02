@@ -84,7 +84,7 @@ testcover: venv ckine/ckine.so
 	. venv/bin/activate; pytest --junitxml=junit.xml --cov-branch --cov=ckine --cov-report xml:coverage.xml
 
 testcpp: ckine/cppcheck
-	valgrind --leak-check=full ckine/cppcheck
+	valgrind --leak-check=full --track-origins=yes --trace-children=yes ckine/cppcheck
 	valgrind --tool=callgrind ckine/cppcheck
 	gprof2dot -f callgrind -n 5.0 callgrind.out.* | dot -Tsvg -o cprofile.svg
 
