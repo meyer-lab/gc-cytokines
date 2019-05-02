@@ -111,8 +111,10 @@ protected:
 
 		CPPUNIT_ASSERT(std::equal(output.begin(), output.end(), output2.begin()));
 
-		// The sensitivities are non-deterministic for some reason
-		// CPPUNIT_ASSERT(std::equal(soutput.begin(), soutput.end(), soutput2.begin()));
+		// Check sensitivities reproducibility
+		for (size_t ii = 0; ii < soutput.size(); ii++) {
+			CPPUNIT_ASSERT_EQUAL_MESSAGE(std::string("runCkineS sensitivity at pos ") + std::to_string(ii), soutput[ii], soutput2[ii]);
+		}
 	}
 
 	void testrunCkinePretreat() {
@@ -147,8 +149,11 @@ protected:
 		checkRetVal(runCkineS(tps.data(), tps.size(), output2.data(), soutput2.data(), actV.data(), rxnRatesIn.data(), false, 10.0, preL.data()), rxnRatesIn);
 
 		CPPUNIT_ASSERT(std::equal(output.begin(), output.end(), output2.begin()));
-		// The sensitivities are non-deterministic for some reason
-		// CPPUNIT_ASSERT(std::equal(soutput.begin(), soutput.end(), soutput2.begin()));
+
+		// Check sensitivities reproducibility
+		for (size_t ii = 0; ii < soutput.size(); ii++) {
+			CPPUNIT_ASSERT_EQUAL_MESSAGE(std::string("Pretreat sensitivity at pos ") + std::to_string(ii), soutput[ii], soutput2[ii]);
+		}
 	}
 };
 
