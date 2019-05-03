@@ -110,10 +110,14 @@ def traf_names():
 
 
 def plot_conf_int(ax, x_axis, y_axis, color, label=None):
-    """ Calculates the 95% confidence interval for y-axis data and then plots said interval. The percentiles are found along axis=1. """
-    y_axis_top = np.percentile(y_axis, 97.5, axis=1)
-    y_axis_bot = np.percentile(y_axis, 2.5, axis=1)
-    ax.fill_between(x_axis, y_axis_top, y_axis_bot, color=color, alpha=0.5, label=label)
+    """ Shades the 25-75 percentiles dark and the 10-90 percentiles light. The percentiles are found along axis=1. """
+    y_axis_top = np.percentile(y_axis, 90., axis=1)
+    y_axis_bot = np.percentile(y_axis, 10., axis=1)
+    ax.fill_between(x_axis, y_axis_top, y_axis_bot, color=color, alpha=0.4, label=label)
+
+    y_axis_top = np.percentile(y_axis, 75., axis=1)
+    y_axis_bot = np.percentile(y_axis, 25., axis=1)
+    ax.fill_between(x_axis, y_axis_top, y_axis_bot, color=color, alpha=0.7, label=label)
 
 
 def plot_cells(ax, factors, component_x, component_y, cell_names, ax_pos, fig3=True):
