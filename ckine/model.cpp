@@ -304,15 +304,22 @@ static int fB(double t, N_Vector y, N_Vector yB, N_Vector yBdot, void *user_data
 	if (t < sMem->preT)
 		preTreat(t - sMem->preT, rattes.ILs, sMem->preL);
 
-	eigenVC yBv(NV_DATA_S(yB), Nspecies);
-	eigenVC yBdotv(NV_DATA_S(yBdot), Nspecies);
+	std::array<adept::adouble, Nspecies> ya, dydt;
 
-	Eigen::Matrix<double, Nspecies, Nspecies> jac;
+	adept::set_values(&ya[0], Nspecies, NV_DATA_S(y));
 
-	// Actually get the Jacobian
-	fullJacobian(NV_DATA_S(y), &rattes, jac, &sMem->stack);
+	sMem->stack.new_recording();
 
-	yBdotv = -yBv.transpose()*jac;
+	// Get the data in the right form
+	fullModel(ya.data(), &rattes, dydt.data());
+
+	adouble yOut = 0;
+	yOut = -std::inner_product(dydt.begin(), dydt.end(), NV_DATA_S(yB), yOut);
+
+	sMem->stack.independent(&ya[0], Nspecies);
+	sMem->stack.dependent(&yOut, 1);
+
+	sMem->stack.jacobian(NV_DATA_S(yBdot));
 
 	return 0;
 }
@@ -340,12 +347,11 @@ int JacB(double t, N_Vector y, N_Vector, N_Vector, SUNMatrix J, void *user_data,
 // fQB routine. Compute integrand for quadratures
 static int fQB(double t, N_Vector y, N_Vector yB, N_Vector qBdot, void *user_dataB) {
 	solver *sMem = static_cast<solver *>(user_dataB);
-
-	size_t Np = sMem->params.size();
-
+	const size_t Np = sMem->params.size();
 	sMem->stack.activate();
 
 	vector<adouble> X(Np);
+	array<adouble, Nspecies> dydt;
 	adept::set_values(&X[0], Np, sMem->params.data());
 
 	if (t < sMem->preT)
@@ -353,25 +359,18 @@ static int fQB(double t, N_Vector y, N_Vector yB, N_Vector qBdot, void *user_dat
 
 	sMem->stack.new_recording();
 
-	array<adouble, Nspecies> dydt;
-
 	ratesS<adouble> rattes = ratesS<adouble>(X);
 
 	// Get the data in the right form
 	fullModel(NV_DATA_S(y), &rattes, dydt.data());
 
+	adouble yOut = 0;
+	yOut = std::inner_product(dydt.begin(), dydt.end(), NV_DATA_S(yB), yOut);
+
 	sMem->stack.independent(&X[0], Np);
-	sMem->stack.dependent(&dydt[0], Nspecies);
+	sMem->stack.dependent(&yOut, 1);
 
-	Eigen::Matrix<double, Nspecies, Eigen::Dynamic> jac_M(Nspecies, Np);
-
-	sMem->stack.jacobian(jac_M.data());
-
-	// Wrap the vectors we'll use
-	eigenV yBdotv(NV_DATA_S(qBdot), NV_LENGTH_S(qBdot));
-	eigenVC yBv(NV_DATA_S(yB), NV_LENGTH_S(yB));
-
-	yBdotv = yBv.transpose()*jac_M;
+	sMem->stack.jacobian(NV_DATA_S(qBdot));
 
 	return(0);
 }
