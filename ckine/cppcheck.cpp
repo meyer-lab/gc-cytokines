@@ -17,7 +17,6 @@
 #include <cppunit/TestRunner.h>
 
 #include "model.hpp"
-#include "jacobian.hpp"
 #include "reaction.hpp"
 
 using namespace std;
