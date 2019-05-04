@@ -23,7 +23,6 @@ public:
 			workers.emplace_back( [this] {
 					for(;;) {
 						std::function<void()> task;
-
 						{
 							std::unique_lock<std::mutex> lock(this->queue_mutex);
 							this->condition.wait(lock, [this]{ return this->stop || !this->tasks.empty(); });
@@ -32,7 +31,6 @@ public:
 							task = std::move(this->tasks.front());
 							this->tasks.pop();
 						}
-
 						task();
 					}
 				}
@@ -43,8 +41,7 @@ public:
 	template<class F, class... Args>
 	auto enqueue(F&& f, Args&&... args) -> std::future<typename std::result_of<F(Args...)>::type> {
 		using return_type = typename std::result_of<F(Args...)>::type;
-
-		auto task = std::make_shared< std::packaged_task<return_type()> >(
+		auto task = std::make_shared<std::packaged_task<return_type()>>(
 				std::bind(std::forward<F>(f), std::forward<Args>(args)...)
 			);
 			
@@ -76,7 +73,6 @@ public:
 private:
 	// need to keep track of threads so we can join them
 	std::vector<std::thread> workers;
-	
 	std::queue< std::function<void()> > tasks; // the task queue
 	std::mutex queue_mutex; // synchronization
 	std::condition_variable condition;

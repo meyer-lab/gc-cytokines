@@ -21,7 +21,6 @@
 #include "model.hpp"
 #include <adept.h>
 #include "reaction.hpp"
-#include "jacobian.hpp"
 #include "thread_pool.hpp"
 
 using std::array;
@@ -325,7 +324,7 @@ static int fB(double t, N_Vector y, N_Vector yB, N_Vector yBdot, void *user_data
 }
 
 
-int JacB(double t, N_Vector y, N_Vector, N_Vector, SUNMatrix J, void *user_data, N_Vector, N_Vector, N_Vector) {
+int Jac(double t, N_Vector yv, N_Vector, SUNMatrix J, void *user_data, N_Vector, N_Vector, N_Vector) {
 	solver *sMem = static_cast<solver *>(user_data);
 	ratesS<double> rattes = sMem->getRates();
 
@@ -335,7 +334,28 @@ int JacB(double t, N_Vector y, N_Vector, N_Vector, SUNMatrix J, void *user_data,
 	Eigen::Map<Eigen::Matrix<double, Nspecies, Nspecies>> jac(SM_DATA_D(J));
 
 	// Actually get the Jacobian
-	fullJacobian(NV_DATA_S(y), &rattes, jac, &sMem->stack);
+	std::array<adept::adouble, Nspecies> y, dydt;
+
+	adept::set_values(&y[0], Nspecies, NV_DATA_S(yv));
+
+	sMem->stack.new_recording();
+
+	// Get the data in the right form
+	fullModel(y.data(), &rattes, dydt.data());
+
+	sMem->stack.independent(&y[0], Nspecies);
+	sMem->stack.dependent(&dydt[0], Nspecies);
+
+	sMem->stack.jacobian(jac.data());
+
+	return 0;
+}
+
+
+int JacB(double t, N_Vector y, N_Vector a, N_Vector b, SUNMatrix J, void *user_data, N_Vector c, N_Vector d, N_Vector e) {
+	Jac(t, y, a, J, user_data, c, d, e);
+
+	Eigen::Map<Eigen::Matrix<double, Nspecies, Nspecies>> jac(SM_DATA_D(J));
 
 	jac = -jac;
 	jac.transposeInPlace();
@@ -397,22 +417,6 @@ static void errorHandler(int error_code, const char *module, const char *functio
 		cout << "Sensitivity enabled." << std::endl;
 
 	cout << std::endl << std::endl;
-}
-
-
-int Jac(double t, N_Vector y, N_Vector, SUNMatrix J, void *user_data, N_Vector, N_Vector, N_Vector) {
-	solver *sMem = static_cast<solver *>(user_data);
-	ratesS<double> rattes = sMem->getRates();
-
-	if (t < sMem->preT)
-		preTreat(t - sMem->preT, rattes.ILs, sMem->preL);
-
-	Eigen::Map<Eigen::Matrix<double, Nspecies, Nspecies>> jac(SM_DATA_D(J));
-
-	// Actually get the Jacobian
-	fullJacobian(NV_DATA_S(y), &rattes, jac, &sMem->stack);
-
-	return 0;
 }
 
 
