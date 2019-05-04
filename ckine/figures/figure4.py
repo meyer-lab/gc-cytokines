@@ -19,7 +19,7 @@ def makeFigure():
         subplotLabel(item, string.ascii_uppercase[ii])
 
     data_Visterra, cell_names_Visterra = import_Rexpr()
-    unkVec_2_15, _ = import_samples_2_15()
+    unkVec_2_15, _ = import_samples_2_15(N=100)
 
     # IL2_receptor_activity(ax[2:5], unkVec_2_15, scales_2_15)
     for i in range(data_Visterra.shape[0]):

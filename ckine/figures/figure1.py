@@ -22,13 +22,14 @@ def makeFigure():
     for ii, item in enumerate(ax):
         subplotLabel(item, string.ascii_uppercase[ii])
 
-    unkVec, scales = import_samples_2_15()
-    kfwd_avg, kfwd_std = kfwd_info(unkVec)
+    unkVec, scales = import_samples_2_15(N=100)  # use these for simulations
+    full_unkVec, full_scales = import_samples_2_15()  # use these for violin plots
+    kfwd_avg, kfwd_std = kfwd_info(full_unkVec)
     print("kfwd = " + str(kfwd_avg) + " +/- " + str(kfwd_std))
     pstat_act(ax[1], unkVec, scales)
     surf_perc(ax[2:4], 'IL-2Rβ', unkVec)
-    violinPlots(ax[5:8], unkVec, scales)
-    rateComp(ax[4], unkVec)
+    violinPlots(ax[5:8], full_unkVec, full_scales)
+    rateComp(ax[4], full_unkVec)
 
     f.tight_layout(w_pad=1.3)
 
