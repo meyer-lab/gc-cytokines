@@ -4,8 +4,8 @@ This creates Figure 3.
 import string
 import numpy as np
 from .figureCommon import subplotLabel, getSetup, plot_cells, plot_ligands, plot_timepoints, values, mat
-from ..Tensor_analysis import find_R2X, perform_decomposition
-from ..tensor_generation import data, cell_names
+from ..tensor import find_R2X, perform_decomposition
+from ..tensor_generation import import_Rexpr
 
 cell_dim = 1 #For this figure, the cell dimension is along the second [python index 1].
 
@@ -17,6 +17,7 @@ def makeFigure():
     # Blank out for the cartoon
     ax[0].axis('off')
 
+    data, numpy_data, cell_names = import_Rexpr()
     factors_activity = []
     for jj in range(len(mat) - 1):
         factors = perform_decomposition(values, jj + 1, cell_dim)
@@ -46,9 +47,12 @@ def makeFigure():
 
 def bar_receptors(ax, data):
     """Plot Bar graph for Receptor Expression Data. """
-    data.plot.bar(x="Cell Type", rot=30, ax=ax)
-    ax.legend(loc=1)
+    data.plot.bar(x="Cell Type", ax=ax)
+    ax.legend(loc='best')
     ax.set_ylabel("Surface Receptor [# / cell]")
+    ax.set_xticklabels(ax.get_xticklabels(),
+                       rotation=40, rotation_mode="anchor", ha="right",
+                       position=(0, 0.05), fontsize=6.5)
 
 
 def plot_R2X(ax, tensor, factors_list, n_comps, cells_dim):

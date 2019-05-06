@@ -6,7 +6,7 @@ from .tensor_generation import ySolver
 
 def input_IL2_15(final_conc, num):
     '''Function that creates the input for the solver. Takes in 1nM or 500nM for final_conc.'''
-    Rexpr = np.array([3.8704, 0.734, 1.7147, 0.32010875, 0.0, 0.0, 0.0, 0.0])  # Il2ra, Il2rb, Il2rg, Il15ra, Il7r, Il9r, IL4Ra, IL21Ra in that order
+    Rexpr = np.array([3.8704, 0.734, 1.7147, 0.32010875, 0.0, 0.0, 0.0, 0.0])  # Il2ra, Il2rb, Il2rg, Il15ra, Il7r, Il9r, IL4Ra, IL21Ra expression rates in that order. These values come from the fitting results of the IL2-15 model. 
     ligand_conc = np.zeros((num, 6))  # Cytokine stimulation concentrations in the following order: IL2, 15, 7, 9, 4, 21, and in nM.
     xaxis = np.linspace(-6, 6, num)
     for idx, C_2 in enumerate(xaxis):

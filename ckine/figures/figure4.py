@@ -4,9 +4,10 @@ This creates Figure 4.
 import string
 import numpy as np
 import matplotlib.cm as cm
-from .figureCommon import subplotLabel, getSetup, import_samples_2_15, plot_conf_int, import_Rexpr
+from .figureCommon import subplotLabel, getSetup, import_samples_2_15, plot_conf_int
 from ..plot_model_prediction import pstat
 from ..model import runCkineUP, getTotalActiveSpecies, receptor_expression
+from ..tensor_generation import import_Rexpr
 
 
 def makeFigure():
@@ -18,7 +19,7 @@ def makeFigure():
     for ii, item in enumerate(ax):
         subplotLabel(item, string.ascii_uppercase[ii])
 
-    data_Visterra, cell_names_Visterra = import_Rexpr()
+    _, data_Visterra, cell_names_Visterra = import_Rexpr()
     unkVec_2_15, _ = import_samples_2_15(N=100)
 
     # IL2_receptor_activity(ax[2:5], unkVec_2_15, scales_2_15)
