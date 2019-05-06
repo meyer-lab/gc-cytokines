@@ -8,7 +8,7 @@ import numpy as np
 import seaborn as sns
 from .figureCommon import subplotLabel, getSetup, plot_cells, set_bounds, import_pstat
 from .figure3 import plot_R2X
-from ..Tensor_analysis import perform_decomposition
+from ..tensor import perform_decomposition
 
 cell_dim = 0 #For this figure, the cell dimension is along the first [python index 0].
 

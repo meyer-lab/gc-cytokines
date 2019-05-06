@@ -6,8 +6,8 @@ import seaborn as sns
 import tensorly as tl
 from tensorly import unfold
 from .figureCommon import subplotLabel, getSetup, plot_cells, plot_ligands, plot_timepoints, values, set_bounds
-from ..Tensor_analysis import perform_tucker, find_R2X_tucker
-from ..tensor_generation import cell_names
+from ..tensor import perform_tucker, find_R2X_tucker
+from ..tensor_generation import import_Rexpr
 
 cell_dim = 1 #For this figure, the cell dimension is along the second [python index 1].
 
@@ -15,6 +15,8 @@ def makeFigure():
     """Get a list of the axis objects and create a figure"""
     x, y = 2, 3
     ax, f = getSetup((7.5, 5), (x, y))
+
+    _, _, cell_names = import_Rexpr()
 
     for ii, item in enumerate(ax):
         subplotLabel(item, string.ascii_uppercase[ii])  # Add subplot labels
