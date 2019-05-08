@@ -9,7 +9,7 @@ from .figureCommon import subplotLabel, getSetup, plot_cells, plot_ligands, plot
 from ..tensor import perform_tucker, find_R2X_tucker
 from ..tensor_generation import import_Rexpr
 
-cell_dim = 1 #For this figure, the cell dimension is along the second [python index 1].
+cell_dim = 1  # For this figure, the cell dimension is along the second [python index 1].
 
 def makeFigure():
     """Get a list of the axis objects and create a figure"""
@@ -20,7 +20,6 @@ def makeFigure():
 
     for ii, item in enumerate(ax):
         subplotLabel(item, string.ascii_uppercase[ii])  # Add subplot labels
-
     rank_list = [3, 3, 4]
     out = perform_tucker(values, rank_list, cell_dim)
     print(out[0])

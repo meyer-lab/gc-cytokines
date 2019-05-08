@@ -31,6 +31,7 @@ def commonTraf():
     sortF = pm.Beta('sortF', alpha=12, beta=80, shape=1)
     return kfwd, endo, activeEndo, kRec, kDeg, sortF
 
+
 def find_gc(traf=True, endo=0, kRec=0, sortF=0, kDeg=0):
     """ Calculates gc expression rate for YT-1 cells using data file and receptor_expression function. If 'traf' is false then we just return the receptor abundance level. """
     data = load_data("data/YT_1_receptor_levels.csv")  # data = [['YT-1', -1, -1, gc, -1]] where data[0, 3] represents the gc level

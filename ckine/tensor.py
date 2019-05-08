@@ -28,6 +28,7 @@ def z_score_values(A, cell_dim):
     mu = tl.mean(A, axis=convAxes)
     return (A - mu[tuple(convIDX)]) / sigma[tuple(convIDX)]
 
+
 def R2X(reconstructed, original):
     ''' Calculates R2X of two tensors. '''
     return 1.0 - tl_var(reconstructed - original) / tl_var(original)
