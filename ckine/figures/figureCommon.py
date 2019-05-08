@@ -75,7 +75,7 @@ def plot_ligands(ax, factors, component_x, component_y, ax_pos, fig3=True):
 
     for ii in range(int(factors.shape[0] / n_ligands)):
         idx = range(ii * n_ligands, (ii + 1) * n_ligands)
-        if ii == 0 and ax_pos == 5 and fig3:
+        if ii == 0 and ax_pos == 4 and fig3:
             legend = "full"
         elif ii == 0 and ax_pos == 2 and fig3 is False:
             legend = "full"
@@ -83,7 +83,7 @@ def plot_ligands(ax, factors, component_x, component_y, ax_pos, fig3=True):
             legend = False
         sns.scatterplot(x=factors[idx, component_x - 1], y=factors[idx, component_y - 1], marker=markers[ii], hue=np.log10(np.sum(mat[idx, :], axis=1)), ax=ax, palette=cmap, s=100, legend=legend)
         h, _ = ax.get_legend_handles_labels()
-        if ax_pos == 5 and fig3:
+        if ax_pos == 4 and fig3:
             ax.add_artist(ax.legend(handles=h, loc=2))
             ax.add_artist(ax.legend(handles=legend_shape, loc=3))
         elif ax_pos == 2 and not fig3:
@@ -127,7 +127,7 @@ def plot_cells(ax, factors, component_x, component_y, cell_names, ax_pos, fig3=T
     if ax_pos in (1, 2):
         ax.legend()
 
-    elif ax_pos == 4 and fig3:
+    elif ax_pos == 3 and fig3:
         ax.legend()
     ax.set_title('Cells')
 
@@ -259,6 +259,7 @@ def kfwd_info(unkVec):
     mean = np.mean(unkVec[6])
     std = np.std(unkVec[6])
     return mean, std
+
 
 def import_pstat():
     """ Loads CSV file containing pSTAT5 levels from Visterra data. """

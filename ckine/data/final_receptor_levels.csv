@@ -1,13 +1,157 @@
-Cell Type,IL-2R$\alpha$,IL-2R$\beta$,$\gamma_{c}$,IL-15R$\alpha$
-CD3+CD4+,425,222,13156,0
-T-reg,3589,663,14082,0
-Naive Treg,3472,638,10482,0
-Mem Treg,3768,759,17765,0
-T-helper,348,173,13391,0
-Naive Th,274,65,12859,0
-Mem Th,501,192,16045,0
-NK,23,8774,8281,0
-NKT,30,885,15601,0
-CD8+,24,521,12524,0
-Naive CD8+,15,338,13098,0
-Mem CD8+,40,634,13432,0
+Cell Type,Receptor,Count
+CD3+CD4+,IL-2R$\alpha$,310.4776922
+T-reg,IL-2R$\alpha$,2698.240012
+Naive Treg,IL-2R$\alpha$,2958.308448
+Mem Treg,IL-2R$\alpha$,2458.58786
+T-helper,IL-2R$\alpha$,238.2330743
+Naive Th,IL-2R$\alpha$,235.1668256
+Mem Th,IL-2R$\alpha$,260.0321342
+NK,IL-2R$\alpha$,33.83209053
+NKT,IL-2R$\alpha$,43.23307857
+CD8+,IL-2R$\alpha$,12.61216527
+Naive CD8+,IL-2R$\alpha$,14.57173803
+Mem CD8+,IL-2R$\alpha$,19.12465843
+CD3+CD4+,IL-2R$\alpha$,323.7793008
+T-reg,IL-2R$\alpha$,2762.019667
+Naive Treg,IL-2R$\alpha$,3044.341708
+Mem Treg,IL-2R$\alpha$,2600.642454
+T-helper,IL-2R$\alpha$,234.3135175
+Naive Th,IL-2R$\alpha$,225.5220967
+Mem Th,IL-2R$\alpha$,258.6627811
+NK,IL-2R$\alpha$,18.41385813
+NKT,IL-2R$\alpha$,33.27239686
+CD8+,IL-2R$\alpha$,35.15121491
+Naive CD8+,IL-2R$\alpha$,29.30692956
+Mem CD8+,IL-2R$\alpha$,40.65423686
+CD3+CD4+,IL-2R$\alpha$,484.6577415
+T-reg,IL-2R$\alpha$,4001.114003
+Naive Treg,IL-2R$\alpha$,3502.327777
+Mem Treg,IL-2R$\alpha$,4334.205032
+T-helper,IL-2R$\alpha$,413.0866776
+Naive Th,IL-2R$\alpha$,287.4800979
+Mem Th,IL-2R$\alpha$,667.7237993
+NK,IL-2R$\alpha$,18.88660029
+NKT,IL-2R$\alpha$,23.8257039
+CD8+,IL-2R$\alpha$,18.92441667
+Naive CD8+,IL-2R$\alpha$,4.9261866
+Mem CD8+,IL-2R$\alpha$,27.52628829
+CD3+CD4+,IL-2R$\alpha$,582.6531283
+T-reg,IL-2R$\alpha$,4894.758364
+Naive Treg,IL-2R$\alpha$,4384.859094
+Mem Treg,IL-2R$\alpha$,5678.556659
+T-helper,IL-2R$\alpha$,507.4725161
+Naive Th,IL-2R$\alpha$,347.7863663
+Mem Th,IL-2R$\alpha$,817.6253949
+NK,IL-2R$\alpha$,21.04034885
+NKT,IL-2R$\alpha$,18.23618843
+CD8+,IL-2R$\alpha$,29.26789812
+Naive CD8+,IL-2R$\alpha$,13.19412256
+Mem CD8+,IL-2R$\alpha$,71.23836191
+CD3+CD4+,IL-2R$\beta$,182.8614505
+T-reg,IL-2R$\beta$,645.2761468
+Naive Treg,IL-2R$\beta$,522.4051672
+Mem Treg,IL-2R$\beta$,727.0863165
+T-helper,IL-2R$\beta$,99.96353744
+Naive Th,IL-2R$\beta$,25.16017925
+Mem Th,IL-2R$\beta$,141.8030893
+NK,IL-2R$\beta$,10187.13706
+NKT,IL-2R$\beta$,883.14405
+CD8+,IL-2R$\beta$,539.0371401
+Naive CD8+,IL-2R$\beta$,317.9874852
+Mem CD8+,IL-2R$\beta$,616.3377546
+CD3+CD4+,IL-2R$\beta$,163.1633671
+T-reg,IL-2R$\beta$,677.1259155
+Naive Treg,IL-2R$\beta$,616.4866583
+Mem Treg,IL-2R$\beta$,684.4967074
+T-helper,IL-2R$\beta$,122.5875729
+Naive Th,IL-2R$\beta$,62.0835183
+Mem Th,IL-2R$\beta$,181.7554003
+NK,IL-2R$\beta$,9868.411701
+NKT,IL-2R$\beta$,833.2419511
+CD8+,IL-2R$\beta$,645.8293177
+Naive CD8+,IL-2R$\beta$,419.755008
+Mem CD8+,IL-2R$\beta$,692.5291122
+CD3+CD4+,IL-2R$\beta$,223.8605767
+T-reg,IL-2R$\beta$,543.4897924
+Naive Treg,IL-2R$\beta$,865.6176053
+Mem Treg,IL-2R$\beta$,673.0029036
+T-helper,IL-2R$\beta$,176.3689223
+Naive Th,IL-2R$\beta$,28.00619904
+Mem Th,IL-2R$\beta$,46.59893181
+NK,IL-2R$\beta$,5385.434403
+NKT,IL-2R$\beta$,722.1136089
+CD8+,IL-2R$\beta$,371.6963068
+Naive CD8+,IL-2R$\beta$,270.7151052
+Mem CD8+,IL-2R$\beta$,443.5250306
+CD3+CD4+,IL-2R$\beta$,318.8908772
+T-reg,IL-2R$\beta$,784.6567814
+Naive Treg,IL-2R$\beta$,545.8814635
+Mem Treg,IL-2R$\beta$,952.6196988
+T-helper,IL-2R$\beta$,291.6270395
+Naive Th,IL-2R$\beta$,143.7957404
+Mem Th,IL-2R$\beta$,399.0558766
+NK,IL-2R$\beta$,9655.091659
+NKT,IL-2R$\beta$,1100.805417
+CD8+,IL-2R$\beta$,526.3980487
+Naive CD8+,IL-2R$\beta$,345.0508218
+Mem CD8+,IL-2R$\beta$,782.1425592
+CD3+CD4+,$\gamma_{c}$,13335.37376
+T-reg,$\gamma_{c}$,13160.01735
+Naive Treg,$\gamma_{c}$,11427.5797
+Mem Treg,$\gamma_{c}$,15400.91416
+T-helper,$\gamma_{c}$,13974.63176
+Naive Th,$\gamma_{c}$,15463.80888
+Mem Th,$\gamma_{c}$,12388.60924
+NK,$\gamma_{c}$,4078.132414
+NKT,$\gamma_{c}$,11379.95243
+CD8+,$\gamma_{c}$,10409.37151
+Naive CD8+,$\gamma_{c}$,14695.67195
+Mem CD8+,$\gamma_{c}$,8290.142065
+CD3+CD4+,$\gamma_{c}$,14311.80043
+T-reg,$\gamma_{c}$,12735.74123
+Naive Treg,$\gamma_{c}$,11776.59139
+Mem Treg,$\gamma_{c}$,16131.05774
+T-helper,$\gamma_{c}$,14837.10923
+Naive Th,$\gamma_{c}$,16175.66939
+Mem Th,$\gamma_{c}$,13598.75372
+NK,$\gamma_{c}$,6910.450176
+NKT,$\gamma_{c}$,13616.72057
+CD8+,$\gamma_{c}$,11627.81199
+Naive CD8+,$\gamma_{c}$,14392.51966
+Mem CD8+,$\gamma_{c}$,9951.904418
+CD3+CD4+,$\gamma_{c}$,13509.6393
+T-reg,$\gamma_{c}$,16316.87643
+Naive Treg,$\gamma_{c}$,9830.364654
+Mem Treg,$\gamma_{c}$,20855.26548
+T-helper,$\gamma_{c}$,13399.65823
+Naive Th,$\gamma_{c}$,10797.69209
+Mem Th,$\gamma_{c}$,20495.32133
+NK,$\gamma_{c}$,12254.87035
+NKT,$\gamma_{c}$,19640.28186
+CD8+,$\gamma_{c}$,15050.64033
+Naive CD8+,$\gamma_{c}$,12398.53095
+Mem CD8+,$\gamma_{c}$,18600.78709
+CD3+CD4+,$\gamma_{c}$,11468.69028
+T-reg,$\gamma_{c}$,14113.91785
+Naive Treg,$\gamma_{c}$,8893.738911
+Mem Treg,$\gamma_{c}$,18674.13474
+T-helper,$\gamma_{c}$,11351.21123
+Naive Th,$\gamma_{c}$,9000.400614
+Mem Th,$\gamma_{c}$,17697.12866
+NK,$\gamma_{c}$,9881.142781
+NKT,$\gamma_{c}$,17768.97976
+CD8+,$\gamma_{c}$,13008.48152
+Naive CD8+,$\gamma_{c}$,10904.68874
+Mem CD8+,$\gamma_{c}$,16884.35892
+CD3+CD4+,IL-15R$\alpha$,0
+T-reg,IL-15R$\alpha$,0
+Naive Treg,IL-15R$\alpha$,0
+Mem Treg,IL-15R$\alpha$,0
+T-helper,IL-15R$\alpha$,0
+Naive Th,IL-15R$\alpha$,0
+Mem Th,IL-15R$\alpha$,0
+NK,IL-15R$\alpha$,0
+NKT,IL-15R$\alpha$,0
+CD8+,IL-15R$\alpha$,0
+Naive CD8+,IL-15R$\alpha$,0
+Mem CD8+,IL-15R$\alpha$,0
