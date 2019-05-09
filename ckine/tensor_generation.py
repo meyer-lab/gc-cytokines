@@ -3,57 +3,18 @@ Generate a tensor for the different y-values that arise at different timepoints 
 The initial conditions vary the concentrations of the three ligands to simulate different cell lines.
 Cell lines are defined by the number of each receptor subspecies on their surface.
 """
-import os
-from os.path import join
 import numpy as np
-import pandas as pds
 from .model import runCkineU, nParams, nSpecies, runCkineU_IL2, getTotalActiveSpecies
+from .imports import import_Rexpr, import_samples_2_15
 
-# Set the following variables for multiple functions to use
-endo = 0.08
-kRec = 0.15
-sortF = 0.18
-kDeg = 0.017
-kfwd = 0.004475761
-k4rev = 8.543317686
-k5rev = 0.12321939
+rxntfR, _ = import_samples_2_15(N=1)
+rxntfR = np.squeeze(rxntfR)
 
-def import_Rexpr():
-    """ Loads CSV file containing Rexpr levels from Visterra data. """
-    path = os.path.dirname(os.path.dirname(__file__))
-    data = pds.read_csv(join(path, 'ckine/data/final_receptor_levels.csv'))  # Every row in the data represents a specific cell
-    df = data.groupby(['Cell Type','Receptor']).mean() #Get the mean receptor count for each cell across trials in a new dataframe.
-    cell_names, receptor_names = df.index.unique().levels #gc_idx=0|IL15Ra_idx=1|IL2Ra_idx=2|IL2Rb_idx=3
-    receptor_names = receptor_names[[2,3,0,1]] #Reorder so that IL2Ra_idx=0|IL2Rb_idx=1|gc_idx=2|IL15Ra_idx=3
-    numpy_data = pds.Series(df['Count']).values.reshape(cell_names.size,receptor_names.size) #Rows are in the order of cell_names. Receptor Type is on the order of receptor_names
-    #Rearrange numpy_data to place IL2Ra first, then IL2Rb, then gc, then IL15Ra in this order
-    return data, numpy_data[:,[2,3,0,1]], cell_names
-
-def ySolver(matIn, ts):
+def ySolver(matIn, ts, tensor=True):
     """ This generates all the solutions of the tensor. """
     matIn = np.squeeze(matIn)
-
-    # Set some given parameters already determined from fitting
-    rxntfR = np.zeros(nParams())
-    rxntfR[6] = kfwd
-    rxntfR[7] = k4rev
-    rxntfR[8] = k5rev
-    rxntfR[9] = 3.107488811  # k16rev
-    rxntfR[10] = 0.212958572  # k17rev
-    rxntfR[11] = 0.013775029  # k22rev
-    rxntfR[12] = 0.151523448  # k23rev
-    rxntfR[13] = 0.094763588  # k27rev
-    rxntfR[15] = 0.095618346  # k33rev
-    # TODO: Update parameters based on IL9&21.
-    rxntfR[[14, 16]] = 0.15  # From fitting IL9 and IL21: k4rev - k35rev
-    rxntfR[17] = endo  # endo
-    rxntfR[18] = 1.46  # activeEndo
-    rxntfR[19] = sortF  # sortF
-    rxntfR[20] = kRec  # kRec
-    rxntfR[21] = kDeg  # kDeg
-
-    rxntfR[22:30] = matIn[6:14]  # Receptor expression
-
+    if tensor:
+        rxntfR[22:30] = matIn[6:14]  # Receptor expression
     rxntfR[0:6] = matIn[0:6]  # Cytokine stimulation concentrations in the following order: IL2, 15, 7, 9, 4, 21, and in nM
 
     temp, retVal = runCkineU(ts, rxntfR)
@@ -65,7 +26,9 @@ def ySolver(matIn, ts):
 def ySolver_IL2(matIn, ts):
     """ This generates all the solutions of the tensor. """
     matIn = np.squeeze(matIn)
-
+    kfwd = 0.004475761
+    k4rev = 8.543317686
+    k5rev = 0.12321939
     k1rev = 0.6 * 10.0 * 0.01
     k2rev = 0.6 * 144.0
     k11rev = 63.0 * k5rev / 1.5
@@ -78,7 +41,6 @@ def ySolver_IL2(matIn, ts):
     assert retVal >= 0
 
     return yOut
-
 
 def findy(lig, n_timepoints):
     """A function to find the different values of y at different timepoints and different initial conditions. Takes in how many ligand concentrations and expression rates to iterate over."""
@@ -97,7 +59,7 @@ def findy(lig, n_timepoints):
     # Set receptor levels for IL7Ra, IL9R, IL4Ra, IL21Ra to one. We won't use them for IL2-15 model. Second argument can also be set to 4 since we only have IL2Ra, IL2Rb, gc, IL15Ra measured.
     no_expression = np.ones((numpy_data.shape[0], 8 - numpy_data.shape[1])) * 0.0
     # need to convert numbers to expression values
-    numpy_data[:, :] = (numpy_data[:, :] * endo) / (1. + ((kRec * (1. - sortF)) / (kDeg * sortF)))  # constant according to measured number per cell
+    numpy_data[:, :] = (numpy_data[:, :] * rxntfR[17]) / (1. + ((rxntfR[20] * (1. - rxntfR[19])) / (rxntfR[21] * rxntfR[19])))  # constant according to measured number per cell
     all_receptors = np.concatenate((numpy_data, no_expression), axis=1)  # Expression: IL2Ra, IL2Rb, gc, IL15Ra, IL7Ra, IL9R, IL4Ra, IL21Ra in order
     receptor_repeats = np.repeat(all_receptors, len(mat), 0)  # Create an array that repeats the receptor expression levels 'len(mat)' times
 
@@ -119,11 +81,9 @@ def findy(lig, n_timepoints):
 
     return y_of_combos, new_mat, mat, mats, cell_names
 
-
 def prepare_tensor(lig, n_timepoints=100):
     """Function to generate the 4D values tensor."""
     y_of_combos, new_mat, mat, mats, cell_names = findy(lig, n_timepoints)  # mat here is basically the 2^lig cytokine stimulation; mats
-
     values = np.zeros((y_of_combos.shape[0], y_of_combos.shape[1], 1))
 
     values[:, :, 0] = np.tensordot(y_of_combos, getTotalActiveSpecies(), (2, 0))

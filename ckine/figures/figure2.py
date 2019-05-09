@@ -7,8 +7,9 @@ import string
 import numpy as np
 import seaborn as sns
 import pandas as pd
-from .figureCommon import subplotLabel, getSetup, traf_names, plot_conf_int, import_samples_4_7, import_samples_2_15, kfwd_info
+from .figureCommon import subplotLabel, getSetup, traf_names, plot_conf_int, kfwd_info
 from ..model import nParams, getTotalActiveSpecies, runCkineUP, getSurfaceGCSpecies, getTotalActiveCytokine
+from ..imports import import_samples_4_7, import_samples_2_15
 
 
 def makeFigure():

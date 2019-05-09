@@ -5,7 +5,8 @@ import string
 import pymc3 as pm
 import matplotlib.cm as cm
 import numpy as np
-from .figureCommon import subplotLabel, getSetup, traf_names, import_samples_2_15
+from .figureCommon import subplotLabel, getSetup, traf_names
+from ..imports import import_samples_2_15
 
 
 def makeFigure():
