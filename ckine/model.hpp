@@ -121,7 +121,7 @@ public:
 			// These are probably measured in the literature
 			surface.k10rev = 12.0 * surface.k5rev / 1.5; // doi:10.1016/j.jmb.2004.04.038
 
-			std::array<T, 5> trafP = {0.08, 1.46, 0.18, 0.15, 0.017};
+			std::array<T, 5> trafP = {0.08221, 2.52654, 0.16024, 0.10017, 0.00807};
 
 			setTraffic(trafP.data());
 
