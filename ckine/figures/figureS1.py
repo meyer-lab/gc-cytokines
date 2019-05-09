@@ -2,8 +2,9 @@
 This creates Figure S1.
 """
 import string
-from .figureCommon import subplotLabel, getSetup, import_samples_2_15, kfwd_info
+from .figureCommon import subplotLabel, getSetup, kfwd_info
 from .figure1 import pstat_act, violinPlots, rateComp
+from ..imports import import_samples_2_15
 
 
 def makeFigure():

@@ -4,10 +4,10 @@ This creates Figure 4.
 import string
 import numpy as np
 import matplotlib.cm as cm
-from .figureCommon import subplotLabel, getSetup, import_samples_2_15, plot_conf_int
+from .figureCommon import subplotLabel, getSetup, plot_conf_int
 from ..plot_model_prediction import pstat
 from ..model import runCkineUP, getTotalActiveSpecies, receptor_expression
-from ..tensor_generation import import_Rexpr
+from ..imports import import_Rexpr, import_samples_2_15
 
 
 def makeFigure():

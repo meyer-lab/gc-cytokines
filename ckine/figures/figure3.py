@@ -1,14 +1,19 @@
 """
 This creates Figure 3.
 """
-from ..tensor_generation import import_Rexpr
+from .figureCommon import subplotLabel, getSetup, plot_cells, plot_ligands, plot_timepoints
+from ..imports import import_Rexpr
 from ..tensor import find_R2X, perform_decomposition
-from .figureCommon import subplotLabel, getSetup, plot_cells, plot_ligands, plot_timepoints, values, mat
+from ..tensor_generation import prepare_tensor
 import string
+import tensorly as tl
 import numpy as np
 import seaborn as sns
 
 cell_dim = 1  # For this figure, the cell dimension is along the second [python index 1].
+n_ligands = 4
+values, _, mat, _, _ = prepare_tensor(n_ligands)
+values = tl.tensor(values)
 
 def makeFigure():
     """Get a list of the axis objects and create a figure"""
@@ -39,8 +44,8 @@ def makeFigure():
     plot_cells(ax[3], factors_activ[1], 1, 2, cell_names, ax_pos=3)
     plot_cells(ax[6], factors_activ[1], 3, 4, cell_names, ax_pos=6)
 
-    plot_ligands(ax[4], factors_activ[2], 1, 2, ax_pos=4)
-    plot_ligands(ax[7], factors_activ[2], 3, 4, ax_pos=7)
+    plot_ligands(ax[4], factors_activ[2], 1, 2, ax_pos=4, n_ligands=n_ligands, mesh=mat)
+    plot_ligands(ax[7], factors_activ[2], 3, 4, ax_pos=7, n_ligands=n_ligands, mesh=mat)
 
     f.tight_layout()
 
