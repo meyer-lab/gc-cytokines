@@ -12,7 +12,7 @@ from ..imports import import_samples_2_15
 def makeFigure():
     """Get a list of the axis objects and create a figure"""
     # Get list of axis objects
-    ax, f = getSetup((9, 6), (4, 2))
+    ax, f = getSetup((12, 3), (2, 4))
 
     # Add subplot labels
     for ii, item in enumerate(ax):
@@ -44,9 +44,9 @@ def plot_geweke(ax, traf):
     ax[0].set(ylim=(-1.25, 1.25), xlim=(0 - 10, .5 * trace['rxn'].shape[0] / 2 + 10),
               xlabel="Position in Chain", ylabel="Geweke Score")
     if traf:
-        ax[0].set_title('Trafficking Model: Reverse Reaction Rates')
+        ax[0].set_title('Trafficking model: reverse rxn')
     else:
-        ax[0].set_title('No-Trafficking Model: Reverse Reaction Rates')
+        ax[0].set_title('No-trafficking model: reverse rxn')
     ax[0].legend()
 
     # plot the scores for receptor expression rates
@@ -64,9 +64,9 @@ def plot_geweke(ax, traf):
     ax[1].set(ylim=(-1.25, 1.25), xlim=(0 - 10, .5 * trace['Rexpr_2Ra_2Rb'].shape[0] / 2 + 10),
               xlabel="Position in Chain", ylabel="Geweke Score")
     if traf:
-        ax[1].set_title('Trafficking Model: Receptor Expression Rates')
+        ax[1].set_title('Trafficking model: receptor expression')
     else:
-        ax[1].set_title('No-Trafficking Model: Receptor Abundance Levels')
+        ax[1].set_title('No-trafficking model: receptor abundance')
     ax[1].legend()
 
     # plot the scores for scaling constant and kfwd
@@ -77,9 +77,9 @@ def plot_geweke(ax, traf):
     ax[2].set(ylim=(-1.25, 1.25), xlim=(0 - 10, .5 * trace['kfwd'].shape[0] / 2 + 10),
               xlabel="Position in Chain", ylabel="Geweke Score")
     if traf:
-        ax[2].set_title('Trafficking Model: Activity Constant and Forward Dimerization Rate')
+        ax[2].set_title(r'Trafficking model: $C_{5}$ and $k_{fwd}$')
     else:
-        ax[2].set_title('No-Trafficking Model: Activity Constant and Forward Dimerization Rate')
+        ax[2].set_title(r'No-trafficking model: $C_{5}$ and $k_{fwd}$')
     ax[2].legend()
 
     if traf is True:
@@ -93,5 +93,5 @@ def plot_geweke(ax, traf):
         ax[3].axhline(-1., c='r')
         ax[3].axhline(1., c='r')
         ax[3].set(ylim=(-1.25, 1.25), xlim=(0 - 10, .5 * trace['endo'].shape[0] / 2 + 10),
-                  xlabel="Position in Chain", ylabel="Geweke Score", title="Trafficking Model: Trafficking Rates")
+                  xlabel="Position in Chain", ylabel="Geweke Score", title="Trafficking model: traf rates")
         ax[3].legend()
