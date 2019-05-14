@@ -7,6 +7,7 @@ import string
 import numpy as np
 import seaborn as sns
 import pandas as pd
+from matplotlib.patches import Patch
 from .figureCommon import subplotLabel, getSetup, traf_names, plot_conf_int, kfwd_info
 from ..model import nParams, getTotalActiveSpecies, runCkineUP, getSurfaceGCSpecies, getTotalActiveCytokine
 from ..imports import import_samples_4_7, import_samples_2_15
@@ -29,17 +30,18 @@ def makeFigure():
 
     kfwd_avg, kfwd_std = kfwd_info(full_unkVec_4_7)
     print("kfwd = " + str(kfwd_avg) + " +/- " + str(kfwd_std))
+    legend_4_7(ax[0])
     pstat_plot(ax[1], unkVec_4_7, scales_4_7)
     plot_pretreat(ax[2], unkVec_4_7, scales_4_7, "Cross-talk pSTAT inhibition")
-    traf_violin(ax[4], full_unkVec_4_7)
-    rexpr_violin(ax[5], full_unkVec_4_7)
-    scales_violin(ax[6], full_scales_4_7)
-    surf_gc(ax[7], 100., full_unkVec_4_7)
+    traf_violin(ax[6], full_unkVec_4_7)
+    rexpr_violin(ax[7], full_unkVec_4_7)
+    scales_violin(ax[8], full_scales_4_7)
+    surf_gc(ax[4], 100., full_unkVec_4_7)
     unkVec_noActiveEndo = unkVec_4_7.copy()
     unkVec_noActiveEndo[18] = 0.0   # set activeEndo rate to 0
-    plot_pretreat(ax[8], unkVec_noActiveEndo, scales_4_7, "Inhibition without active endocytosis")
+    plot_pretreat(ax[3], unkVec_noActiveEndo, scales_4_7, "Cross-talk w/o active endocytosis")
 
-    relativeGC(ax[3], full_unkVec_2_15, full_unkVec_4_7)  # plot last to avoid coloring all other violins purple
+    relativeGC(ax[5], full_unkVec_2_15, full_unkVec_4_7)  # plot last to avoid coloring all other violins purple
 
     f.tight_layout()
 
@@ -98,8 +100,8 @@ def pstat_plot(ax, unkVec, scales):
     IL7_output = output[K:(K * 2)].T
 
     # plot confidence intervals based on model predictions
-    plot_conf_int(ax, np.log10(cytokC_common), IL4_output * 100., "powderblue", "IL-4")
-    plot_conf_int(ax, np.log10(cytokC_common), IL7_output * 100., "b", "IL-7")
+    plot_conf_int(ax, np.log10(cytokC_common), IL4_output * 100., "powderblue")
+    plot_conf_int(ax, np.log10(cytokC_common), IL7_output * 100., "b")
 
     # overlay experimental data
     ax.scatter(np.log10(cytokC_4), (dataIL4[:, 1] / IL4_data_max) * 100., color='powderblue', marker='^', edgecolors='k', zorder=100)
@@ -107,7 +109,6 @@ def pstat_plot(ax, unkVec, scales):
     ax.scatter(np.log10(cytokC_7), (dataIL7[:, 1] / IL7_data_max) * 100., color='b', marker='^', edgecolors='k', zorder=300)
     ax.scatter(np.log10(cytokC_7), (dataIL7[:, 2] / IL7_data_max) * 100., color='b', marker='^', edgecolors='k', zorder=400)
     ax.set(ylabel='pSTAT5/6 (% of max)', xlabel=r'Cytokine concentration (log$_{10}$[nM])', title='PBMC activity')
-    ax.legend()
 
 
 def traf_violin(ax, unkVec):
@@ -116,8 +117,8 @@ def traf_violin(ax, unkVec):
     traf = pd.DataFrame(unkVec[:, 17:22])
 
     traf.columns = traf_names()
-    a = sns.violinplot(data=np.log10(traf), ax=ax, linewidth=0.5)
-    a.set_xticklabels(a.get_xticklabels(), rotation=40, rotation_mode="anchor", ha="right", fontsize=8, position=(0, 0.045))
+    a = sns.violinplot(data=np.log10(traf), ax=ax, linewidth=0.5, color="grey")
+    a.set_xticklabels(a.get_xticklabels(), rotation=25, rotation_mode="anchor", ha="right", fontsize=8, position=(0, 0.045))
     a.set_ylabel(r"$\mathrm{log_{10}(\frac{1}{min})}$")
     a.set_title("Trafficking parameters")
 
@@ -130,8 +131,10 @@ def rexpr_violin(ax, unkVec):
     Rexpr = pd.DataFrame(Rexpr)
 
     Rexpr.columns = [r'$\gamma_{c}$', 'IL-7Rα', 'IL-4Rα']
-    a = sns.violinplot(data=np.log10(Rexpr), ax=ax, linewidth=0.5)
-    a.set_xticklabels(a.get_xticklabels(), rotation=40, rotation_mode="anchor", ha="right", fontsize=8, position=(0, 0.045))
+    col_list = ["grey", "blue", "lightblue"]
+    col_list_palette = sns.xkcd_palette(col_list)
+    a = sns.violinplot(data=np.log10(Rexpr), ax=ax, linewidth=0.5, palette=col_list_palette)
+    a.set_xticklabels(a.get_xticklabels(), rotation=25, rotation_mode="anchor", ha="right", fontsize=8, position=(0, 0.045))
     a.set_ylabel(r"$\mathrm{log_{10}(\frac{num}{cell * min})}$")
     a.set_title("Receptor expression rates")
 
@@ -141,7 +144,7 @@ def scales_violin(ax, scales):
     scales = pd.DataFrame(scales)
 
     scales.columns = [r'$C_{6}$', r'$C_{5}$']
-    a = sns.violinplot(data=scales, ax=ax, linewidth=0.5)
+    a = sns.violinplot(data=scales, ax=ax, linewidth=0.5, color="grey")
     a.set_ylabel("value")
     a.set_title("pSTAT scaling constants")
 
@@ -221,8 +224,8 @@ def plot_pretreat(ax, unkVec, scales, title):
     IL4_stim = output[0:K].T
     IL7_stim = output[K:(K * 2)].T
 
-    plot_conf_int(ax, np.log10(pre_conc), IL4_stim * 100., "powderblue", "IL-4 stim. (IL-7 pre.)")
-    plot_conf_int(ax, np.log10(pre_conc), IL7_stim * 100., "b", "IL-7 stim. (IL-4 pre.)")
+    plot_conf_int(ax, np.log10(pre_conc), IL4_stim * 100., "powderblue")
+    plot_conf_int(ax, np.log10(pre_conc), IL7_stim * 100., "b")
     ax.set(title=title, ylabel="Inhibition (% of no pretreat)", xlabel=r'Pretreatment concentration (log$_{10}$[nM])')
 
     # add experimental data to plots
@@ -232,7 +235,6 @@ def plot_pretreat(ax, unkVec, scales, title):
     ax.scatter(np.log10(IL4_pretreat_conc), data[:, 6], color='b', zorder=103, marker='^', edgecolors='k')
     ax.scatter(np.log10(IL4_pretreat_conc), data[:, 7], color='b', zorder=104, marker='^', edgecolors='k')
     ax.scatter(np.log10(IL4_pretreat_conc), data[:, 8], color='b', zorder=105, marker='^', edgecolors='k')
-    ax.legend()
 
 
 def surf_gc(ax, cytokC_pg, unkVec):
@@ -242,11 +244,10 @@ def surf_gc(ax, cytokC_pg, unkVec):
     output = calc_surf_gc(ts, cytokC_pg, unkVec)
     IL4vec = np.transpose(output[:, 0:PTS])
     IL7vec = np.transpose(output[:, PTS:(PTS * 2)])
-    plot_conf_int(ax, ts, IL4vec, "powderblue", "IL-4")
-    plot_conf_int(ax, ts, IL7vec, "b", "IL-7")
-    ax.set(title=("Ligand conc: " + str(round(cytokC_pg, 0)) + ' pg/mL'), ylabel=r"Surface $\gamma_{c}$ (%)", xlabel="Time (min)")
+    plot_conf_int(ax, ts, IL4vec, "powderblue")
+    plot_conf_int(ax, ts, IL7vec, "b")
+    ax.set(title=(r"$\gamma_{c}$ depletion at " + str(round(cytokC_pg, 0)) + ' pg/mL'), ylabel=r"Surface $\gamma_{c}$ (%)", xlabel="Time (min)")
     ax.set_ylim(0, 115)
-    ax.legend()
 
 
 def calc_surf_gc(t, cytokC_pg, unkVec):
@@ -283,7 +284,7 @@ def data_path():
 
 
 def relativeGC(ax, unkVec2, unkVec4):
-    """ This function compares the relative complex affinities for GC. The rates included in this violing plot will be k4rev, k10rev,
+    """ This function compares the relative complex affinities for GC. The rates included in this violin plot will be k4rev, k10rev,
     k17rev, k22rev, k27rev, and k33rev. We're currently ignoring k31rev (IL9) and k35rev (IL21) since we don't fit to any of its data. """
 
     # assign values from unkVec
@@ -297,10 +298,16 @@ def relativeGC(ax, unkVec2, unkVec4):
     df = pd.DataFrame({'2·2Rα': kfwd_2 / k4rev, '2·2Rβ': kfwd_2 / k5rev, '2·2Rα·2Rβ': kfwd_2 / k10rev, '15·15Rα': kfwd_2 / k16rev,
                        '15·2Rβ': kfwd_2 / k17rev, '15·15Rα·2Rβ': kfwd_2 / k22rev, '7·7Rα': kfwd_4 / k27rev, '4·4Rα': kfwd_4 / k33rev})
 
-    col_list = ["violet", "violet", "violet", "goldenrod", "goldenrod", "goldenrod", "blue", "lightblue"]
-    col_list_palette = sns.xkcd_palette(col_list)
-    sns.set_palette(col_list_palette)
+    sns.set_palette(sns.xkcd_palette(["violet", "violet", "violet", "goldenrod", "goldenrod", "goldenrod", "blue", "lightblue"]))
 
     a = sns.violinplot(data=np.log10(df), ax=ax, linewidth=0, scale='width')
-    a.set_xticklabels(a.get_xticklabels(), rotation=40, rotation_mode="anchor", ha="right", fontsize=8, position=(0, 0.075))
+    a.set_xticklabels(a.get_xticklabels(), rotation=25, rotation_mode="anchor", ha="right", fontsize=8, position=(0, 0.045))
     a.set(title=r"Relative $\gamma_{c}$ affinity", ylabel=r"$\mathrm{log_{10}(K_{a})}$")
+
+
+def legend_4_7(ax):
+    """ Plots a legend for all the IL-4 and IL-7 related plots in its own subpanel. """
+    legend_elements = [Patch(facecolor='b', label='IL-7 stimulation'),
+                       Patch(facecolor='powderblue', label='IL-4 stimulation')]
+    ax.legend(handles=legend_elements, loc='lower center', fontsize="large")
+    ax.axis('off')  # remove the grid

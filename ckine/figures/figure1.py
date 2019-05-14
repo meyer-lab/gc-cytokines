@@ -7,7 +7,7 @@ import string
 import numpy as np
 import seaborn as sns
 import pandas as pd
-from .figureCommon import subplotLabel, getSetup, traf_names, plot_conf_int, kfwd_info
+from .figureCommon import subplotLabel, getSetup, traf_names, plot_conf_int, kfwd_info, legend_2_15
 from ..plot_model_prediction import surf_IL2Rb, pstat, surf_gc
 from ..imports import import_samples_2_15
 
@@ -15,22 +15,30 @@ from ..imports import import_samples_2_15
 def makeFigure():
     """Get a list of the axis objects and create a figure"""
     # Get list of axis objects
-    ax, f = getSetup((10, 7), (3, 4), mults=[0, 6], multz={0: 2, 6: 2}, empts=[3])
+    ax, f = getSetup((10, 7), (3, 4), mults=[0, 6], multz={0: 2, 6: 2})
 
     # blank out first two axes for cartoon
     ax[0].axis('off')
 
+    # plot the legend in the top right corner (index 2)
+    leg_ind = 2
+    legend_2_15(ax[leg_ind])
+
     for ii, item in enumerate(ax):
-        subplotLabel(item, string.ascii_uppercase[ii])
+        # add conditionals to skip the legend
+        if ii < leg_ind:
+            subplotLabel(item, string.ascii_uppercase[ii])
+        elif ii > leg_ind:
+            subplotLabel(item, string.ascii_uppercase[ii - 1])
 
     unkVec, scales = import_samples_2_15(N=100)  # use these for simulations
     full_unkVec, full_scales = import_samples_2_15()  # use these for violin plots
     kfwd_avg, kfwd_std = kfwd_info(full_unkVec)
     print("kfwd = " + str(kfwd_avg) + " +/- " + str(kfwd_std))
     pstat_act(ax[1], unkVec, scales)
-    surf_perc(ax[2:4], 'IL-2Rβ', unkVec)
-    violinPlots(ax[5:8], full_unkVec, full_scales)
-    rateComp(ax[4], full_unkVec)
+    surf_perc(ax[3:5], 'IL-2Rβ', unkVec)
+    violinPlots(ax[6:9], full_unkVec, full_scales)
+    rateComp(ax[5], full_unkVec)
 
     f.tight_layout(w_pad=1.3)
 
@@ -75,8 +83,8 @@ def surf_perc(ax, species, unkVec):
 
     for n in range(4):
         # plot results within confidence intervals
-        plot_conf_int(ax[n % 2], ts, results[:, :, n, 0], "darkorchid", "IL-2")
-        plot_conf_int(ax[n % 2], ts, results[:, :, n, 1], "goldenrod", "IL-15")
+        plot_conf_int(ax[n % 2], ts, results[:, :, n, 0], "darkorchid")
+        plot_conf_int(ax[n % 2], ts, results[:, :, n, 1], "goldenrod")
 
     # label axes and titles
     ax[1].set(xlabel="Time (min)", ylabel=("Surface " + str(species) + " (%)"), title="YT-1 cells and 500 nM")
@@ -104,21 +112,19 @@ def pstat_act(ax, unkVec, scales):
     IL15_minus = output[:, (PTS * 3):(PTS * 4)].T
 
     # plot confidence intervals based on model predictions
-    plot_conf_int(ax, np.log10(cytokC), IL2_minus, "darkorchid", "IL-2")
-    plot_conf_int(ax, np.log10(cytokC), IL15_minus, "goldenrod", "IL-15")
+    plot_conf_int(ax, np.log10(cytokC), IL2_minus, "darkorchid")
+    plot_conf_int(ax, np.log10(cytokC), IL15_minus, "goldenrod")
     plot_conf_int(ax, np.log10(cytokC), IL2_plus, "darkorchid")
     plot_conf_int(ax, np.log10(cytokC), IL15_plus, "goldenrod")
 
     # plot experimental data
     path = os.path.dirname(os.path.abspath(__file__))
     data = pd.read_csv(join(path, "../data/IL2_IL15_extracted_data.csv")).values  # imports file into pandas array
-    ax.scatter(data[:, 0], data[:, 2], color='darkorchid', marker='^', edgecolors='k', zorder=100, label="IL-2, 2Rα-")  # IL2 in 2Ra-
-    ax.scatter(data[:, 0], data[:, 3], color='goldenrod', marker='^', edgecolors='k', zorder=101, label="IL-15, 2Rα-")  # IL15 in 2Ra-
-    ax.scatter(data[:, 0], data[:, 6], color='darkorchid', marker='o', edgecolors='k', zorder=102, label="IL-2, 2Rα+")  # IL2 in 2Ra+
-    ax.scatter(data[:, 0], data[:, 7], color='goldenrod', marker='o', edgecolors='k', zorder=103, label="IL-15, 2Rα+")  # IL15 in 2Ra+
+    ax.scatter(data[:, 0], data[:, 2], color='darkorchid', marker='^', edgecolors='k', zorder=100)  # IL2 in 2Ra-
+    ax.scatter(data[:, 0], data[:, 3], color='goldenrod', marker='^', edgecolors='k', zorder=101)  # IL15 in 2Ra-
+    ax.scatter(data[:, 0], data[:, 6], color='darkorchid', marker='o', edgecolors='k', zorder=102)  # IL2 in 2Ra+
+    ax.scatter(data[:, 0], data[:, 7], color='goldenrod', marker='o', edgecolors='k', zorder=103)  # IL15 in 2Ra+
     ax.set(ylabel='pSTAT5 (% of max)', xlabel=r'Cytokine concentration (log$_{10}$[nM])', title='YT-1 cell activity')
-
-    ax.legend()
 
 
 def violinPlots(ax, unkVec, scales, Traf=True):
@@ -130,24 +136,26 @@ def violinPlots(ax, unkVec, scales, Traf=True):
 
     if Traf:
         traf.columns = traf_names()
-        b = sns.violinplot(data=np.log10(traf), ax=ax[0], linewidth=0.5)
-        b.set_xticklabels(b.get_xticklabels(), rotation=40, rotation_mode="anchor", ha="right", fontsize=8, position=(0, 0.075))
+        b = sns.violinplot(data=np.log10(traf), ax=ax[0], linewidth=0.5, color="grey")
+        b.set_xticklabels(b.get_xticklabels(), rotation=25, rotation_mode="anchor", ha="right", fontsize=8, position=(0, 0.06))
         b.set(title="Trafficking parameters", ylabel=r"$\mathrm{log_{10}(\frac{1}{min})}$")
 
     Rexpr.columns = ['IL-2Rα', 'IL-2Rβ', r'$\gamma_{c}$', 'IL-15Rα']
+    col_list = ["violet", "violet", "grey", "goldenrod"]
+    col_list_palette = sns.xkcd_palette(col_list)
     if Traf:
-        c = sns.violinplot(data=np.log10(Rexpr), ax=ax[1], linewidth=0.5)
+        c = sns.violinplot(data=np.log10(Rexpr), ax=ax[1], linewidth=0.5, palette=col_list_palette)
         c.set(title="Receptor expression rates", ylabel=r"$\mathrm{log_{10}(\frac{num}{cell * min})}$")
     else:
-        c = sns.violinplot(data=np.log10(Rexpr), ax=ax[0], linewidth=0.5)
+        c = sns.violinplot(data=np.log10(Rexpr), ax=ax[0], linewidth=0.5, palette=col_list_palette)
         c.set(title="Receptor abundance levels", ylabel=r"$\mathrm{log_{10}(\frac{num}{cell})}$")
-    c.set_xticklabels(c.get_xticklabels(), rotation=40, rotation_mode="anchor", ha="right", fontsize=8, position=(0, 0.075))
+    c.set_xticklabels(c.get_xticklabels(), rotation=25, rotation_mode="anchor", ha="right", fontsize=8, position=(0, 0.04))
 
     sc_ax = 1  # subplot number for the scaling constant
     if Traf:
         sc_ax = 2
     scales.columns = [r'$C_{5}$']
-    d = sns.violinplot(data=scales, ax=ax[sc_ax], linewidth=0.5)
+    d = sns.violinplot(data=scales, ax=ax[sc_ax], linewidth=0.5, color="grey")
     d.set(ylabel="value", title="pSTAT5 scaling constant")
 
 
@@ -196,6 +204,7 @@ def rateComp(ax, unkVec):
 
     # plot with hue being cytokine species
     a = sns.violinplot(x='rate', y=r"$\mathrm{log_{10}(\frac{1}{min})}$", data=melted, hue='cytokine', ax=ax, linewidth=0, scale='width')
+    a.get_legend().remove()  # remove the legend
     a.scatter(-0.3, np.log10(kfbnd * 10), color="darkviolet")   # overlay point for k1rev
     a.scatter(0.1, np.log10(kfbnd * 0.065), color='goldenrod')  # overlay point for k13rev
     a.scatter(0.7, np.log10(kfbnd * 144), color="darkviolet")   # overlay point for k2rev

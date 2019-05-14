@@ -6,6 +6,8 @@ import numpy as np
 import matplotlib.cm as cm
 from matplotlib import gridspec, pyplot as plt
 from matplotlib.lines import Line2D
+from matplotlib.patches import Patch
+
 
 
 def getSetup(figsize, gridd, mults=None, multz=None, empts=None):
@@ -35,6 +37,10 @@ def getSetup(figsize, gridd, mults=None, multz=None, empts=None):
     else:
         ax = [f.add_subplot(gs1[x]) if x not in mults else f.add_subplot(gs1[x:x + multz[x]]) for x in range(
             gridd[0] * gridd[1]) if not any([x - j in mults for j in range(1, max(multz.values()))]) and x not in empts]
+
+    # shrink the padding between ticks and axes
+    for a in ax:
+        a.tick_params(axis='both', pad=-2)
 
     return (ax, f)
 
@@ -155,6 +161,18 @@ def kfwd_info(unkVec):
     mean = np.mean(unkVec[6])
     std = np.std(unkVec[6])
     return mean, std
+
+
+def legend_2_15(ax):
+    """ Plots a legend for all the IL-2 and IL-15 related plots in its own subpanel. """
+    legend_elements = [Patch(facecolor='darkorchid', label='IL-2'),
+                       Patch(facecolor='goldenrod', label='IL-15'),
+                       Line2D([0], [0], marker='o', color='w', label='IL-2Rα+ cells',
+                              markerfacecolor='k', markersize=8),
+                       Line2D([0], [0], marker='^', color='w', label='IL-2Rα- cells',
+                              markerfacecolor='k', markersize=8)]
+    ax.legend(handles=legend_elements, loc='center', mode="expand", fontsize="large")
+    ax.axis('off')  # remove the grid
 
 
 def plot_scaled_pstat(ax, cytokC, pstat):

@@ -1,22 +1,26 @@
 ---
 title: Tensor Factorization Maps Computation Performed by the Common Gamma Chain Receptors
 author:
-- name: Adam Weiner
-  affilnum: a
-- name: Ali Farhat
+- name: Adam C. Weiner
+  affilnum: a,c
+- name: Ali M. Farhat
+  affilnum: a,c
+- name: Zoe S. Kim
   affilnum: a
 - name: Scott M. Carlson
   affilnum: b
 - name: Aaron S. Meyer
-  affilnum: a,c
+  affilnum: a,d
 keywords: [IL-2, IL-15, IL-21, IL-4, IL-7, IL-9, common gamma chain, cytokines, receptors, immunology, T cells, NK cells]
 affiliation:
 - name: Department of Bioengineering, Jonsson Comprehensive Cancer Center, Eli and Edythe Broad Center of Regenerative Medicine and Stem Cell Research; University of California, Los Angeles
   key: a
 - name: Visterra, Inc.
   key: b
-- name: Contact info
+- name: These authors contributed equally to this work
   key: c
+- name: Contact info
+  key: d
 bibliography: ./Manuscript/References.bib
 abstract: Many receptor families exhibit both pleiotropy and redundancy in their regulation, with multiple ligands, receptors, and responding cell populations. The multivariate nature of these systems confounds intuition about therapeutic manipulation. The common γ-chain cytokine receptor dimerizes with complexes of the cytokines interleukin (IL)-2, IL-4, IL-7, IL-9, IL-15, and IL-21 and their corresponding "private" receptors. These γ-chain cytokines have accrued broad interest as potential immune therapies because they potently modulate immune cell population types. Here, we build a reaction model for the diverse ligand-receptor interactions of common γ-chain cytokines enabling quantitative predictions of response. Using this quantitative model, we employ tensor factorization to build a quantitative map of regulation across the family. These results map the emergent behavior of the common γ-chain cytokines, and demonstrate an approach to generating interpretable guidelines for manipulation of complex receptor families.
 link-citations: true
