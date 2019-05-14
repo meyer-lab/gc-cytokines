@@ -5,7 +5,7 @@ import string
 import seaborn as sns
 import tensorly as tl
 from tensorly import unfold
-from .figureCommon import subplotLabel, getSetup, plot_cells, plot_ligands, plot_timepoints, set_bounds
+from .figureCommon import subplotLabel, getSetup, plot_cells, plot_ligands, plot_timepoints
 from .figure3 import values, mat, n_ligands
 from ..tensor import perform_tucker, find_R2X_tucker
 from ..imports import import_Rexpr

@@ -3,6 +3,7 @@ import numpy as np
 from .model import nSpecies, getTotalActiveCytokine
 from .tensor_generation import ySolver
 
+
 def input_IL2_15(final_conc, num):
     '''Function that creates the input for the solver. Takes in 1nM or 500nM for final_conc.'''
     ligand_conc = np.zeros((num, 6))  # Cytokine stimulation concentrations in the following order: IL2, 15, 7, 9, 4, 21, and in nM.
@@ -13,6 +14,7 @@ def input_IL2_15(final_conc, num):
         C = np.linalg.solve(A, B)
         ligand_conc[idx, 0:2] = [C[0], C[1]]
     return ligand_conc, xaxis
+
 
 def solve_IL2_IL15(final_conc, num, time, nSpecies=nSpecies):
     """Function to simulate model with IL2 and IL15 only at timepoint tps."""
