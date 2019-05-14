@@ -1,19 +1,20 @@
 """
 This creates Figure 3.
 """
-from .figureCommon import subplotLabel, getSetup, plot_cells, plot_ligands, plot_timepoints
-from ..imports import import_Rexpr
-from ..tensor import find_R2X, perform_decomposition
-from ..tensor_generation import prepare_tensor
 import string
 import tensorly as tl
 import numpy as np
 import seaborn as sns
+from .figureCommon import subplotLabel, getSetup, plot_cells, plot_ligands, plot_timepoints
+from ..imports import import_Rexpr
+from ..tensor import find_R2X, perform_decomposition
+from ..tensor_generation import prepare_tensor
 
 cell_dim = 1  # For this figure, the cell dimension is along the second [python index 1].
 n_ligands = 4
 values, _, mat, _, _ = prepare_tensor(n_ligands)
 values = tl.tensor(values)
+
 
 def makeFigure():
     """Get a list of the axis objects and create a figure"""
@@ -23,7 +24,7 @@ def makeFigure():
     # Blank out for the cartoon
     ax[0].axis('off')
 
-    data, numpy_data, cell_names = import_Rexpr()
+    data, _, cell_names = import_Rexpr()
     factors_activity = []
     for jj in range(len(mat) - 1):
         factors = perform_decomposition(values, jj + 1, cell_dim)

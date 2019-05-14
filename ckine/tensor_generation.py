@@ -10,6 +10,7 @@ from .imports import import_Rexpr, import_samples_2_15
 rxntfR, _ = import_samples_2_15(N=1)
 rxntfR = np.squeeze(rxntfR)
 
+
 def ySolver(matIn, ts, tensor=True):
     """ This generates all the solutions of the tensor. """
     matIn = np.squeeze(matIn)
@@ -41,6 +42,7 @@ def ySolver_IL2(matIn, ts):
     assert retVal >= 0
 
     return yOut
+
 
 def findy(lig, n_timepoints):
     """A function to find the different values of y at different timepoints and different initial conditions. Takes in how many ligand concentrations and expression rates to iterate over."""
@@ -80,6 +82,7 @@ def findy(lig, n_timepoints):
             y_of_combos[ii] = ySolver(new_mat[ii, :], ts)
 
     return y_of_combos, new_mat, mat, mats, cell_names
+
 
 def prepare_tensor(lig, n_timepoints=100):
     """Function to generate the 4D values tensor."""

@@ -278,7 +278,7 @@ class TestModel(unittest.TestCase):
         """ Make sure no endosomal species are found when endo=0. """
         rxntfR = self.rxntfR.copy()
         rxntfR[17:19] = 0.0  # set endo and activeEndo to 0.0
-        yOut, retVal = runCkineU(self.ts, rxntfR)
+        yOut, _ = runCkineU(self.ts, rxntfR)
         tot_endo = np.sum(yOut[1, 28::])
         self.assertEqual(tot_endo, 0.0)
 

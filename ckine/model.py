@@ -119,35 +119,35 @@ def runCkineU_IL2(tps, rxntfr):
     return (yOut, retVal)
 
 
-def runIL2simple(input, IL, CD25=1.0, ligandDegradation=False):
+def runIL2simple(input_params, IL, CD25=1.0, ligandDegradation=False):
     """ Version to focus on IL2Ra/Rb affinity adjustment. """
     # TODO: Update parameters based on distinct endosomal fitting.
     tps = np.array([500.0])
 
     kfwd = 0.00449
-    k1rev = 0.6 * 10 * input[0]
-    k2rev = 0.6 * 144 * input[1]
+    k1rev = 0.6 * 10 * input_params[0]
+    k2rev = 0.6 * 144 * input_params[1]
     k4rev = 8.6677
     k5rev = 0.1233
-    k11rev = 63.0 * k5rev / 1.5 * input[1]
+    k11rev = 63.0 * k5rev / 1.5 * input_params[1]
     IL2Ra = 3.8704 * CD25
     IL2Rb = 0.734
     gc = 1.7147
     # IL, kfwd, k1rev, k2rev, k4rev, k5rev, k11rev, R, R, R
-    rxntfr = np.array([IL, kfwd, k1rev, k2rev, k4rev, k5rev, k11rev,
-                       IL2Ra, IL2Rb, gc,
-                       k1rev * input[2], k2rev * input[2], k4rev * input[2], k5rev * input[2], k11rev * input[2]])  # input[2] represents endosomal binding affinity relative to surface affinity
+    rxntfr = np.array([IL, kfwd, k1rev, k2rev, k4rev, k5rev, k11rev, IL2Ra, IL2Rb, gc, k1rev * input_params[2], k2rev * input_params[2],
+                       k4rev * input_params[2], k5rev * input_params[2], k11rev * input_params[2]])
+    # input_params[2] represents endosomal binding affinity relative to surface affinity
 
     yOut, retVal = runCkineU_IL2(tps, rxntfr)
 
     assert retVal == 0
 
-    if ligandDegradation == True:
+    if ligandDegradation:
         ligDeg = ligandDeg(yOut[0], sortF=0.1458139959859, kDeg=0.006544333, cytokineIDX=0)
         return ligDeg  # rate of ligand degradation
-    else:
-        active = getTotalActiveCytokine(0, np.squeeze(yOut))
-        return active
+
+    active = getTotalActiveCytokine(0, np.squeeze(yOut))
+    return active
 
 
 def runCkineUP(tps, rxntfr, preT=0.0, prestim=None):

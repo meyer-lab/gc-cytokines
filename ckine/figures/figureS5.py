@@ -2,7 +2,6 @@
 This creates Figure S5. CP decomposition of measured pSTAT data.
 """
 import string
-import matplotlib.cm as cm
 from matplotlib.lines import Line2D
 import numpy as np
 import seaborn as sns

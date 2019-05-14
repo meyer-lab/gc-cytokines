@@ -8,6 +8,7 @@ from .fit import build_model as build_model_2_15, find_gc
 from .fit_others import build_model as build_model_4_7
 from .model import nParams
 
+
 def import_Rexpr():
     """ Loads CSV file containing Rexpr levels from Visterra data. """
     path = os.path.dirname(os.path.dirname(__file__))
@@ -73,6 +74,7 @@ def import_samples_2_15(Traf=True, ret_trace=False, N=None):
 
     return unkVec, scales
 
+
 def import_samples_4_7(N=None):
     ''' This function imports the csv results of IL4-7 fitting into a numpy array called unkVec. '''
     bmodel = build_model_4_7()
@@ -109,17 +111,24 @@ def import_samples_4_7(N=None):
 
     return unkVec, scales
 
+
 def import_pstat():
-    """ Loads CSV file containing pSTAT5 levels from Visterra data. """
+    """ Loads CSV file containing pSTAT5 levels from Visterra data. Incorporates only Replicate 1 since data missing in Replicate 2. """
     path = os.path.dirname(os.path.dirname(__file__))
-    data = np.array(pds.read_csv(join(path, 'ckine/data/median_pSTAT5_3_20.csv'), encoding='latin1'))
-    ckineConc = data[1, 2:14]
+    data = np.array(pds.read_csv(join(path, 'ckine/data/Visterra_pSTAT5.csv'), encoding='latin1'))
+    ckineConc = data[4, 2:14]
     # 4 time points, 11 cell types, 12 concentrations
     IL2_data = np.zeros((44, 12))
     IL15_data = np.zeros((44, 12))
     cell_names = list()
     for i in range(11):
-        cell_names.append(data[12 * i, 1])
-        IL2_data[4 * i:4 * (i + 1), :] = data[3 + (12 * i):7 + (12 * i), 2:14]
-        IL15_data[4 * i:4 * (i + 1), :] = data[7 + (12 * i):11 + (12 * i), 2:14]
+        cell_names.append(data[12 * i + 3, 1])
+        # Subtract the zero treatment plates before assigning to returned arrays
+        if i <= 4:
+            zero_treatment = data[12 * (i + 1), 13]
+        else:
+            zero_treatment = data[8 + (12 * i), 13]
+        IL2_data[4 * i:4 * (i + 1), :] = data[6 + (12 * i):10 + (12 * i), 2:14] - zero_treatment
+        IL15_data[4 * i:4 * (i + 1), :] = data[10 + (12 * i):14 + (12 * i), 2:14] - zero_treatment
+
     return ckineConc, cell_names, IL2_data, IL15_data
