@@ -40,7 +40,7 @@ def makeFigure():
 
 def IL2_dose_response(ax, unkVec, cell_type, cell_data, cytokC, legend=False):
     """ Shows activity for a given cell type at various IL2 concentrations """
-    tps = np.array([0.5, 1., 2., 4.])
+    tps = np.array([0.5, 1., 2., 4.]) * 60.
     PTS = 12  # number of cytokine concentrations
     colors = cm.rainbow(np.linspace(0, 1, tps.size))
 
@@ -67,7 +67,7 @@ def IL2_dose_response(ax, unkVec, cell_type, cell_data, cytokC, legend=False):
 
     # plot the values with each time as a separate color
     for tt in range(tps.size):
-        plot_conf_int(ax, np.log10(cytokC.astype(np.float)), total_activity[:, :, tt] / avg_total_activity, colors[tt], (tps[tt]).astype(str))
+        plot_conf_int(ax, np.log10(cytokC.astype(np.float)), total_activity[:, :, tt] / avg_total_activity, colors[tt], (tps[tt] / 60.).astype(str))
 
     # plots for input cell type
     ax.set(xlabel=r'IL-2 concentration (log$_{10}$[nM])', ylabel='Activity', title=cell_type)
