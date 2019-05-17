@@ -1,7 +1,7 @@
 """File to simulate model with different drug combinations, used for plotting."""
 import numpy as np
 from .model import nSpecies, getTotalActiveCytokine
-from .tensor_generation import ySolver
+from .make_tensor import ySolver
 
 
 def input_IL2_15(final_conc, num):

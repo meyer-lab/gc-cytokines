@@ -21,8 +21,10 @@ def import_Rexpr():
     return data, numpy_data[:, [2, 3, 0, 1]], cell_names
 
 
-def import_samples_2_15(Traf=True, ret_trace=False, N=None):
+def import_samples_2_15(Traf=True, ret_trace=False, N=None, tensor=False):
     """ This function imports the csv results of IL2-15 fitting into a numpy array called unkVec. """
+    if tensor:
+        np.random.seed(91)
     bmodel = build_model_2_15(traf=Traf)
     n_params = nParams()
 
