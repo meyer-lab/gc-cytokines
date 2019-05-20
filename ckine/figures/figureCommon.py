@@ -74,7 +74,14 @@ def plot_ligands(ax, factors, component_x, component_y, ax_pos, n_ligands, mesh,
             legend = "full"
         else:
             legend = False
-        sns.scatterplot(x=factors[idx, component_x - 1], y=factors[idx, component_y - 1], hue=np.around(np.sum(mesh[idx, :], axis=1).astype(float), decimals=4), marker=markers[ii], ax=ax, palette=cmap, s=100, legend=legend)
+        sns.scatterplot(x=factors[idx, component_x - 1],
+                        y=factors[idx, component_y - 1],
+                        hue=np.around(np.sum(mesh[idx, :], axis=1).astype(float), decimals=4),
+                        marker=markers[ii],
+                        ax=ax,
+                        palette=cmap,
+                        s=100,
+                        legend=legend)
 
         h, _ = ax.get_legend_handles_labels()
         if ax_pos == 4 and fig3:
