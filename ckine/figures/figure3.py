@@ -19,8 +19,8 @@ values = tl.tensor(values)
 def makeFigure():
     """Get a list of the axis objects and create a figure"""
     # Get list of axis objects
-    x, y = 3, 4
-    ax, f = getSetup((12, 9), (x, y), mults=[0, 2], multz={0: 2, 2: 2}, empts=[7, 11])
+    x, y = 2, 4
+    ax, f = getSetup((7.5, 5), (x, y), mults=[0, 2], multz={0: 2, 2: 2})
     # Blank out for the cartoon
     ax[0].axis('off')
 
@@ -30,7 +30,7 @@ def makeFigure():
         factors = perform_decomposition(values, jj + 1, cell_dim)
         factors_activity.append(factors)
 
-    n_comps = 4
+    n_comps = 2
     factors_activ = factors_activity[n_comps - 1]
 
     bar_receptors(ax[1], data)
@@ -40,13 +40,11 @@ def makeFigure():
     for ii, item in enumerate(ax):
         subplotLabel(item, string.ascii_uppercase[ii])  # Add subplot labels
 
-    plot_timepoints(ax[5], factors_activ[0])  # Change final input value depending on need
+    plot_timepoints(ax[3], factors_activ[0])  # Change final input value depending on need
 
-    plot_cells(ax[3], factors_activ[1], 1, 2, cell_names, ax_pos=3)
-    plot_cells(ax[6], factors_activ[1], 3, 4, cell_names, ax_pos=6)
+    plot_cells(ax[4], factors_activ[1], 1, 2, cell_names, ax_pos=4)
 
-    plot_ligands(ax[4], factors_activ[2], 1, 2, ax_pos=4, n_ligands=n_ligands, mesh=mat)
-    plot_ligands(ax[7], factors_activ[2], 3, 4, ax_pos=7, n_ligands=n_ligands, mesh=mat)
+    plot_ligands(ax[5], factors_activ[2], 1, 2, ax_pos=5, n_ligands=n_ligands, mesh=mat, fig=f)
 
     f.tight_layout()
 
@@ -56,11 +54,14 @@ def makeFigure():
 def bar_receptors(ax, data):
     """Plot Bar graph for Receptor Expression Data. """
     sns.barplot(x="Cell Type", y="Count", hue="Receptor", data=data, ci=68, ax=ax, capsize=.2, errwidth=0.4)
-    ax.legend(loc='best')
+    box = ax.get_position()
+    ax.set_position([box.x0, box.y0, box.width * 0.8, box.height])
+    ax.legend(loc='center left', bbox_to_anchor=(1, 0.5), handletextpad=0.4)
     ax.set_ylabel("Surface Receptor [# / cell]")
     ax.set_xticklabels(ax.get_xticklabels(),
-                       rotation=40, rotation_mode="anchor", ha="right",
-                       position=(0, 0.05), fontsize=6.5)
+                       rotation=25, rotation_mode="anchor", ha="right",
+                       position=(0, 0.02), fontsize=7.5)
+    ax.set_yscale('log')
 
 
 def plot_R2X(ax, tensor, factors_list, n_comps, cells_dim):
