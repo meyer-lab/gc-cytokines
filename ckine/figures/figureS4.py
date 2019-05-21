@@ -35,7 +35,7 @@ def makeFigure():
 
     for row in range(2):
         compNum = 2 * row + 1
-        plot_ligands(ax[row * y + 2], tl.to_numpy(factors[2]), compNum, compNum + 1, ax_pos=row * y + 2, n_ligands=n_ligands, mesh=mat, fig3=False)
+        plot_ligands(ax[row * y + 2], tl.to_numpy(factors[2]), compNum, compNum + 1, ax_pos=row * y + 2, n_ligands=n_ligands, mesh=mat, fig=f, fig3=False)
 
     f.tight_layout()
 
