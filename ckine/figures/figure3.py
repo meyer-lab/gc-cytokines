@@ -63,7 +63,6 @@ def bar_receptors(ax, data):
                        position=(0, 0.02), fontsize=7.5)
     ax.set_yscale('log')
 
-
 def plot_R2X(ax, tensor, factors_list, n_comps, cells_dim):
     """Function to plot R2X bar graph."""
     R2X_array = list()
