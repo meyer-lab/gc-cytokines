@@ -155,3 +155,27 @@ NKT,IL-15R$\alpha$,0
 CD8+,IL-15R$\alpha$,0
 Naive CD8+,IL-15R$\alpha$,0
 Mem CD8+,IL-15R$\alpha$,0
+CD3+CD4+,IL-7R$\alpha$,17066.36791
+T-reg,IL-7R$\alpha$,4003.606182
+Naive Treg,IL-7R$\alpha$,5975.804219
+Mem Treg,IL-7R$\alpha$,2504.653147
+T-helper,IL-7R$\alpha$,19612.30306
+Naive Th,IL-7R$\alpha$,17633.94598
+Mem Th,IL-7R$\alpha$,25239.06393
+NK,IL-7R$\alpha$,5.18134425
+NKT,IL-7R$\alpha$,0
+CD8+,IL-7R$\alpha$,0
+Naive CD8+,IL-7R$\alpha$,0
+Mem CD8+,IL-7R$\alpha$,0
+CD3+CD4+,IL-7R$\alpha$,16467.17942
+T-reg,IL-7R$\alpha$,3216.115902
+Naive Treg,IL-7R$\alpha$,5353.537686
+Mem Treg,IL-7R$\alpha$,2260.141013
+T-helper,IL-7R$\alpha$,18713.53922
+Naive Th,IL-7R$\alpha$,16498.12477
+Mem Th,IL-7R$\alpha$,24813.90978
+NK,IL-7R$\alpha$,152.8853349
+NKT,IL-7R$\alpha$,0
+CD8+,IL-7R$\alpha$,0
+Naive CD8+,IL-7R$\alpha$,0
+Mem CD8+,IL-7R$\alpha$,0

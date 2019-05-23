@@ -19,10 +19,12 @@ values = tl.tensor(values)
 def makeFigure():
     """Get a list of the axis objects and create a figure"""
     # Get list of axis objects
-    x, y = 2, 4
-    ax, f = getSetup((7.5, 5), (x, y), mults=[0, 2], multz={0: 2, 2: 2})
+    x, y = 3, 4
+    ax, f = getSetup((7.5, 7), (x, y), mults=[0, 2], multz={0: 2, 2: 2})
     # Blank out for the cartoon
     ax[0].axis('off')
+    ax[6].axis('off')
+    ax[7].axis('off')
 
     data, _, cell_names = import_Rexpr()
     factors_activity = []
@@ -30,7 +32,7 @@ def makeFigure():
         factors = perform_decomposition(values, jj + 1, cell_dim)
         factors_activity.append(factors)
 
-    n_comps = 2
+    n_comps = 3
     factors_activ = factors_activity[n_comps - 1]
 
     bar_receptors(ax[1], data)
@@ -43,8 +45,10 @@ def makeFigure():
     plot_timepoints(ax[3], factors_activ[0])  # Change final input value depending on need
 
     plot_cells(ax[4], factors_activ[1], 1, 2, cell_names, ax_pos=4)
+    plot_cells(ax[8], factors_activ[1], 2, 3, cell_names, ax_pos=8)
 
     plot_ligands(ax[5], factors_activ[2], 1, 2, ax_pos=5, n_ligands=n_ligands, mesh=mat, fig=f)
+    plot_ligands(ax[9], factors_activ[2], 2, 3, ax_pos=9, n_ligands=n_ligands, mesh=mat, fig=f)
 
     f.tight_layout()
 
