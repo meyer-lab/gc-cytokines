@@ -17,3 +17,4 @@ D) Posterior distribution for the pSTAT5 activity scaling constant in no-traffic
 
 ![**Full panel of predicted versus actual immune cell type responses.** XXX](./Figures/figureS7.svg){#fig:supp7}
 
+![**Tensor Factorization on Mutant IL-2.** XXX](./Figures/figureS8.svg){#fig:supp8}

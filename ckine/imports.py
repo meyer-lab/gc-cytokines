@@ -19,7 +19,7 @@ def import_Rexpr():
     receptor_names = receptor_names[[2, 3, 0, 1, 4]]  # Reorder so that IL2Ra_idx=0|IL2Rb_idx=1|gc_idx=2|IL15Ra_idx=3|IL7Ra_idx=4
     numpy_data = pds.Series(df['Count']).values.reshape(cell_names.size, receptor_names.size)  # Rows are in the order of cell_names. Receptor Type is on the order of receptor_names
     numpy_data = numpy_data[:, [2, 3, 0, 1, 4]] # Rearrange numpy_data to place IL2Ra first, then IL2Rb, then gc, then IL15Ra in this order
-    numpy_data = numpy_data[[5, 1, 7, 2, 11, 9, 4, 10, 8, 3, 0, 6],:] #Reorder to match cells.
+    numpy_data = numpy_data[[5, 1, 7, 2, 11, 9, 4, 10, 8, 3, 0, 6], :] #Reorder to match cells.
     return data, numpy_data, cell_names
 
 
