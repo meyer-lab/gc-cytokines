@@ -9,6 +9,7 @@ from mpl_toolkits.axes_grid1 import make_axes_locatable
 from matplotlib.lines import Line2D
 from matplotlib.patches import Patch
 from matplotlib.colors import LogNorm
+from ..tensor import find_R2X
 
 def getSetup(figsize, gridd, mults=None, multz=None, empts=None):
     """ Establish figure set-up with subplots. """
@@ -55,6 +56,19 @@ def set_bounds(ax, compNum):
     ax.set_xlim(-x_max, x_max)
     ax.set_ylim(-y_max, y_max)
 
+def plot_R2X(ax, tensor, factors_list, n_comps, cells_dim):
+    """Function to plot R2X bar graph."""
+    R2X_array = list()
+    for n in range(n_comps):
+        factors = factors_list[n]
+        R2X = find_R2X(tensor, factors, cells_dim)
+        R2X_array.append(R2X)
+    ax.plot(range(1, n_comps + 1), R2X_array, 'ko', label='Overall R2X')
+    ax.set_ylabel('R2X')
+    ax.set_xlabel('Number of Components')
+    ax.set_ylim(0, 1)
+    ax.set_xticks(np.arange(1, n_comps + 1))
+    ax.set_xticklabels(np.arange(1, n_comps + 1))
 
 def plot_ligands(ax, factors, component_x, component_y, ax_pos, n_ligands, mesh, fig, fig3=True, fig4=False):
     "This function is to plot the ligand combination dimension of the values tensor."
@@ -112,7 +126,6 @@ def plot_ligands(ax, factors, component_x, component_y, ax_pos, n_ligands, mesh,
 
     ax.set_title('Ligands')
     set_bounds(ax, component_x)
-
 
 def subplotLabel(ax, letter, hstretch=1):
     """ Label each subplot """
