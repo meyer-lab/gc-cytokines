@@ -10,11 +10,11 @@ from ..imports import import_samples_2_15
 def makeFigure():
     """Get a list of the axis objects and create a figure"""
     # Get list of axis objects
-    ax, f = getSetup((8, 6), (2, 3), mults=[1], multz={1: 2})
+    ax, f = getSetup((7.5, 4), (2, 3), mults=[1], multz={1: 2})
 
     # add legend
     leg_ind = 2
-    legend_2_15(ax[leg_ind])
+    legend_2_15(ax[leg_ind], font_size="x-large", location="center")
 
     for ii, item in enumerate(ax):
         # add conditionals to skip the legend

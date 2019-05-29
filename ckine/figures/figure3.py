@@ -13,11 +13,14 @@ cell_dim = 1  # For this figure, the cell dimension is along the second [python 
 values, _, mat, _, _ = make_tensor()
 values = tl.tensor(values)
 
+
 def makeFigure():
     """Get a list of the axis objects and create a figure"""
     # Get list of axis objects
     x, y = 3, 4
     ax, f = getSetup((7.5, 7), (x, y), mults=[0, 2], multz={0: 2, 2: 2})
+    real_mults = [0, 1]
+
     # Blank out for the cartoon
     ax[0].axis('off')
     ax[6].axis('off')
@@ -37,7 +40,8 @@ def makeFigure():
 
     # Add subplot labels
     for ii, item in enumerate(ax):
-        subplotLabel(item, string.ascii_uppercase[ii])  # Add subplot labels
+        h = 2.5 if ii in real_mults else 1
+        subplotLabel(item, string.ascii_uppercase[ii], hstretch=h)  # Add subplot labels
 
     plot_timepoints(ax[3], factors_activ[0])  # Change final input value depending on need
 

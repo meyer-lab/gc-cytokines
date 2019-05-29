@@ -30,12 +30,11 @@ def makeFigure():
 
     kfwd_avg, kfwd_std = kfwd_info(full_unkVec_4_7)
     print("kfwd = " + str(kfwd_avg) + " +/- " + str(kfwd_std))
-    legend_4_7(ax[0])
     pstat_plot(ax[1], unkVec_4_7, scales_4_7)
     plot_pretreat(ax[2], unkVec_4_7, scales_4_7, "Cross-talk pSTAT inhibition")
     traf_violin(ax[6], full_unkVec_4_7)
     rexpr_violin(ax[7], full_unkVec_4_7)
-    scales_violin(ax[8], full_scales_4_7)
+    misc_violin(ax[8], full_unkVec_4_7, full_scales_4_7)
     surf_gc(ax[4], 100., full_unkVec_4_7)
     unkVec_noActiveEndo = unkVec_4_7.copy()
     unkVec_noActiveEndo[18] = 0.0   # set activeEndo rate to 0
@@ -114,11 +113,12 @@ def pstat_plot(ax, unkVec, scales):
 def traf_violin(ax, unkVec):
     """ Create violin plot of trafficking parameters. """
     unkVec = unkVec.transpose()
-    traf = pd.DataFrame(unkVec[:, 17:22])
+    traf = np.concatenate((unkVec[:, 17:19], unkVec[:, 20:22]), axis=1)
+    traf = pd.DataFrame(traf)
 
     traf.columns = traf_names()
     a = sns.violinplot(data=np.log10(traf), ax=ax, linewidth=0.5, color="grey")
-    a.set_xticklabels(a.get_xticklabels(), rotation=25, rotation_mode="anchor", ha="right", fontsize=8, position=(0, 0.045))
+    a.set_xticklabels(a.get_xticklabels(), rotation=25, rotation_mode="anchor", ha="right", fontsize=8, position=(0, 0.04))
     a.set_ylabel(r"$\mathrm{log_{10}(\frac{1}{min})}$")
     a.set_title("Trafficking parameters")
 
@@ -134,19 +134,24 @@ def rexpr_violin(ax, unkVec):
     col_list = ["grey", "blue", "lightblue"]
     col_list_palette = sns.xkcd_palette(col_list)
     a = sns.violinplot(data=np.log10(Rexpr), ax=ax, linewidth=0.5, palette=col_list_palette)
-    a.set_xticklabels(a.get_xticklabels(), rotation=25, rotation_mode="anchor", ha="right", fontsize=8, position=(0, 0.045))
+    a.set_xticklabels(a.get_xticklabels(), rotation=25, rotation_mode="anchor", ha="right", fontsize=8, position=(0, 0.03))
     a.set_ylabel(r"$\mathrm{log_{10}(\frac{num}{cell * min})}$")
     a.set_title("Receptor expression rates")
 
 
-def scales_violin(ax, scales):
-    """ Create violin plot of activity scaling constants. """
-    scales = pd.DataFrame(scales)
+def misc_violin(ax, unkVec, scales):
+    """ Create violin plot of activity scaling constants, sortF, and kfwd. """
+    scales6 = scales[:, 0] / np.max(scales[:, 0])
+    scales5 = scales[:, 1] / np.max(scales[:, 1])
+    misc = np.vstack((scales6, scales5, unkVec[19, :], unkVec[6, :] / np.max(unkVec[6, :])))
+    misc = pd.DataFrame(misc.T)
 
-    scales.columns = [r'$C_{6}$', r'$C_{5}$']
-    a = sns.violinplot(data=scales, ax=ax, linewidth=0.5, color="grey")
+    misc.columns = [r'$C_{6}$ / ' + '{:.2E}'.format(np.max(scales[:, 0])), r'$C_{5}$ / ' + '{:.2E}'.format(np.max(scales[:, 1])),
+                    r'$f_{sort}$', r'$k_{fwd}$ / ' + "{:.2E}".format(np.max(unkVec[6, :]))]
+    a = sns.violinplot(data=misc, ax=ax, linewidth=0.5, color="grey")
+    a.set_xticklabels(a.get_xticklabels(), rotation=25, rotation_mode="anchor", ha="right", fontsize=8, position=(0, 0.02))
     a.set_ylabel("value")
-    a.set_title("pSTAT scaling constants")
+    a.set_title("Miscellaneous parameters")
 
 
 def pretreat_calc(unkVec, scales, pre_conc):
@@ -224,8 +229,8 @@ def plot_pretreat(ax, unkVec, scales, title):
     IL4_stim = output[0:K].T
     IL7_stim = output[K:(K * 2)].T
 
-    plot_conf_int(ax, np.log10(pre_conc), IL4_stim * 100., "powderblue")
-    plot_conf_int(ax, np.log10(pre_conc), IL7_stim * 100., "b")
+    plot_conf_int(ax, np.log10(pre_conc), IL4_stim * 100., "powderblue", "IL-4 stim/IL-7 pretreat")
+    plot_conf_int(ax, np.log10(pre_conc), IL7_stim * 100., "b", "IL-7 stim/IL-4 pretreat")
     ax.set(title=title, ylabel="Inhibition (% of no pretreat)", xlabel=r'Pretreatment concentration (log$_{10}$[nM])')
 
     # add experimental data to plots
@@ -246,7 +251,7 @@ def surf_gc(ax, cytokC_pg, unkVec):
     IL7vec = np.transpose(output[:, PTS:(PTS * 2)])
     plot_conf_int(ax, ts, IL4vec, "powderblue")
     plot_conf_int(ax, ts, IL7vec, "b")
-    ax.set(title=(r"$\gamma_{c}$ depletion at " + str(round(cytokC_pg, 0)) + ' pg/mL'), ylabel=r"Surface $\gamma_{c}$ (%)", xlabel="Time (min)")
+    ax.set(title=(r"$\gamma_{c}$ depletion at " + str(int(cytokC_pg)) + ' pg/mL'), ylabel=r"Surface $\gamma_{c}$ (%)", xlabel="Time (min)")
     ax.set_ylim(0, 115)
 
 
@@ -301,13 +306,5 @@ def relativeGC(ax, unkVec2, unkVec4):
     sns.set_palette(sns.xkcd_palette(["violet", "violet", "violet", "goldenrod", "goldenrod", "goldenrod", "blue", "lightblue"]))
 
     a = sns.violinplot(data=np.log10(df), ax=ax, linewidth=0, scale='width')
-    a.set_xticklabels(a.get_xticklabels(), rotation=25, rotation_mode="anchor", ha="right", fontsize=8, position=(0, 0.045))
+    a.set_xticklabels(a.get_xticklabels(), rotation=25, rotation_mode="anchor", ha="right", fontsize=8, position=(0, 0.02))
     a.set(title=r"Relative $\gamma_{c}$ affinity", ylabel=r"$\mathrm{log_{10}(K_{a})}$")
-
-
-def legend_4_7(ax):
-    """ Plots a legend for all the IL-4 and IL-7 related plots in its own subpanel. """
-    legend_elements = [Patch(facecolor='b', label='IL-7 stimulation'),
-                       Patch(facecolor='powderblue', label='IL-4 stimulation')]
-    ax.legend(handles=legend_elements, loc='lower center', fontsize="large")
-    ax.axis('off')  # remove the grid

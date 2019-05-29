@@ -6,7 +6,7 @@ import pymc3 as pm
 import theano.tensor as T
 import numpy as np
 import pandas as pds
-from .model import getTotalActiveSpecies, getSurfaceIL2RbSpecies, receptor_expression
+from .model import getTotalActiveSpecies, getSurfaceIL2RbSpecies, getSurfaceGCSpecies, receptor_expression
 from .differencing_op import runCkineDoseOp
 
 
@@ -74,6 +74,33 @@ class IL2Rb_trafficking:
         return a / a[0] - self.data
 
 
+class gc_trafficking:
+    """ Calculating the percent of gc on cell surface under 157 nM of IL2 stimulation according to Mitra et al."""
+
+    def __init__(self):
+        numpy_data = load_data('data/mitra_surface_gc_depletion.csv')
+
+        # times from experiment are in first column
+        self.ts = numpy_data[:, 0]
+
+        # percent of gc that stays on surface (scale from 0-1)
+        self.data = numpy_data[:, 1] / 100.
+
+        self.cytokM = np.zeros((1, 6), dtype=np.float64)
+        self.cytokM[0, 0] = 1000.  # 1 uM of IL-2 was given to 3 x 10^5 YT-1 cells
+
+    def calc(self, unkVec):
+        """ Calculates difference between relative IL2Rb on surface in model prediction and Ring experiment. """
+        # Condense to just gc
+        Op = runCkineDoseOp(tt=self.ts, condense=getSurfaceGCSpecies().astype(np.float64), conditions=self.cytokM)
+
+        # IL2Ra+ stimulation only
+        a = Op(unkVec)
+
+        # return residual assuming all gc starts on the cell surface
+        return a / a[0] - self.data
+
+
 class IL2_15_activity:
     """ Calculating the pSTAT activity residuals for IL2 and IL15 stimulation in Ring et al. """
 
@@ -111,6 +138,7 @@ class build_model:
         self.dst15 = IL2_15_activity()
         if self.traf:
             self.IL2Rb = IL2Rb_trafficking()
+            self.gc = gc_trafficking()
         self.M = self.build()
 
     def build(self):
@@ -133,11 +161,13 @@ class build_model:
             Rexpr_gc = T.ones(1, dtype=np.float64) * gc_value
             rxnrates = pm.Lognormal('rxn', sd=0.5, shape=6)  # 6 reverse rxn rates for IL2/IL15
             nullRates = T.ones(4, dtype=np.float64)  # k27rev, k31rev, k33rev, k35rev
-            Rexpr_2Ra_2Rb = pm.Lognormal('Rexpr_2Ra_2Rb', sd=0.5, shape=2)  # Expression: IL2Ra, IL2Rb, gc
+            Rexpr_2Ra = pm.Lognormal('Rexpr_2Ra', sd=0.5, shape=1)  # Expression: IL2Ra
+            Rexpr_2Rb = pm.Lognormal('Rexpr_2Rb', sd=0.5, shape=1)  # Expression: IL2Rb
             Rexpr_15Ra = pm.Lognormal('Rexpr_15Ra', sd=0.5, shape=1)  # Expression: IL15Ra
             scale = pm.Lognormal('scales', mu=np.log(100.), sd=1, shape=1)  # create scaling constant for activity measurements
 
-            unkVec = T.concatenate((kfwd, rxnrates, nullRates, endo, activeEndo, sortF, kRec, kDeg, Rexpr_2Ra_2Rb, Rexpr_gc, Rexpr_15Ra, nullRates * 0.0))
+            unkVec = T.concatenate((kfwd, rxnrates, nullRates, endo, activeEndo, sortF, kRec, kDeg, Rexpr_2Ra, Rexpr_2Rb, Rexpr_gc, Rexpr_15Ra, nullRates * 0.0))
+            unkVec_2Ra_minus = T.concatenate((kfwd, rxnrates, nullRates, endo, activeEndo, sortF, kRec, kDeg, T.zeros(1, dtype=np.float64), Rexpr_2Rb, Rexpr_gc, Rexpr_15Ra, nullRates * 0.0))
 
             Y_15 = self.dst15.calc(unkVec, scale)  # fitting the data based on dst15.calc for the given parameters
             sd_15 = T.minimum(T.std(Y_15), 0.03)  # Add bounds for the stderr to help force the fitting solution
@@ -145,10 +175,15 @@ class build_model:
             pm.Normal('fitD_15', sd=sd_15, observed=Y_15)  # experimental-derived stderr is used
 
             if self.traf:
-                Y_int = self.IL2Rb.calc(unkVec)  # fitting the data based on dst.calc for the given parameters
+                Y_int = self.IL2Rb.calc(unkVec)  # fitting the data based on IL2Rb surface data
                 sd_int = T.minimum(T.std(Y_int), 0.02)  # Add bounds for the stderr to help force the fitting solution
                 pm.Deterministic('Y_int', T.sum(T.square(Y_int)))
                 pm.Normal('fitD_int', sd=sd_int, observed=Y_int)
+
+                Y_gc = self.gc.calc(unkVec_2Ra_minus)  # fitting the data using IL2Ra- cells
+                sd_gc = T.minimum(T.std(Y_gc), 0.02)  # Add bounds for the stderr to help force the fitting solution
+                pm.Deterministic('Y_gc', T.sum(T.square(Y_gc)))
+                pm.Normal('fitD_gc', sd=sd_gc, observed=Y_gc)
 
             # Save likelihood
             pm.Deterministic('logp', M.logpt)

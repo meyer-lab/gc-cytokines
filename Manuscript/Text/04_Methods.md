@@ -65,6 +65,7 @@ All ligand-receptor binding processes had a forward rate constant of $k_{bnd}$ w
 | $k_{34} / k_{bnd}$ | 0.07 nM          | [@Gonnordeaal1253]                   |
 +--------------------+------------------+--------------------------------------+
 
+: Experimentally measured K~d~ values in literature.
 
 The rate of endocytosis is quantified by a constant of $k_{endo,a}$ for active complexes and $k_{endo}$ for all other species. The fraction of all endosomal species sent to lysosomes is $f_{sort}$. All endosomal species not sent to lysosomes are recycled back to the cell surface. The rate constants to quantify degradation and recycling are $k_{deg}$ and $k_{rec}$, respectively. There is no autocrine ligand produced by the cells. Receptors can be synthesized by the cells and placed on the cell surface; receptor synthesis rates are specific to each receptor. The volume of the entire endosome was 10 fl and the surface area of the endosome is half the size of the cell surface [@MEYER201525].
 
