@@ -5,6 +5,8 @@ author:
   affilnum: a,c
 - name: Adam C. Weiner
   affilnum: a,c
+- name: Cori Posner
+  affilnum: b
 - name: Zoe S. Kim
   affilnum: a
 - name: Scott M. Carlson
