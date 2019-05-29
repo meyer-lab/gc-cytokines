@@ -6,9 +6,9 @@ import tensorly as tl
 import seaborn as sns
 import numpy as np
 from matplotlib import pyplot as plt
-from mpl_toolkits.axes_grid1 import make_axes_locatable
 from matplotlib.lines import Line2D
 from matplotlib.colors import LogNorm
+from mpl_toolkits.axes_grid1 import make_axes_locatable
 from .figureCommon import subplotLabel, getSetup, plot_cells, plot_timepoints, plot_R2X, set_bounds
 from ..imports import import_Rexpr
 from ..tensor import perform_decomposition
@@ -17,6 +17,7 @@ from ..make_tensor import make_tensor, n_lig
 cell_dim = 1  # For this figure, the cell dimension is along the second [python index 1].
 values, _, mat, _, _ = make_tensor(mut=True)
 values = tl.tensor(values)
+
 
 def makeFigure():
     """Get a list of the axis objects and create a figure"""
@@ -55,20 +56,21 @@ def makeFigure():
 
     return f
 
+
 def plot_ligands(ax, factors, component_x, component_y, ax_pos, n_ligands, mesh, fig):
     "This function is to plot the ligand combination dimension of the values tensor."
     markers = ['^', '*', '.']
     legend_shape = [Line2D([0], [0], color='k', marker=markers[0], label='IL-2', linestyle=''),
                     Line2D([0], [0], color='k', label='IL-2Ra mut', marker=markers[1], linestyle=''),
                     Line2D([0], [0], color='k', label='IL-2Rb mut', marker=markers[2], linestyle='')]
-    hu = np.around(np.sum(mesh[range(int(mesh.shape[0]/n_ligands)), :], axis=1).astype(float), decimals=7)
+    hu = np.around(np.sum(mesh[range(int(mesh.shape[0] / n_ligands)), :], axis=1).astype(float), decimals=7)
     norm = LogNorm(vmin=hu.min(), vmax=hu.max())
     cmap = sns.dark_palette("#2eccc0", n_colors=len(hu), reverse=True, as_cmap=True)
     sm = plt.cm.ScalarMappable(cmap=cmap, norm=norm)
     sm.set_array([])
     for ii in range(n_ligands):
         idx = range(ii * int(mesh.shape[0] / n_ligands), (ii + 1) * int(mesh.shape[0] / n_ligands))
-        sns.scatterplot(x=factors[idx, component_x-1], y=factors[idx, component_y-1], hue=hu, marker=markers[ii], ax=ax, palette=cmap, s=100, legend=False, hue_norm=LogNorm())
+        sns.scatterplot(x=factors[idx, component_x - 1], y=factors[idx, component_y - 1], hue=hu, marker=markers[ii], ax=ax, palette=cmap, s=100, legend=False, hue_norm=LogNorm())
 
         if ii == 0 and ax_pos == 3:
             divider = make_axes_locatable(ax)

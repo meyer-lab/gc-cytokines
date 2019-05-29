@@ -123,18 +123,8 @@ class surf_gc:
         unkVecIL2RaMinus[22, :] = np.zeros((K))
 
         # calculate IL2 stimulation
-        a = self.parallelCalc(unkVec, 0, 1., t).reshape((K, N))
-        b = self.parallelCalc(unkVec, 0, 500., t).reshape((K, N))
-        c = self.parallelCalc(unkVecIL2RaMinus, 0, 1., t).reshape((K, N))
-        d = self.parallelCalc(unkVecIL2RaMinus, 0, 500., t).reshape((K, N))
+        a = self.parallelCalc(unkVecIL2RaMinus, 0, 1000., t).reshape((K, N))
 
-        # calculate IL15 stimulation
-        e = self.parallelCalc(unkVec, 1, 1., t).reshape((K, N))
-        f = self.parallelCalc(unkVec, 1, 500., t).reshape((K, N))
-        g = self.parallelCalc(unkVecIL2RaMinus, 1, 1., t).reshape((K, N))
-        h = self.parallelCalc(unkVecIL2RaMinus, 1, 500., t).reshape((K, N))
-
-        catVec = np.concatenate((a, b, c, d, e, f, g, h), axis=1)  # combine in one array
         for ii in range(K):
-            catVec[ii] = catVec[ii] / a[ii, 0]  # normalize by a[0] for each row
-        return catVec
+            a[ii] = a[ii] / a[ii, 0]  # normalize by a[0] for each row
+        return a

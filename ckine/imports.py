@@ -15,11 +15,11 @@ def import_Rexpr():
     data = pds.read_csv(join(path, 'ckine/data/final_receptor_levels.csv'))  # Every row in the data represents a specific cell
     df = data.groupby(['Cell Type', 'Receptor']).mean()  # Get the mean receptor count for each cell across trials in a new dataframe.
     cell_names, receptor_names = df.index.unique().levels  # gc_idx=0|IL15Ra_idx=1|IL2Ra_idx=2|IL2Rb_idx=3
-    cell_names = cell_names[[5, 1, 7, 2, 11, 9, 4, 10, 8, 3, 0, 6]] #Reorder to match most plots
+    cell_names = cell_names[[5, 1, 7, 2, 11, 9, 4, 10, 8, 3, 0, 6]]  # Reorder to match most plots
     receptor_names = receptor_names[[2, 3, 0, 1, 4]]  # Reorder so that IL2Ra_idx=0|IL2Rb_idx=1|gc_idx=2|IL15Ra_idx=3|IL7Ra_idx=4
     numpy_data = pds.Series(df['Count']).values.reshape(cell_names.size, receptor_names.size)  # Rows are in the order of cell_names. Receptor Type is on the order of receptor_names
-    numpy_data = numpy_data[:, [2, 3, 0, 1, 4]] # Rearrange numpy_data to place IL2Ra first, then IL2Rb, then gc, then IL15Ra in this order
-    numpy_data = numpy_data[[5, 1, 7, 2, 11, 9, 4, 10, 8, 3, 0, 6], :] #Reorder to match cells.
+    numpy_data = numpy_data[:, [2, 3, 0, 1, 4]]  # Rearrange numpy_data to place IL2Ra first, then IL2Rb, then gc, then IL15Ra in this order
+    numpy_data = numpy_data[[5, 1, 7, 2, 11, 9, 4, 10, 8, 3, 0, 6], :]  # Reorder to match cells.
     return data, numpy_data, cell_names
 
 
@@ -45,7 +45,8 @@ def import_samples_2_15(Traf=True, ret_trace=False, N=None, tensor=False):
     num = scales.size
     kfwd = trace.get_values('kfwd')
     rxn = trace.get_values('rxn')
-    Rexpr_2 = trace.get_values('Rexpr_2Ra_2Rb')
+    Rexpr_2Ra = trace.get_values('Rexpr_2Ra')
+    Rexpr_2Rb = trace.get_values('Rexpr_2Rb')
     Rexpr_15 = trace.get_values('Rexpr_15Ra')
 
     if Traf:
@@ -66,7 +67,7 @@ def import_samples_2_15(Traf=True, ret_trace=False, N=None, tensor=False):
     unkVec = np.zeros((n_params, num))
     for ii in range(num):
         unkVec[:, ii] = np.array([0., 0., 0., 0., 0., 0., kfwd[ii], rxn[ii, 0], rxn[ii, 1], rxn[ii, 2], rxn[ii, 3], rxn[ii, 4], rxn[ii, 5], 1., 1., 1., 1., endo[ii],
-                                  activeEndo[ii], sortF[ii], kRec[ii], kDeg[ii], Rexpr_2[ii, 0], Rexpr_2[ii, 1], Rexpr_gc[ii], Rexpr_15[ii], 0., 0., 0., 0.])
+                                  activeEndo[ii], sortF[ii], kRec[ii], kDeg[ii], Rexpr_2Ra[ii], Rexpr_2Rb[ii], Rexpr_gc[ii], Rexpr_15[ii], 0., 0., 0., 0.])
 
     if N is not None:
         if 0 < N < num:  # return a subsample if the user specified the number of samples
@@ -79,13 +80,18 @@ def import_samples_2_15(Traf=True, ret_trace=False, N=None, tensor=False):
     return unkVec, scales
 
 
-def import_samples_4_7(N=None):
+def import_samples_4_7(ret_trace=False, N=None):
     ''' This function imports the csv results of IL4-7 fitting into a numpy array called unkVec. '''
     bmodel = build_model_4_7()
     n_params = nParams()
 
     path = os.path.dirname(os.path.abspath(__file__))
     trace = pm.backends.text.load(join(path, '../IL4-7_model_results'), bmodel.M)
+
+    # option to return trace instead of numpy array
+    if ret_trace:
+        return trace
+
     kfwd = trace.get_values('kfwd')
     k27rev = trace.get_values('k27rev')
     k33rev = trace.get_values('k33rev')

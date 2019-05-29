@@ -11,6 +11,7 @@ from matplotlib.patches import Patch
 from matplotlib.colors import LogNorm
 from ..tensor import find_R2X
 
+
 def getSetup(figsize, gridd, mults=None, multz=None, empts=None):
     """ Establish figure set-up with subplots. """
     sns.set(style="whitegrid",
@@ -30,8 +31,6 @@ def getSetup(figsize, gridd, mults=None, multz=None, empts=None):
     # Make grid
     gs1 = gridspec.GridSpec(*gridd)
 
-    # ax = []
-
     # Get list of axis objects
     if mults is None:
         ax = [f.add_subplot(gs1[x]) for x in range(gridd[0] * gridd[1]) if x not in empts]
@@ -45,6 +44,7 @@ def getSetup(figsize, gridd, mults=None, multz=None, empts=None):
 
     return (ax, f)
 
+
 def set_bounds(ax, compNum):
     """Add labels and bounds"""
     ax.set_xlabel('Component ' + str(compNum))
@@ -55,6 +55,7 @@ def set_bounds(ax, compNum):
 
     ax.set_xlim(-x_max, x_max)
     ax.set_ylim(-y_max, y_max)
+
 
 def plot_R2X(ax, tensor, factors_list, n_comps, cells_dim):
     """Function to plot R2X bar graph."""
@@ -70,6 +71,7 @@ def plot_R2X(ax, tensor, factors_list, n_comps, cells_dim):
     ax.set_xticks(np.arange(1, n_comps + 1))
     ax.set_xticklabels(np.arange(1, n_comps + 1))
 
+
 def plot_ligands(ax, factors, component_x, component_y, ax_pos, n_ligands, mesh, fig, fig3=True, fig4=False):
     "This function is to plot the ligand combination dimension of the values tensor."
     if not fig4:
@@ -78,12 +80,12 @@ def plot_ligands(ax, factors, component_x, component_y, ax_pos, n_ligands, mesh,
                         Line2D([0], [0], color='k', label='IL-2 mut', marker=markers[1], linestyle=''),
                         Line2D([0], [0], color='k', label='IL-15', marker=markers[2], linestyle=''),
                         Line2D([0], [0], color='k', label='IL-7', marker=markers[3], linestyle='')]
-        hu = np.around(np.sum(mesh[range(int(mesh.shape[0]/n_ligands)), :], axis=1).astype(float), decimals=7)
+        hu = np.around(np.sum(mesh[range(int(mesh.shape[0] / n_ligands)), :], axis=1).astype(float), decimals=7)
 
     else:
         markers = ['^', '*']
         legend_shape = [Line2D([0], [0], color='k', marker=markers[0], label='IL-2', linestyle=''),
-                    Line2D([0], [0], color='k', label='IL-15', marker=markers[1], linestyle='')]  # only have IL2 and IL15 in the measured pSTAT data
+                        Line2D([0], [0], color='k', label='IL-15', marker=markers[1], linestyle='')]  # only have IL2 and IL15 in the measured pSTAT data
         hu = mesh
 
     norm = LogNorm(vmin=hu.min(), vmax=hu.max())
@@ -96,7 +98,7 @@ def plot_ligands(ax, factors, component_x, component_y, ax_pos, n_ligands, mesh,
         if fig4:
             idx = range(ii * len(mesh), (ii + 1) * len(mesh))
 
-        sns.scatterplot(x=factors[idx, component_x-1], y=factors[idx, component_y-1], hue=hu, marker=markers[ii], ax=ax, palette=cmap, s=100, legend=False, hue_norm=LogNorm())
+        sns.scatterplot(x=factors[idx, component_x - 1], y=factors[idx, component_y - 1], hue=hu, marker=markers[ii], ax=ax, palette=cmap, s=100, legend=False, hue_norm=LogNorm())
 
         if ii == 0 and ax_pos == 5 and fig3:
             divider = make_axes_locatable(ax)
@@ -127,6 +129,7 @@ def plot_ligands(ax, factors, component_x, component_y, ax_pos, n_ligands, mesh,
     ax.set_title('Ligands')
     set_bounds(ax, component_x)
 
+
 def subplotLabel(ax, letter, hstretch=1):
     """ Label each subplot """
     ax.text(-0.2 / hstretch, 1.2, letter, transform=ax.transAxes,
@@ -135,18 +138,20 @@ def subplotLabel(ax, letter, hstretch=1):
 
 def traf_names():
     """ Returns a list of the trafficking parameters in order they appear within unkVec. """
-    return [r'$k_{endo}$', r'$k_{endo,a}$', r'$f_{sort}$', r'$k_{rec}$', r'$k_{deg}$']
+    return [r'$k_{endo}$', r'$k_{endo,a}$', r'$k_{rec}$', r'$k_{deg}$']
 
 
 def plot_conf_int(ax, x_axis, y_axis, color, label=None):
     """ Shades the 25-75 percentiles dark and the 10-90 percentiles light. The percentiles are found along axis=1. """
     y_axis_top = np.percentile(y_axis, 90., axis=1)
     y_axis_bot = np.percentile(y_axis, 10., axis=1)
-    ax.fill_between(x_axis, y_axis_top, y_axis_bot, color=color, alpha=0.4, label=label)
+    ax.fill_between(x_axis, y_axis_top, y_axis_bot, color=color, alpha=0.4)
 
     y_axis_top = np.percentile(y_axis, 75., axis=1)
     y_axis_bot = np.percentile(y_axis, 25., axis=1)
     ax.fill_between(x_axis, y_axis_top, y_axis_bot, color=color, alpha=0.7, label=label)
+    if label is not None:
+        ax.legend()
 
 
 def plot_cells(ax, factors, component_x, component_y, cell_names, ax_pos, fig3=True):
@@ -166,15 +171,17 @@ def plot_cells(ax, factors, component_x, component_y, cell_names, ax_pos, fig3=T
 
     set_bounds(ax, component_x)
 
-def overlayCartoon(figFile, cartoonFile, x, y, scalee=1):
+
+def overlayCartoon(figFile, cartoonFile, x, y, scalee=1, scale_x=1, scale_y=1):
     """ Add cartoon to a figure file. """
     import svgutils.transform as st
 
-    # Overlay Figure 4 cartoon
+    # Overlay Figure cartoons
     template = st.fromfile(figFile)
     cartoon = st.fromfile(cartoonFile).getroot()
 
     cartoon.moveto(x, y, scale=scalee)
+    cartoon.scale_xy(scale_x, scale_y)
 
     template.append(cartoon)
     template.save(figFile)
@@ -193,6 +200,7 @@ def plot_timepoints(ax, factors):
     ax.set_title('Time')
     ax.legend(handletextpad=0.5, handlelength=0.5, framealpha=0.5, markerscale=0.7, loc=4, fontsize=8)
 
+
 def kfwd_info(unkVec):
     """ Gives the mean and standard deviation of a kfwd distribution. We need this since we are not using violin plots for this rate. """
     mean = np.mean(unkVec[6])
@@ -200,15 +208,15 @@ def kfwd_info(unkVec):
     return mean, std
 
 
-def legend_2_15(ax):
+def legend_2_15(ax, font_size="small", location="center right"):
     """ Plots a legend for all the IL-2 and IL-15 related plots in its own subpanel. """
     legend_elements = [Patch(facecolor='darkorchid', label='IL-2'),
                        Patch(facecolor='goldenrod', label='IL-15'),
-                       Line2D([0], [0], marker='o', color='w', label='IL-2Rα+ cells',
+                       Line2D([0], [0], marker='o', color='w', label='IL-2Rα+',
                               markerfacecolor='k', markersize=8),
-                       Line2D([0], [0], marker='^', color='w', label='IL-2Rα- cells',
+                       Line2D([0], [0], marker='^', color='w', label='IL-2Rα-',
                               markerfacecolor='k', markersize=8)]
-    ax.legend(handles=legend_elements, loc='center', mode="expand", fontsize="large")
+    ax.legend(handles=legend_elements, loc=location, fontsize=font_size)
     ax.axis('off')  # remove the grid
 
 
