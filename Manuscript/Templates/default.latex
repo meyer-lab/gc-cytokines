@@ -1,10 +1,12 @@
-\documentclass[11pt]{article}
+\documentclass[12pt]{article}
 
 \usepackage{amssymb, amsmath, mathtools, color, fontspec}
-\usepackage{ifxetex, ifluatex, microtype}
+\usepackage{ifxetex, ifluatex, microtype, setspace}
 
 \setsansfont{Roboto}
 \setmainfont{Roboto}
+
+\linespread{1.5}
 
 \usepackage[affil-it]{authblk}
 
