@@ -18,7 +18,7 @@ def makeFigure():
         subplotLabel(item, string.ascii_uppercase[ii])
 
     _, receptor_data, cell_names_receptor = import_Rexpr()
-    unkVec_2_15, _ = import_samples_2_15()
+    unkVec_2_15, scale = import_samples_2_15()  # use all rates
     ckineConc, cell_names_pstat, IL2_data, _ = import_pstat()
     axis = 0
 
@@ -28,9 +28,9 @@ def makeFigure():
             if cell_names_pstat[i] == cell_names_receptor[j]:
                 plot_scaled_pstat(ax[axis], np.log10(ckineConc.astype(np.float)), IL2_data[(i * 4):((i + 1) * 4)])
                 if j == (receptor_data.shape[0] - 1):  # only plot the legend for the last entry
-                    IL2_dose_response(ax[axis], unkVec_2_15, cell_names_receptor[j], receptor_data[j], ckineConc, legend=True)
+                    IL2_dose_response(ax[axis], unkVec_2_15, scale, cell_names_receptor[j], receptor_data[j], ckineConc, legend=True)
                 else:
-                    IL2_dose_response(ax[axis], unkVec_2_15, cell_names_receptor[j], receptor_data[j], ckineConc)
+                    IL2_dose_response(ax[axis], unkVec_2_15, scale, cell_names_receptor[j], receptor_data[j], ckineConc)
                 axis = axis + 1
 
     f.tight_layout(w_pad=0.1, h_pad=1.0)
@@ -38,7 +38,7 @@ def makeFigure():
     return f
 
 
-def IL2_dose_response(ax, unkVec, cell_type, cell_data, cytokC, legend=False):
+def IL2_dose_response(ax, unkVec, scale, cell_type, cell_data, cytokC, legend=False):
     """ Shows activity for a given cell type at various IL2 concentrations """
     tps = np.array([0.5, 1., 2., 4.]) * 60.
     PTS = 12  # number of cytokine concentrations
@@ -60,7 +60,7 @@ def IL2_dose_response(ax, unkVec, cell_type, cell_data, cytokC, legend=False):
         assert retVal >= 0  # make sure solver is working
         activity = np.dot(yOut, getTotalActiveSpecies().astype(np.float))
         for j in range(split):
-            total_activity[i, j, :] = activity[(4 * j):((j + 1) * 4)]  # save the activity from this concentration for all 4 tps
+            total_activity[i, j, :] = activity[(4 * j):((j + 1) * 4)] / (activity[(4 * j):((j + 1) * 4)] + scale[j, 0])  # account for pSTAT5 saturation and save the activity from this concentration for all 4 tps
 
     # calculate total activity for a given cell type (across all IL2 concentrations & time points)
     avg_total_activity = np.sum(total_activity) / (split * tps.size)
