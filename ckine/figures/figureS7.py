@@ -1,76 +1,83 @@
 """
-This creates Figure S7. Full panel of measured vs simulated for IL15.
+This creates Figure 3.
 """
 import string
+import tensorly as tl
+import seaborn as sns
 import numpy as np
-import matplotlib.cm as cm
-from .figureCommon import subplotLabel, getSetup, plot_conf_int, plot_scaled_pstat
-from ..model import runCkineUP, getTotalActiveSpecies, receptor_expression
-from ..imports import import_Rexpr, import_pstat, import_samples_2_15
+from matplotlib import pyplot as plt
+from matplotlib.lines import Line2D
+from matplotlib.colors import LogNorm
+from mpl_toolkits.axes_grid1 import make_axes_locatable
+from .figureCommon import subplotLabel, getSetup, plot_cells, plot_timepoints, plot_R2X, set_bounds
+from ..imports import import_Rexpr
+from ..tensor import perform_decomposition
+from ..make_tensor import make_tensor, n_lig
+
+cell_dim = 1  # For this figure, the cell dimension is along the second [python index 1].
+values, _, mat, _, _ = make_tensor(mut=True)
+values = tl.tensor(values)
 
 
 def makeFigure():
     """Get a list of the axis objects and create a figure"""
     # Get list of axis objects
-    ax, f = getSetup((7, 6), (4, 4))
+    x, y = 2, 4
+    ax, f = getSetup((7.5, 5), (x, y))
+    # Blank out for the cartoon
+    ax[4].axis('off')
+    ax[5].axis('off')
 
+    n_ligands = n_lig(mut=True)
+    _, _, cell_names = import_Rexpr()
+    factors_activity = []
+    for jj in range(len(mat) - 1):
+        factors = perform_decomposition(values, jj + 1, cell_dim)
+        factors_activity.append(factors)
+
+    n_comps = 3
+    factors_activ = factors_activity[n_comps - 1]
+
+    plot_R2X(ax[0], values, factors_activity, n_comps=5, cells_dim=cell_dim)
+
+    # Add subplot labels
     for ii, item in enumerate(ax):
-        subplotLabel(item, string.ascii_uppercase[ii])
+        subplotLabel(item, string.ascii_uppercase[ii])  # Add subplot labels
 
-    _, receptor_data, cell_names_receptor = import_Rexpr()
-    unkVec_2_15, scale = import_samples_2_15()  # use all rates
-    ckineConc, cell_names_pstat, _, IL15_data = import_pstat()
-    axis = 0
+    plot_timepoints(ax[1], factors_activ[0])  # Change final input value depending on need
 
-    for i, _ in enumerate(cell_names_pstat):
-        # plot matching experimental and predictive pSTAT data for the same cell type
-        for j in range(receptor_data.shape[0]):
-            if cell_names_pstat[i] == cell_names_receptor[j]:
-                plot_scaled_pstat(ax[axis], np.log10(ckineConc.astype(np.float)), IL15_data[(i * 4):((i + 1) * 4)])
-                if j == (receptor_data.shape[0] - 1):  # only plot the legend for the last entry
-                    IL15_dose_response(ax[axis], unkVec_2_15, scale, cell_names_receptor[j], receptor_data[j], ckineConc, legend=True)
-                else:
-                    IL15_dose_response(ax[axis], unkVec_2_15, scale, cell_names_receptor[j], receptor_data[j], ckineConc)
-                axis = axis + 1
+    plot_cells(ax[2], factors_activ[1], 1, 2, cell_names, ax_pos=2)
+    plot_cells(ax[6], factors_activ[1], 2, 3, cell_names, ax_pos=6)
 
-    f.tight_layout(w_pad=0.1, h_pad=1.0)
+    plot_ligands(ax[3], factors_activ[2], 1, 2, ax_pos=3, n_ligands=n_ligands, mesh=mat, fig=f)
+    plot_ligands(ax[7], factors_activ[2], 2, 3, ax_pos=7, n_ligands=n_ligands, mesh=mat, fig=f)
+
+    f.tight_layout()
 
     return f
 
 
-def IL15_dose_response(ax, unkVec, scale, cell_type, cell_data, cytokC, legend=False):
-    """ Shows activity for a given cell type at various IL15 concentrations """
-    tps = np.array([0.5, 1., 2., 4.]) * 60.
-    PTS = 12  # number of cytokine concentrations
-    # cytokC = np.logspace(-4.0, 2.0, PTS) # vary cytokine concentration from 1 pm to 100 nm
-    colors = cm.rainbow(np.linspace(0, 1, tps.size))
+def plot_ligands(ax, factors, component_x, component_y, ax_pos, n_ligands, mesh, fig):
+    "This function is to plot the ligand combination dimension of the values tensor."
+    markers = ['^', '*', '.']
+    legend_shape = [Line2D([0], [0], color='k', marker=markers[0], label='IL-2', linestyle=''),
+                    Line2D([0], [0], color='k', label='IL-2Ra mut', marker=markers[1], linestyle=''),
+                    Line2D([0], [0], color='k', label='IL-2Rb mut', marker=markers[2], linestyle='')]
+    hu = np.around(np.sum(mesh[range(int(mesh.shape[0] / n_ligands)), :], axis=1).astype(float), decimals=7)
+    norm = LogNorm(vmin=hu.min(), vmax=hu.max())
+    cmap = sns.dark_palette("#2eccc0", n_colors=len(hu), reverse=True, as_cmap=True)
+    sm = plt.cm.ScalarMappable(cmap=cmap, norm=norm)
+    sm.set_array([])
+    for ii in range(n_ligands):
+        idx = range(ii * int(mesh.shape[0] / n_ligands), (ii + 1) * int(mesh.shape[0] / n_ligands))
+        sns.scatterplot(x=factors[idx, component_x - 1], y=factors[idx, component_y - 1], hue=hu, marker=markers[ii], ax=ax, palette=cmap, s=100, legend=False, hue_norm=LogNorm())
 
-    rxntfr = unkVec.T.copy()
-    split = rxntfr.shape[0]  # number of parameter sets used (& thus the number of yOut replicates)
-    total_activity = np.zeros((PTS, split, tps.size))
+        if ii == 0 and ax_pos == 3:
+            divider = make_axes_locatable(ax)
+            cax = divider.append_axes("right", size="5%", pad=0.05)
+            a = fig.colorbar(sm, cax=cax)
+            a.set_label('Concentration (nM)')
+            ax.add_artist(ax.legend(handles=legend_shape, loc=3, borderpad=0.4, labelspacing=0.2, handlelength=0.2, handletextpad=0.5, markerscale=0.7, fontsize=8))
 
-    # loop for each IL15 concentration
-    for i in range(PTS):
-        for ii in range(rxntfr.shape[0]):
-            rxntfr[ii, 1] = cytokC[i]
-            # updates rxntfr for receptor expression for IL2Rb, gc, IL15Ra
-            rxntfr[ii, 23] = receptor_expression(cell_data[1], rxntfr[ii, 17], rxntfr[ii, 20], rxntfr[ii, 19], rxntfr[ii, 21])
-            rxntfr[ii, 24] = receptor_expression(cell_data[2], rxntfr[ii, 17], rxntfr[ii, 20], rxntfr[ii, 19], rxntfr[ii, 21])
-            rxntfr[ii, 25] = receptor_expression(cell_data[3], rxntfr[ii, 17], rxntfr[ii, 20], rxntfr[ii, 19], rxntfr[ii, 21])
-        yOut, retVal = runCkineUP(tps, rxntfr)
-        assert retVal >= 0  # make sure solver is working
-        activity = np.dot(yOut, getTotalActiveSpecies().astype(np.float))
-        for j in range(split):
-            total_activity[i, j, :] = activity[(4 * j):((j + 1) * 4)] / (activity[(4 * j):((j + 1) * 4)] + scale[j, 0])  # account for pSTAT5 saturation and save the activity from this concentration for all 4 tps
-
-    # calculate total activity for a given cell type (across all IL15 concentrations & time points)
-    avg_total_activity = np.sum(total_activity) / (split * tps.size)
-
-    # plot the values with each time as a separate color
-    for tt in range(tps.size):
-        plot_conf_int(ax, np.log10(cytokC.astype(np.float)), total_activity[:, :, tt] / avg_total_activity, colors[tt], (tps[tt] / 60.).astype(str))
-
-    # plots for input cell type
-    ax.set(xlabel=r'IL-15 concentration (log$_{10}$[nM])', ylabel='Activity', title=cell_type)
-    if legend is True:
-        ax.legend(title='time (hours)', loc='center left', borderaxespad=10.)
+    ax.set_title('Ligands')
+    set_bounds(ax, component_x)
