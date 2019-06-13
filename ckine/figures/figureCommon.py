@@ -223,9 +223,8 @@ def legend_2_15(ax, font_size="small", location="center right"):
 def plot_scaled_pstat(ax, cytokC, pstat):
     """ Plots pSTAT5 data scaled by the average activity measurement. """
     tps = np.array([0.5, 1., 2., 4.]) * 60.
-    avg_activity = np.sum(pstat) / tps.size
     # plot pstat5 data for each time point
-    ax.scatter(cytokC, pstat[3, :] / avg_activity, c="indigo", s=2)  # 0.5 hr
-    ax.scatter(cytokC, pstat[2, :] / avg_activity, c="teal", s=2)  # 1 hr
-    ax.scatter(cytokC, pstat[1, :] / avg_activity, c="forestgreen", s=2)  # 2 hr
-    ax.scatter(cytokC, pstat[0, :] / avg_activity, c="darkred", s=2)  # 4 hr
+    ax.scatter(cytokC, pstat[3, :], c="indigo", s=2)  # 0.5 hr
+    ax.scatter(cytokC, pstat[2, :], c="teal", s=2)  # 1 hr
+    ax.scatter(cytokC, pstat[1, :], c="forestgreen", s=2)  # 2 hr
+    ax.scatter(cytokC, pstat[0, :], c="darkred", s=2)  # 4 hr
