@@ -10,6 +10,8 @@
 
 \usepackage[affil-it]{authblk}
 
+\usepackage[font=small]{caption}
+
 \PassOptionsToPackage{hyphens}{url} % url is loaded by hyperref
 
 \usepackage[unicode=true]{hyperref}
