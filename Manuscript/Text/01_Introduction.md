@@ -26,7 +26,7 @@ affiliation:
 bibliography: ./Manuscript/References.bib
 abstract: Many receptor families exhibit both pleiotropy and redundancy in their regulation, with multiple ligands, receptors, and responding cell populations. This property, that one intervention can have many effects, confounds intuition about how to carry out precise therapeutic manipulation. The common γ-chain cytokine receptor dimerizes with complexes of the cytokines interleukin (IL)-2, IL-4, IL-7, IL-9, IL-15, and IL-21 and their corresponding "private" receptors. These cytokines have enormous realized and future potential as immune therapies by regulating immune cell population abundance. Here, we build a binding-reaction model for the ligand-receptor interactions of common γ-chain cytokines enabling quantitative predictions of response. We show that accounting for receptor-ligand trafficking is essential to accurately model cell response. Using this model, we visualize regulation across the family and diverse immune cell types by tensor factorization. This model then accurately predicts ligand response across a wide panel of cell types under diverse experimental designs. Further, we are able to quantify the effect of ligand mutations on cell response across cell types. In total, these results present a more accurate model of ligand response validated across a panel of immune cell types, and demonstrate an approach for generating interpretable guidelines to manipulate ligand response across cell types.
 link-citations: true
-csl: ./Manuscript/Templates/nature.csl
+csl: ./common/templates/nature.csl
 ---
 
 # Summary points

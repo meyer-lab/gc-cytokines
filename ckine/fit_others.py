@@ -12,7 +12,7 @@ from .differencing_op import runCkineDoseOp
 from .fit import commonTraf
 
 
-class IL4_7_activity:
+class IL4_7_activity:  # pylint: disable=too-few-public-methods
     """ This class is responsible for calculating residuals between model predictions and the data from Gonnord figure S3B/C """
 
     def __init__(self):
@@ -58,7 +58,7 @@ class IL4_7_activity:
         return self.fit_data - actVec
 
 
-class crosstalk:
+class crosstalk:  # pylint: disable=too-few-public-methods
     """ This class performs the calculations necessary in order to fit our model to Gonnord Fig S3D. """
 
     def __init__(self):
