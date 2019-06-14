@@ -13,12 +13,13 @@ class runCkineDoseOp(Op):
     def __init__(self, tt, condense, conditions, preT=0.0, prestim=None):
         self.dOp = runCkineOpDoseDiff(tt, condense, conditions, preT, prestim)
 
-    def infer_shape(self, node, i0_shapes):
-        """ infering shape """
+    def infer_shape(self, _, i0_shapes):
+        """ Infer shape of output. """
         assert len(i0_shapes) == 1
         return [(self.dOp.conditions.shape[0] * self.dOp.ts.size, )]
 
     def perform(self, node, inputs, outputs, params=None):
+        """ Perform calculation. """
         outputs[0][0] = self.dOp.runCkine(inputs, sensi=False)
 
     def grad(self, inputs, g):

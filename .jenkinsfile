@@ -5,7 +5,7 @@ pipeline {
     parallelsAlwaysFailFast()
   }
   stages {
-    stage('Clean') { steps { sh 'git clean -ffdx && make clean' } }
+    stage('Clean') { steps { sh 'git clean -ffdx && make clean && git submodule update --init --recursive' } }
     stage('Venv') { steps { sh 'make venv && make ckine/ckine.so' } }
     stage('Run') {
       parallel {
@@ -33,7 +33,6 @@ pipeline {
           steps {
             sh 'make -j 6'
             archiveArtifacts artifacts: 'Manuscript/Figures/*.pdf, Manuscript/Manuscript.pdf', onlyIfSuccessful: true
-            publishHTML([allowMissing: false, alwaysLinkToLastBuild: false, keepAll: false, reportDir: 'Manuscript', reportFiles: 'index.html', reportName: 'Manuscript', reportTitles: ''])
             recordIssues qualityGates: [[threshold: 1, type: 'TOTAL_HIGH', unstable: true], [threshold: 20, type: 'TOTAL_NORMAL', unstable: true], [threshold: 40, type: 'TOTAL_LOW', unstable: true]], tools: [pyLint(pattern: 'pylint.log')]
           }
         }

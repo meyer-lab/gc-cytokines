@@ -18,7 +18,7 @@ affiliation:
 bibliography: ./Manuscript/References.bib
 abstract: Temp
 link-citations: true
-csl: ./Manuscript/Templates/nature.csl
+csl: ./common/templates/nature.csl
 ---
 
 # Summary points

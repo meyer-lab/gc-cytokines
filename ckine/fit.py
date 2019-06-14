@@ -41,7 +41,7 @@ def find_gc(traf=True, endo=0, kRec=0, sortF=0, kDeg=0):
     return data[0, 3]
 
 
-class IL2Rb_trafficking:
+class IL2Rb_trafficking:  # pylint: disable=too-few-public-methods
     """ Calculating the percent of IL2Rb on cell surface under IL2 and IL15 stimulation according to Ring et al."""
 
     def __init__(self):
@@ -74,7 +74,7 @@ class IL2Rb_trafficking:
         return a / a[0] - self.data
 
 
-class gc_trafficking:
+class gc_trafficking:  # pylint: disable=too-few-public-methods
     """ Calculating the percent of gc on cell surface under 157 nM of IL2 stimulation according to Mitra et al."""
 
     def __init__(self):
@@ -101,7 +101,7 @@ class gc_trafficking:
         return a / a[0] - self.data
 
 
-class IL2_15_activity:
+class IL2_15_activity:  # pylint: disable=too-few-public-methods
     """ Calculating the pSTAT activity residuals for IL2 and IL15 stimulation in Ring et al. """
 
     def __init__(self):
