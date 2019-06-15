@@ -7,7 +7,6 @@ import string
 import numpy as np
 import seaborn as sns
 import pandas as pd
-from matplotlib.patches import Patch
 from .figureCommon import subplotLabel, getSetup, traf_names, plot_conf_int, kfwd_info
 from ..model import nParams, getTotalActiveSpecies, runCkineUP, getSurfaceGCSpecies, getTotalActiveCytokine
 from ..imports import import_samples_4_7, import_samples_2_15
@@ -308,5 +307,5 @@ def relativeGC(ax, unkVec2, unkVec4):
     a = sns.violinplot(data=np.log10(df), ax=ax, linewidth=0, scale='width')
     a.set_xticklabels(a.get_xticklabels(), rotation=25, rotation_mode="anchor", ha="right", fontsize=8, position=(0, 0.02))
     a.set(title=r"Relative $\gamma_{c}$ affinity", ylabel=r"$\mathrm{log_{10}(K_{a})}$")
-    
+
 # TODO: Add Ka units.

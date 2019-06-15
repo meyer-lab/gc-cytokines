@@ -95,7 +95,6 @@ def gc_perc(ax, unkVec):
     ax.scatter(ts, data[:, 1], color='darkorchid', marker='^', edgecolors='k', zorder=100)  # 1000 nM of IL2 in 2Ra-
 
     y_max = 100.
-    size = len(ts)
     output = surf.calc(unkVec, ts) * y_max  # run the simulation
     plot_conf_int(ax, ts, output.T, "darkorchid")
 
