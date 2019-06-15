@@ -3,8 +3,9 @@ This creates Figure S5. CP decomposition of measured pSTAT data.
 """
 import string
 import numpy as np
+import matplotlib.cm as cm
 from .figureCommon import subplotLabel, getSetup, plot_cells, plot_ligands
-from .figure3 import plot_R2X
+from .figure3 import plot_R2X, values
 from ..tensor import perform_decomposition
 from ..imports import import_pstat
 
@@ -14,7 +15,7 @@ cell_dim = 0  # For this figure, the cell dimension is along the first [python i
 def makeFigure():
     """Get a list of the axis objects and create a figure"""
     # Get list of axis objects
-    ax, f = getSetup((7.5, 5), (2, 2))
+    ax, f = getSetup((7.5, 5), (3, 4))
 
     for ii, item in enumerate(ax):
         subplotLabel(item, string.ascii_uppercase[ii])  # Add subplot labels
@@ -32,15 +33,15 @@ def makeFigure():
     for jj in range(measured_tensor.shape[2] - 1):
         factors = perform_decomposition(measured_tensor, jj + 1, cell_dim)
         factors_activity.append(factors)
-    plot_R2X(ax[0], measured_tensor, factors_activity, n_comps=5, cells_dim=cell_dim)
+    predicted_factors = perform_decomposition(values, 3, cell_dim)
+    plot_R2X(ax[4], measured_tensor, factors_activity, n_comps=5, cells_dim=cell_dim)
 
     n_comps = 2
     factors_activ = factors_activity[n_comps - 1]  # First dimension is cells. Second is time. Third is ligand.
-    plot_timepoints(ax[1], factors_activ[1])  # Time is the second dimension in this case because reshaping only correctly did 11*4*24
+    plot_timepoints(ax[5], factors_activ[1])  # Time is the second dimension in this case because reshaping only correctly did 11*4*24
+    plot_cells(ax[6], factors_activ[0], 1, 2, cell_names, ax_pos=6)
+    plot_ligands(ax[7], factors_activ[2], n_ligands=2, fig=4, mesh=ckineConc)
 
-    plot_cells(ax[2], factors_activ[0], 1, 2, cell_names, ax_pos=1)
-
-    plot_ligands(ax[3], factors_activ[2], 1, 2, ax_pos=3, n_ligands=2, mesh=ckineConc, fig=f, fig3=False, fig4=True)
     f.tight_layout()
 
     return f
@@ -59,3 +60,14 @@ def plot_timepoints(ax, factors):
     ax.set_ylabel('Component')
     ax.set_title('Time')
     ax.legend()
+
+def correlation_cells(ax, experimental, predicted, cell_names):
+    """Function that takes in predicted and experimental components from cell decomposion and plots them against each other."""
+    colors = cm.rainbow(np.linspace(0, 1, len(cell_names)))
+    markersCells = ['^', '*', 'D', 's', 'X', 'o', '4', 'H', 'P', '*', 'D', 's', 'X']
+    for ii, cell_name in enumerate(cell_names):
+        ax.scatter(experimental, predicted, c=[colors[ii]], marker=markersCells[ii], label=cell_name, alpha=0.75)
+
+def correlation_ligands(ax, experimental, predicted):
+    """Function that takes in predicted and experimental components from ligand decomposion and plots them against each other."""
+    ax.scatter(experimental, predicted)

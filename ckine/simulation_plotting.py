@@ -16,7 +16,7 @@ def input_IL2_15(final_conc, num):
     return ligand_conc, xaxis
 
 
-def solve_IL2_IL15(final_conc, num, time, nSpecies=nSpecies):
+def solve_IL2_IL15(final_conc, num, time):
     """Function to simulate model with IL2 and IL15 only at timepoint tps."""
     ligand_conc, xaxis = input_IL2_15(final_conc, num)
     tps = np.array([time])
