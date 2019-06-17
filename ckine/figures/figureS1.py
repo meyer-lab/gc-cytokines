@@ -10,7 +10,7 @@ from ..imports import import_samples_2_15
 def makeFigure():
     """Get a list of the axis objects and create a figure"""
     # Get list of axis objects
-    ax, f = getSetup((7.5, 4), (2, 3), mults=[1], multz={1: 2})
+    ax, f = getSetup((7.5, 4), (2, 3), multz={1: 1})
 
     # add legend
     leg_ind = 2
@@ -30,7 +30,5 @@ def makeFigure():
     pstat_act(ax[0], unkVec, scales)
     rateComp(ax[1], full_unkVec)
     violinPlots(ax[3:5], full_unkVec, full_scales, Traf=False)
-
-    f.tight_layout()
 
     return f

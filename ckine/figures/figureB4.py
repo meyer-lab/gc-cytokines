@@ -15,8 +15,6 @@ def makeFigure():
     nonadditive_activity(ax[0], 1.0, 50, 50.0, '1nM')
     nonadditive_activity(ax[1], 500.0, 50, 240.0, '500nM')
 
-    f.tight_layout()
-
     return f
 
 

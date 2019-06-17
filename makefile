@@ -24,7 +24,7 @@ venv/bin/activate: requirements.txt
 	. venv/bin/activate; pip install -Ur requirements.txt
 	touch venv/bin/activate
 
-$(fdir)/figure%.svg: venv genFigures.py ckine/ckine.so graph_all.svg
+$(fdir)/figure%.svg: venv genFigures.py ckine/ckine.so graph_all.svg ckine/figures/figure%.py
 	mkdir -p ./Manuscript/Figures
 	. venv/bin/activate; ./genFigures.py $*
 

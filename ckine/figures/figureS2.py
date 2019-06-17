@@ -22,8 +22,6 @@ def makeFigure():
     plot_geweke_2_15(ax[4:7], False)
     plot_geweke_4_7(ax[8:11])
 
-    f.tight_layout()
-
     return f
 
 

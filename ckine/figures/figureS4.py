@@ -32,7 +32,6 @@ def makeFigure():
     plot_cells(ax[1], tl.to_numpy(factors[1]), 1, 2, cell_names, ax_pos=1, fig3=False)
     plot_cells(ax[2], tl.to_numpy(factors[1]), 2, 3, cell_names, ax_pos=4, fig3=False)
     plot_ligands(ax[4], tl.to_numpy(factors[2]), n_ligands=4, fig='S4', mesh=mat)
-    f.tight_layout()
 
     return f
 

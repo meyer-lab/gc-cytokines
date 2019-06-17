@@ -21,6 +21,11 @@ def makeFigure():
     _, receptor_data, cell_names_receptor = import_Rexpr()
     unkVec_2_15, scales = import_samples_2_15(N=100)  # use all rates
     ckineConc, cell_names_pstat, IL2_data, IL15_data = import_pstat()
+
+    # Scale all the data down so we don't have a bunch of zeros on our axes
+    IL2_data = IL2_data / 1000.0
+    IL15_data = IL15_data / 1000.0
+
     tps = np.array([0.5, 1., 2., 4.]) * 60.
     axis = 0
 
@@ -39,8 +44,6 @@ def makeFigure():
                 plot_scaled_pstat(ax[axis], np.log10(ckineConc.astype(np.float)), IL2_data[(i * 4):((i + 1) * 4)])
                 plot_scaled_pstat(ax[axis+10], np.log10(ckineConc.astype(np.float)), IL15_data[(i * 4):((i + 1) * 4)])
                 axis = axis + 1
-
-    f.tight_layout(w_pad=0.1, h_pad=1.0)
 
     return f
 
@@ -76,7 +79,7 @@ def calc_dose_response(unkVec, scales, cell_data, tps, cytokC, exp_data_2, exp_d
 
     # scale receptor/cell measurements to pSTAT activity for each sample
     for j in range(len(scales)):
-        guess = np.array([scales[j, 0], 100.])  # scaling factors are sigmoidal and linear, respectively
+        guess = np.array([scales[j, 0], np.maximum(np.max(exp_data_2), np.max(exp_data_15))])  # scaling factors are sigmoidal and linear, respectively
         scale1, scale2 = optimize_scale(guess, total_activity2[:, j, :], total_activity15[:, j, :], exp_data_2, exp_data_15)  # find optimal constants
         total_activity2[:, j, :] = scale2 * total_activity2[:, j, :] / (total_activity2[:, j, :] + scale1)  # adjust activity for this sample
         total_activity15[:, j, :] = scale2 * total_activity15[:, j, :] / (total_activity15[:, j, :] + scale1)  # adjust activity for this sample
@@ -93,7 +96,7 @@ def plot_dose_response(ax2, ax15, IL2_activity, IL15_activity, cell_type, tps, c
         plot_conf_int(ax2, np.log10(cytokC.astype(np.float)), IL2_activity[:, :, tt], colors[tt])  # never a legend for IL-2
         if legend:
             plot_conf_int(ax15, np.log10(cytokC.astype(np.float)), IL15_activity[:, :, tt], colors[tt], (tps[tt] / 60.).astype(str))
-            ax15.legend(title='time (hours)', loc='center left', borderaxespad=10.)
+            ax15.legend(title='time (hours)')
         else:
             plot_conf_int(ax15, np.log10(cytokC.astype(np.float)), IL15_activity[:, :, tt], colors[tt])
 
@@ -115,5 +118,5 @@ def optimize_scale(scale_guess, model_act2, model_act15, exp_act2, exp_act15):
         err15 = np.sum(np.square(exp_act15 - scaled_act15))
         return err2 + err15  # return sum of squared error (a scalar)
 
-    res = minimize(calc_res, scale_guess, bounds=((0, None), (0, None)))  # find result of minimization where both params are >= 0
+    res = minimize(calc_res, scale_guess, bounds=((1.0, None), (0, None)))  # find result of minimization where both params are >= 0
     return res.x

@@ -7,7 +7,7 @@ from tensorly.decomposition import non_negative_parafac, non_negative_tucker
 from tensorly.decomposition.candecomp_parafac import normalize_factors
 from tensorly.metrics.regression import variance as tl_var
 
-backend = 'numpy'  # Only place to choose what the backend should be. numpy = 0. cupy = 1. other backends we desire = 2, ...
+backend = 'numpy'  # Tensorly backend choice
 tl.set_backend(backend)  # Set the backend within every file that imports from Tensor_analysis.py
 
 # Set whether or not we subtract in one place so we're consistent
@@ -16,12 +16,12 @@ subtract = False
 
 def z_score_values(A, cell_dim):
     ''' Function that takes in the values tensor and z-scores it. '''
-    assert cell_dim < A.ndim
-    convAxes = tuple([i for i in range(A.ndim) if i != cell_dim])
-    convIDX = [None] * A.ndim
+    assert cell_dim < tl.ndim(A)
+    convAxes = tuple([i for i in range(tl.ndim(A)) if i != cell_dim])
+    convIDX = [None] * tl.ndim(A)
     convIDX[cell_dim] = slice(None)
 
-    sigma = np.std(A, axis=convAxes)
+    sigma = tl.tensor(np.std(tl.to_numpy(A), axis=convAxes))
     if subtract is False:
         return A / sigma[tuple(convIDX)]
 

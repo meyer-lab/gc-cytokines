@@ -42,8 +42,6 @@ def makeFigure():
     plot_cells(ax[6], factors_activ[0], 1, 2, cell_names, ax_pos=6)
     plot_ligands(ax[7], factors_activ[2], n_ligands=2, fig=4, mesh=ckineConc)
 
-    f.tight_layout()
-
     return f
 
 
