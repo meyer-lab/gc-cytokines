@@ -26,8 +26,6 @@ def makeFigure():
     ax[3].legend(title="IL2Rb Kd vs wt")
     ax[6].legend(title="IL2Rb Kd vs wt")
 
-    f.tight_layout()
-
     return f
 
 

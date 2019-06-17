@@ -21,7 +21,7 @@
 
 using namespace std;
 
-constexpr array<double, 4> tps = {{0.1, 10.0, 1000.0, 100000.0}};
+constexpr array<double, 4> tps = {{0.1, 10.0, 1000.0, 10000.0}};
 
 
 class interfaceTestCase : public CppUnit::TestCase {

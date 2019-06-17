@@ -41,8 +41,6 @@ def makeFigure():
 
     relativeGC(ax[5], full_unkVec_2_15, full_unkVec_4_7)  # plot last to avoid coloring all other violins purple
 
-    f.tight_layout()
-
     return f
 
 

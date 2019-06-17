@@ -44,8 +44,6 @@ def makeFigure():
 
     plot_ligands(ax[4], factors_activ[2], n_ligands=n_ligands, mesh=mat)
 
-    f.tight_layout()
-
     return f
 
 def plot_ligands(ax, factors, n_ligands, mesh):

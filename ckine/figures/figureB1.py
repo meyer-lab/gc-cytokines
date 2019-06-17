@@ -19,8 +19,6 @@ def makeFigure():
     halfMax_IL2RbAff(ax[2])
     halfMax_IL2RbAff_highIL2Ra(ax[3])
 
-    f.tight_layout()
-
     return f
 
 

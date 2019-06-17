@@ -14,6 +14,4 @@ def makeFigure():
     for ii, item in enumerate(ax):
         subplotLabel(item, string.ascii_uppercase[ii])
 
-    f.tight_layout()
-
     return f
