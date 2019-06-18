@@ -122,6 +122,58 @@ def import_samples_4_7(ret_trace=False, N=None):
     return unkVec, scales
 
 
+def import_visterra_2_15(Traf=True, ret_trace=False, N=None):
+    """ Imports the sampling results from fitting to visterra data in fit_visterra.py. """
+    from .fit_visterra import build_model as build_model_visterra
+
+    bmodel = build_model_visterra(traf=Traf)
+    n_params = nParams()
+
+    path = os.path.dirname(os.path.abspath(__file__))
+
+    if Traf:
+        trace = pm.backends.text.load(join(path, '../IL2_visterra_results'), bmodel.M)
+    else:
+        trace = pm.backends.text.load(join(path, '../IL2_15_no_traf_visterra'), bmodel.M)
+
+    # option to return trace instead of numpy array
+    if ret_trace:
+        return trace
+
+    scales = trace.get_values('scales')
+    kfwd = trace.get_values('kfwd')
+    num = kfwd.size
+    rxn = trace.get_values('rxn')
+
+    if Traf:
+        endo = trace.get_values('endo')
+        activeEndo = trace.get_values('activeEndo')
+        sortF = trace.get_values('sortF')
+        kRec = trace.get_values('kRec')
+        kDeg = trace.get_values('kDeg')
+    else:
+        endo = np.zeros((num))
+        activeEndo = np.zeros((num))
+        sortF = np.zeros((num))
+        kRec = np.zeros((num))
+        kDeg = np.zeros((num))
+
+    unkVec = np.zeros((n_params, num))
+    for ii in range(num):
+        unkVec[:, ii] = np.array([0., 0., 0., 0., 0., 0., kfwd[ii], rxn[ii, 0], rxn[ii, 1], rxn[ii, 2], rxn[ii, 3], rxn[ii, 4], rxn[ii, 5], 1., 1., 1., 1., endo[ii],
+                                  activeEndo[ii], sortF[ii], kRec[ii], kDeg[ii], 0., 0., 0., 0., 0., 0., 0., 0.])  # set Rexprs to 0
+
+    if N is not None:
+        if 0 < N < num:  # return a subsample if the user specified the number of samples
+            idx = np.random.randint(num, size=N)  # pick N numbers without replacement from 0 to num
+            unkVec, scales = unkVec[:, idx], scales[idx, :]
+        else:
+            print("The N specified is out of bounds.")
+            raise ValueError
+
+    return unkVec, scales
+
+
 def import_pstat():
     """ Loads CSV file containing pSTAT5 levels from Visterra data. Incorporates only Replicate 1 since data missing in Replicate 2. """
     path = os.path.dirname(os.path.dirname(__file__))
