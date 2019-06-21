@@ -14,7 +14,7 @@ def makeFigure():
 
     # add legend
     leg_ind = 2
-    legend_2_15(ax[leg_ind], font_size="x-large", location="center")
+    legend_2_15(ax[leg_ind], location="center")
 
     for ii, item in enumerate(ax):
         # add conditionals to skip the legend
