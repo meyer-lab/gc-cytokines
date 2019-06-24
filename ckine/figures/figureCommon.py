@@ -112,7 +112,7 @@ def plot_cells(ax, factors, component_x, component_y, cell_names, ax_pos, fig3=T
     markersCells = ['^', '*', 'D', 's', 'X', 'o', '4', 'H', 'P', '*', 'D', 's', 'X']
 
     for ii, _ in enumerate(factors[:, component_x - 1]):
-        ax.scatter(factors[ii, component_x - 1], factors[ii, component_y - 1], c=[colors[ii]], marker=markersCells[ii], label=cell_names[ii], alpha=0.75)
+        ax.scatter(factors[ii, component_x - 1], factors[ii, component_y - 1], c=[colors[ii]], marker=markersCells[ii], label=cell_names[ii], alpha=0.3)
 
     if ax_pos in (1, 2, 5, 7):
         ax.legend(borderpad=0.35, handlelength=0.2, handletextpad=0.5, markerscale=0.65, fancybox=True, framealpha=0.5)
