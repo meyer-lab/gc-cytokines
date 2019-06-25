@@ -177,7 +177,7 @@ def import_visterra_2_15(Traf=True, ret_trace=False, N=None):
 def import_pstat():
     """ Loads CSV file containing pSTAT5 levels from Visterra data. Incorporates only Replicate 1 since data missing in Replicate 2. """
     path = os.path.dirname(os.path.dirname(__file__))
-    data = np.array(pds.read_csv(join(path, 'ckine/data/Visterra_pSTAT5.csv'), encoding='latin1'))
+    data = np.array(pds.read_csv(join(path, 'ckine/data/pSTAT_data.csv'), encoding='latin1'))
     ckineConc = data[4, 2:14]
     # 4 time points, 11 cell types, 12 concentrations
     IL2_data = np.zeros((44, 12))
