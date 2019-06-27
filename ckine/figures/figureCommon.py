@@ -15,6 +15,15 @@ from ..imports import import_pstat
 
 matplotlib.rcParams['legend.labelspacing'] = 0.2
 matplotlib.rcParams['legend.fontsize'] = 8
+matplotlib.rcParams['xtick.major.pad'] = 2
+matplotlib.rcParams['ytick.major.pad'] = 2
+matplotlib.rcParams['xtick.minor.pad'] = 1.9
+matplotlib.rcParams['ytick.minor.pad'] = 1.9
+matplotlib.rcParams['legend.handletextpad'] = 0.5
+matplotlib.rcParams['legend.handlelength'] = 0.5
+matplotlib.rcParams['legend.framealpha'] = 0.5
+matplotlib.rcParams['legend.markerscale'] = 0.7
+matplotlib.rcParams['legend.borderpad'] = 0.35
 
 
 def getSetup(figsize, gridd, multz=None, empts=None):
@@ -47,11 +56,6 @@ def getSetup(figsize, gridd, multz=None, empts=None):
             ax.append(f.add_subplot(gs1[x:x + multz[x] + 1]))
             x += multz[x]
         x += 1
-
-    # shrink the padding between ticks and axes
-    # for a in ax:
-    #     a.tick_params(axis='both', pad=-2)
-    # TODO: Move the above to rcParams
 
     return (ax, f)
 
@@ -114,8 +118,8 @@ def plot_cells(ax, factors, component_x, component_y, cell_names, ax_pos, fig3=T
     for ii, _ in enumerate(factors[:, component_x - 1]):
         ax.scatter(factors[ii, component_x - 1], factors[ii, component_y - 1], c=[colors[ii]], marker=markersCells[ii], label=cell_names[ii], alpha=0.3)
 
-    if ax_pos in (1, 2, 5, 7):
-        ax.legend(borderpad=0.35, handlelength=0.2, handletextpad=0.5, markerscale=0.65, fancybox=True, framealpha=0.5)
+    if ax_pos == 6:
+        ax.legend()
 
     ax.set_title('Cells')
     set_bounds(ax, component_x)
@@ -163,14 +167,10 @@ def plot_ligands(ax, factors, n_ligands, fig, mesh):
                 ax.plot(ILs, factors[idx, ii], color=colors[ii])
                 ax.scatter(ILs, factors[idx, ii], color=colors[ii], marker=markers[jj])
 
-    # Shrink current axis by 20%
-    box = ax.get_position()
-    ax.set_position([box.x0, box.y0, box.width * 0.8, box.height])
-
     if fig != 4:
-        ax.add_artist(ax.legend(handles=legend_shape, loc=2, borderpad=0.4, handlelength=0.2, handletextpad=0.5, markerscale=0.7))
+        ax.add_artist(ax.legend(handles=legend_shape, loc=2))
     else:
-        ax.add_artist(ax.legend(handles=legend_shape, loc=4, borderpad=0.3, handlelength=0.2, handletextpad=0.5, markerscale=0.7))
+        ax.add_artist(ax.legend(handles=legend_shape, loc=4))
 
     ax.set_xlabel('Ligand Concentration (nM)')
     ax.set_ylabel('Component')
@@ -178,7 +178,7 @@ def plot_ligands(ax, factors, n_ligands, fig, mesh):
     ax.set_title('Ligands')
 
     # Put a legend to the right of the current axis
-    ax.legend(loc=3, handletextpad=0.5, handlelength=0.5, framealpha=0.5, markerscale=0.7)
+    ax.legend(loc=3)
 
 def plot_timepoints(ax, factors):
     """Function to put all timepoint plots in one figure."""
@@ -191,7 +191,7 @@ def plot_timepoints(ax, factors):
     ax.set_xlabel('Time (min)')
     ax.set_ylabel('Component')
     ax.set_title('Time')
-    ax.legend(handletextpad=0.5, handlelength=0.5, framealpha=0.5, markerscale=0.7, loc=4)
+    ax.legend(loc=4)
 
 
 def kfwd_info(unkVec):
