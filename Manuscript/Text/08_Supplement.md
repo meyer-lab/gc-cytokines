@@ -12,5 +12,3 @@ D) Posterior distribution for the pSTAT5 activity scaling constant in no-traffic
 ![**Tucker factorization of predicted immune cell type responses.** A) Timepoint decomposition plot showing component values against time for each factorization component after decomposing the tensor’s first dimension into 3 components. B, C) Decomposition plot along the second (cell) dimension after decomposing it to 3 components showing the 11 cell type values along each component. D) Core tucker heatmap unfolded along its third dimension. E) Ligand decomposition plot along the tensor’s third dimension after decomposing it to 4 components revealing each ligand according to its shape and component number reflected by its color. ](./Manuscript/Figures/figureS4.svg){#fig:supp4}
 
 ![**Full panel of predicted versus actual immune cell type responses.** XXX](./Manuscript/Figures/figureS5.svg){#fig:supp5}
-
-![**Full panel of predicted versus actual immune cell type responses.** XXX](./Manuscript/Figures/figureS6.svg){#fig:supp6}

@@ -31,7 +31,7 @@ pipeline {
         } */
         stage('Build') {
           steps {
-            sh 'make -j 6'
+            sh 'make -j 4'
             archiveArtifacts artifacts: 'Manuscript/Figures/*.pdf, Manuscript/Manuscript.pdf', onlyIfSuccessful: true
             recordIssues qualityGates: [[threshold: 1, type: 'TOTAL_HIGH', unstable: true], [threshold: 20, type: 'TOTAL_NORMAL', unstable: true], [threshold: 40, type: 'TOTAL_LOW', unstable: true]], tools: [pyLint(pattern: 'pylint.log')]
           }
