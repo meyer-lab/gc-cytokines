@@ -87,20 +87,20 @@ We also employed non-negative Tucker Decomposition. This decomposed our tensor i
 
 #### Antibodies for IL-2, IL-15, and IL-7 receptor analysis:
 
-|            Antibody           	|    Dilution    	|          Fluorophore         	|     Clone     	|      CAT#      	|        Vendor       	|
-|:-----------------------------:	|:--------------:	|:----------------------------:	|:-------------:	|:--------------:	|:-------------------:	|
-|              CD25             	|      1:120     	|    Brilliant   Violet 421    	|     M-A251    	|     356114     	|      BioLegend      	|
-|             CD122             	|      1:120     	|            PE/Cy7            	|      TU27     	|     339014     	|      BioLegend      	|
-|             CD132             	|      1:120     	|              APC             	|     TUGh4     	|     338608     	|      BioLegend      	|
-|       CD215 (1st   mAb)       	|      1:120     	|              APC             	|     JM7A4     	|     330210     	|      BioLegend      	|
-|       CD215 (2nd   mAb)       	|      3:100     	|              APC             	|     151303    	|    FAB1471A    	|    R&D   Systems    	|
-|             CD127             	|      1:120     	|       Alexa   Fluor 488      	|     A019D5    	|     351313     	|      Biolegend      	|
-|     Mouse   IgG1 κ isotype    	|      1:240     	|    Brilliant   Violet 421    	|    MOPC-21    	|     400158     	|      BioLegend      	|
-|     Mouse   IgG1 κ isotype    	|      1:240     	|            PE/Cy7            	|    MOPC-21    	|     400126     	|      BioLegend      	|
-|     Rat   IgG2b κ isotype     	|      1:60      	|              APC             	|    RTK4530    	|     400612     	|      BioLegend      	|
-|    Mouse   IgG2b κ isotype    	|      1:120     	|              APC             	|     MPC-11    	|     400320     	|      BioLegend      	|
-|     Mouse   IgG2B isotype     	|      3:100     	|              APC             	|     133303    	|     IC0041A    	|    R&D   Systems    	|
-|    Mouse   IgG1, κ isotype    	|      1:120     	|       Alexa   Fluor 488      	|    MOPC-21    	|     400129     	|      Biolegend      	|
+|        Antibody        	|    Dilution    	|          Fluorophore         	|     Clone     	|      CAT#      	|        Vendor       	|
+|:----------------------:	|:--------------:	|:----------------------------:	|:-------------:	|:--------------:	|:-------------------:	|
+|          CD25          	|      1:120     	|    Brilliant   Violet 421    	|     M-A251    	|     356114     	|      BioLegend      	|
+|         CD122          	|      1:120     	|            PE/Cy7            	|      TU27     	|     339014     	|      BioLegend      	|
+|         CD132          	|      1:120     	|              APC             	|     TUGh4     	|     338608     	|      BioLegend      	|
+|   CD215 (1st   mAb)    	|      1:120     	|              APC             	|     JM7A4     	|     330210     	|      BioLegend      	|
+|   CD215 (2nd   mAb)    	|      3:100     	|              APC             	|     151303    	|    FAB1471A    	|    R&D   Systems    	|
+|         CD127          	|      1:120     	|       Alexa   Fluor 488      	|     A019D5    	|     351313     	|      Biolegend      	|
+|       Ms IgG1κ         	|      1:240     	|    Brilliant   Violet 421    	|    MOPC-21    	|     400158     	|      BioLegend      	|
+|        Ms IgG1κ        	|      1:240     	|            PE/Cy7            	|    MOPC-21    	|     400126     	|      BioLegend      	|
+|        Rat   IgG2Bκ    	|      1:60      	|              APC             	|    RTK4530    	|     400612     	|      BioLegend      	|
+|       Ms IgG2Bκ        	|      1:120     	|              APC             	|     MPC-11    	|     400320     	|      BioLegend      	|
+|        Ms IgG2B        	|      3:100     	|              APC             	|     133303    	|     IC0041A    	|    R&D   Systems    	|
+|       Ms IgG1κ         	|      1:120     	|       Alexa   Fluor 488      	|    MOPC-21    	|     400129     	|      Biolegend      	|
 
 #### Panel 1: Antibodies to gate Naïve and Memory T-regulatory and T-helper cells
 
