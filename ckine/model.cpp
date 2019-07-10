@@ -32,7 +32,7 @@ using std::endl;
 using std::cout;
 using adept::adouble;
 
-constexpr double solveTol = 1.0E-3;
+constexpr double solveTol = 1.0E-4;
 
 static void errorHandler(int, const char *, const char *, char *, void *);
 int Jac(double, N_Vector, N_Vector, SUNMatrix, void *, N_Vector, N_Vector, N_Vector);
@@ -127,7 +127,7 @@ public:
 
 		CVDlsSetJacFn(cvode_mem, Jac);
 
-		CVodeSetMaxNumSteps(cvode_mem, 80000);
+		CVodeSetMaxNumSteps(cvode_mem, 10000);
 
 		// Call CVodeSetConstraints to initialize constraints
 		N_Vector constraints = N_VNew_Serial(static_cast<long>(Nspecies));
@@ -208,7 +208,7 @@ public:
 			throw std::runtime_error(string("Error calling CVodeQuadSStolerancesB in solver_setup."));
 		}
 
-		CVodeSetMaxNumStepsB(cvode_mem, indexB, 80000);
+		CVodeSetMaxNumStepsB(cvode_mem, indexB, 10000);
 	}
 
 	int CVodeRun(const double endT) {
