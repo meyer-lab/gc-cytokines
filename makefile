@@ -10,23 +10,18 @@ flist = 1 2 3 4 5 S1 S2 S4 S5 B1 B2 B3 B4 B5
 
 all: ckine/ckine.so Manuscript/Manuscript.pdf Manuscript/Manuscript.docx Manuscript/CoverLetter.docx pylint.log
 
-UNAME_S := $(shell uname -s)
-ifeq ($(UNAME_S),Linux)
-    LINKFLAG = -Wl,-rpath=./ckine
-endif
-
-CPPLINKS = -I/usr/include/eigen3/ -I/usr/local/include/eigen3/ -lm -ladept -lsundials_cvodes -lsundials_cvode -lsundials_nvecserial -lcppunit
+CPPLINKS = -I/usr/include/eigen3/ -I/usr/local/include/eigen3/ -lm -ladept -lsundials_cvodes -lsundials_cvode -lsundials_nvecserial -lstdc++ -lcppunit
 
 venv: venv/bin/activate
 
 venv/bin/activate: requirements.txt
-	test -d venv || virtualenv venv
-	. venv/bin/activate; pip install -Ur requirements.txt
+	test -d venv || virtualenv --system-site-packages venv
+	. venv/bin/activate && pip install -Ur requirements.txt
 	touch venv/bin/activate
 
 $(fdir)/figure%.svg: venv genFigures.py ckine/ckine.so graph_all.svg ckine/figures/figure%.py
 	mkdir -p ./Manuscript/Figures
-	. venv/bin/activate; ./genFigures.py $*
+	. venv/bin/activate && ./genFigures.py $*
 
 $(fdir)/figure%pdf: $(fdir)/figure%svg
 	rsvg-convert --keep-image-data -f pdf $< -o $@
@@ -41,13 +36,13 @@ Manuscript/Manuscript.pdf: Manuscript/Text/*.md $(patsubst %, $(fdir)/figure%.pd
 	pandoc -s $(pan_common) --template=$(tdir)/default.latex --pdf-engine=xelatex -o $@
 
 ckine/ckine.so: ckine/model.cpp ckine/model.hpp ckine/reaction.hpp
-	clang++    $(compile_opts) -O3 $(CPPLINKS) ckine/model.cpp --shared -fPIC -o $@
+	g++ $(compile_opts) -O3 $(CPPLINKS) ckine/model.cpp --shared -fPIC $(CPPLINKS) -o $@
 
 ckine/libckine.debug.so: ckine/model.cpp ckine/model.hpp ckine/reaction.hpp
-	clang++ -g $(compile_opts) -O3 $(CPPLINKS) ckine/model.cpp --shared -fPIC -o $@
+	g++ -g $(compile_opts) -O3 $(CPPLINKS) ckine/model.cpp --shared -fPIC $(CPPLINKS) -o $@
 
 ckine/cppcheck: ckine/libckine.debug.so ckine/model.hpp ckine/cppcheck.cpp ckine/reaction.hpp
-	clang++ -g $(compile_opts) -L./ckine ckine/cppcheck.cpp $(CPPLINKS) -lckine.debug $(LINKFLAG) -o $@
+	g++ -g $(compile_opts) -L./ckine ckine/cppcheck.cpp $(CPPLINKS) -lckine.debug -Wl,-rpath=./ckine -o $@
 
 Manuscript/Manuscript.docx: Manuscript/Text/*.md $(patsubst %, $(fdir)/figure%.eps, $(flist))
 	cp -R $(fdir) ./
@@ -70,21 +65,21 @@ clean:
 	find -iname "*.pyc" -delete
 
 test: venv ckine/ckine.so
-	. venv/bin/activate; pytest
+	. venv/bin/activate && pytest
 
 testcover: venv ckine/ckine.so
-	. venv/bin/activate; pytest --junitxml=junit.xml --cov-branch --cov=ckine --cov-report xml:coverage.xml
+	. venv/bin/activate && pytest --junitxml=junit.xml --cov-branch --cov=ckine --cov-report xml:coverage.xml
 
-testcpp: ckine/cppcheck
-	valgrind --leak-check=full --track-origins=yes --trace-children=yes ckine/cppcheck
+testcpp: venv ckine/cppcheck
+	valgrind --leak-check=full --show-leak-kinds=all --track-origins=yes --trace-children=yes ckine/cppcheck
 	valgrind --tool=callgrind ckine/cppcheck
-	gprof2dot -f callgrind -n 5.0 callgrind.out.* | dot -Tsvg -o cprofile.svg
+	. venv/bin/activate && gprof2dot -f callgrind -n 5.0 callgrind.out.* | dot -Tsvg -o cprofile.svg
 
 cppcheck: ckine/cppcheck
 	ckine/cppcheck
 	
-pylint.log: common/pylintrc
-	(pylint3 --rcfile=./common/pylintrc ckine > pylint.log || echo "pylint3 exited with $?")
+pylint.log: venv common/pylintrc
+	. venv/bin/activate && (pylint --rcfile=./common/pylintrc ckine > pylint.log || echo "pylint3 exited with $?")
 
 doc:
 	doxygen Doxyfile
