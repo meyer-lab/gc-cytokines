@@ -16,3 +16,4 @@ scikit-learn
 svgutils
 FlowCytometryTools==0.5.0
 gprof2dot
+pylint
