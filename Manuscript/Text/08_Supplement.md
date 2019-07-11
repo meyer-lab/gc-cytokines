@@ -5,7 +5,7 @@ B) Posterior distributions of analogous reverse reaction rates for IL-2 and IL-1
 C) Posterior distributions for receptor surface abundance in no-trafficking model.
 D) Posterior distribution for the pSTAT5 activity scaling constant in no-trafficking model. ](./Manuscript/Figures/figureS1.svg){#fig:supp1}
 
-![**Geweke criterion scores for trafficking and no-trafficking IL-2 and IL-15 models.** Geweke criterion in all subplots was calculated using first 10% and last 50% of MCMC chain. A-D) Scores from parameters sampled in the trafficking model ([@Fig:modelConstruct]). E-G) Scores from parameters sampled in the no-trafficking model ([@Fig:supp1]). ](./Manuscript/Figures/figureS2.svg){#fig:supp2}
+![**Geweke criterion scores for model fitting with and without trafficking.** Geweke criterion z-scores in all subplots were calculated using 20 intervals in the first 10% and last 50% of MCMC chain. The interval with the highest absolute z-score was plotted  for each parameter. Scores of |z| < 1 imply fitting convergence. A-B) IL-2/-15 with and without trafficking. C) IL-4/-7 with trafficking ([@Fig:supp1]). ](./Manuscript/Figures/figureS2.svg){#fig:supp2}
 
 ![**Receptor quantification and gating of PBMC-derived immune cell types.** A) Preliminary gating for singlet lyphocytes. B) Example staining for CD122 (red), the corresponding isotype control (blue), and unstained cells (black). C) Gating for live T helper and T regulatory cells during receptor quantifation. D) Live cell NK cell gating. E) Live cell CD8+ T cell gating. F) Gating for fixed T helper and T regulatory cells during pSTAT5 quantification. G) Fixed CD8+ T cell and NK cell gating.](./Manuscript/gatingFigure.svg){#fig:gating}
 
