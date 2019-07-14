@@ -11,6 +11,7 @@ from matplotlib.lines import Line2D
 from matplotlib.patches import Patch
 from ..tensor import find_R2X
 from ..imports import import_pstat
+from ..make_tensor import tensor_time
 
 
 matplotlib.rcParams['legend.labelspacing'] = 0.2
@@ -38,7 +39,7 @@ def getSetup(figsize, gridd, multz=None, empts=None):
     # create empty list if empts isn't specified
     if empts is None:
         empts = []
-    
+
     if multz is None:
         multz = dict()
 
@@ -50,9 +51,9 @@ def getSetup(figsize, gridd, multz=None, empts=None):
     x = 0
     ax = list()
     while x < gridd[0] * gridd[1]:
-        if x not in empts and x not in multz.keys(): # If this is just a normal subplot
+        if x not in empts and x not in multz.keys():  # If this is just a normal subplot
             ax.append(f.add_subplot(gs1[x]))
-        elif x in multz.keys(): # If this is a subplot that spans grid elements
+        elif x in multz.keys():  # If this is a subplot that spans grid elements
             ax.append(f.add_subplot(gs1[x:x + multz[x] + 1]))
             x += multz[x]
         x += 1
@@ -79,12 +80,14 @@ def plot_R2X(ax, tensor, factors_list, n_comps, cells_dim):
         factors = factors_list[n]
         R2X = find_R2X(tensor, factors, cells_dim)
         R2X_array.append(R2X)
+
     ax.plot(range(1, n_comps + 1), R2X_array, 'ko', label='Overall R2X')
     ax.set_ylabel('R2X')
     ax.set_xlabel('Number of Components')
     ax.set_ylim(0, 1)
     ax.set_xticks(np.arange(1, n_comps + 1))
     ax.set_xticklabels(np.arange(1, n_comps + 1))
+
 
 def subplotLabel(ax, letter, hstretch=1):
     """ Label each subplot """
@@ -139,21 +142,21 @@ def overlayCartoon(figFile, cartoonFile, x, y, scalee=1, scale_x=1, scale_y=1):
     template.append(cartoon)
     template.save(figFile)
 
+
 def plot_ligands(ax, factors, n_ligands, fig, mesh):
     """Function to put all ligand decomposition plots in one figure."""
     ILs, _, _, _ = import_pstat()  # Cytokine stimulation concentrations in nM
     ILs = np.flip(ILs)
     colors = ['b', 'k', 'r', 'y', 'm', 'g']
-    if fig != 4:
-        markers = ['^', '*', '.', 'd']
-        legend_shape = [Line2D([0], [0], color='k', marker=markers[0], label='IL-2', linestyle=''),
-                        Line2D([0], [0], color='k', label='IL-2 mut', marker=markers[1], linestyle=''),
-                        Line2D([0], [0], color='k', label='IL-15', marker=markers[2], linestyle=''),
-                        Line2D([0], [0], color='k', label='IL-7', marker=markers[3], linestyle='')]
-    else:
+    if fig == 4:
         markers = ['^', '*']
         legend_shape = [Line2D([0], [0], color='k', marker=markers[0], label='IL-2', linestyle=''),
                         Line2D([0], [0], color='k', label='IL-15', marker=markers[1], linestyle='')]  # only have IL2 and IL15 in the measured pSTAT data
+    else:
+        markers = ['^', '.', 'd']
+        legend_shape = [Line2D([0], [0], color='k', marker=markers[0], label='IL-2', linestyle=''),
+                        Line2D([0], [0], color='k', label='IL-15', marker=markers[1], linestyle=''),
+                        Line2D([0], [0], color='k', label='IL-7', marker=markers[2], linestyle='')]
 
     for ii in range(factors.shape[1]):
         for jj in range(n_ligands):
@@ -180,13 +183,12 @@ def plot_ligands(ax, factors, n_ligands, fig, mesh):
     # Put a legend to the right of the current axis
     ax.legend(loc=3)
 
+
 def plot_timepoints(ax, factors):
     """Function to put all timepoint plots in one figure."""
-    ts = np.logspace(-3., np.log10(4 * 60.), 100)
-    ts = np.insert(ts, 0, 0.0)
     colors = ['b', 'k', 'r', 'y', 'm', 'g']
     for ii in range(factors.shape[1]):
-        ax.plot(ts, factors[:, ii], c=colors[ii], label='Component ' + str(ii + 1))
+        ax.plot(tensor_time, factors[:, ii], c=colors[ii], label='Component ' + str(ii + 1))
 
     ax.set_xlabel('Time (min)')
     ax.set_ylabel('Component')

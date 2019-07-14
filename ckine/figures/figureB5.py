@@ -46,6 +46,7 @@ def makeFigure():
 
     return f
 
+
 def plot_ligands(ax, factors, n_ligands, mesh):
     """Function to put all ligand decomposition plots in one figure."""
     ILs, _, _, _ = import_pstat()  # Cytokine stimulation concentrations in nM

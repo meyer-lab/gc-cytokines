@@ -36,13 +36,13 @@ def makeFigure():
                 IL2_activity, IL15_activity = calc_dose_response(unkVec_2_15, scales, receptor_data[j], tps, ckineConc,
                                                                  IL2_data[(i * 4):((i + 1) * 4)], IL15_data[(i * 4):((i + 1) * 4)])
                 if axis == 9:  # only plot the legend for the last entry
-                    plot_dose_response(ax[axis], ax[axis+10], IL2_activity, IL15_activity,
+                    plot_dose_response(ax[axis], ax[axis + 10], IL2_activity, IL15_activity,
                                        cell_names_receptor[j], tps, ckineConc, legend=True)
                 else:
-                    plot_dose_response(ax[axis], ax[axis+10], IL2_activity, IL15_activity,
+                    plot_dose_response(ax[axis], ax[axis + 10], IL2_activity, IL15_activity,
                                        cell_names_receptor[j], tps, ckineConc)
                 plot_scaled_pstat(ax[axis], np.log10(ckineConc.astype(np.float)), IL2_data[(i * 4):((i + 1) * 4)])
-                plot_scaled_pstat(ax[axis+10], np.log10(ckineConc.astype(np.float)), IL15_data[(i * 4):((i + 1) * 4)])
+                plot_scaled_pstat(ax[axis + 10], np.log10(ckineConc.astype(np.float)), IL15_data[(i * 4):((i + 1) * 4)])
                 axis = axis + 1
 
     return f
@@ -56,7 +56,7 @@ def calc_dose_response(unkVec, scales, cell_data, tps, cytokC, exp_data_2, exp_d
     split = rxntfr2.shape[0]  # number of parameter sets used (& thus the number of yOut replicates)
     total_activity2 = np.zeros((PTS, split, tps.size))
     total_activity15 = total_activity2.copy()
-    
+
     # loop for each IL2 concentration
     for i in range(PTS):
         for ii in range(rxntfr2.shape[0]):

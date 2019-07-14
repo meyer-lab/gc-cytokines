@@ -54,7 +54,7 @@ def makeFigure():
     plot_cells(ax[6], tl.to_numpy(factors_activ[1]), 1, 2, cell_names, ax_pos=5)
     plot_cells(ax[7], tl.to_numpy(factors_activ[1]), 2, 3, cell_names, ax_pos=6)
 
-    plot_ligands(ax[8], tl.to_numpy(factors_activ[2]), n_ligands=4, fig=3, mesh=mat)
+    plot_ligands(ax[8], tl.to_numpy(factors_activ[2]), n_ligands=3, fig=3, mesh=mat)
 
     return f
 

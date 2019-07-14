@@ -24,9 +24,11 @@ def makeFigure():
     for ii, item in enumerate(ax):
         subplotLabel(item, string.ascii_uppercase[ii])  # Add subplot labels
 
-    rank_list = [2, 3, 3]
+    rank_list = [2, 3, 2]
     out = perform_tucker(values, rank_list, cell_dim)
-    logging.info(find_R2X_tucker(values, out, cell_dim))
+    RtwoX = find_R2X_tucker(values, out, cell_dim)
+    logging.info(RtwoX)
+    assert RtwoX > 0.95
     logging.info(out[0].shape)
 
     plot_core(ax[4], out[0][0, :, :])
@@ -35,7 +37,7 @@ def makeFigure():
     plot_timepoints(ax[0], tl.to_numpy(factors[0]))
     plot_cells(ax[1], tl.to_numpy(factors[1]), 1, 2, cell_names, ax_pos=1, fig3=False)
     plot_cells(ax[2], tl.to_numpy(factors[1]), 2, 3, cell_names, ax_pos=4, fig3=False)
-    plot_ligands(ax[3], tl.to_numpy(factors[2]), n_ligands=4, fig='S4', mesh=mat)
+    plot_ligands(ax[3], tl.to_numpy(factors[2]), n_ligands=3, fig='S4', mesh=mat)
 
     return f
 
