@@ -6,7 +6,7 @@ import numpy as np
 import matplotlib.cm as cm
 from .figureCommon import subplotLabel, getSetup, plot_cells, plot_ligands
 from .figure3 import plot_R2X, values
-from ..tensor import perform_decomposition
+from ..tensor import perform_decomposition, z_score_values
 from ..imports import import_pstat
 
 cell_dim = 0  # For this figure, the cell dimension is along the first [python index 0].
@@ -28,13 +28,14 @@ def makeFigure():
     IL15 = np.insert(IL15, range(0, IL15.shape[0], 4), 0.0, axis=0)  # add in a zero value for the activity at t=0
     concat = np.concatenate((IL2, IL15), axis=1)  # Prepare for tensor reshaping
     measured_tensor = np.reshape(concat, (len(cell_names), 5, IL2.shape[1] * 2))
+    measured_tensor = z_score_values(measured_tensor, cell_dim)
 
     factors_activity = []
     for jj in range(measured_tensor.shape[2] - 1):
-        factors = perform_decomposition(measured_tensor, jj + 1, cell_dim)
+        factors = perform_decomposition(measured_tensor, jj + 1)
         factors_activity.append(factors)
-    predicted_factors = perform_decomposition(values, 3, cell_dim)
-    plot_R2X(ax[0], measured_tensor, factors_activity, n_comps=5, cells_dim=cell_dim)
+    predicted_factors = perform_decomposition(values, 3)
+    plot_R2X(ax[0], measured_tensor, factors_activity)
 
     n_comps = 2
     factors_activ = factors_activity[n_comps - 1]  # First dimension is cells. Second is time. Third is ligand.

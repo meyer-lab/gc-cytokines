@@ -7,12 +7,12 @@ import numpy as np
 from matplotlib.lines import Line2D
 from .figureCommon import subplotLabel, getSetup, plot_cells, plot_timepoints, plot_R2X
 from ..imports import import_Rexpr, import_pstat
-from ..tensor import perform_decomposition
+from ..tensor import perform_decomposition, z_score_values
 from ..make_tensor import make_tensor, n_lig
 
 cell_dim = 1  # For this figure, the cell dimension is along the second [python index 1].
 values, _, mat, _, _ = make_tensor(mut=True)
-values = tl.tensor(values)
+values = z_score_values(tl.tensor(values), cell_dim)
 
 
 def makeFigure():
@@ -24,14 +24,14 @@ def makeFigure():
     n_ligands = n_lig(mut=True)
     _, _, cell_names = import_Rexpr()
     factors_activity = []
-    for jj in range(len(mat) - 1):
-        factors = perform_decomposition(values, jj + 1, cell_dim)
+    for jj in range(5):
+        factors = perform_decomposition(values, jj + 1)
         factors_activity.append(factors)
 
     n_comps = 3
     factors_activ = factors_activity[n_comps - 1]
 
-    plot_R2X(ax[0], values, factors_activity, n_comps=5, cells_dim=cell_dim)
+    plot_R2X(ax[0], values, factors_activity)
 
     # Add subplot labels
     for ii, item in enumerate(ax):
@@ -69,7 +69,7 @@ def plot_ligands(ax, factors, n_ligands, mesh):
     # Shrink current axis by 20%
     box = ax.get_position()
     ax.set_position([box.x0, box.y0, box.width * 0.8, box.height])
-    ax.add_artist(ax.legend(handles=legend_shape, loc=2, borderpad=0.3, labelspacing=0.2, handlelength=0.2, handletextpad=0.5, markerscale=0.7, fontsize=8))
+    ax.add_artist(ax.legend(handles=legend_shape, loc=2))
 
     ax.set_xlabel('Ligand Concentration (nM)')
     ax.set_ylabel('Component')
@@ -77,4 +77,4 @@ def plot_ligands(ax, factors, n_ligands, mesh):
     ax.set_title('Ligands')
 
     # Put a legend to the right of the current axis
-    ax.legend(loc=3, bbox_to_anchor=(1, 0.5), handletextpad=0.5, handlelength=0.5, framealpha=0.5, markerscale=0.7, fontsize=8)
+    ax.legend(loc=3, bbox_to_anchor=(1, 0.5))

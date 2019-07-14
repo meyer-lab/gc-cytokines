@@ -9,7 +9,7 @@ import tensorly as tl
 from tensorly import unfold
 from .figureCommon import subplotLabel, getSetup, plot_cells, plot_ligands, plot_timepoints
 from .figure3 import values, mat
-from ..tensor import perform_tucker, find_R2X_tucker
+from ..tensor import perform_tucker, find_R2X_tucker, z_score_values
 from ..imports import import_Rexpr
 
 cell_dim = 1  # For this figure, the cell dimension is along the second [python index 1].
@@ -25,8 +25,8 @@ def makeFigure():
         subplotLabel(item, string.ascii_uppercase[ii])  # Add subplot labels
 
     rank_list = [2, 3, 2]
-    out = perform_tucker(values, rank_list, cell_dim)
-    RtwoX = find_R2X_tucker(values, out, cell_dim)
+    out = perform_tucker(values, rank_list)
+    RtwoX = find_R2X_tucker(values, out)
     logging.info(RtwoX)
     assert RtwoX > 0.95
     logging.info(out[0].shape)

@@ -65,7 +65,7 @@ def meshprep(mut):
     ILs = np.flip(ILs)
 
     # Goal is to make one cell expression levels by len(mat) for every cell
-    # Make mesh grid of all ligand concentrations, First is IL-2 WT, Second is IL-2 Mutant; Third is IL-15; Fourth is IL7
+    # Make mesh grid of all ligand concentrations, First is IL-2 WT, Third is IL-15; Fourth is IL7
     # Set interleukins other than IL2&15 to zero. Should be of shape 3(IL2,mutIL2,IL15)*(len(ILs)) by 6 (6 for all ILs)
     if mut:
         concMesh = np.vstack((np.array(np.meshgrid(ILs, 0, 0, 0, 0, 0)).T.reshape(-1, 6),
