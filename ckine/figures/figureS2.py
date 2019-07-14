@@ -3,11 +3,10 @@ This creates Figure S2. Full panel of Geweke convergence tests.
 """
 import string
 import pymc3 as pm
-import matplotlib.cm as cm
 import numpy as np
 import pandas as pd
 import seaborn as sns
-from .figureCommon import subplotLabel, getSetup, traf_names
+from .figureCommon import subplotLabel, getSetup
 from ..imports import import_samples_2_15, import_samples_4_7
 
 
@@ -49,10 +48,10 @@ def plot_geweke_2_15(ax, traf):
 
     if traf:  # add the trafficking parameters if necessary & set proper title
         dictt.update({r'$k_{endo}$': max(abs(score[0]['endo'][:, 1])),
-                     r'$k_{endo,a}$': max(abs(score[0]['activeEndo'][:, 1])),
-                     r'$f_{sort}$': max(abs(score[0]['sortF'][:, 1])),
-                     r'$k_{rec}$': max(abs(score[0]['kRec'][:, 1])),
-                     r'$k_{deg}$': max(abs(score[0]['kDeg'][:, 1]))})
+                      r'$k_{endo,a}$': max(abs(score[0]['activeEndo'][:, 1])),
+                      r'$f_{sort}$': max(abs(score[0]['sortF'][:, 1])),
+                      r'$k_{rec}$': max(abs(score[0]['kRec'][:, 1])),
+                      r'$k_{deg}$': max(abs(score[0]['kDeg'][:, 1]))})
         ax.set_title(r'IL-2/-15 trafficking model')
     else:
         ax.set_title(r'IL-2/-15 no trafficking model')
@@ -71,7 +70,6 @@ def plot_geweke_2_15(ax, traf):
     ax.set(ylim=(-0.1, 1.25), ylabel=r"max |z-score|")
 
 
-
 def plot_geweke_4_7(ax, traf=True):
     """ Generating Geweke plots using the traces from IL-4 and IL-7 fitting to Gonnord data. """
     trace = import_samples_4_7(ret_trace=True)  # return the trace
@@ -88,10 +86,10 @@ def plot_geweke_4_7(ax, traf=True):
 
     if traf:  # add the trafficking parameters if necessary & set proper title
         dictt.update({r'$k_{endo}$': max(abs(score[0]['endo'][:, 1])),
-                     r'$k_{endo,a}$': max(abs(score[0]['activeEndo'][:, 1])),
-                     r'$f_{sort}$': max(abs(score[0]['sortF'][:, 1])),
-                     r'$k_{rec}$': max(abs(score[0]['kRec'][:, 1])),
-                     r'$k_{deg}$': max(abs(score[0]['kDeg'][:, 1]))})
+                      r'$k_{endo,a}$': max(abs(score[0]['activeEndo'][:, 1])),
+                      r'$f_{sort}$': max(abs(score[0]['sortF'][:, 1])),
+                      r'$k_{rec}$': max(abs(score[0]['kRec'][:, 1])),
+                      r'$k_{deg}$': max(abs(score[0]['kDeg'][:, 1]))})
         ax.set_title(r'IL-4/-7 trafficking model')
     else:
         ax.set_title(r'IL-4/-7 no trafficking model')
@@ -108,4 +106,3 @@ def plot_geweke_4_7(ax, traf=True):
     ax.get_legend().set_visible(False)  # remove legend created by sns
     ax.axhline(1., c='r')  # line to denote acceptable threshold of standard deviations
     ax.set(ylim=(-0.1, 1.25), ylabel=r"max |z-score|")
-

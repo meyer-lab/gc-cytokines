@@ -47,7 +47,7 @@ class IL4_7_activity:  # pylint: disable=too-few-public-methods
         actVecIL4 = actVecIL4 / (actVecIL4 + scales[0])
         actVecIL7 = actVecIL7 / (actVecIL7 + scales[1])
 
-        # normalize each actVec by its maximum... do I need to be doing this?
+        # normalize each actVec by its maximum
         actVecIL4 = actVecIL4 / T.max(actVecIL4)
         actVecIL7 = actVecIL7 / T.max(actVecIL7)
 
@@ -91,7 +91,6 @@ class crosstalk:  # pylint: disable=too-few-public-methods
         condvecCyto = np.zeros(nSpecies())
         condvecCyto[getCytokineSpecies()[stim_cytokine]] = condvec[getCytokineSpecies()[stim_cytokine]]
         condvecCyto[getCytokineSpecies()[stim_cytokine] + halfL()] = condvec[getCytokineSpecies()[stim_cytokine] + halfL()]
-        # TODO: Check this
 
         Op = runCkineDoseOp(preT=self.ts, tt=self.ts, conditions=ligands, condense=condvecCyto, prestim=prelig)
 
@@ -155,17 +154,15 @@ class build_model:
             kfwd, endo, activeEndo, kRec, kDeg, sortF = commonTraf()
             nullRates = T.ones(6, dtype=np.float64)  # associated with IL2 and IL15
             Tone = T.ones(1, dtype=np.float64)
-            Tzero = T.zeros(1, dtype=np.float64)
             k27rev = pm.Lognormal('k27rev', mu=np.log(0.1), sd=1, shape=1)  # associated with IL7
             k33rev = pm.Lognormal('k33rev', mu=np.log(0.1), sd=1, shape=1)  # associated with IL4
 
-            GCexpr = (328. * endo) / (1. + ((kRec * (1. - sortF)) / (kDeg * sortF)))  # constant according to measured number per cell
-            IL7Raexpr = (2591. * endo) / (1. + ((kRec * (1. - sortF)) / (kDeg * sortF)))  # constant according to measured number per cell
-            IL4Raexpr = (254. * endo) / (1. + ((kRec * (1. - sortF)) / (kDeg * sortF)))  # constant according to measured number per cell
+            # constant according to measured number per cell. gc, blank, IL7R, blank, IL4R
+            Rexpr = (np.array([0., 0., 328., 0., 2591., 0., 254., 0.]) * endo) / (1. + ((kRec * (1. - sortF)) / (kDeg * sortF)))
             scales = pm.Lognormal('scales', mu=np.log(100.), sd=1, shape=2)  # create scaling constants for activity measurements
 
-            unkVec = T.concatenate((kfwd, nullRates, k27rev, Tone, k33rev, Tone, endo, activeEndo, sortF, kRec, kDeg))
-            unkVec = T.concatenate((unkVec, Tzero, Tzero, GCexpr, Tzero, IL7Raexpr, Tzero, IL4Raexpr, Tzero))  # indexing same as in model.hpp
+            # indexing same as in model.hpp
+            unkVec = T.concatenate((kfwd, nullRates, k27rev, Tone, k33rev, Tone, endo, activeEndo, sortF, kRec, kDeg, Rexpr))
 
             Y_int = self.act.calc(unkVec, scales)  # fitting the data based on act.calc for the given parameters
 

@@ -59,6 +59,7 @@ def plot_timepoints(ax, factors):
     ax.set_title('Time')
     ax.legend()
 
+
 def correlation_cells(ax, experimental, predicted, cell_names):
     """Function that takes in predicted and experimental components from cell decomposion and plots them against each other."""
     colors = cm.rainbow(np.linspace(0, 1, len(cell_names)))
@@ -66,7 +67,7 @@ def correlation_cells(ax, experimental, predicted, cell_names):
     for ii, cell_name in enumerate(cell_names):
         ax.scatter(experimental, predicted, c=[colors[ii]], marker=markersCells[ii], label=cell_name, alpha=0.75)
 
+
 def correlation_ligands(ax, experimental, predicted):
     """Function that takes in predicted and experimental components from ligand decomposion and plots them against each other."""
     ax.scatter(experimental, predicted)
-
