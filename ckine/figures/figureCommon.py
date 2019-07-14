@@ -62,10 +62,7 @@ def getSetup(figsize, gridd, multz=None, empts=None):
 
 
 def set_bounds(ax, compNum):
-    """Add labels and bounds"""
-    ax.set_xlabel('Component ' + str(compNum))
-    ax.set_ylabel('Component ' + str(compNum + 1))
-
+    """ Set bounds of component plots. """
     x_max = np.max(np.absolute(np.asarray(ax.get_xlim()))) * 1.1
     y_max = np.max(np.absolute(np.asarray(ax.get_ylim()))) * 1.1
 
@@ -73,20 +70,18 @@ def set_bounds(ax, compNum):
     ax.set_ylim(-y_max, y_max)
 
 
-def plot_R2X(ax, tensor, factors_list, n_comps, cells_dim):
+def plot_R2X(ax, tensor, factors_list):
     """Function to plot R2X bar graph."""
     R2X_array = list()
-    for n in range(n_comps):
-        factors = factors_list[n]
-        R2X = find_R2X(tensor, factors, cells_dim)
-        R2X_array.append(R2X)
+    for n, factors in enumerate(factors_list):
+        R2X_array.append(find_R2X(tensor, factors))
 
-    ax.plot(range(1, n_comps + 1), R2X_array, 'ko', label='Overall R2X')
+    ax.plot(range(1, len(factors_list) + 1), R2X_array, 'ko', label='Overall R2X')
     ax.set_ylabel('R2X')
     ax.set_xlabel('Number of Components')
     ax.set_ylim(0, 1)
-    ax.set_xticks(np.arange(1, n_comps + 1))
-    ax.set_xticklabels(np.arange(1, n_comps + 1))
+    ax.set_xticks(np.arange(1, len(factors_list) + 1))
+    ax.set_xticklabels(np.arange(1, len(factors_list) + 1))
 
 
 def subplotLabel(ax, letter, hstretch=1):
@@ -125,6 +120,8 @@ def plot_cells(ax, factors, component_x, component_y, cell_names, ax_pos, fig3=T
         ax.legend()
 
     ax.set_title('Cells')
+    ax.set_xlabel('Component ' + str(component_x))
+    ax.set_ylabel('Component ' + str(component_y))
     set_bounds(ax, component_x)
 
 
@@ -143,7 +140,7 @@ def overlayCartoon(figFile, cartoonFile, x, y, scalee=1, scale_x=1, scale_y=1):
     template.save(figFile)
 
 
-def plot_ligands(ax, factors, n_ligands, fig, mesh):
+def plot_ligands(ax, factors, n_ligands, fig, mesh, cutoff=0.0):
     """Function to put all ligand decomposition plots in one figure."""
     ILs, _, _, _ = import_pstat()  # Cytokine stimulation concentrations in nM
     ILs = np.flip(ILs)
@@ -159,15 +156,19 @@ def plot_ligands(ax, factors, n_ligands, fig, mesh):
                         Line2D([0], [0], color='k', label='IL-7', marker=markers[2], linestyle='')]
 
     for ii in range(factors.shape[1]):
+        componentLabel = True
         for jj in range(n_ligands):
             idx = range(jj * int(mesh.shape[0] / n_ligands), (jj + 1) * int(mesh.shape[0] / n_ligands))
             if fig == 4:
                 idx = range(jj * len(mesh), (jj + 1) * len(mesh))
-            if jj == 0:
-                ax.plot(ILs, factors[idx, ii], color=colors[ii], label='Component ' + str(ii + 1))
-                ax.scatter(ILs, factors[idx, ii], color=colors[ii], marker=markers[jj])
-            else:
-                ax.plot(ILs, factors[idx, ii], color=colors[ii])
+                
+            # If the component value never gets over cutoff, then don't plot the line
+            if np.max(factors[idx, ii]) > cutoff:
+                if componentLabel:
+                    ax.plot(ILs, factors[idx, ii], color=colors[ii], label='Component ' + str(ii + 1))
+                    componentLabel = False
+                else:
+                    ax.plot(ILs, factors[idx, ii], color=colors[ii])
                 ax.scatter(ILs, factors[idx, ii], color=colors[ii], marker=markers[jj])
 
     if fig != 4:

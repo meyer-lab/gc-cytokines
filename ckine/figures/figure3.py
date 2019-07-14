@@ -1,22 +1,22 @@
 """
 This creates Figure 3.
 """
+import string
 import logging
+import numpy as np
 from sklearn.decomposition import PCA
 from scipy import stats
-import numpy as np
 import matplotlib.cm as cm
-import string
 import tensorly as tl
 import seaborn as sns
 from .figureCommon import subplotLabel, getSetup, plot_cells, plot_ligands, plot_timepoints, plot_R2X, set_bounds
 from ..imports import import_Rexpr
-from ..tensor import perform_decomposition
+from ..tensor import perform_decomposition, z_score_values
 from ..make_tensor import make_tensor, n_lig
 
 cell_dim = 1  # For this figure, the cell dimension is along the second [python index 1].
 values, _, mat, _, _ = make_tensor()
-values = tl.tensor(values)
+values = z_score_values(tl.tensor(values), cell_dim)
 logging.info("Done constructing tensor.")
 
 
@@ -28,8 +28,8 @@ def makeFigure():
     logging.info("Starting decomposition.")
     data, numpy_data, cell_names = import_Rexpr()
     factors_activity = []
-    for jj in range(len(mat) - 1):
-        factors = perform_decomposition(values, jj + 1, cell_dim)
+    for jj in range(4):
+        factors = perform_decomposition(values, jj + 1)
         factors_activity.append(factors)
     logging.info("Decomposition finished.")
 
@@ -43,7 +43,7 @@ def makeFigure():
     # Blank out for the cartoon
     ax[3].axis('off')
 
-    plot_R2X(ax[4], values, factors_activity, n_comps=5, cells_dim=cell_dim)
+    plot_R2X(ax[4], values, factors_activity)
 
     # Add subplot labels
     for ii, item in enumerate(ax):
@@ -52,9 +52,9 @@ def makeFigure():
     plot_timepoints(ax[5], tl.to_numpy(factors_activ[0]))  # Change final input value depending on need
 
     plot_cells(ax[6], tl.to_numpy(factors_activ[1]), 1, 2, cell_names, ax_pos=5)
-    plot_cells(ax[7], tl.to_numpy(factors_activ[1]), 2, 3, cell_names, ax_pos=6)
+    plot_cells(ax[7], tl.to_numpy(factors_activ[1]), 1, 3, cell_names, ax_pos=6)
 
-    plot_ligands(ax[8], tl.to_numpy(factors_activ[2]), n_ligands=3, fig=3, mesh=mat)
+    plot_ligands(ax[8], tl.to_numpy(factors_activ[2]), n_ligands=3, fig=3, mesh=mat, cutoff=1.0)
 
     return f
 
