@@ -6,7 +6,6 @@ import numpy as np
 import matplotlib
 import matplotlib.cm as cm
 from matplotlib import gridspec, pyplot as plt
-from mpl_toolkits.axes_grid1 import make_axes_locatable
 from matplotlib.lines import Line2D
 from matplotlib.patches import Patch
 from ..tensor import find_R2X

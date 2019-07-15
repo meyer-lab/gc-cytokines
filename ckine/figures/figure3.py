@@ -12,7 +12,7 @@ import seaborn as sns
 from .figureCommon import subplotLabel, getSetup, plot_cells, plot_ligands, plot_timepoints, plot_R2X, set_bounds
 from ..imports import import_Rexpr
 from ..tensor import perform_decomposition, z_score_values
-from ..make_tensor import make_tensor, n_lig
+from ..make_tensor import make_tensor
 
 cell_dim = 1  # For this figure, the cell dimension is along the second [python index 1].
 values, _, mat, _, _ = make_tensor()

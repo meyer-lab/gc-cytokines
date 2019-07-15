@@ -6,10 +6,9 @@ import logging
 import numpy as np
 import seaborn as sns
 import tensorly as tl
-from tensorly import unfold
 from .figureCommon import subplotLabel, getSetup, plot_cells, plot_ligands, plot_timepoints
 from .figure3 import values, mat
-from ..tensor import perform_tucker, find_R2X_tucker, z_score_values
+from ..tensor import perform_tucker, find_R2X_tucker
 from ..imports import import_Rexpr
 
 cell_dim = 1  # For this figure, the cell dimension is along the second [python index 1].
