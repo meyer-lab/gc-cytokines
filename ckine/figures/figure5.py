@@ -31,7 +31,7 @@ def makeFigure():
     measured_tensor = z_score_values(measured_tensor, cell_dim)
 
     factors_activity = []
-    for jj in range(measured_tensor.shape[2] - 1):
+    for jj in range(5):
         factors = perform_decomposition(measured_tensor, jj + 1)
         factors_activity.append(factors)
     predicted_factors = perform_decomposition(values, 3)
