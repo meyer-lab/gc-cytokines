@@ -7,8 +7,9 @@ import numpy as np
 import seaborn as sns
 import tensorly as tl
 from .figureCommon import subplotLabel, getSetup, plot_cells, plot_ligands, plot_timepoints
-from .figure3 import values, mat
+from .figure3 import values
 from ..tensor import perform_tucker, find_R2X_tucker
+from ..make_tensor import tensor_time
 from ..imports import import_Rexpr
 
 cell_dim = 1  # For this figure, the cell dimension is along the second [python index 1].
@@ -33,10 +34,10 @@ def makeFigure():
     plot_core(ax[4], out[0][0, :, :])
     plot_core(ax[5], out[0][1, :, :])
     factors = out[1]
-    plot_timepoints(ax[0], tl.to_numpy(factors[0]))
-    plot_cells(ax[1], tl.to_numpy(factors[1]), 1, 2, cell_names, ax_pos=1, fig3=False)
-    plot_cells(ax[2], tl.to_numpy(factors[1]), 2, 3, cell_names, ax_pos=4, fig3=False)
-    plot_ligands(ax[3], tl.to_numpy(factors[2]), n_ligands=3, fig='S4', mesh=mat)
+    plot_timepoints(ax[0], tensor_time, tl.to_numpy(factors[0]))
+    plot_cells(ax[1], tl.to_numpy(factors[1]), 1, 2, cell_names)
+    plot_cells(ax[2], tl.to_numpy(factors[1]), 2, 3, cell_names)
+    plot_ligands(ax[3], tl.to_numpy(factors[2]), ligand_names=['IL-2', 'IL-15', 'IL-7'])
 
     return f
 

@@ -29,7 +29,7 @@ class pSTAT_activity:
         output = list()
         jj = 0
         for i, name in enumerate(self.cell_names_pstat):
-            if name == "NK" or name == "CD8+" or name == "Mem CD8+" or name == "Naive Treg":
+            if name in ("NK", "CD8+", "Mem CD8+", "Naive Treg"):
                 # plot matching experimental and predictive pSTAT data for the same cell type
                 j = self.cell_names_receptor.get_loc(self.cell_names_pstat[i])
 
@@ -47,7 +47,7 @@ class pSTAT_activity:
                 data_cat = np.concatenate((self.IL2_data[(i * 4):((i + 1) * 4)], self.IL15_data[(i * 4):((i + 1) * 4)]))
                 data_cat = data_cat / np.mean(data_cat)
 
-                newVec = T.reshape(actVec, data_cat.shape)  # TODO: use print statements to make sure that this reshape has been done correctly
+                newVec = T.reshape(actVec, data_cat.shape)
 
                 output.append(newVec - data_cat)  # copy residuals into list
                 jj = jj + 1

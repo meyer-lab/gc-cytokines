@@ -10,7 +10,6 @@ from matplotlib.lines import Line2D
 from matplotlib.patches import Patch
 from ..tensor import find_R2X
 from ..imports import import_pstat
-from ..make_tensor import tensor_time
 
 
 matplotlib.rcParams['legend.labelspacing'] = 0.2
@@ -107,21 +106,19 @@ def plot_conf_int(ax, x_axis, y_axis, color, label=None):
         ax.legend()
 
 
-def plot_cells(ax, factors, component_x, component_y, cell_names, ax_pos, fig3=True):
+def plot_cells(ax, factors, component_x, component_y, cell_names):
     """This function plots the combination decomposition based on cell type."""
     colors = cm.rainbow(np.linspace(0, 1, len(cell_names)))
     markersCells = ['^', '*', 'D', 's', 'X', 'o', '4', 'H', 'P', '*', 'D', 's', 'X']
 
     for ii, _ in enumerate(factors[:, component_x - 1]):
-        ax.scatter(factors[ii, component_x - 1], factors[ii, component_y - 1], c=[colors[ii]], marker=markersCells[ii], label=cell_names[ii], alpha=0.3)
-
-    if ax_pos == 6:
-        ax.legend()
+        ax.scatter(factors[ii, component_x - 1], factors[ii, component_y - 1], c=[colors[ii]], marker=markersCells[ii], label=cell_names[ii])
 
     ax.set_title('Cells')
     ax.set_xlabel('Component ' + str(component_x))
     ax.set_ylabel('Component ' + str(component_y))
     set_bounds(ax, component_x)
+    ax.legend()
 
 
 def overlayCartoon(figFile, cartoonFile, x, y, scalee=1, scale_x=1, scale_y=1):
@@ -139,28 +136,23 @@ def overlayCartoon(figFile, cartoonFile, x, y, scalee=1, scale_x=1, scale_y=1):
     template.save(figFile)
 
 
-def plot_ligands(ax, factors, n_ligands, fig, mesh, cutoff=0.0):
+def plot_ligands(ax, factors, ligand_names, cutoff=0.0):
     """Function to put all ligand decomposition plots in one figure."""
     ILs, _, _, _ = import_pstat()  # Cytokine stimulation concentrations in nM
+    n_ligands = len(ligand_names)
     ILs = np.flip(ILs)
-    colors = ['b', 'k', 'r', 'y', 'm', 'g']
-    if fig == 4:
-        markers = ['^', '*']
-        legend_shape = [Line2D([0], [0], color='k', marker=markers[0], label='IL-2', linestyle=''),
-                        Line2D([0], [0], color='k', label='IL-15', marker=markers[1], linestyle='')]  # only have IL2 and IL15 in the measured pSTAT data
-    else:
-        markers = ['^', '.', 'd']
-        legend_shape = [Line2D([0], [0], color='k', marker=markers[0], label='IL-2', linestyle=''),
-                        Line2D([0], [0], color='k', label='IL-15', marker=markers[1], linestyle=''),
-                        Line2D([0], [0], color='k', label='IL-7', marker=markers[2], linestyle='')]
+    colors = sns.color_palette()
+    legend_shape = []
+    markers = ['^', '.', 'd']
+
+    for ii, name in enumerate(ligand_names):
+        legend_shape.append(Line2D([0], [0], color='k', marker=markers[ii], label=name, linestyle='')) # Make ligand legend elements
 
     for ii in range(factors.shape[1]):
         componentLabel = True
         for jj in range(n_ligands):
-            idx = range(jj * int(mesh.shape[0] / n_ligands), (jj + 1) * int(mesh.shape[0] / n_ligands))
-            if fig == 4:
-                idx = range(jj * len(mesh), (jj + 1) * len(mesh))
-                
+            idx = range(jj * len(ILs), (jj + 1) * len(ILs))
+
             # If the component value never gets over cutoff, then don't plot the line
             if np.max(factors[idx, ii]) > cutoff:
                 if componentLabel:
@@ -170,10 +162,7 @@ def plot_ligands(ax, factors, n_ligands, fig, mesh, cutoff=0.0):
                     ax.plot(ILs, factors[idx, ii], color=colors[ii])
                 ax.scatter(ILs, factors[idx, ii], color=colors[ii], marker=markers[jj])
 
-    if fig != 4:
-        ax.add_artist(ax.legend(handles=legend_shape, loc=2))
-    else:
-        ax.add_artist(ax.legend(handles=legend_shape, loc=4))
+    ax.add_artist(ax.legend(handles=legend_shape, loc=4))
 
     ax.set_xlabel('Ligand Concentration (nM)')
     ax.set_ylabel('Component')
@@ -184,16 +173,16 @@ def plot_ligands(ax, factors, n_ligands, fig, mesh, cutoff=0.0):
     ax.legend(loc=3)
 
 
-def plot_timepoints(ax, factors):
+def plot_timepoints(ax, ts, factors):
     """Function to put all timepoint plots in one figure."""
-    colors = ['b', 'k', 'r', 'y', 'm', 'g']
+    colors = sns.color_palette()
     for ii in range(factors.shape[1]):
-        ax.plot(tensor_time, factors[:, ii], c=colors[ii], label='Component ' + str(ii + 1))
+        ax.plot(ts, factors[:, ii], c=colors[ii], label='Component ' + str(ii + 1))
 
     ax.set_xlabel('Time (min)')
     ax.set_ylabel('Component')
     ax.set_title('Time')
-    ax.legend(loc=4)
+    ax.legend()
 
 
 def kfwd_info(unkVec):
