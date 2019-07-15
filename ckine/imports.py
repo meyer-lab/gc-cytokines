@@ -8,11 +8,12 @@ from .fit import build_model as build_model_2_15, find_gc
 from .fit_others import build_model as build_model_4_7
 from .model import nParams
 
+path_here = os.path.dirname(os.path.dirname(__file__))
+
 
 def import_Rexpr():
     """ Loads CSV file containing Rexpr levels from Visterra data. """
-    path = os.path.dirname(os.path.dirname(__file__))
-    data = pds.read_csv(join(path, 'ckine/data/final_receptor_levels.csv'))  # Every row in the data represents a specific cell
+    data = pds.read_csv(join(path_here, 'ckine/data/final_receptor_levels.csv'))  # Every row in the data represents a specific cell
     df = data.groupby(['Cell Type', 'Receptor']).mean()  # Get the mean receptor count for each cell across trials in a new dataframe.
     cell_names, receptor_names = df.index.unique().levels  # gc_idx=0|IL15Ra_idx=1|IL2Ra_idx=2|IL2Rb_idx=3
     cell_names = cell_names[[5, 1, 6, 2, 10, 8, 4, 9, 7, 3, 0]]  # Reorder to match most plots
@@ -30,12 +31,11 @@ def import_samples_2_15(Traf=True, ret_trace=False, N=None, tensor=False):
     bmodel = build_model_2_15(traf=Traf)
     n_params = nParams()
 
-    path = os.path.dirname(os.path.abspath(__file__))
 
     if Traf:
-        trace = pm.backends.text.load(join(path, '../IL2_model_results'), bmodel.M)
+        trace = pm.backends.text.load(join(path_here, 'ckine/data/fits/IL2_model_results'), bmodel.M)
     else:
-        trace = pm.backends.text.load(join(path, '../IL2_15_no_traf'), bmodel.M)
+        trace = pm.backends.text.load(join(path_here, 'ckine/data/fits/IL2_15_no_traf'), bmodel.M)
 
     # option to return trace instead of numpy array
     if ret_trace:
@@ -57,9 +57,7 @@ def import_samples_2_15(Traf=True, ret_trace=False, N=None, tensor=False):
         kDeg = trace.get_values('kDeg')
         Rexpr_gc = find_gc(Traf, endo, kRec, sortF, kDeg)
     else:
-        endo = np.zeros((num))
-        activeEndo = np.zeros((num))
-        sortF = np.zeros((num))
+        endo = activeEndo = sortF = np.zeros((num))
         kRec = np.zeros((num))
         kDeg = np.zeros((num))
         Rexpr_gc = np.ones((num), dtype=float) * find_gc(Traf, endo, kRec, sortF, kDeg)
@@ -85,8 +83,7 @@ def import_samples_4_7(ret_trace=False, N=None):
     bmodel = build_model_4_7()
     n_params = nParams()
 
-    path = os.path.dirname(os.path.abspath(__file__))
-    trace = pm.backends.text.load(join(path, '../IL4-7_model_results'), bmodel.M)
+    trace = pm.backends.text.load(join(path_here, 'ckine/data/fits/IL4-7_model_results'), bmodel.M)
 
     # option to return trace instead of numpy array
     if ret_trace:
@@ -129,12 +126,10 @@ def import_visterra_2_15(Traf=True, ret_trace=False, N=None):
     bmodel = build_model_visterra(traf=Traf)
     n_params = nParams()
 
-    path = os.path.dirname(os.path.abspath(__file__))
-
     if Traf:
-        trace = pm.backends.text.load(join(path, '../IL2_visterra_results'), bmodel.M)
+        trace = pm.backends.text.load(join(path_here, 'ckine/data/fits/IL2_visterra_results'), bmodel.M)
     else:
-        trace = pm.backends.text.load(join(path, '../IL2_15_no_traf_visterra'), bmodel.M)
+        trace = pm.backends.text.load(join(path_here, 'ckine/data/fits/IL2_15_no_traf_visterra'), bmodel.M)
 
     # option to return trace instead of numpy array
     if ret_trace:

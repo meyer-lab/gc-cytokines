@@ -6,7 +6,7 @@ compile_opts = -std=c++14 -mavx -march=native -Wall -pthread
 
 flist = 1 2 3 4 5 S1 S2 S4 S5 B1 B2 B3 B4 B5
 
-.PHONY: clean test all testprofile testcover doc testcpp autopep
+.PHONY: clean test all testprofile testcover doc testcpp autopep spell leaks
 
 all: ckine/ckine.so Manuscript/Manuscript.pdf Manuscript/Manuscript.docx Manuscript/CoverLetter.docx pylint.log
 
@@ -64,6 +64,9 @@ clean:
 	rm -rf html ckine/*.dSYM doxy.log graph_all.svg valgrind.xml callgrind.out.* cprofile.svg venv
 	find -iname "*.pyc" -delete
 
+spell: Manuscript/Text/*.md
+	pandoc --lua-filter common/templates/spell.lua Manuscript/Text/*.md | sort | uniq -ic
+
 test: venv ckine/ckine.so
 	. venv/bin/activate && pytest
 
@@ -71,9 +74,11 @@ testcover: venv ckine/ckine.so
 	. venv/bin/activate && pytest --junitxml=junit.xml --cov-branch --cov=ckine --cov-report xml:coverage.xml
 
 testcpp: venv ckine/cppcheck
-	valgrind --leak-check=full --show-leak-kinds=all --track-origins=yes --trace-children=yes ckine/cppcheck
 	valgrind --tool=callgrind ckine/cppcheck
-	. venv/bin/activate && gprof2dot -f callgrind -n 5.0 callgrind.out.* | dot -Tsvg -o cprofile.svg
+	. venv/bin/activate && gprof2dot -f callgrind -n 1.0 callgrind.out.* | dot -Tsvg -o cprofile.svg
+
+leaks: venv ckine/cppcheck
+	valgrind --leak-check=full --show-leak-kinds=all --track-origins=yes --trace-children=yes ckine/cppcheck
 
 cppcheck: ckine/cppcheck
 	ckine/cppcheck
