@@ -15,13 +15,13 @@ from ..imports import import_samples_2_15
 def makeFigure():
     """Get a list of the axis objects and create a figure"""
     # Get list of axis objects
-    ax, f = getSetup((10, 7), (3, 4), multz={0: 2, 10: 1}, empts=[2])
+    ax, f = getSetup((7.5, 6), (3, 4), multz={0: 2, 10: 1}, empts=[2])
 
     real_mults = [0, 8]  # subplots in ax that are actually mults
     ax[0].axis('off')  # blank out first axis for cartoon
 
     for ii, item in enumerate(ax):
-        h = 2.5 if ii in real_mults else 1
+        h = 3.25 if ii in real_mults else 1
         subplotLabel(item, string.ascii_uppercase[ii], hstretch=h)
 
     unkVec, scales = import_samples_2_15(N=100)  # use these for simulations
@@ -148,7 +148,7 @@ def violinPlots(ax, unkVec, scales, Traf=True):
     misc = np.vstack((scaless, unkVec[:, 19], kfwd))
     misc = pd.DataFrame(misc.T)
 
-    Rexpr.columns = ['IL-2Rα', 'IL-2Rβ', r'$\gamma_{c}$', 'IL-15Rα']
+    Rexpr.columns = ['IL-2Rα', 'IL-2Rβ', r'$\mathrm{γ_{c}}$', 'IL-15Rα']
     col_list = ["violet", "violet", "grey", "goldenrod"]
     col_list_palette = sns.xkcd_palette(col_list)
     a = sns.violinplot(data=np.log10(Rexpr), ax=ax[0], linewidth=0.5, palette=col_list_palette)
@@ -164,8 +164,9 @@ def violinPlots(ax, unkVec, scales, Traf=True):
     sc_ax = 1  # subplot number for the scaling constant
     if Traf:
         sc_ax = 2
-    misc.columns = [r'$C_{5}$ / ' + "{:.2E}".format(np.max(scales)), r'$f_{sort}$', r'$k_{fwd}$ / ' + "{:.2E}".format(np.max(unkVec[:, 6]))]
+    misc.columns = [r'$\mathrm{C_{5}}$ / ' + "{:.2E}".format(np.max(scales)), r'$\mathrm{f_{sort}}$', r'$\mathrm{k_{fwd}}$ / ' + "{:.2E}".format(np.max(unkVec[:, 6]))]
     c = sns.violinplot(data=misc, ax=ax[sc_ax], linewidth=0.5, color="grey")
+    c.set_xticklabels(c.get_xticklabels(), rotation=25, rotation_mode="anchor", ha="right", fontsize=8, position=(0, 0.05))
     c.set(ylabel="value", title="Miscellaneous parameters")
 
 
@@ -194,11 +195,11 @@ def rateComp(ax, unkVec):
     k20rev = k22rev * k24rev / k17rev
 
     # add each rate duo as separate column in dataframe
-    df = pd.DataFrame({r'$k_{1}, k_{13}$': np.append(k1rev, k13rev), r'$k_{2}, k_{14}$': np.append(k2rev, k14rev),
-                       r'$k_{4}, k_{16}$': np.append(k4rev, k16rev), r'$k_{5}, k_{17}$': np.append(k5rev, k17rev),
-                       r'$k_{8}, k_{20}$': np.append(k8rev, k20rev), r'$k_{9}, k_{21}$': np.append(k9rev, k21rev),
-                       r'$k_{10}, k_{22}$': np.append(k10rev, k22rev), r'$k_{11}, k_{23}$': np.append(k11rev, k23rev),
-                       r'$k_{12}, k_{24}$': np.append(k12rev, k24rev)})
+    df = pd.DataFrame({r'$\mathrm{k_{1}, k_{13}}$': np.append(k1rev, k13rev), r'$\mathrm{k_{2}, k_{14}}$': np.append(k2rev, k14rev),
+                       r'$\mathrm{k_{4}, k_{16}}$': np.append(k4rev, k16rev), r'$\mathrm{k_{5}, k_{17}}$': np.append(k5rev, k17rev),
+                       r'$\mathrm{k_{8}, k_{20}}$': np.append(k8rev, k20rev), r'$\mathrm{k_{9}, k_{21}}$': np.append(k9rev, k21rev),
+                       r'$\mathrm{k_{10}, k_{22}}$': np.append(k10rev, k22rev), r'$\mathrm{k_{11}, k_{23}}$': np.append(k11rev, k23rev),
+                       r'$\mathrm{k_{12}, k_{24}}$': np.append(k12rev, k24rev)})
 
     # add labels for IL2 and IL15
     df['cytokine'] = 'IL-2'
@@ -219,4 +220,5 @@ def rateComp(ax, unkVec):
     a.scatter(0.1, np.log10(kfbnd * 0.065), color='goldenrod')  # overlay point for k13rev
     a.scatter(0.7, np.log10(kfbnd * 144), color="darkviolet")   # overlay point for k2rev
     a.scatter(1.1, np.log10(kfbnd * 468), color='goldenrod')  # overlay point for k14rev
+    a.set_xticklabels(a.get_xticklabels(), fontsize=6.2)
     a.set_title("Analogous reverse reaction rates")

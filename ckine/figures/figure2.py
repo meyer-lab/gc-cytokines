@@ -15,7 +15,7 @@ from ..imports import import_samples_4_7, import_samples_2_15
 def makeFigure():
     """Get a list of the axis objects and create a figure"""
     # Get list of axis objects
-    ax, f = getSetup((10, 7), (3, 3))
+    ax, f = getSetup((7.6, 6), (3, 3))
 
     # Blank out for the cartoon
     ax[0].axis('off')
@@ -127,7 +127,7 @@ def rexpr_violin(ax, unkVec):
     Rexpr = Rexpr.transpose()
     Rexpr = pd.DataFrame(Rexpr)
 
-    Rexpr.columns = [r'$\gamma_{c}$', 'IL-7Rα', 'IL-4Rα']
+    Rexpr.columns = [r'$\mathrm{γ_{c}}$', 'IL-7Rα', 'IL-4Rα']
     col_list = ["grey", "blue", "lightblue"]
     col_list_palette = sns.xkcd_palette(col_list)
     a = sns.violinplot(data=np.log10(Rexpr), ax=ax, linewidth=0.5, palette=col_list_palette)
@@ -143,8 +143,8 @@ def misc_violin(ax, unkVec, scales):
     misc = np.vstack((scales6, scales5, unkVec[19, :], unkVec[6, :] / np.max(unkVec[6, :])))
     misc = pd.DataFrame(misc.T)
 
-    misc.columns = [r'$C_{6}$ / ' + '{:.2E}'.format(np.max(scales[:, 0])), r'$C_{5}$ / ' + '{:.2E}'.format(np.max(scales[:, 1])),
-                    r'$f_{sort}$', r'$k_{fwd}$ / ' + "{:.2E}".format(np.max(unkVec[6, :]))]
+    misc.columns = [r'$\mathrm{C_{6}}$ / ' + '{:.2E}'.format(np.max(scales[:, 0])), r'$\mathrm{C_{5}}$ / ' + '{:.2E}'.format(np.max(scales[:, 1])),
+                    r'$\mathrm{f_{sort}}$', r'$\mathrm{k_{fwd}}$ / ' + "{:.2E}".format(np.max(unkVec[6, :]))]
     a = sns.violinplot(data=misc, ax=ax, linewidth=0.5, color="grey")
     a.set_xticklabels(a.get_xticklabels(), rotation=25, rotation_mode="anchor", ha="right", fontsize=8, position=(0, 0.02))
     a.set_ylabel("value")
@@ -248,7 +248,7 @@ def surf_gc(ax, cytokC_pg, unkVec):
     IL7vec = np.transpose(output[:, PTS:(PTS * 2)])
     plot_conf_int(ax, ts, IL4vec, "powderblue")
     plot_conf_int(ax, ts, IL7vec, "b")
-    ax.set(title=(r"$\gamma_{c}$ depletion at " + str(int(cytokC_pg)) + ' pg/mL'), ylabel=r"Surface $\gamma_{c}$ (%)", xlabel="Time (min)")
+    ax.set(title=(r"$\mathrm{γ_{c}}$ depletion at " + str(int(cytokC_pg)) + ' pg/mL'), ylabel=r"Surface $\mathrm{γ_{c}}$ (%)", xlabel="Time (min)")
     ax.set_ylim(0, 115)
 
 
@@ -304,6 +304,6 @@ def relativeGC(ax, unkVec2, unkVec4):
 
     a = sns.violinplot(data=np.log10(df), ax=ax, linewidth=0, scale='width')
     a.set_xticklabels(a.get_xticklabels(), rotation=25, rotation_mode="anchor", ha="right", fontsize=8, position=(0, 0.02))
-    a.set(title=r"Relative $\gamma_{c}$ affinity", ylabel=r"$\mathrm{log_{10}(K_{a})}$")
+    a.set(title=r"Relative $\mathrm{γ_{c}}$ affinity", ylabel=r"$\mathrm{log_{10}(K_{a})}$")
 
 # TODO: Add Ka units.

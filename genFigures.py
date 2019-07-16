@@ -22,14 +22,14 @@ if __name__ == '__main__':
     if sys.argv[1] == '1':
         # Overlay Figure 1 cartoon
         overlayCartoon(fdir + 'figure1.svg',
-                       './graph_all.svg', 16, -3, scalee=0.45, scale_x=1.07, scale_y=0.97)  # scalee was 0.35, y was 15
+                       './graph_all.svg', 1, 12, scalee=0.34, scale_x=1.07, scale_y=0.97)  # scalee was 0.35, y was 15
         overlayCartoon(fdir + 'figure1.svg',
-                       './ckine/data/cell_legend.svg', 345, 120, scalee=0.15)  # scalee was 0.35, y was 15
+                       './ckine/data/cell_legend.svg', 245, 105, scalee=0.12)  # scalee was 0.35, y was 15
 
     if sys.argv[1] == '2':
         # Overlay Figure 2 cartoon
         overlayCartoon(fdir + 'figure2.svg',
-                       './ckine/data/simple_crosstalk.svg', 29, 0, scalee=0.13)  # might need to adjust this
+                       './ckine/data/simple_crosstalk.svg', 29, 0, scalee=0.1)  # might need to adjust this
 
     if sys.argv[1] == '3':
         # Overlay Figure 3 cartoon
