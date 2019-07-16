@@ -33,7 +33,7 @@ def makeFigure():
         factors_activity.append(factors)
     logging.info("Decomposition finished.")
 
-    n_comps = 3
+    n_comps = 2
     factors_activ = factors_activity[n_comps - 1]
 
     # Start plotting
@@ -42,19 +42,27 @@ def makeFigure():
 
     # Blank out for the cartoon
     ax[3].axis('off')
+    ax[4].axis('off')
 
-    plot_R2X(ax[4], values, factors_activity)
+    plot_R2X(ax[5], values, factors_activity)
 
     # Add subplot labels
-    for ii, item in enumerate(ax):
+    axLabel = ax.copy()
+    del axLabel[4]
+    for ii, item in enumerate(axLabel):
         subplotLabel(item, string.ascii_uppercase[ii])  # Add subplot labels
 
-    plot_timepoints(ax[5], tensor_time, tl.to_numpy(factors_activ[0]))
+    plot_timepoints(ax[6], tensor_time, tl.to_numpy(factors_activ[0]))
 
-    plot_cells(ax[6], tl.to_numpy(factors_activ[1]), 1, 2, cell_names)
-    plot_cells(ax[7], tl.to_numpy(factors_activ[1]), 1, 3, cell_names)
+    plot_cells(ax[7], tl.to_numpy(factors_activ[1]), 1, 2, cell_names)
+    
+    legend = ax[7].get_legend()
+    labels = (x.get_text() for x in legend.get_texts())
+    ax[4].legend(legend.legendHandles, labels, loc='lower right')
+    
+    ax[7].get_legend().remove()
 
-    plot_ligands(ax[8], tl.to_numpy(factors_activ[2]), ligand_names=['IL-2', 'IL-15', 'IL-7'], cutoff=1.0)
+    plot_ligands(ax[8], tl.to_numpy(factors_activ[2]), ligand_names=['IL-2', 'IL-15', 'IL-7'])
 
     return f
 
