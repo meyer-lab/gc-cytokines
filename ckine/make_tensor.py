@@ -12,10 +12,10 @@ rxntfR = np.squeeze(rxntfR)
 
 
 # generate n_timepoints evenly spaced timepoints to 4 hrs
-tensor_time = np.linspace(0., 240., 50)
+tensor_time = np.linspace(0., 240., 200)
 
 
-def n_lig(mut=False):
+def n_lig():
     '''Function to return the number of cytokines used in building the tensor.'''
     return 3
 
@@ -83,12 +83,14 @@ def meshprep(mut):
     no_expression = np.ones((numpy_data.shape[0], 8 - numpy_data.shape[1])) * 0.0
     # Need to convert numbers to expression values
     numpy_data[:, :] = (numpy_data[:, :] * rxntfR[17]) / (1. + ((rxntfR[20] * (1. - rxntfR[19])) / (rxntfR[21] * rxntfR[19])))  # constant according to measured number per cell
-    all_receptors = np.concatenate((numpy_data, no_expression), axis=1)  # Expression: IL2Ra, IL2Rb, gc, IL15Ra, IL7Ra, IL9R, IL4Ra, IL21Ra in order
-    receptor_repeats = np.repeat(all_receptors, len(concMesh), 0)  # Create an array that repeats the receptor expression levels 'len(concMesh)' times
+    # Expression: IL2Ra, IL2Rb, gc, IL15Ra, IL7Ra, IL9R, IL4Ra, IL21Ra in order
+    all_receptors = np.concatenate((numpy_data, no_expression), axis=1)
+    # Create an array that repeats the receptor expression levels 'len(concMesh)' times
+    receptor_repeats = np.repeat(all_receptors, len(concMesh), 0)
 
-    '''Concatenate to obtain the new meshgrid.
-    Conc_recept_cell basically repeats the initial stimulation concentration for all ligands of interest an X amount of times (X = # of cells)
-    The first [len(ILs)*4] are for cell 1, second [len(ILs)*4] are for cell 2, etc...'''
+    # Concatenate to obtain the new meshgrid.
+    # Conc_recept_cell repeats the initial stimulation concentration for all ligands of interest X times (X = # of cells)
+    # The first [len(ILs)*4] are for cell 1, second [len(ILs)*4] are for cell 2, etc...
     Conc_recept_cell = np.concatenate((concMesh_stacked, receptor_repeats), axis=1)
     return Conc_recept_cell, concMesh, concMesh_stacked, cell_names
 
@@ -96,7 +98,7 @@ def meshprep(mut):
 def prep_tensor(mut):
     """Function to solve the model for initial conditions in meshprep()."""
     Conc_recept_cell, concMesh, concMesh_stacked, cell_names = meshprep(mut)
-    numlig = n_lig(mut)
+    numlig = n_lig()
     idx_ref = int(concMesh.shape[0] / numlig)  # Provides a reference for the order of indices at which the mutant is present.
 
     # Allocate a y_of_combos

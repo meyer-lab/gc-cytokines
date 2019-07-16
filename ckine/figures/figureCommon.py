@@ -71,7 +71,7 @@ def set_bounds(ax, compNum):
 def plot_R2X(ax, tensor, factors_list):
     """Function to plot R2X bar graph."""
     R2X_array = list()
-    for n, factors in enumerate(factors_list):
+    for _, factors in enumerate(factors_list):
         R2X_array.append(find_R2X(tensor, factors))
 
     ax.plot(range(1, len(factors_list) + 1), R2X_array, 'ko', label='Overall R2X')
