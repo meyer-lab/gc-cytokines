@@ -61,7 +61,7 @@ def meshprep(mut):
     """Prepares the initial conditions for the tensor."""
     # Load the data from csv file
     _, numpy_data, cell_names = import_Rexpr()
-    ILs, _, _, _ = import_pstat()  # Cytokine stimulation concentrations in nM
+    ILs, _, _, _, _, _ = import_pstat()  # Cytokine stimulation concentrations in nM
     ILs = np.flip(ILs)
 
     # Goal is to make one cell expression levels by len(mat) for every cell

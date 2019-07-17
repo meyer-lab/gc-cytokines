@@ -1,5 +1,4 @@
 Cell Type,Receptor,Count
-CD3+CD4+,IL-2R$\alpha$,310.4776922
 T-reg,IL-2R$\alpha$,2698.240012
 Naive Treg,IL-2R$\alpha$,2958.308448
 Mem Treg,IL-2R$\alpha$,2458.58786
@@ -10,7 +9,6 @@ NK,IL-2R$\alpha$,33.83209053
 CD8+,IL-2R$\alpha$,12.61216527
 Naive CD8+,IL-2R$\alpha$,14.57173803
 Mem CD8+,IL-2R$\alpha$,19.12465843
-CD3+CD4+,IL-2R$\alpha$,323.7793008
 T-reg,IL-2R$\alpha$,2762.019667
 Naive Treg,IL-2R$\alpha$,3044.341708
 Mem Treg,IL-2R$\alpha$,2600.642454
@@ -21,7 +19,6 @@ NK,IL-2R$\alpha$,18.41385813
 CD8+,IL-2R$\alpha$,35.15121491
 Naive CD8+,IL-2R$\alpha$,29.30692956
 Mem CD8+,IL-2R$\alpha$,40.65423686
-CD3+CD4+,IL-2R$\alpha$,484.6577415
 T-reg,IL-2R$\alpha$,4001.114003
 Naive Treg,IL-2R$\alpha$,3502.327777
 Mem Treg,IL-2R$\alpha$,4334.205032
@@ -32,7 +29,6 @@ NK,IL-2R$\alpha$,18.88660029
 CD8+,IL-2R$\alpha$,18.92441667
 Naive CD8+,IL-2R$\alpha$,4.9261866
 Mem CD8+,IL-2R$\alpha$,27.52628829
-CD3+CD4+,IL-2R$\alpha$,582.6531283
 T-reg,IL-2R$\alpha$,4894.758364
 Naive Treg,IL-2R$\alpha$,4384.859094
 Mem Treg,IL-2R$\alpha$,5678.556659
@@ -43,7 +39,6 @@ NK,IL-2R$\alpha$,21.04034885
 CD8+,IL-2R$\alpha$,29.26789812
 Naive CD8+,IL-2R$\alpha$,13.19412256
 Mem CD8+,IL-2R$\alpha$,71.23836191
-CD3+CD4+,IL-2R$\beta$,182.8614505
 T-reg,IL-2R$\beta$,645.2761468
 Naive Treg,IL-2R$\beta$,522.4051672
 Mem Treg,IL-2R$\beta$,727.0863165
@@ -54,7 +49,6 @@ NK,IL-2R$\beta$,10187.13706
 CD8+,IL-2R$\beta$,539.0371401
 Naive CD8+,IL-2R$\beta$,317.9874852
 Mem CD8+,IL-2R$\beta$,616.3377546
-CD3+CD4+,IL-2R$\beta$,163.1633671
 T-reg,IL-2R$\beta$,677.1259155
 Naive Treg,IL-2R$\beta$,616.4866583
 Mem Treg,IL-2R$\beta$,684.4967074
@@ -65,7 +59,6 @@ NK,IL-2R$\beta$,9868.411701
 CD8+,IL-2R$\beta$,645.8293177
 Naive CD8+,IL-2R$\beta$,419.755008
 Mem CD8+,IL-2R$\beta$,692.5291122
-CD3+CD4+,IL-2R$\beta$,223.8605767
 T-reg,IL-2R$\beta$,543.4897924
 Naive Treg,IL-2R$\beta$,865.6176053
 Mem Treg,IL-2R$\beta$,673.0029036
@@ -76,7 +69,6 @@ NK,IL-2R$\beta$,5385.434403
 CD8+,IL-2R$\beta$,371.6963068
 Naive CD8+,IL-2R$\beta$,270.7151052
 Mem CD8+,IL-2R$\beta$,443.5250306
-CD3+CD4+,IL-2R$\beta$,318.8908772
 T-reg,IL-2R$\beta$,784.6567814
 Naive Treg,IL-2R$\beta$,545.8814635
 Mem Treg,IL-2R$\beta$,952.6196988
@@ -87,7 +79,6 @@ NK,IL-2R$\beta$,9655.091659
 CD8+,IL-2R$\beta$,526.3980487
 Naive CD8+,IL-2R$\beta$,345.0508218
 Mem CD8+,IL-2R$\beta$,782.1425592
-CD3+CD4+,$\gamma_{c}$,13335.37376
 T-reg,$\gamma_{c}$,13160.01735
 Naive Treg,$\gamma_{c}$,11427.5797
 Mem Treg,$\gamma_{c}$,15400.91416
@@ -98,7 +89,6 @@ NK,$\gamma_{c}$,4078.132414
 CD8+,$\gamma_{c}$,10409.37151
 Naive CD8+,$\gamma_{c}$,14695.67195
 Mem CD8+,$\gamma_{c}$,8290.142065
-CD3+CD4+,$\gamma_{c}$,14311.80043
 T-reg,$\gamma_{c}$,12735.74123
 Naive Treg,$\gamma_{c}$,11776.59139
 Mem Treg,$\gamma_{c}$,16131.05774
@@ -109,7 +99,6 @@ NK,$\gamma_{c}$,6910.450176
 CD8+,$\gamma_{c}$,11627.81199
 Naive CD8+,$\gamma_{c}$,14392.51966
 Mem CD8+,$\gamma_{c}$,9951.904418
-CD3+CD4+,$\gamma_{c}$,13509.6393
 T-reg,$\gamma_{c}$,16316.87643
 Naive Treg,$\gamma_{c}$,9830.364654
 Mem Treg,$\gamma_{c}$,20855.26548
@@ -120,7 +109,6 @@ NK,$\gamma_{c}$,12254.87035
 CD8+,$\gamma_{c}$,15050.64033
 Naive CD8+,$\gamma_{c}$,12398.53095
 Mem CD8+,$\gamma_{c}$,18600.78709
-CD3+CD4+,$\gamma_{c}$,11468.69028
 T-reg,$\gamma_{c}$,14113.91785
 Naive Treg,$\gamma_{c}$,8893.738911
 Mem Treg,$\gamma_{c}$,18674.13474
@@ -131,7 +119,6 @@ NK,$\gamma_{c}$,9881.142781
 CD8+,$\gamma_{c}$,13008.48152
 Naive CD8+,$\gamma_{c}$,10904.68874
 Mem CD8+,$\gamma_{c}$,16884.35892
-CD3+CD4+,IL-15R$\alpha$,0
 T-reg,IL-15R$\alpha$,0
 Naive Treg,IL-15R$\alpha$,0
 Mem Treg,IL-15R$\alpha$,0
@@ -142,7 +129,6 @@ NK,IL-15R$\alpha$,0
 CD8+,IL-15R$\alpha$,0
 Naive CD8+,IL-15R$\alpha$,0
 Mem CD8+,IL-15R$\alpha$,0
-CD3+CD4+,IL-7R$\alpha$,17066.36791
 T-reg,IL-7R$\alpha$,4003.606182
 Naive Treg,IL-7R$\alpha$,5975.804219
 Mem Treg,IL-7R$\alpha$,2504.653147
@@ -153,7 +139,6 @@ NK,IL-7R$\alpha$,5.18134425
 CD8+,IL-7R$\alpha$,12943
 Naive CD8+,IL-7R$\alpha$,15574
 Mem CD8+,IL-7R$\alpha$,2819
-CD3+CD4+,IL-7R$\alpha$,16467.17942
 T-reg,IL-7R$\alpha$,3216.115902
 Naive Treg,IL-7R$\alpha$,5353.537686
 Mem Treg,IL-7R$\alpha$,2260.141013

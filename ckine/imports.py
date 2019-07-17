@@ -16,11 +16,11 @@ def import_Rexpr():
     data = pds.read_csv(join(path_here, 'ckine/data/final_receptor_levels.csv'))  # Every row in the data represents a specific cell
     df = data.groupby(['Cell Type', 'Receptor']).mean()  # Get the mean receptor count for each cell across trials in a new dataframe.
     cell_names, receptor_names = df.index.unique().levels  # gc_idx=0|IL15Ra_idx=1|IL2Ra_idx=2|IL2Rb_idx=3
-    cell_names = cell_names[[5, 1, 6, 2, 10, 8, 4, 9, 7, 3, 0]]  # Reorder to match most plots
+    cell_names = cell_names[[4, 0, 5, 1, 9, 7, 3, 8, 6, 2]]  # Reorder to match pstat import order
     receptor_names = receptor_names[[2, 3, 0, 1, 4]]  # Reorder so that IL2Ra_idx=0|IL2Rb_idx=1|gc_idx=2|IL15Ra_idx=3|IL7Ra_idx=4
     numpy_data = pds.Series(df['Count']).values.reshape(cell_names.size, receptor_names.size)  # Rows are in the order of cell_names. Receptor Type is on the order of receptor_names
     numpy_data = numpy_data[:, [2, 3, 0, 1, 4]]  # Rearrange numpy_data to place IL2Ra first, then IL2Rb, then gc, then IL15Ra in this order
-    numpy_data = numpy_data[[5, 1, 6, 2, 10, 8, 4, 9, 7, 3, 0], :]  # Reorder to match cells.
+    numpy_data = numpy_data[[4, 0, 5, 1, 9, 7, 3, 8, 6, 2], :]  # Reorder to match cells
     return data, numpy_data, cell_names
 
 
@@ -174,18 +174,24 @@ def import_pstat():
     path = os.path.dirname(os.path.dirname(__file__))
     data = np.array(pds.read_csv(join(path, 'ckine/data/pSTAT_data.csv'), encoding='latin1'))
     ckineConc = data[4, 2:14]
-    # 4 time points, 11 cell types, 12 concentrations
-    IL2_data = np.zeros((44, 12))
-    IL15_data = np.zeros((44, 12))
+    # 4 time points, 10 cell types, 12 concentrations, 2 replicates
+    IL2_data = np.zeros((40, 12))
+    IL2_data2 = np.zeros((40, 12))
+    IL15_data = np.zeros((40, 12))
+    IL15_data2 = np.zeros((40, 12))
     cell_names = list()
-    for i in range(11):
+    for i in range(10):
         cell_names.append(data[12 * i + 3, 1])
         # Subtract the zero treatment plates before assigning to returned arrays
         if i <= 4:
             zero_treatment = data[12 * (i + 1), 13]
+            zero_treatment2 = data[12 * (i + 1), 30]
         else:
             zero_treatment = data[8 + (12 * i), 13]
-        IL2_data[4 * i:4 * (i + 1), :] = data[6 + (12 * i):10 + (12 * i), 2:14] - zero_treatment
-        IL15_data[4 * i:4 * (i + 1), :] = data[10 + (12 * i):14 + (12 * i), 2:14] - zero_treatment
+            zero_treatment2 = data[8 + (12 * i), 30]
+        IL2_data[4 * i:4 * (i + 1), :] = data[6 + (12 * i):10 + (12 * i), 2:14].astype(np.float) - zero_treatment
+        IL2_data2[4 * i:4 * (i + 1), :] = data[6 + (12 * i):10 + (12 * i), 19:31].astype(np.float) - zero_treatment2
+        IL15_data[4 * i:4 * (i + 1), :] = data[10 + (12 * i):14 + (12 * i), 2:14].astype(np.float) - zero_treatment
+        IL15_data2[4 * i:4 * (i + 1), :] = data[10 + (12 * i):14 + (12 * i), 2:14].astype(np.float) - zero_treatment2
 
-    return ckineConc, cell_names, IL2_data, IL15_data
+    return ckineConc, cell_names, IL2_data, IL15_data, IL2_data2, IL15_data2

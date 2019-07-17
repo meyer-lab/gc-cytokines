@@ -138,7 +138,7 @@ def overlayCartoon(figFile, cartoonFile, x, y, scalee=1, scale_x=1, scale_y=1):
 
 def plot_ligands(ax, factors, ligand_names, cutoff=0.0):
     """Function to put all ligand decomposition plots in one figure."""
-    ILs, _, _, _ = import_pstat()  # Cytokine stimulation concentrations in nM
+    ILs, _, _, _, _, _ = import_pstat()  # Cytokine stimulation concentrations in nM
     n_ligands = len(ligand_names)
     ILs = np.flip(ILs)
     colors = sns.color_palette()
