@@ -62,60 +62,6 @@ Before decomposition, each tensor was variance scaled across each cell populatio
 
 ## Experimental Methods
 
-#### Antibodies for IL-2, IL-15, and IL-7 receptor analysis:
-
-|        Antibody        	|    Dilution    	|          Fluorophore         	|     Clone     	|      CAT#      	|        Vendor       	|
-|:----------------------:	|:--------------:	|:----------------------------:	|:-------------:	|:--------------:	|:-------------------:	|
-|          CD25          	|      1:120     	|    Brilliant   Violet 421    	|     M-A251    	|     356114     	|      BioLegend      	|
-|         CD122          	|      1:120     	|            PE/Cy7            	|      TU27     	|     339014     	|      BioLegend      	|
-|         CD132          	|      1:120     	|              APC             	|     TUGh4     	|     338608     	|      BioLegend      	|
-|   CD215 (1st   mAb)    	|      1:120     	|              APC             	|     JM7A4     	|     330210     	|      BioLegend      	|
-|   CD215 (2nd   mAb)    	|      3:100     	|              APC             	|     151303    	|    FAB1471A    	|    R&D   Systems    	|
-|         CD127          	|      1:120     	|       Alexa   Fluor 488      	|     A019D5    	|     351313     	|      Biolegend      	|
-|       Ms IgG1κ         	|      1:240     	|    Brilliant   Violet 421    	|    MOPC-21    	|     400158     	|      BioLegend      	|
-|        Ms IgG1κ        	|      1:240     	|            PE/Cy7            	|    MOPC-21    	|     400126     	|      BioLegend      	|
-|        Rat   IgG2Bκ    	|      1:60      	|              APC             	|    RTK4530    	|     400612     	|      BioLegend      	|
-|       Ms IgG2Bκ        	|      1:120     	|              APC             	|     MPC-11    	|     400320     	|      BioLegend      	|
-|        Ms IgG2B        	|      3:100     	|              APC             	|     133303    	|     IC0041A    	|    R&D   Systems    	|
-|       Ms IgG1κ         	|      1:120     	|       Alexa   Fluor 488      	|    MOPC-21    	|     400129     	|      Biolegend      	|
-
-#### Panel 1: Antibodies to gate Naïve and Memory T-regulatory and T-helper cells
-
-|    Antibody    	|    Dilution    	|    Fluorophore               	|    Clone     	|    CAT#      	|    Vendor       	|
-|----------------	|----------------	|------------------------------	|--------------	|--------------	|-----------------	|
-|    CD3         	|    1:120       	|    Brilliant   Violet 605    	|    UCHT1     	|    300460    	|    BioLegend    	|
-|    CD4         	|    1:120       	|    Brilliant   Violet 785    	|    RPA-T4    	|    300554    	|    BioLegend    	|
-|    CD127       	|    1:120       	|    Alexa Fluor   488         	|    A019D5    	|    351313    	|    BioLegend    	|
-|    CD45RA      	|    1:120       	|    PE/Dazzle   594           	|    HI100     	|    304146    	|    BioLegend    	|
-
-
-#### Panel 2: Antibodies to gate NK and CD56bright NK cells
-
-|    Antibody    	|    Dilution    	|    Fluorophore               	|    Clone     	|    CAT#      	|    Vendor       	|
-|----------------	|----------------	|------------------------------	|--------------	|--------------	|-----------------	|
-|    CD3         	|    1:120       	|    Brilliant   Violet 605    	|    UCHT1     	|    300460    	|    BioLegend    	|
-|    CD56        	|    1:120       	|    PE/Dazzle   594           	|    5.1H11    	|    362544    	|    BioLegend    	|
-
-#### Panel 3: Antibodies to gate Naïve and Memory Cytotoxic T cells
-
-|    Antibody    	|    Dilution    	|          Fluorophore         	|     Clone    	|     CAT#     	|      Vendor     	|
-|:--------------:	|:--------------:	|:----------------------------:	|:------------:	|:------------:	|:---------------:	|
-|       CD3      	|      1:120     	|    Brilliant   Violet 605    	|     UCHT1    	|    300460    	|    BioLegend    	|
-|       CD8      	|      1:120     	|    Brilliant   Violet 785    	|    RPA-T8    	|    301046    	|    BioLegend    	|
-|     CD45RA     	|      1:120     	|        PE/Dazzle   594       	|     HI100    	|    304146    	|    BioLegend    	|
-
-#### Panel 4: Antibodies to gate Naïve and Memory T-regulatory, T helper, and Cytotoxic cells, and NK cells for CD127 (IL-7) Quantitation
-
-|    Antibody    	|    Dilution    	|          Fluorophore         	|     Clone    	|     CAT#     	|      Vendor     	|
-|:--------------:	|:--------------:	|:----------------------------:	|:------------:	|:------------:	|:---------------:	|
-|      CD25      	|      1:120     	|    Brilliant   Violet 421    	|    M-A251    	|    356114    	|    BioLegend    	|
-|       CD3      	|      1:120     	|    Brilliant   Violet 605    	|     UCHT1    	|    300460    	|    Biolegend    	|
-|       CD4      	|      1:120     	|    Brilliant   Violet 785    	|    RPA-T4    	|    300554    	|    Biolegend    	|
-|      CD127     	|      1:120     	|       Alexa Fluor   488      	|    A019D5    	|    351313    	|    Biolegend    	|
-|     CD45RA     	|      1:120     	|        PE/Dazzle   594       	|     HI100    	|    304146    	|    Biolegend    	|
-|      CD56      	|      1:120     	|            PE/Cy7            	|    5.1H11    	|    362510    	|    Biolegend    	|
-|       CD8      	|      1:200     	|       Alexa   Fluor 647      	|    RPA-T8    	|    301062    	|    Biolegend    	|
-
 ### Receptor abundance quantitation
 
 Cryopreserved PBMCs (ATCC, PCS-800-011, lot#81115172) were thawed to room temperature and slowly diluted with 9 mL pre-warmed RPMI-1640 medium (Gibco, 11875-093) supplemented with 10% fetal bovine serum (FBS, Seradigm, 1500-500, lot#322B15). Media was removed, and cells washed once more with 10 mL warm RPMI-1640 + 10% FBS. Cells were brought to $1.5\times10^{6}$ cells/mL, distributed at 250,000 cells per well in a 96-well V-bottom plate, and allowed to recover 2 hours at 37℃ in an incubator at 5% CO2. Cells were washed twice with PBS + 0.1% BSA (PBSA, Gibco, 15260-037, Lot#2000843) then suspended in 50 µL PBSA + 10% FBS for 10 min on ice to reduce background binding to IgG.
@@ -127,28 +73,5 @@ Compensation beads (Simply Cellular Compensation Standard, Bangs Labs, 550, lot#
 Both beads and cells were washed twice with PBSA. Cells were suspended in 120 µL per well PBSA, and beads to 50 uL, and analyzed using an IntelliCyt iQue Screener PLUS with VBR configuration (Sartorius) with a sip time of 35 seconds and beads 30 seconds. Antibody number was calculated from fluorescence intensity by subtracting isotype control values from matched receptor stains and calibrated using the two lowest binding quantitation standards. Treg cells could not be gated in the absence of CD25, so CD4+ T cells were used as the isotype control to measure CD25 in Treg populations. Cells were gated as shown in [@Fig:gating]. Measurements were performed using four independent staining procedures over two days. Separately, the analysis was performed with anti-receptor antibodies at 3x normal concentration to verify that receptor binding was saturated.
 
 ### pSTAT5 Measurement of IL-2 and IL-15 Signaling in PBMCs
-
-### Flow Cytometry Antibodies for pSTAT5 Analysis:
-
-#### Panel 5: Gating Memory and Naïve T-regulatory cells, Memory and Naïve T-helper cells
-
-|    Antibody    	|    Dilution    	|          Fluorophore         	|     Clone    	|     CAT#     	|               Vendor              	|
-|:--------------:	|:--------------:	|:----------------------------:	|:------------:	|:------------:	|:---------------------------------:	|
-|      Foxp3     	|      1:50      	|       Alexa   Fluor 488      	|     259D     	|    320212    	|             BioLegend             	|
-|      CD25      	|      1:120     	|    Brilliant   Violet 421    	|    M-A251    	|    356114    	|             BioLegend             	|
-|       CD4      	|      1:120     	|    Brilliant   Violet 605    	|      SK3     	|    344646    	|             BioLegend             	|
-|     CD45RA     	|      1:120     	|         PE/Dazzle594         	|     HI100    	|    304146    	|             BioLegend             	|
-|     pSTAT5     	|      1:120     	|       Alexa   Fluor 647      	|     C71E5    	|     9365     	|    Cell   Signaling Technology    	|
-
-#### Panel 6: Gating NK cells, CD56bright NK cells, and Cytotoxic T cells
-
-|    Antibody    	|    Dilution    	|          Fluorophore         	|     Clone    	|     CAT#     	|               Vendor              	|
-|:--------------:	|:--------------:	|:----------------------------:	|:------------:	|:------------:	|:---------------------------------:	|
-|       CD3      	|      1:120     	|    Brilliant   Violet 605    	|     UCHT1    	|    300460    	|             BioLegend             	|
-|       CD8      	|      1:120     	|       Alexa   Fluor 647      	|    RPA-T8    	|    301062    	|             BioLegend             	|
-|      CD56      	|      1:120     	|       Alexa   Fluor 488      	|    5.1H11    	|    362518    	|             BioLegend             	|
-|     pSTAT5     	|      1:120     	|              PE              	|     D4737    	|     14603    	|    Cell   Signaling Technology    	|
-
-
 
 Human PBMCs were thawed, distributed across a 96-well plate, and allowed to recover as described above. IL-2 (R&D Systems, 202-IL-010) or IL-15 (R&D Systems, 247-ILB-025) were diluted in RPMI-1640 without FBS and added to the indicated concentrations. To measure pSTAT5, media was removed, and cells fixed in 100 µL of 10% formalin (Fisher Scientific, SF100-4) for 15 minutes at room temperature. Formalin was removed, cells were placed on ice, and cells were gently suspended in 50 µL of cold methanol (-30℃). Cells were stored overnight at -30℃. Cells were then washed twice with PBSA, split into two identical plates, and stained 1 hour at room temperature in darkness using antibody panels 4 and 5 with 50 µL per well. Cells were suspended in 100 µL PBSA per well, and beads to 50 uL, and analyzed on an IntelliCyt iQue Screener PLUS with VBR configuration (Sartorius) using a sip time of 35 seconds and beads 30 seconds. Compensation was performed as above. Populations were gated as shown in [@Fig:gating], and the median pSTAT5 level extracted for each population in each well.
