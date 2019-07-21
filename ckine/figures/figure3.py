@@ -56,14 +56,14 @@ def makeFigure():
     plot_timepoints(ax[6], tensor_time, tl.to_numpy(factors_activ[0]))
 
     plot_cells(ax[7], tl.to_numpy(factors_activ[1]), 1, 2, cell_names)
-    
+
     legend = ax[7].get_legend()
     labels = (x.get_text() for x in legend.get_texts())
     ax[4].legend(legend.legendHandles, labels, loc='lower right')
-    
+
     ax[7].get_legend().remove()
 
-    plot_ligands(ax[8], tl.to_numpy(factors_activ[2]), ligand_names=['IL-2', 'IL-15', 'IL-7'])
+    plot_ligands(ax[8], tl.to_numpy(factors_activ[2]), ligand_names=['IL-2', 'mut IL-2', 'IL-15', 'IL-7'])
 
     return f
 
@@ -99,11 +99,11 @@ def PCA_receptor(ax, cell_names, data):
         ax[1].scatter(loadings[0, jj], loadings[1, jj], s=16)
 
     ax[0].set_title('Scores')
-    set_bounds(ax[0], 1)
+    set_bounds(ax[0])
     ax[0].set_xlabel('PC1 (' + str(round(expVar[0] * 100)) + '%)')
     ax[0].set_ylabel('PC2 (' + str(round(expVar[1] * 100)) + '%)')
 
     ax[1].set_title('Loadings')
-    set_bounds(ax[1], 1)
+    set_bounds(ax[1])
     ax[1].set_xlabel('PC1 (' + str(round(expVar[0] * 100)) + '%)')
     ax[1].set_ylabel('PC2 (' + str(round(expVar[1] * 100)) + '%)')

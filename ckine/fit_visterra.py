@@ -1,3 +1,4 @@
+'''Fits model to Visterra Data'''
 import pymc3 as pm
 import theano.tensor as T
 import numpy as np
@@ -64,6 +65,7 @@ class build_model:
         self.M = self.build()
 
     def build(self):
+        """Build."""
         M = pm.Model()
 
         with M:
