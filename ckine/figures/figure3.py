@@ -17,6 +17,7 @@ from ..make_tensor import make_tensor, tensor_time
 
 cell_dim = 1  # For this figure, the cell dimension is along the second [python index 1].
 values, _, mat, _, _ = make_tensor()
+values[:, :, 36:48] /= 7.0 # IL-7 just seems to have larger values across the board, so shrink a bit
 values = z_score_values(tl.tensor(values), cell_dim)
 logging.info("Done constructing tensor.")
 
@@ -24,17 +25,17 @@ logging.info("Done constructing tensor.")
 def makeFigure():
     """Get a list of the axis objects and create a figure"""
     # Get list of axis objects
-    ax, f = getSetup((7.5, 6), (3, 4), multz={0: 1, 4: 2})
+    ax, f = getSetup((7.5, 6), (3, 4), multz={0: 1, 4: 1})
 
     logging.info("Starting decomposition.")
     data, numpy_data, cell_names = import_Rexpr()
     factors_activity = []
     for jj in range(4):
-        factors = perform_decomposition(values, jj + 1)
+        factors = perform_decomposition(values, jj + 1, weightFactor=1)
         factors_activity.append(factors)
     logging.info("Decomposition finished.")
 
-    n_comps = 2
+    n_comps = 3
     factors_activ = factors_activity[n_comps - 1]
 
     # Start plotting
@@ -56,14 +57,16 @@ def makeFigure():
     plot_timepoints(ax[6], tensor_time, tl.to_numpy(factors_activ[0]))
 
     plot_cells(ax[7], tl.to_numpy(factors_activ[1]), 1, 2, cell_names)
+    plot_cells(ax[8], tl.to_numpy(factors_activ[1]), 2, 3, cell_names)
 
     legend = ax[7].get_legend()
     labels = (x.get_text() for x in legend.get_texts())
     ax[4].legend(legend.legendHandles, labels, loc='lower right')
 
     ax[7].get_legend().remove()
+    ax[8].get_legend().remove()
 
-    plot_ligands(ax[8], tl.to_numpy(factors_activ[2]), ligand_names=['IL-2', 'mut IL-2', 'IL-15', 'IL-7'])
+    plot_ligands(ax[9], tl.to_numpy(factors_activ[2]), ligand_names=['IL-2', 'mut IL-2', 'IL-15', 'IL-7'])
 
     return f
 

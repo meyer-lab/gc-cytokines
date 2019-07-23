@@ -18,9 +18,9 @@ class runCkineDoseOp(Op):
         assert len(i0_shapes) == 1
         return [(self.dOp.conditions.shape[0] * self.dOp.ts.size, )]
 
-    def perform(self, node, inputs, outputs, params=None):
+    def perform(self, node, inputs, output_storage, params=None):
         """ Perform calculation. """
-        outputs[0][0] = self.dOp.runCkine(inputs, sensi=False)
+        output_storage[0][0] = self.dOp.runCkine(inputs, sensi=False)
 
     def grad(self, inputs, g):
         """ Calculate the runCkineOp gradient. """
@@ -58,5 +58,5 @@ class runCkineOpDoseDiff(Op):
         # We override the ligands, so don't pass along their gradient
         return outt[2][:, 6::]
 
-    def perform(self, node, inputs, outputs, params=None):
-        outputs[0][0] = self.runCkine(inputs, sensi=True)
+    def perform(self, node, inputs, output_storage, params=None):
+        output_storage[0][0] = self.runCkine(inputs, sensi=True)

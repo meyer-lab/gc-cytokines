@@ -29,7 +29,7 @@ def R2X(reconstructed, original):
 
 def perform_decomposition(tensor, r, weightFactor=2):
     ''' Apply z-scoring and perform PARAFAC decomposition. '''
-    factors = non_negative_parafac(tensor, r, tol=1.0E-8, n_iter_max=10000)
+    factors = non_negative_parafac(tensor, r, tol=1.0E-9, n_iter_max=10000)
     factors, weights = normalize_factors(factors)  # Position 0 is factors. 1 is weights.
     factors[weightFactor] *= weights[np.newaxis, :]  # Put weighting in designated factor
     return factors
@@ -38,7 +38,7 @@ def perform_decomposition(tensor, r, weightFactor=2):
 def perform_tucker(tensor, rank_list):
     '''Function to peform tucker decomposition.'''
     # index 0 is for core tensor, index 1 is for factors; out is a list of core and factors
-    return non_negative_tucker(tensor, rank_list, tol=1.0E-8, n_iter_max=10000)
+    return non_negative_tucker(tensor, rank_list, tol=1.0E-9, n_iter_max=10000)
 
 
 def find_R2X_tucker(values, out):

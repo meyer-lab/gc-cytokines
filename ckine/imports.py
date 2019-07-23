@@ -14,7 +14,6 @@ path_here = os.path.dirname(os.path.dirname(__file__))
 
 def import_Rexpr():
     """ Loads CSV file containing Rexpr levels from Visterra data. """
-    # TODO: In text mention we use geometric mean
     data = pds.read_csv(join(path_here, 'ckine/data/final_receptor_levels.csv'))  # Every row in the data represents a specific cell
     df = data.groupby(['Cell Type', 'Receptor']).agg(sp.stats.gmean)  # Get the mean receptor count for each cell across trials in a new dataframe.
     cell_names, receptor_names = df.index.unique().levels  # gc_idx=0|IL15Ra_idx=1|IL2Ra_idx=2|IL2Rb_idx=3
