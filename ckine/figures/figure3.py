@@ -51,7 +51,7 @@ def makeFigure():
     axLabel = ax.copy()
     del axLabel[4]
     for ii, item in enumerate(axLabel):
-        subplotLabel(item, string.ascii_uppercase[ii])  # Add subplot labels
+        subplotLabel(item, string.ascii_uppercase[ii], hstretch=(1.5 if ii == 3 else 1))  # Add subplot labels
 
     plot_timepoints(ax[6], tensor_time, tl.to_numpy(factors_activ[0]))
 
