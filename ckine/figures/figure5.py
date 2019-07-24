@@ -5,7 +5,7 @@ import string
 import numpy as np
 from scipy.stats import pearsonr
 from .figureCommon import subplotLabel, getSetup, plot_cells, plot_ligands, plot_timepoints
-from .figure3 import plot_R2X, factors_activity as predicted_factors
+from .figure3 import plot_R2X, n_pred_comps, factors_activity as predicted_factors
 from ..tensor import perform_decomposition, z_score_values
 from ..imports import import_pstat
 
@@ -47,7 +47,7 @@ def makeFigure():
     plot_ligands(ax[3], experimental_decomposition[2], ligand_names=['IL-2', 'IL-15'])
 
     #Predicted tensor
-    predicted_cell_factors = predicted_factors[n_comps - 1]
+    predicted_cell_factors = predicted_factors[n_pred_comps - 1]
     correlation_cells(ax[4], experimental_decomposition[0], predicted_cell_factors[1])
     return f
 
@@ -59,7 +59,7 @@ def correlation_cells(ax, experimental, predicted):
         for jj in range(predicted.shape[1]):
             idx.append(str((ii+1, jj+1)))
             coefficients.append(pearsonr(experimental[:, ii], predicted[:, jj])[0])
-    ax.bar(np.arange(len(coefficients)), np.array(coefficients), align="center")
+    ax.bar(np.arange(len(coefficients)), np.array(coefficients))
     ax.set_xticklabels(idx)
     ax.set_xlabel("Component Number (Experimental, Predicted)")
     ax.set_ylabel("Pearson Correlation Coefficient")
