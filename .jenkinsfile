@@ -12,14 +12,14 @@ pipeline {
         stage('Test C++') {
           steps {
             sh 'make testcpp'
-            archiveArtifacts artifacts: 'cprofile.svg, testResults.xml', onlyIfSuccessful: false
+            archiveArtifacts artifacts: 'testResults.xml'
           }
         }
         stage('Test') {
           steps {
             sh 'make testcover'
             sh 'make spell'
-            junit allowEmptyResults: true, testResults: 'junit.xml'
+            junit allowEmptyResults: false, testResults: 'junit.xml'
             cobertura coberturaReportFile: 'coverage.xml', failUnhealthy: false, failUnstable: false, maxNumberOfBuilds: 0, onlyStable: false, sourceEncoding: 'ASCII', zoomCoverageChart: false
           }
         }
