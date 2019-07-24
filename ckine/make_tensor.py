@@ -16,7 +16,7 @@ tensor_time = np.linspace(0., 240., 200)
 
 def n_lig(mut):
     '''Function to return the number of cytokines used in building the tensor.'''
-    #Mutant here refers to a tensor made exclusively of WT IL-2 and mutant affinity IL-2.
+    #Mutant here refers to a tensor made exclusively of WT IL-2 and mutant affinity IL-2s.
     if mut:
         nlig = 3
     else:
@@ -39,7 +39,7 @@ def ySolver(matIn, ts, tensor=True):
 
 
 def ySolver_IL2_mut(matIn, ts, mut):
-    """ This generates all the solutions of the tensor. """
+    """ This generates all the solutions of the mutant tensor. """
     matIn = np.squeeze(matIn).copy()
     kfwd, k4rev, k5rev = rxntfR[6], rxntfR[7], rxntfR[8]
     k1rev = 0.6 * 10.0
@@ -82,7 +82,7 @@ def meshprep(mut):
                               np.array(np.meshgrid(0, ILs, 0, 0, 0, 0)).T.reshape(-1, 6),
                               np.array(np.meshgrid(0, 0, ILs, 0, 0, 0)).T.reshape(-1, 6)))
     # Repeat the cytokine stimulations (concMesh) an X amount of times where X here is number of cells (12).
-    # Just stacks up concMesh on top of each other 12 times (or however many cells are available)
+    # Just stacks up concMesh on top of each other 10 times (or however many cells are available)
     concMesh_stacked = np.tile(concMesh, (len(cell_names), 1))
 
     # Set receptor levels for IL9R, IL4Ra, IL21Ra to 0. We won't use them for IL2-15 model. Second argument can also be set to 4 since we only have IL2Ra, IL2Rb, gc, IL15Ra, IL7Ra measured.
