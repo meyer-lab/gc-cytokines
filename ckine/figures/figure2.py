@@ -30,14 +30,14 @@ def makeFigure():
     kfwd_avg, kfwd_std = kfwd_info(full_unkVec_4_7)
     print("kfwd = " + str(kfwd_avg) + " +/- " + str(kfwd_std))
     pstat_plot(ax[1], unkVec_4_7, scales_4_7)
-    plot_pretreat(ax[2], unkVec_4_7, scales_4_7, "Cross-talk pSTAT inhibition")
+    plot_pretreat(ax[2], unkVec_4_7, scales_4_7, "Cross-Talk pSTAT Inhibition")
     traf_violin(ax[6], full_unkVec_4_7)
     rexpr_violin(ax[7], full_unkVec_4_7)
     misc_violin(ax[8], full_unkVec_4_7, full_scales_4_7)
     surf_gc(ax[4], 100., full_unkVec_4_7)
     unkVec_noActiveEndo = unkVec_4_7.copy()
     unkVec_noActiveEndo[18] = 0.0   # set activeEndo rate to 0
-    plot_pretreat(ax[3], unkVec_noActiveEndo, scales_4_7, "Cross-talk w/o active endocytosis")
+    plot_pretreat(ax[3], unkVec_noActiveEndo, scales_4_7, r"Cross-Talk: $\mathrm{k_{endo,a} = k_{endo}}$")
 
     relativeGC(ax[5], full_unkVec_2_15, full_unkVec_4_7)  # plot last to avoid coloring all other violins purple
 
@@ -104,7 +104,7 @@ def pstat_plot(ax, unkVec, scales):
     ax.scatter(np.log10(cytokC_4), (dataIL4[:, 2] / IL4_data_max) * 100., color='powderblue', marker='^', edgecolors='k', zorder=200)
     ax.scatter(np.log10(cytokC_7), (dataIL7[:, 1] / IL7_data_max) * 100., color='b', marker='^', edgecolors='k', zorder=300)
     ax.scatter(np.log10(cytokC_7), (dataIL7[:, 2] / IL7_data_max) * 100., color='b', marker='^', edgecolors='k', zorder=400)
-    ax.set(ylabel='pSTAT5/6 (% of max)', xlabel=r'Cytokine concentration (log$_{10}$[nM])', title='PBMC activity')
+    ax.set(ylabel='pSTAT5/6 (% of max)', xlabel=r'Cytokine Conc. (log$_{10}$[nM])', title='Activity')
 
 
 def traf_violin(ax, unkVec):
@@ -117,7 +117,7 @@ def traf_violin(ax, unkVec):
     a = sns.violinplot(data=np.log10(traf), ax=ax, linewidth=0.5, color="grey")
     a.set_xticklabels(a.get_xticklabels(), rotation=25, rotation_mode="anchor", ha="right", fontsize=8, position=(0, 0.04))
     a.set_ylabel(r"$\mathrm{log_{10}(\frac{1}{min})}$")
-    a.set_title("Trafficking parameters")
+    a.set_title("Trafficking Parameters")
 
 
 def rexpr_violin(ax, unkVec):
@@ -133,7 +133,7 @@ def rexpr_violin(ax, unkVec):
     a = sns.violinplot(data=np.log10(Rexpr), ax=ax, linewidth=0.5, palette=col_list_palette)
     a.set_xticklabels(a.get_xticklabels(), rotation=25, rotation_mode="anchor", ha="right", fontsize=8, position=(0, 0.03))
     a.set_ylabel(r"$\mathrm{log_{10}(\frac{num}{cell * min})}$")
-    a.set_title("Receptor expression rates")
+    a.set_title("Receptor Expression")
 
 
 def misc_violin(ax, unkVec, scales):
@@ -148,7 +148,7 @@ def misc_violin(ax, unkVec, scales):
     a = sns.violinplot(data=misc, ax=ax, linewidth=0.5, color="grey")
     a.set_xticklabels(a.get_xticklabels(), rotation=25, rotation_mode="anchor", ha="right", fontsize=8, position=(0, 0.02))
     a.set_ylabel("value")
-    a.set_title("Miscellaneous parameters")
+    a.set_title("Misc. Parameters")
 
 
 def pretreat_calc(unkVec, scales, pre_conc):
@@ -226,9 +226,9 @@ def plot_pretreat(ax, unkVec, scales, title):
     IL4_stim = output[0:K].T
     IL7_stim = output[K:(K * 2)].T
 
-    plot_conf_int(ax, np.log10(pre_conc), IL4_stim * 100., "powderblue", "IL-4 stim/IL-7 pretreat")
-    plot_conf_int(ax, np.log10(pre_conc), IL7_stim * 100., "b", "IL-7 stim/IL-4 pretreat")
-    ax.set(title=title, ylabel="Inhibition (% of no pretreat)", xlabel=r'Pretreatment concentration (log$_{10}$[nM])')
+    plot_conf_int(ax, np.log10(pre_conc), IL4_stim * 100., "powderblue", "IL-4 stim.")
+    plot_conf_int(ax, np.log10(pre_conc), IL7_stim * 100., "b", "IL-7 stim.")
+    ax.set(title=title, ylabel="Inhibition (% of no pretreat)", xlabel=r'Pretreatment Conc. (log$_{10}$[nM])')
 
     # add experimental data to plots
     ax.scatter(np.log10(IL7_pretreat_conc), data[:, 1], color='powderblue', zorder=100, marker='^', edgecolors='k')
@@ -248,7 +248,7 @@ def surf_gc(ax, cytokC_pg, unkVec):
     IL7vec = np.transpose(output[:, PTS:(PTS * 2)])
     plot_conf_int(ax, ts, IL4vec, "powderblue")
     plot_conf_int(ax, ts, IL7vec, "b")
-    ax.set(title=(r"$\mathrm{γ_{c}}$ depletion at " + str(int(cytokC_pg)) + ' pg/mL'), ylabel=r"Surface $\mathrm{γ_{c}}$ (%)", xlabel="Time (min)")
+    ax.set(title=(str(int(cytokC_pg)) + ' pg/mL'), ylabel=r"Surface $\mathrm{γ_{c}}$ (%)", xlabel="Time (min)")
     ax.set_ylim(0, 115)
 
 
@@ -304,6 +304,5 @@ def relativeGC(ax, unkVec2, unkVec4):
 
     a = sns.violinplot(data=np.log10(df), ax=ax, linewidth=0, scale='width')
     a.set_xticklabels(a.get_xticklabels(), rotation=25, rotation_mode="anchor", ha="right", fontsize=8, position=(0, 0.02))
-    a.set(title=r"Relative $\mathrm{γ_{c}}$ affinity", ylabel=r"$\mathrm{log_{10}(K_{a})}$")
+    a.set(title=r"Relative $\mathrm{γ_{c}}$ Affinity", ylabel=r"$\mathrm{log_{10}(K_{a})}$")
 
-# TODO: Add Ka units.
