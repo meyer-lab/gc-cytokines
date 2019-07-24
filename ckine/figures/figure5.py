@@ -60,6 +60,7 @@ def correlation_cells(ax, experimental, predicted):
             idx.append(str((ii+1, jj+1)))
             coefficients.append(pearsonr(experimental[:, ii], predicted[:, jj])[0])
     ax.bar(np.arange(len(coefficients)), np.array(coefficients))
-    ax.set_xticklabels(idx)
+    ax.set_xticks(np.arange(len(coefficients)))
+    ax.set_xticklabels(idx, rotation=40, rotation_mode="anchor", ha="right", position=(0, 0.02))
     ax.set_xlabel("Component Number (Experimental, Predicted)")
     ax.set_ylabel("Pearson Correlation Coefficient")
