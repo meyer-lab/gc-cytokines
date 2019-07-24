@@ -1,5 +1,5 @@
 """
-Analyze tensor from tensor_generation and plotting.
+Analyze tensor from make_tensor.
 """
 import numpy as np
 import tensorly as tl

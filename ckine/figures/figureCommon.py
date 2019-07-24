@@ -168,7 +168,7 @@ def plot_ligands(ax, factors, ligand_names, cutoff=0.0):
     ax.set_xscale('log')
     ax.set_title('Ligands')
 
-    # Put a legend to the right of the current axis
+    # Place legend
     ax.legend(loc=3)
 
 
