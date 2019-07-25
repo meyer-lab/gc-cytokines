@@ -145,7 +145,7 @@ def plot_ligands(ax, factors, ligand_names, cutoff=0.0):
     markers = ['.', '^', 'd', '*']
 
     for ii, name in enumerate(ligand_names):
-        legend_shape.append(Line2D([0], [0], color='k', marker=markers[ii], label=name, linestyle='')) # Make ligand legend elements
+        legend_shape.append(Line2D([0], [0], color='k', marker=markers[ii], label=name, linestyle=''))  # Make ligand legend elements
 
     for ii in range(factors.shape[1]):
         componentLabel = True

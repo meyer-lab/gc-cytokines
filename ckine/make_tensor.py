@@ -14,14 +14,16 @@ rxntfR = np.squeeze(rxntfR)
 # generate n_timepoints evenly spaced timepoints to 4 hrs
 tensor_time = np.linspace(0., 240., 200)
 
+
 def n_lig(mut):
     '''Function to return the number of cytokines used in building the tensor.'''
-    #Mutant here refers to a tensor made exclusively of WT IL-2 and mutant affinity IL-2s.
+    # Mutant here refers to a tensor made exclusively of WT IL-2 and mutant affinity IL-2s.
     if mut:
         nlig = 3
     else:
         nlig = 4
     return nlig
+
 
 def ySolver(matIn, ts, tensor=True):
     """ This generates all the solutions for the Wild Type interleukins across conditions defined in meshprep(). """
