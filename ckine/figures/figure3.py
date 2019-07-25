@@ -6,7 +6,6 @@ import logging
 import numpy as np
 import scipy as sp
 from sklearn.decomposition import PCA
-from scipy import stats
 import matplotlib.cm as cm
 import tensorly as tl
 import seaborn as sns
@@ -83,7 +82,7 @@ def catplot_receptors(ax, datas):
 def PCA_receptor(ax, cell_name, datas):
     """Plot PCA scores and loadings for Receptor Expression Data. """
     pca = PCA(n_components=2)
-    recep_data = stats.zscore(datas[:, [0, 1, 2, 4]], axis=0)
+    recep_data = sp.stats.zscore(datas[:, [0, 1, 2, 4]], axis=0)
     scores = pca.fit_transform(recep_data)  # 10 cells by n_comp
     loadings = pca.components_  # n_comp by 7 receptors
     expVar = pca.explained_variance_ratio_

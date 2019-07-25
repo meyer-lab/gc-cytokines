@@ -5,7 +5,7 @@ This creates Figure 3.
 import string
 import numpy as np
 from .figureCommon import subplotLabel, getSetup
-from ..model import runIL2simple
+from .figureB1 import runIL2simple
 
 
 def makeFigure():
