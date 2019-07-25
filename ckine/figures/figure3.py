@@ -16,7 +16,7 @@ from ..make_tensor import make_tensor, tensor_time
 
 cell_dim = 1  # For this figure, the cell dimension is along the second [python index 1].
 values, _, mat, _, _ = make_tensor()
-values[:, :, 36:48] /= 7.0 # IL-7 just seems to have larger values across the board, so shrink a bit
+values[:, :, 36:48] /= 7.0  # IL-7 just seems to have larger values across the board, so shrink a bit
 values = z_score_values(tl.tensor(values), cell_dim)
 logging.info("Done constructing tensor.")
 
@@ -27,7 +27,8 @@ for jj in range(4):
     factors = perform_decomposition(values, jj + 1)
     factors_activity.append(factors)
 logging.info("Decomposition finished.")
-n_pred_comps = 3 #Placed here to be also used by Figure 5
+n_pred_comps = 3  # Placed here to be also used by Figure 5
+
 
 def makeFigure():
     """Get a list of the axis objects and create a figure"""
@@ -67,6 +68,7 @@ def makeFigure():
     plot_ligands(ax[9], tl.to_numpy(factors_activ[2]), ligand_names=['IL-2', 'mut IL-2', 'IL-15', 'IL-7'])
 
     return f
+
 
 def catplot_receptors(ax, datas):
     """Plot Bar graph for Receptor Expression Data. """

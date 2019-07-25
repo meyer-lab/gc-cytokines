@@ -11,6 +11,7 @@ from ..imports import import_pstat
 
 cell_dim = 0  # For this figure, the cell dimension is along the first [python index 0].
 
+
 def makeFigure():
     """Get a list of the axis objects and create a figure"""
     # Get list of axis objects
@@ -46,10 +47,11 @@ def makeFigure():
     plot_cells(ax[2], experimental_decomposition[0], 1, 2, cell_names)
     plot_ligands(ax[3], experimental_decomposition[2], ligand_names=['IL-2', 'IL-15'])
 
-    #Predicted tensor
+    # Predicted tensor
     predicted_cell_factors = predicted_factors[n_pred_comps - 1]
     correlation_cells(ax[4], experimental_decomposition[0], predicted_cell_factors[1])
     return f
+
 
 def correlation_cells(ax, experimental, predicted):
     """Function that takes in predicted and experimental components from cell decomposion and gives a bar graph of the Pearson Correlation Coefficients."""
@@ -57,7 +59,7 @@ def correlation_cells(ax, experimental, predicted):
     idx = []
     for ii in range(experimental.shape[1]):
         for jj in range(predicted.shape[1]):
-            idx.append(str((ii+1, jj+1)))
+            idx.append(str((ii + 1, jj + 1)))
             coefficients.append(pearsonr(experimental[:, ii], predicted[:, jj])[0])
     ax.bar(np.arange(len(coefficients)), np.array(coefficients))
     ax.set_xticks(np.arange(len(coefficients)))
