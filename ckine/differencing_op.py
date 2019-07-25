@@ -5,6 +5,8 @@ import numpy as np
 from theano.tensor import dot, dmatrix, dvector, Op
 from .model import nSpecies, nParams, runCkineUP, runCkineSP
 
+# pylint: disable=abstract-method
+
 
 class runCkineDoseOp(Op):
     """ Runs model for a dose response at a single time point. """
