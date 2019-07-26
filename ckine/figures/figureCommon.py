@@ -82,9 +82,9 @@ def plot_R2X(ax, tensor, factors_list):
     ax.set_xticklabels(np.arange(1, len(factors_list) + 1))
 
 
-def subplotLabel(ax, letter, hstretch=1):
+def subplotLabel(ax, letter, hstretch=1, ystretch=1):
     """ Label each subplot """
-    ax.text(-0.2 / hstretch, 1.2, letter, transform=ax.transAxes,
+    ax.text(-0.2 / hstretch, 1.2 / ystretch, letter, transform=ax.transAxes,
             fontsize=16, fontweight='bold', va='top')
 
 
@@ -137,7 +137,7 @@ def overlayCartoon(figFile, cartoonFile, x, y, scalee=1, scale_x=1, scale_y=1):
 
 def plot_ligands(ax, factors, ligand_names, cutoff=0.0):
     """Function to put all ligand decomposition plots in one figure."""
-    ILs, _, _, _, _, _ = import_pstat()  # Cytokine stimulation concentrations in nM
+    ILs, _, _, _ = import_pstat()  # Cytokine stimulation concentrations in nM
     n_ligands = len(ligand_names)
     ILs = np.flip(ILs)
     colors = sns.color_palette()
@@ -206,7 +206,7 @@ def legend_2_15(ax, location="center right"):
 def plot_scaled_pstat(ax, cytokC, pstat):
     """ Plots pSTAT5 data scaled by the average activity measurement. """
     # plot pstat5 data for each time point
-    ax.scatter(cytokC, pstat[3, :], c="indigo", s=2)  # 0.5 hr
-    ax.scatter(cytokC, pstat[2, :], c="teal", s=2)  # 1 hr
-    ax.scatter(cytokC, pstat[1, :], c="forestgreen", s=2)  # 2 hr
-    ax.scatter(cytokC, pstat[0, :], c="darkred", s=2)  # 4 hr
+    ax.scatter(cytokC, pstat[0, :], c="indigo", s=2)  # 0.5 hr
+    ax.scatter(cytokC, pstat[1, :], c="teal", s=2)  # 1 hr
+    ax.scatter(cytokC, pstat[2, :], c="forestgreen", s=2)  # 2 hr
+    ax.scatter(cytokC, pstat[3, :], c="darkred", s=2)  # 4 hr

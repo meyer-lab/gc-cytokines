@@ -1,6 +1,7 @@
 """File that deals with everything about importing and sampling."""
 import os
 from os.path import join
+import math
 import pymc3 as pm
 import numpy as np
 import scipy as sp
@@ -189,22 +190,28 @@ def import_pstat():
     ckineConc = data[4, 2:14]
     # 4 time points, 10 cell types, 12 concentrations, 2 replicates
     IL2_data = np.zeros((40, 12))
-    IL2_data2 = np.zeros((40, 12))
-    IL15_data = np.zeros((40, 12))
-    IL15_data2 = np.zeros((40, 12))
+    IL2_data2 = IL2_data.copy()
+    IL15_data = IL2_data.copy()
+    IL15_data2 = IL2_data.copy()
     cell_names = list()
     for i in range(10):
         cell_names.append(data[12 * i + 3, 1])
         # Subtract the zero treatment plates before assigning to returned arrays
         if i <= 4:
             zero_treatment = data[12 * (i + 1), 13]
-            zero_treatment2 = data[12 * (i + 1), 30]
+            zero_treatment2 = data[8 + (12 * i), 30]
         else:
             zero_treatment = data[8 + (12 * i), 13]
             zero_treatment2 = data[8 + (12 * i), 30]
-        IL2_data[4 * i:4 * (i + 1), :] = data[6 + (12 * i):10 + (12 * i), 2:14].astype(np.float) - zero_treatment
-        IL2_data2[4 * i:4 * (i + 1), :] = data[6 + (12 * i):10 + (12 * i), 19:31].astype(np.float) - zero_treatment2
-        IL15_data[4 * i:4 * (i + 1), :] = data[10 + (12 * i):14 + (12 * i), 2:14].astype(np.float) - zero_treatment
-        IL15_data2[4 * i:4 * (i + 1), :] = data[10 + (12 * i):14 + (12 * i), 2:14].astype(np.float) - zero_treatment2
+        # order of increasing time by cell type
+        IL2_data[4 * i:4 * (i + 1), :] = np.flip(data[6 + (12 * i):10 + (12 * i), 2:14].astype(np.float) - zero_treatment, 0)
+        IL2_data2[4 * i:4 * (i + 1), :] = np.flip(data[6 + (12 * i):10 + (12 * i), 19:31].astype(np.float) - zero_treatment2, 0)
+        IL15_data[4 * i:4 * (i + 1), :] = np.flip(data[10 + (12 * i):14 + (12 * i), 2:14].astype(np.float) - zero_treatment, 0)
+        IL15_data2[4 * i:4 * (i + 1), :] = np.flip(data[10 + (12 * i):14 + (12 * i), 19:31].astype(np.float) - zero_treatment2, 0)
 
-    return ckineConc, cell_names, IL2_data, IL15_data, IL2_data2, IL15_data2
+    for i in range(IL2_data.shape[0]):
+        for j in range(IL2_data.shape[1]):
+            # take average of both replicates if specific entry isn't nan
+            IL2_data[i, j] = np.nanmean(np.array([IL2_data[i, j], IL2_data2[i, j]]))
+            IL15_data[i, j] = np.nanmean(np.array([IL15_data[i, j], IL15_data2[i, j]]))
+    return ckineConc, cell_names, IL2_data, IL15_data
