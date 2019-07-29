@@ -1,5 +1,5 @@
 """
-This creates Figure S5. Full panel of measured vs simulated for IL2.
+This creates Figure S5. Full panel of measured vs simulated for IL-2 and IL-15.
 """
 import string
 import numpy as np

@@ -7,7 +7,7 @@ import string
 import numpy as np
 import seaborn as sns
 import pandas as pd
-from .figureCommon import subplotLabel, getSetup, traf_names, plot_conf_int, kfwd_info
+from .figureCommon import subplotLabel, getSetup, traf_names, plot_conf_int
 from ..plot_model_prediction import surf_IL2Rb, pstat, surf_gc
 from ..imports import import_samples_2_15
 
@@ -17,17 +17,19 @@ def makeFigure():
     # Get list of axis objects
     ax, f = getSetup((7.5, 6), (3, 4), multz={0: 2, 10: 1}, empts=[2])
 
-    real_mults = [0, 8]  # subplots in ax that are actually mults
     ax[0].axis('off')  # blank out first axis for cartoon
 
     for ii, item in enumerate(ax):
-        h = 3.25 if ii in real_mults else 1
+        if ii == 0:  # hstretch for 3 panels
+            h = 3.8
+        elif ii == 8:
+            h = 3.25  # hstretch for 2 panels
+        else:
+            h = 1  # standard hstretch
         subplotLabel(item, string.ascii_uppercase[ii], hstretch=h)
 
     unkVec, scales = import_samples_2_15(N=100)  # use these for simulations
     full_unkVec, full_scales = import_samples_2_15()  # use these for violin plots
-    kfwd_avg, kfwd_std = kfwd_info(full_unkVec)
-    print("kfwd = " + str(kfwd_avg) + " +/- " + str(kfwd_std))
     pstat_act(ax[1], unkVec, scales)
     IL2Rb_perc(ax[2:4], unkVec)
     gc_perc(ax[4], unkVec)
@@ -145,14 +147,20 @@ def violinPlots(ax, unkVec, scales, Traf=True):
     Rexpr = pd.DataFrame(unkVec[:, 22:26])
     scaless = scales[:, 0] / np.max(scales)
     kfwd = unkVec[:, 6] / np.max(unkVec[:, 6])
-    misc = np.vstack((scaless, unkVec[:, 19], kfwd))
-    misc = pd.DataFrame(misc.T)
+    if Traf:  # include sortF
+        misc = np.vstack((scaless, unkVec[:, 19], kfwd))
+        misc = pd.DataFrame(misc.T)
+        misc.columns = [r'$\mathrm{C_{5}}$ / ' + "{:.2E}".format(np.max(scales)), r'$\mathrm{f_{sort}}$', r'$\mathrm{k_{fwd}}$ / ' + "{:.2E}".format(np.max(unkVec[:, 6]))]
+    else:  # ignore sortF
+        misc = np.vstack((scaless, kfwd))
+        misc = pd.DataFrame(misc.T)
+        misc.columns = [r'$\mathrm{C_{5}}$ / ' + "{:.2E}".format(np.max(scales)), r'$\mathrm{k_{fwd}}$ / ' + "{:.2E}".format(np.max(unkVec[:, 6]))]
 
     Rexpr.columns = ['IL-2Rα', 'IL-2Rβ', r'$\mathrm{γ_{c}}$', 'IL-15Rα']
     col_list = ["violet", "violet", "grey", "goldenrod"]
     col_list_palette = sns.xkcd_palette(col_list)
     a = sns.violinplot(data=np.log10(Rexpr), ax=ax[0], linewidth=0.5, palette=col_list_palette)
-    a.set(title="Receptor Expression", ylabel=r"$\mathrm{log_{10}(\frac{num}{cell * min})}$")
+    a.set(title="Receptor Expression", ylabel=r"$\mathrm{log_{10}(\frac{\#}{cell * min})}$")
     a.set_xticklabels(a.get_xticklabels(), rotation=25, rotation_mode="anchor", ha="right", fontsize=8, position=(0, 0.02))
 
     if Traf:
@@ -164,13 +172,12 @@ def violinPlots(ax, unkVec, scales, Traf=True):
     sc_ax = 1  # subplot number for the scaling constant
     if Traf:
         sc_ax = 2
-    misc.columns = [r'$\mathrm{C_{5}}$ / ' + "{:.2E}".format(np.max(scales)), r'$\mathrm{f_{sort}}$', r'$\mathrm{k_{fwd}}$ / ' + "{:.2E}".format(np.max(unkVec[:, 6]))]
     c = sns.violinplot(data=misc, ax=ax[sc_ax], linewidth=0.5, color="grey")
     c.set_xticklabels(c.get_xticklabels(), rotation=25, rotation_mode="anchor", ha="right", fontsize=8, position=(0, 0.05))
     c.set(ylabel="Value", title="Misc. Parameters")
 
 
-def rateComp(ax, unkVec):
+def rateComp(ax, unkVec, fsize=6.2):
     """ This function compares the analogous reverse rxn distributions from IL2 and IL15 in a violin plot. """
     # assign values from unkVec
     k4rev, k5rev, k16rev, k17rev, k22rev, k23rev = unkVec[7, :], unkVec[8, :], unkVec[9, :], unkVec[10, :], unkVec[11, :], unkVec[12, :]
@@ -220,5 +227,5 @@ def rateComp(ax, unkVec):
     a.scatter(0.1, np.log10(kfbnd * 0.065), color='goldenrod')  # overlay point for k13rev
     a.scatter(0.7, np.log10(kfbnd * 144), color="darkviolet")   # overlay point for k2rev
     a.scatter(1.1, np.log10(kfbnd * 468), color='goldenrod')  # overlay point for k14rev
-    a.set_xticklabels(a.get_xticklabels(), fontsize=6.2)
+    a.set_xticklabels(a.get_xticklabels(), fontsize=fsize)
     a.set_title("Analogous Dissociation Rates")

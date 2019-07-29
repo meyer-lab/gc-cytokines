@@ -51,7 +51,13 @@ def makeFigure():
     axLabel = ax.copy()
     del axLabel[4]
     for ii, item in enumerate(axLabel):
-        subplotLabel(item, string.ascii_uppercase[ii], hstretch=(1.5 if ii == 3 else 1))  # Add subplot labels
+        if ii == 3:
+            h = 2.45  # for multz of 3 panels
+        elif ii == 0:
+            h = 2.75  # for multz of 2 panels
+        else:
+            h = 1  # default h is 1
+        subplotLabel(item, string.ascii_uppercase[ii], hstretch=h)  # Add subplot labels
 
     plot_timepoints(ax[6], tensor_time, tl.to_numpy(factors_activ[0]))
 
@@ -73,7 +79,7 @@ def makeFigure():
 def catplot_receptors(ax, datas):
     """Plot Bar graph for Receptor Expression Data. """
     sns.catplot(x="Cell Type", y="Count", hue="Receptor", data=datas, ci=68, ax=ax, kind="point", join=False, scale=0.5, dodge=True, estimator=sp.stats.gmean)
-    ax.set_ylabel("Surface Receptor [# / cell]")
+    ax.set_ylabel("Surface Receptor (#/cell)")
     ax.set_xticklabels(ax.get_xticklabels(),
                        rotation=25, rotation_mode="anchor", ha="right",
                        position=(0, 0.02), fontsize=7.5)

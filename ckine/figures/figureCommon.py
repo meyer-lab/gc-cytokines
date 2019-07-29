@@ -77,7 +77,7 @@ def plot_R2X(ax, tensor, factors_list):
     ax.plot(range(1, len(factors_list) + 1), R2X_array, 'ko', label='Overall R2X')
     ax.set_ylabel('R2X')
     ax.set_xlabel('Number of Components')
-    ax.set_ylim(0, 1)
+    ax.set_ylim(0, 1.05)
     ax.set_xticks(np.arange(1, len(factors_list) + 1))
     ax.set_xticklabels(np.arange(1, len(factors_list) + 1))
 
@@ -184,22 +184,15 @@ def plot_timepoints(ax, ts, factors):
     ax.legend()
 
 
-def kfwd_info(unkVec):
-    """ Gives the mean and standard deviation of a kfwd distribution. We need this since we are not using violin plots for this rate. """
-    mean = np.mean(unkVec[6])
-    std = np.std(unkVec[6])
-    return mean, std
-
-
 def legend_2_15(ax, location="center right"):
     """ Plots a legend for all the IL-2 and IL-15 related plots in its own subpanel. """
     legend_elements = [Patch(facecolor='darkorchid', label='IL-2'),
                        Patch(facecolor='goldenrod', label='IL-15'),
                        Line2D([0], [0], marker='o', color='w', label='IL-2Rα+',
-                              markerfacecolor='k', markersize=8),
+                              markerfacecolor='k', markersize=16),
                        Line2D([0], [0], marker='^', color='w', label='IL-2Rα-',
-                              markerfacecolor='k', markersize=8)]
-    ax.legend(handles=legend_elements, loc=location)
+                              markerfacecolor='k', markersize=16)]
+    ax.legend(handles=legend_elements, loc=location, prop={'size': 16})
     ax.axis('off')  # remove the grid
 
 
