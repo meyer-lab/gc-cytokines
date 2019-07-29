@@ -18,7 +18,7 @@ def makeFigure():
     ax, f = getSetup((7.6, 6), (3, 3))
 
     # Blank out for the cartoon
-    ax[0].axis('off')
+    ax[0].axis("off")
 
     for ii, item in enumerate(ax):
         subplotLabel(item, string.ascii_uppercase[ii])
@@ -32,9 +32,9 @@ def makeFigure():
     traf_violin(ax[6], full_unkVec_4_7)
     rexpr_violin(ax[7], full_unkVec_4_7)
     misc_violin(ax[8], full_unkVec_4_7, full_scales_4_7)
-    surf_gc(ax[4], 100., full_unkVec_4_7)
+    surf_gc(ax[4], 100.0, full_unkVec_4_7)
     unkVec_noActiveEndo = unkVec_4_7.copy()
-    unkVec_noActiveEndo[18] = 0.0   # set activeEndo rate to 0
+    unkVec_noActiveEndo[18] = 0.0  # set activeEndo rate to 0
     plot_pretreat(ax[3], unkVec_noActiveEndo, scales_4_7, r"Cross-Talk: $\mathrm{k_{endo,a} = k_{endo}}$")
 
     relativeGC(ax[5], full_unkVec_2_15, full_unkVec_4_7)  # plot last to avoid coloring all other violins purple
@@ -43,19 +43,18 @@ def makeFigure():
 
 
 def pstat_calc(unkVec, scales, cytokC):
-    ''' This function performs the calculations necessary to produce the Gonnord Figures S3B and S3C. '''
+    """ This function performs the calculations necessary to produce the Gonnord Figures S3B and S3C. """
     activity = getTotalActiveSpecies().astype(np.float64)
-    ts = np.array([10.])  # was 10. in literature
+    ts = np.array([10.0])  # was 10. in literature
     assert unkVec.shape[0] == nParams()
     K = unkVec.shape[1]  # should be 500
 
     def parallelCalc(unkVec, cytokine, conc):
-        ''' This function generates the active vector for a given 2D unkVec, cytokine, and concentration. '''
+        """ This function generates the active vector for a given 2D unkVec, cytokine, and concentration. """
         unkVec = unkVec.copy()
         unkVec[cytokine, :] = conc
         unkVec = np.transpose(unkVec).copy()  # transpose the matrix (save view as a new copy)
-        returnn, retVal = runCkineUP(ts, unkVec)
-        assert retVal >= 0
+        returnn = runCkineUP(ts, unkVec)
         return np.dot(returnn, activity)
 
     # find cytokine activity under various stimulation concentrations
@@ -77,11 +76,11 @@ def pstat_calc(unkVec, scales, cytokC):
 
 
 def pstat_plot(ax, unkVec, scales):
-    ''' This function calls the pstat_calc function to re-generate Gonnord figures S3B and S3C with our own fitting data. '''
+    """ This function calls the pstat_calc function to re-generate Gonnord figures S3B and S3C with our own fitting data. """
     PTS = 30
     K = unkVec.shape[1]  # should be 500
-    cytokC_4 = np.array([5., 50., 500., 5000., 50000., 250000.]) / 14900.  # 14.9 kDa according to sigma aldrich
-    cytokC_7 = np.array([1., 10., 100., 1000., 10000., 100000.]) / 17400.  # 17.4 kDa according to prospec bio
+    cytokC_4 = np.array([5.0, 50.0, 500.0, 5000.0, 50000.0, 250000.0]) / 14900.0  # 14.9 kDa according to sigma aldrich
+    cytokC_7 = np.array([1.0, 10.0, 100.0, 1000.0, 10000.0, 100000.0]) / 17400.0  # 17.4 kDa according to prospec bio
     cytokC_common = np.logspace(-3.8, 1.5, num=PTS)
     dataIL4 = pd.read_csv(join(os.path.dirname(os.path.abspath(__file__)), "../data/Gonnord_S3B.csv")).values  # imports IL4 file into pandas array
     dataIL7 = pd.read_csv(join(os.path.dirname(os.path.abspath(__file__)), "../data/Gonnord_S3C.csv")).values  # imports IL7 file into pandas array
@@ -91,18 +90,18 @@ def pstat_plot(ax, unkVec, scales):
     output = pstat_calc(unkVec, scales, cytokC_common)  # run simulation
     # split according to cytokine and transpose for input into plot_conf_int
     IL4_output = output[0:K].T
-    IL7_output = output[K:(K * 2)].T
+    IL7_output = output[K : (K * 2)].T
 
     # plot confidence intervals based on model predictions
-    plot_conf_int(ax, np.log10(cytokC_common), IL4_output * 100., "powderblue")
-    plot_conf_int(ax, np.log10(cytokC_common), IL7_output * 100., "b")
+    plot_conf_int(ax, np.log10(cytokC_common), IL4_output * 100.0, "powderblue")
+    plot_conf_int(ax, np.log10(cytokC_common), IL7_output * 100.0, "b")
 
     # overlay experimental data
-    ax.scatter(np.log10(cytokC_4), (dataIL4[:, 1] / IL4_data_max) * 100., color='powderblue', marker='^', edgecolors='k', zorder=100)
-    ax.scatter(np.log10(cytokC_4), (dataIL4[:, 2] / IL4_data_max) * 100., color='powderblue', marker='^', edgecolors='k', zorder=200)
-    ax.scatter(np.log10(cytokC_7), (dataIL7[:, 1] / IL7_data_max) * 100., color='b', marker='^', edgecolors='k', zorder=300)
-    ax.scatter(np.log10(cytokC_7), (dataIL7[:, 2] / IL7_data_max) * 100., color='b', marker='^', edgecolors='k', zorder=400)
-    ax.set(ylabel='pSTAT5/6 (% of max)', xlabel=r'Cytokine Conc. (log$_{10}$[nM])', title='Activity')
+    ax.scatter(np.log10(cytokC_4), (dataIL4[:, 1] / IL4_data_max) * 100.0, color="powderblue", marker="^", edgecolors="k", zorder=100)
+    ax.scatter(np.log10(cytokC_4), (dataIL4[:, 2] / IL4_data_max) * 100.0, color="powderblue", marker="^", edgecolors="k", zorder=200)
+    ax.scatter(np.log10(cytokC_7), (dataIL7[:, 1] / IL7_data_max) * 100.0, color="b", marker="^", edgecolors="k", zorder=300)
+    ax.scatter(np.log10(cytokC_7), (dataIL7[:, 2] / IL7_data_max) * 100.0, color="b", marker="^", edgecolors="k", zorder=400)
+    ax.set(ylabel="pSTAT5/6 (% of max)", xlabel=r"Cytokine Conc. (log$_{10}$[nM])", title="Activity")
 
 
 def traf_violin(ax, unkVec):
@@ -125,7 +124,7 @@ def rexpr_violin(ax, unkVec):
     Rexpr = Rexpr.transpose()
     Rexpr = pd.DataFrame(Rexpr)
 
-    Rexpr.columns = [r'$\mathrm{γ_{c}}$', 'IL-7Rα', 'IL-4Rα']
+    Rexpr.columns = [r"$\mathrm{γ_{c}}$", "IL-7Rα", "IL-4Rα"]
     col_list = ["grey", "blue", "lightblue"]
     col_list_palette = sns.xkcd_palette(col_list)
     a = sns.violinplot(data=np.log10(Rexpr), ax=ax, linewidth=0.5, palette=col_list_palette)
@@ -141,8 +140,12 @@ def misc_violin(ax, unkVec, scales):
     misc = np.vstack((scales6, scales5, unkVec[19, :], unkVec[6, :] / np.max(unkVec[6, :])))
     misc = pd.DataFrame(misc.T)
 
-    misc.columns = [r'$\mathrm{C_{6}}$ / ' + '{:.2E}'.format(np.max(scales[:, 0])), r'$\mathrm{C_{5}}$ / ' + '{:.2E}'.format(np.max(scales[:, 1])),
-                    r'$\mathrm{f_{sort}}$', r'$\mathrm{k_{fwd}}$ / ' + "{:.2E}".format(np.max(unkVec[6, :]))]
+    misc.columns = [
+        r"$\mathrm{C_{6}}$ / " + "{:.2E}".format(np.max(scales[:, 0])),
+        r"$\mathrm{C_{5}}$ / " + "{:.2E}".format(np.max(scales[:, 1])),
+        r"$\mathrm{f_{sort}}$",
+        r"$\mathrm{k_{fwd}}$ / " + "{:.2E}".format(np.max(unkVec[6, :])),
+    ]
     a = sns.violinplot(data=misc, ax=ax, linewidth=0.5, color="grey")
     a.set_xticklabels(a.get_xticklabels(), rotation=25, rotation_mode="anchor", ha="right", fontsize=8, position=(0, 0.02))
     a.set_ylabel("value")
@@ -150,11 +153,11 @@ def misc_violin(ax, unkVec, scales):
 
 
 def pretreat_calc(unkVec, scales, pre_conc):
-    ''' This function performs the calculations necessary to produce the Gonnord Figures S3B and S3C. '''
+    """ This function performs the calculations necessary to produce the Gonnord Figures S3B and S3C. """
     activity = getTotalActiveSpecies().astype(np.float64)
-    ts = np.array([10.])  # was 10. in literature
-    IL4_stim_conc = 100. / 14900.  # concentration used for IL4 stimulation
-    IL7_stim_conc = 50. / 17400.  # concentration used for IL7 stimulation
+    ts = np.array([10.0])  # was 10. in literature
+    IL4_stim_conc = 100.0 / 14900.0  # concentration used for IL4 stimulation
+    IL7_stim_conc = 50.0 / 17400.0  # concentration used for IL7 stimulation
     assert unkVec.shape[0] == nParams()
     K = unkVec.shape[1]  # should be 500
     N = len(pre_conc)
@@ -168,8 +171,7 @@ def pretreat_calc(unkVec, scales, pre_conc):
         ligands[pre_cytokine] = pre_conc  # pretreatment ligand stays in system
         unkVec2 = np.transpose(unkVec2).copy()  # transpose the matrix (save view as a new copy)
 
-        returnn, retVal = runCkineUP(ts, unkVec2, preT=ts, prestim=ligands)
-        assert retVal >= 0
+        returnn = runCkineUP(ts, unkVec2, preT=ts, prestim=ligands)
         ret = np.zeros((returnn.shape[0]))
         for ii in range(returnn.shape[0]):
             ret[ii] = getTotalActiveCytokine(stim_cytokine, np.squeeze(returnn[ii]))  # only look at active species associated with the active cytokine
@@ -183,12 +185,11 @@ def pretreat_calc(unkVec, scales, pre_conc):
         actVec_IL7stim[:, x] = parallelCalc(unkVec, 4, pre_conc[x], 2, IL7_stim_conc)
 
     def parallelCalc_no_pre(unkVec, cytokine, conc):
-        ''' This function generates the active vector for a given 2D unkVec, cytokine, and concentration. '''
+        """ This function generates the active vector for a given 2D unkVec, cytokine, and concentration. """
         unkVec = unkVec.copy()
         unkVec[cytokine, :] = conc
         unkVec = np.transpose(unkVec).copy()  # transpose the matrix (save view as a new copy)
-        returnn, retVal = runCkineUP(ts, unkVec)
-        assert retVal >= 0
+        returnn = runCkineUP(ts, unkVec)
         return np.dot(returnn, activity)
 
     # run simulation with just one cytokine
@@ -213,8 +214,8 @@ def plot_pretreat(ax, unkVec, scales, title):
     """ Generates plots that mimic the percent inhibition after pretreatment in Gonnord Fig S3. """
     path = os.path.dirname(os.path.abspath(__file__))
     data = pd.read_csv(join(path, "../data/Gonnord_S3D.csv")).values
-    IL7_pretreat_conc = data[:, 0] / 17400.  # concentrations used for IL7 pretreatment followed by IL4 stimulation
-    IL4_pretreat_conc = data[:, 5] / 14900.  # concentrations used for IL4 pretreatment followed by IL7 stimulation
+    IL7_pretreat_conc = data[:, 0] / 17400.0  # concentrations used for IL7 pretreatment followed by IL4 stimulation
+    IL4_pretreat_conc = data[:, 5] / 14900.0  # concentrations used for IL4 pretreatment followed by IL7 stimulation
     PTS = 30
     K = unkVec.shape[1]  # should be 500
     pre_conc = np.logspace(-3.8, 1.0, num=PTS)
@@ -222,31 +223,31 @@ def plot_pretreat(ax, unkVec, scales, title):
     output = pretreat_calc(unkVec, scales, pre_conc)  # run simulation
     # split according to cytokine and transpose so it works with plot_conf_int
     IL4_stim = output[0:K].T
-    IL7_stim = output[K:(K * 2)].T
+    IL7_stim = output[K : (K * 2)].T
 
-    plot_conf_int(ax, np.log10(pre_conc), IL4_stim * 100., "powderblue", "IL-4 stim.")
-    plot_conf_int(ax, np.log10(pre_conc), IL7_stim * 100., "b", "IL-7 stim.")
-    ax.set(title=title, ylabel="Inhibition (% of no pretreat)", xlabel=r'Pretreatment Conc. (log$_{10}$[nM])')
+    plot_conf_int(ax, np.log10(pre_conc), IL4_stim * 100.0, "powderblue", "IL-4 stim.")
+    plot_conf_int(ax, np.log10(pre_conc), IL7_stim * 100.0, "b", "IL-7 stim.")
+    ax.set(title=title, ylabel="Inhibition (% of no pretreat)", xlabel=r"Pretreatment Conc. (log$_{10}$[nM])")
 
     # add experimental data to plots
-    ax.scatter(np.log10(IL7_pretreat_conc), data[:, 1], color='powderblue', zorder=100, marker='^', edgecolors='k')
-    ax.scatter(np.log10(IL7_pretreat_conc), data[:, 2], color='powderblue', zorder=101, marker='^', edgecolors='k')
-    ax.scatter(np.log10(IL7_pretreat_conc), data[:, 3], color='powderblue', zorder=102, marker='^', edgecolors='k')
-    ax.scatter(np.log10(IL4_pretreat_conc), data[:, 6], color='b', zorder=103, marker='^', edgecolors='k')
-    ax.scatter(np.log10(IL4_pretreat_conc), data[:, 7], color='b', zorder=104, marker='^', edgecolors='k')
-    ax.scatter(np.log10(IL4_pretreat_conc), data[:, 8], color='b', zorder=105, marker='^', edgecolors='k')
+    ax.scatter(np.log10(IL7_pretreat_conc), data[:, 1], color="powderblue", zorder=100, marker="^", edgecolors="k")
+    ax.scatter(np.log10(IL7_pretreat_conc), data[:, 2], color="powderblue", zorder=101, marker="^", edgecolors="k")
+    ax.scatter(np.log10(IL7_pretreat_conc), data[:, 3], color="powderblue", zorder=102, marker="^", edgecolors="k")
+    ax.scatter(np.log10(IL4_pretreat_conc), data[:, 6], color="b", zorder=103, marker="^", edgecolors="k")
+    ax.scatter(np.log10(IL4_pretreat_conc), data[:, 7], color="b", zorder=104, marker="^", edgecolors="k")
+    ax.scatter(np.log10(IL4_pretreat_conc), data[:, 8], color="b", zorder=105, marker="^", edgecolors="k")
 
 
 def surf_gc(ax, cytokC_pg, unkVec):
     """ Generate a plot that shows the relative amount of gc on the cell surface under IL4 and IL7 stimulation. """
     PTS = 40
-    ts = np.linspace(0., 100., num=PTS)
+    ts = np.linspace(0.0, 100.0, num=PTS)
     output = calc_surf_gc(ts, cytokC_pg, unkVec)
     IL4vec = np.transpose(output[:, 0:PTS])
-    IL7vec = np.transpose(output[:, PTS:(PTS * 2)])
+    IL7vec = np.transpose(output[:, PTS : (PTS * 2)])
     plot_conf_int(ax, ts, IL4vec, "powderblue")
     plot_conf_int(ax, ts, IL7vec, "b")
-    ax.set(title=(str(int(cytokC_pg)) + ' pg/mL'), ylabel=r"Surface $\mathrm{γ_{c}}$ (%)", xlabel="Time (min)")
+    ax.set(title=(str(int(cytokC_pg)) + " pg/mL"), ylabel=r"Surface $\mathrm{γ_{c}}$ (%)", xlabel="Time (min)")
     ax.set_ylim(0, 115)
 
 
@@ -261,17 +262,16 @@ def calc_surf_gc(t, cytokC_pg, unkVec):
         unkVec = unkVec.copy()
         unkVec[cytokine, :] = conc
         unkVec = np.transpose(unkVec).copy()  # transpose the matrix (save view as a new copy)
-        returnn, retVal = runCkineUP(t, unkVec)
-        assert retVal >= 0
+        returnn = runCkineUP(t, unkVec)
         return np.dot(returnn, gc_species_IDX)
 
     # calculate IL4 stimulation
-    a = parallelCalc(unkVec, 4, (cytokC_pg / 14900.), t).reshape((K, PTS))
+    a = parallelCalc(unkVec, 4, (cytokC_pg / 14900.0), t).reshape((K, PTS))
     # calculate IL7 stimulation
-    b = parallelCalc(unkVec, 2, (cytokC_pg / 17400.), t).reshape((K, PTS))
+    b = parallelCalc(unkVec, 2, (cytokC_pg / 17400.0), t).reshape((K, PTS))
     # concatenate results and normalize to 100%
     result = np.concatenate((a, b), axis=1)
-    return (result / np.max(result)) * 100.
+    return (result / np.max(result)) * 100.0
 
 
 def data_path():
@@ -295,11 +295,21 @@ def relativeGC(ax, unkVec2, unkVec4):
     k10rev = 12.0 * k5rev / 1.5  # doi:10.1016/j.jmb.2004.04.038
 
     # add each rate duo as separate column in dataframe
-    df = pd.DataFrame({'2·2Rα': kfwd_2 / k4rev, '2·2Rβ': kfwd_2 / k5rev, '2·2Rα·2Rβ': kfwd_2 / k10rev, '15·15Rα': kfwd_2 / k16rev,
-                       '15·2Rβ': kfwd_2 / k17rev, '15·15Rα·2Rβ': kfwd_2 / k22rev, '7·7Rα': kfwd_4 / k27rev, '4·4Rα': kfwd_4 / k33rev})
+    df = pd.DataFrame(
+        {
+            "2·2Rα": kfwd_2 / k4rev,
+            "2·2Rβ": kfwd_2 / k5rev,
+            "2·2Rα·2Rβ": kfwd_2 / k10rev,
+            "15·15Rα": kfwd_2 / k16rev,
+            "15·2Rβ": kfwd_2 / k17rev,
+            "15·15Rα·2Rβ": kfwd_2 / k22rev,
+            "7·7Rα": kfwd_4 / k27rev,
+            "4·4Rα": kfwd_4 / k33rev,
+        }
+    )
 
     sns.set_palette(sns.xkcd_palette(["violet", "violet", "violet", "goldenrod", "goldenrod", "goldenrod", "blue", "lightblue"]))
 
-    a = sns.violinplot(data=np.log10(df), ax=ax, linewidth=0, scale='width')
+    a = sns.violinplot(data=np.log10(df), ax=ax, linewidth=0, scale="width")
     a.set_xticklabels(a.get_xticklabels(), rotation=25, rotation_mode="anchor", ha="right", fontsize=8, position=(0, 0.02))
     a.set(title=r"Relative $\mathrm{γ_{c}}$ Affinity", ylabel=r"$\mathrm{log_{10}(K_{a})}$")

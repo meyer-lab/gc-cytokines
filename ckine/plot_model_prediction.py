@@ -6,7 +6,7 @@ from .model import getTotalActiveSpecies, runCkineUP, getSurfaceIL2RbSpecies, nP
 
 
 class surf_IL2Rb:
-    '''Generate values to match the surface IL2Rb measurements used in fitting'''
+    """Generate values to match the surface IL2Rb measurements used in fitting"""
 
     def __init__(self):
         # import function returns from model.py
@@ -17,12 +17,11 @@ class surf_IL2Rb:
         unkVec = unkVec.copy()
         unkVec[cytokine, :] = conc
         unkVec = np.transpose(unkVec).copy()  # transpose the matrix (save view as a new copy)
-        returnn, retVal = runCkineUP(t, unkVec)
-        assert retVal >= 0
+        returnn = runCkineUP(t, unkVec)
         return np.dot(returnn, self.IL2Rb_species_IDX)
 
     def calc(self, unkVec, t):
-        '''This function uses an unkVec that has the same elements as the unkVec in fit.py'''
+        """This function uses an unkVec that has the same elements as the unkVec in fit.py"""
         assert unkVec.shape[0] == nParams()
         N = len(t)
         K = unkVec.shape[1]
@@ -32,16 +31,16 @@ class surf_IL2Rb:
         unkVecIL2RaMinus[22, :] = np.zeros((unkVec.shape[1]))
 
         # calculate IL2 stimulation
-        a = self.parallelCalc(unkVec, 0, 1., t).reshape((K, N))
-        b = self.parallelCalc(unkVec, 0, 500., t).reshape((K, N))
-        c = self.parallelCalc(unkVecIL2RaMinus, 0, 1., t).reshape((K, N))
-        d = self.parallelCalc(unkVecIL2RaMinus, 0, 500., t).reshape((K, N))
+        a = self.parallelCalc(unkVec, 0, 1.0, t).reshape((K, N))
+        b = self.parallelCalc(unkVec, 0, 500.0, t).reshape((K, N))
+        c = self.parallelCalc(unkVecIL2RaMinus, 0, 1.0, t).reshape((K, N))
+        d = self.parallelCalc(unkVecIL2RaMinus, 0, 500.0, t).reshape((K, N))
 
         # calculate IL15 stimulation
-        e = self.parallelCalc(unkVec, 1, 1., t).reshape((K, N))
-        f = self.parallelCalc(unkVec, 1, 500., t).reshape((K, N))
-        g = self.parallelCalc(unkVecIL2RaMinus, 1, 1., t).reshape((K, N))
-        h = self.parallelCalc(unkVecIL2RaMinus, 1, 500., t).reshape((K, N))
+        e = self.parallelCalc(unkVec, 1, 1.0, t).reshape((K, N))
+        f = self.parallelCalc(unkVec, 1, 500.0, t).reshape((K, N))
+        g = self.parallelCalc(unkVecIL2RaMinus, 1, 1.0, t).reshape((K, N))
+        h = self.parallelCalc(unkVecIL2RaMinus, 1, 500.0, t).reshape((K, N))
 
         catVec = np.concatenate((a, b, c, d, e, f, g, h), axis=1)
         for ii in range(K):
@@ -50,24 +49,23 @@ class surf_IL2Rb:
 
 
 class pstat:
-    '''Generate values to match the pSTAT5 measurements used in fitting'''
+    """Generate values to match the pSTAT5 measurements used in fitting"""
 
     def __init__(self):
         # import function returns from model.py
         self.activity = getTotalActiveSpecies().astype(np.float64)
-        self.ts = np.array([500.])  # was 500. in literature
+        self.ts = np.array([500.0])  # was 500. in literature
 
     def parallelCalc(self, unkVec, cytokine, conc):
         """ Calculates the pSTAT activities in parallel for a 2-D array of unkVec. """
         unkVec = unkVec.copy()
         unkVec[cytokine, :] = conc
         unkVec = np.transpose(unkVec).copy()  # transpose the matrix (save view as a new copy)
-        returnn, retVal = runCkineUP(self.ts, unkVec)
-        assert retVal >= 0
+        returnn = runCkineUP(self.ts, unkVec)
         return np.dot(returnn, self.activity)
 
     def calc(self, unkVec, scale, cytokC):
-        '''This function uses an unkVec that has the same elements as the unkVec in fit.py'''
+        """This function uses an unkVec that has the same elements as the unkVec in fit.py"""
         assert unkVec.shape[0] == nParams()
         K = unkVec.shape[1]
 
@@ -108,12 +106,11 @@ class surf_gc:
         unkVec = unkVec.copy()
         unkVec[cytokine, :] = conc
         unkVec = np.transpose(unkVec).copy()  # transpose the matrix (save view as a new copy)
-        returnn, retVal = runCkineUP(t, unkVec)
-        assert retVal >= 0
+        returnn = runCkineUP(t, unkVec)
         return np.dot(returnn, self.gc_species_IDX)
 
     def calc(self, unkVec, t):
-        '''This function calls single Calc for all the experimental combinations of interest; it uses an unkVec that has the same elements as the unkVec in fit.py'''
+        """This function calls single Calc for all the experimental combinations of interest; it uses an unkVec that has the same elements as the unkVec in fit.py"""
         assert unkVec.shape[0] == nParams()
         N = len(t)
         K = unkVec.shape[1]
@@ -123,7 +120,7 @@ class surf_gc:
         unkVecIL2RaMinus[22, :] = np.zeros((K))
 
         # calculate IL2 stimulation
-        a = self.parallelCalc(unkVecIL2RaMinus, 0, 1000., t).reshape((K, N))
+        a = self.parallelCalc(unkVecIL2RaMinus, 0, 1000.0, t).reshape((K, N))
 
         for ii in range(K):
             a[ii] = a[ii] / a[ii, 0]  # normalize by a[0] for each row
