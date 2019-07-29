@@ -7,7 +7,7 @@ import string
 import numpy as np
 import seaborn as sns
 import pandas as pd
-from .figureCommon import subplotLabel, getSetup, traf_names, plot_conf_int, kfwd_info
+from .figureCommon import subplotLabel, getSetup, traf_names, plot_conf_int
 from ..model import nParams, getTotalActiveSpecies, runCkineUP, getSurfaceGCSpecies, getTotalActiveCytokine
 from ..imports import import_samples_4_7, import_samples_2_15
 
@@ -27,8 +27,6 @@ def makeFigure():
     full_unkVec_4_7, full_scales_4_7 = import_samples_4_7()  # full version used for violin plots
     unkVec_4_7, scales_4_7 = import_samples_4_7(N=100)  # a subsampled version used for simulation
 
-    kfwd_avg, kfwd_std = kfwd_info(full_unkVec_4_7)
-    print("kfwd = " + str(kfwd_avg) + " +/- " + str(kfwd_std))
     pstat_plot(ax[1], unkVec_4_7, scales_4_7)
     plot_pretreat(ax[2], unkVec_4_7, scales_4_7, "Cross-Talk pSTAT Inhibition")
     traf_violin(ax[6], full_unkVec_4_7)
@@ -132,7 +130,7 @@ def rexpr_violin(ax, unkVec):
     col_list_palette = sns.xkcd_palette(col_list)
     a = sns.violinplot(data=np.log10(Rexpr), ax=ax, linewidth=0.5, palette=col_list_palette)
     a.set_xticklabels(a.get_xticklabels(), rotation=25, rotation_mode="anchor", ha="right", fontsize=8, position=(0, 0.03))
-    a.set_ylabel(r"$\mathrm{log_{10}(\frac{num}{cell * min})}$")
+    a.set_ylabel(r"$\mathrm{log_{10}(\frac{\#}{cell * min})}$")
     a.set_title("Receptor Expression")
 
 
