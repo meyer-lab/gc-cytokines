@@ -13,14 +13,16 @@ from ..figures.figureB1 import runIL2simple
 settings.register_profile("ci", max_examples=1000, deadline=None)
 settings.load_profile("ci")
 
-conservation_IDX = [np.array([1, 4, 5, 7, 8, 11, 12, 14, 15]),  # IL2Rb
-                    np.array([0, 3, 5, 6, 8]),  # IL2Ra
-                    np.array([9, 10, 12, 13, 15]),  # IL15Ra
-                    np.array([16, 17, 18]),  # IL7Ra
-                    np.array([19, 20, 21]),  # IL9R
-                    np.array([22, 23, 24]),  # IL4Ra
-                    np.array([25, 26, 27]),  # IL21Ra
-                    np.array([2, 6, 7, 8, 13, 14, 15, 18, 21, 24, 27])]  # gc
+conservation_IDX = [
+    np.array([1, 4, 5, 7, 8, 11, 12, 14, 15]),  # IL2Rb
+    np.array([0, 3, 5, 6, 8]),  # IL2Ra
+    np.array([9, 10, 12, 13, 15]),  # IL15Ra
+    np.array([16, 17, 18]),  # IL7Ra
+    np.array([19, 20, 21]),  # IL9R
+    np.array([22, 23, 24]),  # IL4Ra
+    np.array([25, 26, 27]),  # IL21Ra
+    np.array([2, 6, 7, 8, 13, 14, 15, 18, 21, 24, 27]),
+]  # gc
 
 
 class TestModel(unittest.TestCase):
@@ -29,10 +31,10 @@ class TestModel(unittest.TestCase):
     def assertPosEquilibrium(self, X, func):
         """Assert that all species came to equilibrium."""
         # All the species abundances should be above zero
-        self.assertGreater(np.min(X), -1.0E-7)
+        self.assertGreater(np.min(X), -1.0e-7)
 
         # Test that it came to equilibrium
-        self.assertLess(np.linalg.norm(func(X)) / (1.0 + np.sum(X)), 1E-5)
+        self.assertLess(np.linalg.norm(func(X)) / (1.0 + np.sum(X)), 1e-5)
 
     def assertConservation(self, y, y0, IDX):
         """Assert the conservation of species throughout the experiment."""
@@ -43,10 +45,10 @@ class TestModel(unittest.TestCase):
 
     def setUp(self):
         self.ts = np.array([0.0, 100000.0])
-        self.y0 = np.random.lognormal(0., 1., 28)
-        self.args = np.random.lognormal(0., 1., 17)
-        self.tfargs = np.random.lognormal(0., 1., 13)
-        self.fully = np.random.lognormal(0., 1., 62)
+        self.y0 = np.random.lognormal(0.0, 1.0, 28)
+        self.args = np.random.lognormal(0.0, 1.0, 17)
+        self.tfargs = np.random.lognormal(0.0, 1.0, 13)
+        self.fully = np.random.lognormal(0.0, 1.0, 62)
 
         # Force sorting fraction to be less than 1.0
         self.tfargs[2] = np.tanh(self.tfargs[2]) * 0.9
@@ -70,12 +72,12 @@ class TestModel(unittest.TestCase):
             self.assertConservation(dy, 0.0, idxs + 28)
 
     def test_equlibrium(self):
-        '''System should still come to equilibrium after being stimulated with ligand'''
+        """System should still come to equilibrium after being stimulated with ligand"""
         t = np.array([0.0, 100000.0])
         rxn = self.rxntfR.copy()
-        rxn[0:6] = 0.  # set ligands to 0
+        rxn[0:6] = 0.0  # set ligands to 0
         rxnIL2, rxnIL15, rxnIL7, rxnIL9, rxnIL4, rxnIL21 = rxn.copy(), rxn.copy(), rxn.copy(), rxn.copy(), rxn.copy(), rxn.copy()
-        rxnIL2[0], rxnIL15[1], rxnIL7[2], rxnIL9[3], rxnIL4[5], rxnIL21[6] = 100., 100., 100., 100., 100., 100.
+        rxnIL2[0], rxnIL15[1], rxnIL7[2], rxnIL9[3], rxnIL4[5], rxnIL21[6] = 100.0, 100.0, 100.0, 100.0, 100.0, 100.0
 
         # runCkine to get yOut
         yOut_2, retVal = runCkineU(t, rxnIL2)
@@ -119,10 +121,10 @@ class TestModel(unittest.TestCase):
         dy1 = fullModel(y0, 0.0, self.rxntfR)
 
         # Test that there's no difference
-        self.assertLess(np.linalg.norm(dy1 - fullModel(y0, 1.0, self.rxntfR)), 1E-8)
+        self.assertLess(np.linalg.norm(dy1 - fullModel(y0, 1.0, self.rxntfR)), 1e-8)
 
         # Test that there's no difference
-        self.assertLess(np.linalg.norm(dy1 - fullModel(y0, 2.0, self.rxntfR)), 1E-8)
+        self.assertLess(np.linalg.norm(dy1 - fullModel(y0, 2.0, self.rxntfR)), 1e-8)
 
     @given(vec=harrays(np.float, 30, elements=floats(0.1, 10.0)))
     def test_runCkine(self, vec):
@@ -135,10 +137,7 @@ class TestModel(unittest.TestCase):
         """ Test that we can run solving in parallel. """
         rxntfr = np.reshape(np.tile(self.rxntfR, 20), (20, -1))
 
-        outt, retVal = runCkineUP(self.ts[1], rxntfr)
-
-        # test that return value of runCkine isn't negative (model run didn't fail)
-        self.assertGreaterEqual(retVal, 0)
+        outt = runCkineUP(self.ts[1], rxntfr)
 
         # test that all of the solutions returned are identical
         for ii in range(rxntfr.shape[0]):
@@ -151,7 +150,7 @@ class TestModel(unittest.TestCase):
         self.assertGreaterEqual(retVal, 0)
 
     def test_gc(self):
-        ''' Test to check that no active species is present when gamma chain is not expressed. '''
+        """ Test to check that no active species is present when gamma chain is not expressed. """
         rxntfR = self.rxntfR.copy()
         rxntfR[24] = 0.0  # set expression of gc to 0.0
         yOut, retVal = runCkineU(self.ts, rxntfR)
@@ -164,10 +163,10 @@ class TestModel(unittest.TestCase):
         self.assertAlmostEqual(getTotalActiveCytokine(5, yOut[1]), 0.0, places=5)  # IL21
 
     def test_endosomalCTK_bound(self):
-        ''' Test that appreciable cytokine winds up in the endosome. '''
+        """ Test that appreciable cytokine winds up in the endosome. """
         rxntfR = self.rxntfR.copy()
         rxntfR[0:6] = 0.0
-        rxntfR[6] = 1.0E-6  # Damp down kfwd
+        rxntfR[6] = 1.0e-6  # Damp down kfwd
         rxntfR[7:22] = 0.1  # Fill all in to avoid parameter variation
         rxntfR[18] = 10.0  # Turn up active endocytosis
         rxntfR[21] = 0.02  # Turn down degradation
@@ -175,22 +174,22 @@ class TestModel(unittest.TestCase):
 
         # set high concentration of IL2
         rxntfR_1 = rxntfR.copy()
-        rxntfR_1[0] = 1000.
+        rxntfR_1[0] = 1000.0
         # set high concentration of IL15
         rxntfR_2 = rxntfR.copy()
-        rxntfR_2[1] = 1000.
+        rxntfR_2[1] = 1000.0
         # set high concentration of IL7
         rxntfR_3 = rxntfR.copy()
-        rxntfR_3[2] = 1000.
+        rxntfR_3[2] = 1000.0
         # set high concentration of IL9
         rxntfR_4 = rxntfR.copy()
-        rxntfR_4[3] = 1000.
+        rxntfR_4[3] = 1000.0
         # set high concentration of IL4
         rxntfR_5 = rxntfR.copy()
-        rxntfR_5[4] = 1000.
+        rxntfR_5[4] = 1000.0
         # set high concentration of IL21
         rxntfR_6 = rxntfR.copy()
-        rxntfR_6[5] = 1000.
+        rxntfR_6[5] = 1000.0
 
         # first element is t=0 and second element is t=10**5
         yOut_1, retVal = runCkineU(self.ts, rxntfR_1)
@@ -208,23 +207,23 @@ class TestModel(unittest.TestCase):
 
         # make sure endosomal free ligand is positive at equilibrium
         # IL2
-        self.assertGreater(yOut_1[1, 56], 1.)
-        self.assertLess(np.sum(yOut_1[1, np.array([57, 58, 59, 60, 61])]), 1.0E-9)  # no other ligand
+        self.assertGreater(yOut_1[1, 56], 1.0)
+        self.assertLess(np.sum(yOut_1[1, np.array([57, 58, 59, 60, 61])]), 1.0e-9)  # no other ligand
         # IL15
-        self.assertGreater(yOut_2[1, 57], 1.)
-        self.assertLess(np.sum(yOut_2[1, np.array([56, 58, 59, 60, 61])]), 1.0E-9)  # no other ligand
+        self.assertGreater(yOut_2[1, 57], 1.0)
+        self.assertLess(np.sum(yOut_2[1, np.array([56, 58, 59, 60, 61])]), 1.0e-9)  # no other ligand
         # IL7
-        self.assertGreater(yOut_3[1, 58], 1.)
-        self.assertLess(np.sum(yOut_3[1, np.array([56, 57, 59, 60, 61])]), 1.0E-9)  # no other ligand
+        self.assertGreater(yOut_3[1, 58], 1.0)
+        self.assertLess(np.sum(yOut_3[1, np.array([56, 57, 59, 60, 61])]), 1.0e-9)  # no other ligand
         # IL9
-        self.assertGreater(yOut_4[1, 59], 1.)
-        self.assertLess(np.sum(yOut_4[1, np.array([56, 57, 58, 60, 61])]), 1.0E-9)  # no other ligand
+        self.assertGreater(yOut_4[1, 59], 1.0)
+        self.assertLess(np.sum(yOut_4[1, np.array([56, 57, 58, 60, 61])]), 1.0e-9)  # no other ligand
         # IL4
-        self.assertGreater(yOut_5[1, 60], 1.)
-        self.assertLess(np.sum(yOut_5[1, np.array([56, 57, 58, 59, 61])]), 1.0E-9)  # no other ligand
+        self.assertGreater(yOut_5[1, 60], 1.0)
+        self.assertLess(np.sum(yOut_5[1, np.array([56, 57, 58, 59, 61])]), 1.0e-9)  # no other ligand
         # IL21
-        self.assertGreater(yOut_6[1, 61], 1.)
-        self.assertLess(np.sum(yOut_6[1, np.array([56, 57, 58, 59, 60])]), 1.0E-9)  # no other ligand
+        self.assertGreater(yOut_6[1, 61], 1.0)
+        self.assertLess(np.sum(yOut_6[1, np.array([56, 57, 58, 59, 60])]), 1.0e-9)  # no other ligand
 
         # make sure total amount of ligand bound to receptors is positive at equilibrium
         self.assertTrue(np.greater(yOut_1[31:37], 0.0).all())
@@ -240,7 +239,7 @@ class TestModel(unittest.TestCase):
         rxntfr_loose = rxntfr_reg.copy()
         rxntfr_gc = rxntfr_reg.copy()
         rxntfr_gc[9] = 0.0  # set gc expression to 0
-        rxntfr_loose[1] = 10.0**-5  # "looser" dimerization occurs when kfwd is small
+        rxntfr_loose[1] = 10.0 ** -5  # "looser" dimerization occurs when kfwd is small
 
         # find yOut vectors for both rxntfr's
         y_reg, _ = runCkineU_IL2(self.ts, rxntfr_reg)

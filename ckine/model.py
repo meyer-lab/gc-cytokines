@@ -11,10 +11,28 @@ libb = ct.cdll.LoadLibrary(filename)
 libb.fullModel_C.argtypes = (ct.POINTER(ct.c_double), ct.c_double, ct.POINTER(ct.c_double), ct.POINTER(ct.c_double))
 libb.runCkine.argtypes = (ct.POINTER(ct.c_double), ct.c_uint, ct.POINTER(ct.c_double), ct.POINTER(ct.c_double), ct.c_bool, ct.c_double, ct.POINTER(ct.c_double))
 libb.runCkineParallel.argtypes = (ct.POINTER(ct.c_double), ct.POINTER(ct.c_double), ct.c_uint, ct.c_uint, ct.POINTER(ct.c_double), ct.c_double, ct.POINTER(ct.c_double))
-libb.runCkineS.argtypes = (ct.POINTER(ct.c_double), ct.c_uint, ct.POINTER(ct.c_double), ct.POINTER(ct.c_double),
-                           ct.POINTER(ct.c_double), ct.POINTER(ct.c_double), ct.c_bool, ct.c_double, ct.POINTER(ct.c_double))
-libb.runCkineSParallel.argtypes = (ct.POINTER(ct.c_double), ct.POINTER(ct.c_double), ct.c_uint, ct.c_uint, ct.POINTER(ct.c_double),
-                                   ct.POINTER(ct.c_double), ct.POINTER(ct.c_double), ct.c_double, ct.POINTER(ct.c_double))
+libb.runCkineS.argtypes = (
+    ct.POINTER(ct.c_double),
+    ct.c_uint,
+    ct.POINTER(ct.c_double),
+    ct.POINTER(ct.c_double),
+    ct.POINTER(ct.c_double),
+    ct.POINTER(ct.c_double),
+    ct.c_bool,
+    ct.c_double,
+    ct.POINTER(ct.c_double),
+)
+libb.runCkineSParallel.argtypes = (
+    ct.POINTER(ct.c_double),
+    ct.POINTER(ct.c_double),
+    ct.c_uint,
+    ct.c_uint,
+    ct.POINTER(ct.c_double),
+    ct.POINTER(ct.c_double),
+    ct.POINTER(ct.c_double),
+    ct.c_double,
+    ct.POINTER(ct.c_double),
+)
 
 __nSpecies = 62
 
@@ -77,9 +95,7 @@ def runCkineU(tps, rxntfr, preT=0.0, prestim=None):
         assert prestim.size == 6
         prestim = prestim.ctypes.data_as(ct.POINTER(ct.c_double))
 
-    retVal = libb.runCkine(tps.ctypes.data_as(ct.POINTER(ct.c_double)), tps.size,
-                           yOut.ctypes.data_as(ct.POINTER(ct.c_double)),
-                           rxntfr.ctypes.data_as(ct.POINTER(ct.c_double)), False, preT, prestim)
+    retVal = libb.runCkine(tps.ctypes.data_as(ct.POINTER(ct.c_double)), tps.size, yOut.ctypes.data_as(ct.POINTER(ct.c_double)), rxntfr.ctypes.data_as(ct.POINTER(ct.c_double)), False, preT, prestim)
 
     return (yOut, retVal)
 
@@ -93,14 +109,19 @@ def runCkineS(tps, rxntfr, condense):
     assert condense.size == __nSpecies
 
     yOut = np.zeros((tps.size), dtype=np.float64)
-    sensV = np.zeros((tps.size, __nParams), dtype=np.float64, order='C')
+    sensV = np.zeros((tps.size, __nParams), dtype=np.float64, order="C")
 
-    retVal = libb.runCkineS(tps.ctypes.data_as(ct.POINTER(ct.c_double)), tps.size,
-                            yOut.ctypes.data_as(ct.POINTER(ct.c_double)),
-                            sensV.ctypes.data_as(ct.POINTER(ct.c_double)),
-                            condense.ctypes.data_as(ct.POINTER(ct.c_double)),
-                            rxntfr.ctypes.data_as(ct.POINTER(ct.c_double)),
-                            False, 0.0, None)
+    retVal = libb.runCkineS(
+        tps.ctypes.data_as(ct.POINTER(ct.c_double)),
+        tps.size,
+        yOut.ctypes.data_as(ct.POINTER(ct.c_double)),
+        sensV.ctypes.data_as(ct.POINTER(ct.c_double)),
+        condense.ctypes.data_as(ct.POINTER(ct.c_double)),
+        rxntfr.ctypes.data_as(ct.POINTER(ct.c_double)),
+        False,
+        0.0,
+        None,
+    )
 
     return (yOut, retVal, sensV)
 
@@ -112,9 +133,7 @@ def runCkineU_IL2(tps, rxntfr):
 
     yOut = np.zeros((tps.size, __nSpecies), dtype=np.float64)
 
-    retVal = libb.runCkine(tps.ctypes.data_as(ct.POINTER(ct.c_double)), tps.size,
-                           yOut.ctypes.data_as(ct.POINTER(ct.c_double)),
-                           rxntfr.ctypes.data_as(ct.POINTER(ct.c_double)), True, 0.0, None)
+    retVal = libb.runCkine(tps.ctypes.data_as(ct.POINTER(ct.c_double)), tps.size, yOut.ctypes.data_as(ct.POINTER(ct.c_double)), rxntfr.ctypes.data_as(ct.POINTER(ct.c_double)), True, 0.0, None)
 
     return (yOut, retVal)
 
@@ -135,11 +154,13 @@ def runCkineUP(tps, rxntfr, preT=0.0, prestim=None):
         assert prestim.size == 6
         prestim = prestim.ctypes.data_as(ct.POINTER(ct.c_double))
 
-    retVal = libb.runCkineParallel(rxntfr.ctypes.data_as(ct.POINTER(ct.c_double)),
-                                   tps.ctypes.data_as(ct.POINTER(ct.c_double)), tps.size, rxntfr.shape[0],
-                                   yOut.ctypes.data_as(ct.POINTER(ct.c_double)), preT, prestim)
+    retVal = libb.runCkineParallel(
+        rxntfr.ctypes.data_as(ct.POINTER(ct.c_double)), tps.ctypes.data_as(ct.POINTER(ct.c_double)), tps.size, rxntfr.shape[0], yOut.ctypes.data_as(ct.POINTER(ct.c_double)), preT, prestim
+    )
 
-    return (yOut, retVal)
+    assert retVal >= 0  # make sure solver worked
+
+    return yOut
 
 
 def runCkineSP(tps, rxntfr, actV, preT=0.0, prestim=None):
@@ -150,18 +171,24 @@ def runCkineSP(tps, rxntfr, actV, preT=0.0, prestim=None):
     assert (rxntfr[:, 19] < 1.0).all()  # Check that sortF won't throw
 
     yOut = np.zeros((rxntfr.shape[0] * tps.size), dtype=np.float64)
-    sensV = np.zeros((rxntfr.shape[0] * tps.size, __nParams), dtype=np.float64, order='C')
+    sensV = np.zeros((rxntfr.shape[0] * tps.size, __nParams), dtype=np.float64, order="C")
 
     if preT != 0.0:
         assert preT > 0.0
         assert prestim.size == 6
         prestim = prestim.ctypes.data_as(ct.POINTER(ct.c_double))
 
-    retVal = libb.runCkineSParallel(rxntfr.ctypes.data_as(ct.POINTER(ct.c_double)),
-                                    tps.ctypes.data_as(ct.POINTER(ct.c_double)), tps.size, rxntfr.shape[0],
-                                    yOut.ctypes.data_as(ct.POINTER(ct.c_double)),
-                                    sensV.ctypes.data_as(ct.POINTER(ct.c_double)),
-                                    actV.ctypes.data_as(ct.POINTER(ct.c_double)), preT, prestim)
+    retVal = libb.runCkineSParallel(
+        rxntfr.ctypes.data_as(ct.POINTER(ct.c_double)),
+        tps.ctypes.data_as(ct.POINTER(ct.c_double)),
+        tps.size,
+        rxntfr.shape[0],
+        yOut.ctypes.data_as(ct.POINTER(ct.c_double)),
+        sensV.ctypes.data_as(ct.POINTER(ct.c_double)),
+        actV.ctypes.data_as(ct.POINTER(ct.c_double)),
+        preT,
+        prestim,
+    )
 
     return (yOut, retVal, sensV)
 
@@ -172,8 +199,7 @@ def fullModel(y, t, rxntfr):
 
     yOut = np.zeros_like(y)
 
-    libb.fullModel_C(y.ctypes.data_as(ct.POINTER(ct.c_double)), t,
-                     yOut.ctypes.data_as(ct.POINTER(ct.c_double)), rxntfr.ctypes.data_as(ct.POINTER(ct.c_double)))
+    libb.fullModel_C(y.ctypes.data_as(ct.POINTER(ct.c_double)), t, yOut.ctypes.data_as(ct.POINTER(ct.c_double)), rxntfr.ctypes.data_as(ct.POINTER(ct.c_double)))
 
     return yOut
 
@@ -220,7 +246,7 @@ def getActiveCytokine(cytokineIDX, yVec):
 def getTotalActiveCytokine(cytokineIDX, yVec):
     """ Get amount of surface and endosomal active species. """
     assert yVec.ndim == 1
-    return getActiveCytokine(cytokineIDX, yVec[0:__halfL]) + __internalStrength * getActiveCytokine(cytokineIDX, yVec[__halfL:__halfL * 2])
+    return getActiveCytokine(cytokineIDX, yVec[0:__halfL]) + __internalStrength * getActiveCytokine(cytokineIDX, yVec[__halfL : __halfL * 2])
 
 
 def surfaceReceptors(y):
@@ -238,13 +264,13 @@ def surfaceReceptors(y):
 
 def totalReceptors(yVec):
     """This function takes in a vector y and returns the amounts of all 8 receptors in both cell compartments"""
-    return surfaceReceptors(yVec) + __internalStrength * surfaceReceptors(yVec[__halfL:__halfL * 2])
+    return surfaceReceptors(yVec) + __internalStrength * surfaceReceptors(yVec[__halfL : __halfL * 2])
 
 
 def ligandDeg(yVec, sortF, kDeg, cytokineIDX):
     """ This function calculates rate of total ligand degradation. """
-    yVec_endo_species = yVec[__halfL:(__halfL * 2)].copy()  # get all endosomal complexes
-    yVec_endo_lig = yVec[(__halfL * 2)::].copy()  # get all endosomal ligands
+    yVec_endo_species = yVec[__halfL : (__halfL * 2)].copy()  # get all endosomal complexes
+    yVec_endo_lig = yVec[(__halfL * 2) : :].copy()  # get all endosomal ligands
     sum_active = np.sum(getActiveCytokine(cytokineIDX, yVec_endo_species))
     __cytok_species_IDX = np.zeros(__halfL, dtype=np.bool)  # create array of size halfL
     __cytok_species_IDX[getCytokineSpecies()[cytokineIDX]] = 1  # assign 1's for species corresponding to the cytokineIDX
@@ -255,5 +281,5 @@ def ligandDeg(yVec, sortF, kDeg, cytokineIDX):
 
 def receptor_expression(receptor_abundance, endo, kRec, sortF, kDeg):
     """ Uses receptor abundance (from flow) and trafficking rates to calculate receptor expression rate at steady state. """
-    rec_ex = (receptor_abundance * endo) / (1. + ((kRec * (1. - sortF)) / (kDeg * sortF)))
+    rec_ex = (receptor_abundance * endo) / (1.0 + ((kRec * (1.0 - sortF)) / (kDeg * sortF)))
     return rec_ex
