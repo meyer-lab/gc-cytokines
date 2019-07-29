@@ -6,7 +6,8 @@ import string
 import numpy as np
 import pandas as pd
 import seaborn as sns
-from scipy.optimize import least_squares, fsolve
+from scipy.optimize import least_squares
+from scipy.stats import pearsonr
 from .figureCommon import subplotLabel, getSetup
 from .figureS5 import calc_dose_response
 from ..imports import import_pstat, import_Rexpr, import_samples_2_15
@@ -19,7 +20,7 @@ _, receptor_data, cell_names_receptor = import_Rexpr()
 def makeFigure():
     """Get a list of the axis objects and create a figure"""
     # Get list of axis objects
-    ax, f = getSetup((7, 6), (4, 2))  # 2 across, 4 down
+    ax, f = getSetup((7, 6), (3, 3))
 
     for ii, item in enumerate(ax):
         subplotLabel(item, string.ascii_uppercase[ii], hstretch=3.25, ystretch=0.8)
@@ -59,9 +60,9 @@ def makeFigure():
     IL = np.concatenate((np.tile(np.array('IL2'), len(cell_names_pstat) * len(tps) * 2), np.tile(np.array('IL15'), len(cell_names_pstat) * len(tps) * 2)), axis=None)
     data = {'Time Point': np.tile(np.array(tps), len(cell_names_pstat) * 4), 'IL': IL, 'Cell Type': cell_types.reshape(160,), 'Data Type': data_types.reshape(160,), 'EC-50': EC50}
     df = pd.DataFrame(data)
-    df = df.loc[df['EC-50'] != -4.]  # delete cells that did not have a valid replicate
 
     catplot_comparison(ax, df, tps)
+    plot_corrcoef(ax[8], df, cell_names_pstat)
 
     return f
 
@@ -74,14 +75,33 @@ def catplot_comparison(ax, df, tps):
         ax[i].get_legend().set_visible(False)
         if i == 3:
             sns.catplot(x="Cell Type", y="EC-50", hue="Data Type", data=df.loc[(df['Time Point'] == tp) & (df["IL"] == 'IL15')], legend=True, legend_out=True, ax=ax[4 + i])
-            ax[4 + i].legend(bbox_to_anchor=(1.05, 1), loc='right')
+            ax[4 + i].legend(bbox_to_anchor=(1., 1.), loc='upper right')
         else:
             sns.catplot(x="Cell Type", y="EC-50", hue="Data Type", data=df.loc[(df['Time Point'] == tp) & (df["IL"] == 'IL15')], legend=False, ax=ax[4 + i])
             ax[4 + i].get_legend().set_visible(False)
         ax[i].set(title=("IL-2 at " + tps_str[i]), ylabel=(r'log[EC$_{50}$] (nM)'), ylim=(-3., 3.))
         ax[4 + i].set(title=("IL-15 at " + tps_str[i]), ylabel=(r'log[EC$_{50}$] (nM)'), ylim=(-3., 3.))
-        ax[i].set_xticklabels(ax[i].get_xticklabels(), rotation=25, rotation_mode="anchor", ha="right", position=(0, 0.02), fontsize=7.5)
-        ax[4 + i].set_xticklabels(ax[4 + i].get_xticklabels(), rotation=25, rotation_mode="anchor", ha="right", position=(0, 0.02), fontsize=7.5)
+        ax[i].set_xticklabels(ax[i].get_xticklabels(), rotation=35, rotation_mode="anchor", ha="right", position=(0, 0.02), fontsize=6.5)
+        ax[4 + i].set_xticklabels(ax[4 + i].get_xticklabels(), rotation=35, rotation_mode="anchor", ha="right", position=(0, 0.02), fontsize=6.5)
+
+
+def plot_corrcoef(ax, df, cell_types):
+    """ Plot correlation coefficients between predicted and experimental data for all cell types. """
+    corr_coefs = np.zeros(2 * len(cell_types))
+    ILs = np.array(['IL2', 'IL15'])
+    for i, name in enumerate(cell_types):
+        for j, IL in enumerate(ILs):
+            experimental_data = np.array(df.loc[(df['Data Type'] == 'Experimental') & (df['Cell Type'] == name) & (df['IL'] == IL), "EC-50"])
+            predicted_data = np.array(df.loc[(df['Data Type'] == 'Predicted') & (df['Cell Type'] == name) & (df['IL'] == IL), "EC-50"])
+            corr_coef = pearsonr(experimental_data, predicted_data)
+            corr_coefs[j * len(cell_types) + i] = corr_coef[0]
+
+    x_pos = np.arange(len(cell_types))
+    ax.bar(x_pos - 0.15, corr_coefs[0:len(cell_types)], width=0.3, color='r', label='IL2', tick_label=cell_types)
+    ax.bar(x_pos + 0.15, corr_coefs[len(cell_types):(2 * len(cell_types))], width=0.3, color='g', label='IL15', tick_label=cell_types)
+    ax.set(ylabel=("Correlation Coefficient"), ylim=(0., 1.))
+    ax.set_xticklabels(ax.get_xticklabels(), rotation=35, rotation_mode="anchor", ha="right", position=(0, 0), fontsize=6.5)
+    ax.legend(bbox_to_anchor=(1.02, 1), loc="upper left")
 
 
 def calculate_predicted_EC50(x0, cell_receptor_data, tps, IL2_pstat, IL15_pstat):
