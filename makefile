@@ -6,7 +6,7 @@ compile_opts = -std=c++14 -mavx -march=native -Wall -pthread
 
 flist = 1 2 3 4 5 S1 S2 S4 S5 B1 B2 B3 B4 B5
 
-.PHONY: clean test all testprofile testcover doc testcpp autopep spell leaks profilecpp
+.PHONY: clean test all testprofile testcover testcpp autopep spell leaks profilecpp
 
 all: ckine/ckine.so Manuscript/Manuscript.pdf Manuscript/Manuscript.docx Manuscript/CoverLetter.docx pylint.log
 
@@ -90,6 +90,3 @@ cppcheck: ckine/cppcheck
 	
 pylint.log: venv common/pylintrc
 	. venv/bin/activate && (pylint --rcfile=./common/pylintrc ckine > pylint.log || echo "pylint3 exited with $?")
-
-doc:
-	doxygen Doxyfile
