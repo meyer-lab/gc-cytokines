@@ -23,13 +23,6 @@ pipeline {
             cobertura coberturaReportFile: 'coverage.xml', failUnhealthy: false, failUnstable: false, maxNumberOfBuilds: 0, onlyStable: false, sourceEncoding: 'ASCII', zoomCoverageChart: false
           }
         }
-        /* stage('Doc') { // Aren't really using docs at the moment.
-          steps {
-            sh 'make doc'
-            archiveArtifacts artifacts: 'doxy.log', onlyIfSuccessful: false
-            publishHTML([allowMissing:false, alwaysLinkToLastBuild:false, keepAll:true, reportDir:'html', reportFiles:'index.html', reportName:'Docs'])
-          }
-        } */
         stage('Build') {
           steps {
             sh 'make -j 4'
