@@ -169,7 +169,7 @@ def plot_ligands(ax, factors, ligand_names, cutoff=0.0):
     ax.set_title('Ligands')
 
     # Place legend
-    ax.legend(loc=3)
+    ax.legend(loc=6)
 
 
 def plot_timepoints(ax, ts, factors):
