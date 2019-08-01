@@ -8,7 +8,7 @@ from .imports import import_Rexpr, import_pstat
 from .fit import commonTraf
 
 
-class pSTAT_activity:
+class pSTAT_activity:  # pylint: disable=too-few-public-methods
     """ Calculating the pSTAT activity residuals for IL2 and IL15 stimulation in distinct cell lines from Visterra. """
 
     def __init__(self):
@@ -69,16 +69,7 @@ class build_model:
         M = pm.Model()
 
         with M:
-            if self.traf:
-                kfwd, endo, activeEndo, kRec, kDeg, sortF = commonTraf()
-            else:
-                kfwd = pm.Lognormal("kfwd", mu=np.log(0.001), sd=0.5, shape=1)
-                # Assigning trafficking to zero to fit without trafficking
-                endo = T.zeros(1, dtype=np.float64)
-                activeEndo = T.zeros(1, dtype=np.float64)
-                kRec = T.zeros(1, dtype=np.float64)
-                kDeg = T.zeros(1, dtype=np.float64)
-                sortF = T.ones(1, dtype=np.float64) * 0.5
+            kfwd, endo, activeEndo, kRec, kDeg, sortF = commonTraf(trafficking=self.traf)
 
             rxnrates = pm.Lognormal("rxn", sd=0.5, shape=6)  # 6 reverse rxn rates for IL2/IL15
             nullRates = T.ones(4, dtype=np.float64)  # k27rev, k31rev, k33rev, k35rev

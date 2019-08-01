@@ -5,7 +5,6 @@ import string
 import numpy as np
 from .figureCommon import subplotLabel, getSetup
 from ..model import runCkineU_IL2, ligandDeg, getTotalActiveCytokine
-from ..imports import import_samples_2_15
 from ..make_tensor import rxntfR
 
 

@@ -5,7 +5,6 @@ import string
 import numpy as np
 import pandas as pds
 import seaborn as sns
-from matplotlib.patches import Patch
 from scipy.stats import pearsonr
 from .figureCommon import subplotLabel, getSetup, plot_cells, plot_ligands, plot_timepoints
 from .figure3 import plot_R2X, n_pred_comps, factors_activity as predicted_factors
@@ -25,7 +24,7 @@ def makeFigure():
 
     # Add subplot labels
     for ii, item in enumerate(ax):
-        if ii<5:
+        if ii < 5:
             subplotLabel(item, string.ascii_uppercase[ii])
 
     _, cell_names, IL2_data, IL15_data = import_pstat()
@@ -64,7 +63,7 @@ def makeFigure():
 
 def correlation_cells(ax, experimental, predicted):
     """Function that takes in predicted and experimental components from cell decomposion and gives a bar graph of the Pearson Correlation Coefficients."""
-    corr_df = pds.DataFrame(columns = ['Experimental Cmp#', 'Predicted Cmp#', 'Coefficient'])
+    corr_df = pds.DataFrame(columns=['Experimental Cmp#', 'Predicted Cmp#', 'Coefficient'])
     for ii in range(experimental.shape[1]):
         for jj in range(predicted.shape[1]):
             corr_df = corr_df.append({'Experimental Cmp#': ii+1, 'Predicted Cmp#': jj+1, 'Coefficient': pearsonr(experimental[:, ii], predicted[:, jj])[0]}, ignore_index=True)

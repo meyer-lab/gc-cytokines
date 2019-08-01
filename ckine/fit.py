@@ -21,14 +21,20 @@ def sampling(M):
     return pm.sample(init="ADVI", chains=2, model=M)
 
 
-def commonTraf():
+def commonTraf(trafficking=True):
     """ Set the common trafficking parameter priors. """
     kfwd = pm.Lognormal('kfwd', mu=np.log(0.001), sd=0.5, shape=1)
-    endo = pm.Lognormal('endo', mu=np.log(0.1), sd=0.1, shape=1)
-    activeEndo = pm.Lognormal('activeEndo', sd=0.1, shape=1)
-    kRec = pm.Lognormal('kRec', mu=np.log(0.1), sd=0.1, shape=1)
-    kDeg = pm.Lognormal('kDeg', mu=np.log(0.01), sd=0.2, shape=1)
-    sortF = pm.Beta('sortF', alpha=12, beta=80, shape=1)
+
+    if trafficking:
+        endo = pm.Lognormal('endo', mu=np.log(0.1), sd=0.1, shape=1)
+        activeEndo = pm.Lognormal('activeEndo', sd=0.1, shape=1)
+        kRec = pm.Lognormal('kRec', mu=np.log(0.1), sd=0.1, shape=1)
+        kDeg = pm.Lognormal('kDeg', mu=np.log(0.01), sd=0.2, shape=1)
+        sortF = pm.Beta('sortF', alpha=12, beta=80, shape=1)
+    else:
+        # Assigning trafficking to zero to fit without trafficking
+        endo = activeEndo = kRec = kDeg = T.zeros(1, dtype=np.float64)
+        sortF = T.ones(1, dtype=np.float64) * 0.5
     return kfwd, endo, activeEndo, kRec, kDeg, sortF
 
 
@@ -146,16 +152,7 @@ class build_model:
         M = pm.Model()
 
         with M:
-            if self.traf:
-                kfwd, endo, activeEndo, kRec, kDeg, sortF = commonTraf()
-            else:
-                kfwd = pm.Lognormal('kfwd', mu=np.log(0.001), sd=0.5, shape=1)
-                # Assigning trafficking to zero to fit without trafficking
-                endo = T.zeros(1, dtype=np.float64)
-                activeEndo = T.zeros(1, dtype=np.float64)
-                kRec = T.zeros(1, dtype=np.float64)
-                kDeg = T.zeros(1, dtype=np.float64)
-                sortF = T.ones(1, dtype=np.float64) * 0.5
+            kfwd, endo, activeEndo, kRec, kDeg, sortF = commonTraf(trafficking=self.traf)
 
             gc_value = find_gc(self.traf, endo, kRec, sortF, kDeg)  # find rate of gc expression or gc abundance (depending on traf)
             Rexpr_gc = T.ones(1, dtype=np.float64) * gc_value
