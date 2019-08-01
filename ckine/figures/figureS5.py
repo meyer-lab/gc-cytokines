@@ -4,7 +4,7 @@ This creates Figure S5. Full panel of measured vs simulated for IL-2 and IL-15.
 import string
 import numpy as np
 import matplotlib.cm as cm
-from scipy.optimize import minimize
+from scipy.optimize import least_squares
 from .figureCommon import subplotLabel, getSetup, plot_conf_int, plot_scaled_pstat
 from ..model import runCkineUP, getTotalActiveSpecies, receptor_expression
 from ..imports import import_Rexpr, import_pstat, import_samples_2_15
@@ -48,14 +48,17 @@ def calc_dose_response(unkVec, scales, cell_data, tps, cytokC, exp_data_2, exp_d
     """ Calculates activity for a given cell type at various cytokine concentrations and timepoints. """
     PTS = cytokC.shape[0]  # number of cytokine concentrations
 
-    rxntfr2 = rxntfr15 = unkVec.T.copy()
+    rxntfr2 = unkVec.T.copy()
     total_activity2 = np.zeros((PTS, rxntfr2.shape[0], tps.size))
     total_activity15 = total_activity2.copy()
 
     # updates rxntfr for receptor expression for IL2Ra, IL2Rb, gc
-    rxntfr2[:, 22] = rxntfr15[:, 22] = receptor_expression(cell_data[0], rxntfr2[:, 17], rxntfr2[:, 20], rxntfr2[:, 19], rxntfr2[:, 21])
-    rxntfr2[:, 23] = rxntfr15[:, 23] = receptor_expression(cell_data[1], rxntfr2[:, 17], rxntfr2[:, 20], rxntfr2[:, 19], rxntfr2[:, 21])
-    rxntfr2[:, 24] = rxntfr15[:, 24] = receptor_expression(cell_data[2], rxntfr2[:, 17], rxntfr2[:, 20], rxntfr2[:, 19], rxntfr2[:, 21])
+    rxntfr2[:, 22] = receptor_expression(cell_data[0], rxntfr2[:, 17], rxntfr2[:, 20], rxntfr2[:, 19], rxntfr2[:, 21])
+    rxntfr2[:, 23] = receptor_expression(cell_data[1], rxntfr2[:, 17], rxntfr2[:, 20], rxntfr2[:, 19], rxntfr2[:, 21])
+    rxntfr2[:, 24] = receptor_expression(cell_data[2], rxntfr2[:, 17], rxntfr2[:, 20], rxntfr2[:, 19], rxntfr2[:, 21])
+    rxntfr2[:, 25] = 0.0  # We never observed any IL-15Ra
+
+    rxntfr15 = rxntfr2.copy()
 
     # loop for each IL2 concentration
     for i in range(PTS):
@@ -107,13 +110,12 @@ def optimize_scale(model_act2, model_act15, exp_act2, exp_act15):
     guess = np.array([100.0, np.mean(exp_act2 + exp_act15) / np.mean(model_act2 + model_act15)])
 
     def calc_res(sc):
-        """ Calculate the residual.. This is the function we minimize. """
+        """ Calculate the residuals. This is the function we minimize. """
         scaled_act2 = sc[1] * model_act2 / (model_act2 + sc[0])
-        err2 = np.sum(np.square(exp_act2 - scaled_act2))
         scaled_act15 = sc[1] * model_act15 / (model_act15 + sc[0])
-        err15 = np.sum(np.square(exp_act15 - scaled_act15))
-        return err2 + err15  # return sum of squared error (a scalar)
+        err = np.hstack((exp_act2 - scaled_act2, exp_act15 - scaled_act15))
+        return np.reshape(err, (-1,))
 
     # find result of minimization where both params are >= 0
-    res = minimize(calc_res, guess, bounds=((1.0, None), (0.0, None)))
+    res = least_squares(calc_res, guess, bounds=(0.0, np.inf))
     return res.x

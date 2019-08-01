@@ -48,6 +48,8 @@ public:
 		endosome->k5rev *= 5.0;
 		endosome->k10rev *= 5.0;
 		endosome->k11rev *= 5.0;
+		endosome->k13rev *= 5.0;
+		endosome->k14rev *= 5.0;
 		endosome->k16rev *= 5.0;
 		endosome->k17rev *= 5.0;
 		endosome->k22rev *= 5.0;
@@ -60,7 +62,7 @@ public:
 		endosome->k33rev *= 5.0;
 		endosome->k34rev *= 5.0;
 		endosome->k35rev *= 5.0;
-    }
+	}
 
 	explicit ratesS(std::vector<T> rxntfR) {
 		if (rxntfR.size() == Nparams) {
