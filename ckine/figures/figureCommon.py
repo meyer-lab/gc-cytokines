@@ -117,6 +117,7 @@ def plot_cells(ax, factors, component_x, component_y, cell_names):
     ax.set_title('Cells')
     ax.set_xlabel('Component ' + str(component_x))
     ax.set_ylabel('Component ' + str(component_y))
+    ax.set_xlim(left=-0.03)
     ax.legend()
 
 
