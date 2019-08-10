@@ -66,6 +66,6 @@ def correlation_cells(ax, experimental, predicted):
     corr_df = pds.DataFrame(columns=['Experimental Cmp#', 'Predicted Cmp#', 'Coefficient'])
     for ii in range(experimental.shape[1]):
         for jj in range(predicted.shape[1]):
-            corr_df = corr_df.append({'Experimental Cmp#': ii+1, 'Predicted Cmp#': jj+1, 'Coefficient': pearsonr(experimental[:, ii], predicted[:, jj])[0]}, ignore_index=True)
-    corr_df = corr_df.astype({'Experimental Cmp#':int, 'Predicted Cmp#':int})
+            corr_df = corr_df.append({'Experimental Cmp#': ii + 1, 'Predicted Cmp#': jj + 1, 'Coefficient': pearsonr(experimental[:, ii], predicted[:, jj])[0]}, ignore_index=True)
+    corr_df = corr_df.astype({'Experimental Cmp#': int, 'Predicted Cmp#': int})
     sns.catplot(x='Experimental Cmp#', y='Coefficient', hue='Predicted Cmp#', data=corr_df, kind='bar', ax=ax)

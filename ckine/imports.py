@@ -208,10 +208,10 @@ def import_pstat():
             zero_treatment = data[8 + (12 * i), 13]
             zero_treatment2 = data[8 + (12 * i), 30]
         # order of increasing time by cell type
-        IL2_data[4 * i : 4 * (i + 1), :] = np.flip(data[6 + (12 * i) : 10 + (12 * i), 2:14].astype(np.float) - zero_treatment, 0)
-        IL2_data2[4 * i : 4 * (i + 1), :] = np.flip(data[6 + (12 * i) : 10 + (12 * i), 19:31].astype(np.float) - zero_treatment2, 0)
-        IL15_data[4 * i : 4 * (i + 1), :] = np.flip(data[10 + (12 * i) : 14 + (12 * i), 2:14].astype(np.float) - zero_treatment, 0)
-        IL15_data2[4 * i : 4 * (i + 1), :] = np.flip(data[10 + (12 * i) : 14 + (12 * i), 19:31].astype(np.float) - zero_treatment2, 0)
+        IL2_data[4 * i: 4 * (i + 1), :] = np.flip(data[6 + (12 * i): 10 + (12 * i), 2:14].astype(np.float) - zero_treatment, 0)
+        IL2_data2[4 * i: 4 * (i + 1), :] = np.flip(data[6 + (12 * i): 10 + (12 * i), 19:31].astype(np.float) - zero_treatment2, 0)
+        IL15_data[4 * i: 4 * (i + 1), :] = np.flip(data[10 + (12 * i): 14 + (12 * i), 2:14].astype(np.float) - zero_treatment, 0)
+        IL15_data2[4 * i: 4 * (i + 1), :] = np.flip(data[10 + (12 * i): 14 + (12 * i), 19:31].astype(np.float) - zero_treatment2, 0)
 
     for i in range(IL2_data.shape[0]):
         for j in range(IL2_data.shape[1]):

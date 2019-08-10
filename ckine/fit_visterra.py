@@ -18,8 +18,8 @@ class pSTAT_activity:  # pylint: disable=too-few-public-methods
         self.cytokC, self.cell_names_pstat, self.IL2_data, self.IL15_data = import_pstat()
 
         self.cytokM = np.zeros((self.cytokC.size * 2, 6), dtype=np.float64)
-        self.cytokM[0 : self.cytokC.size, 0] = self.cytokC
-        self.cytokM[self.cytokC.size : :, 1] = self.cytokC
+        self.cytokM[0: self.cytokC.size, 0] = self.cytokC
+        self.cytokM[self.cytokC.size::, 1] = self.cytokC
 
     def calc(self, unkVec, scale):
         """ Simulate the STAT5 measurements and return residuals between model prediction and experimental data. """
@@ -45,7 +45,7 @@ class pSTAT_activity:  # pylint: disable=too-few-public-methods
                 actVec = actVec / T.mean(actVec)
 
                 # concatenate the cell's IL-2 data to the IL-15 data so it matches actVec
-                data_cat = np.concatenate((self.IL2_data[(i * 4) : ((i + 1) * 4)], self.IL15_data[(i * 4) : ((i + 1) * 4)]))
+                data_cat = np.concatenate((self.IL2_data[(i * 4): ((i + 1) * 4)], self.IL15_data[(i * 4): ((i + 1) * 4)]))
                 data_cat = data_cat / np.mean(data_cat)
 
                 newVec = T.reshape(actVec, data_cat.shape)
