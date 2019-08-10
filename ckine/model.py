@@ -246,7 +246,7 @@ def getActiveCytokine(cytokineIDX, yVec):
 def getTotalActiveCytokine(cytokineIDX, yVec):
     """ Get amount of surface and endosomal active species. """
     assert yVec.ndim == 1
-    return getActiveCytokine(cytokineIDX, yVec[0:__halfL]) + __internalStrength * getActiveCytokine(cytokineIDX, yVec[__halfL : __halfL * 2])
+    return getActiveCytokine(cytokineIDX, yVec[0:__halfL]) + __internalStrength * getActiveCytokine(cytokineIDX, yVec[__halfL: __halfL * 2])
 
 
 def surfaceReceptors(y):
@@ -264,13 +264,13 @@ def surfaceReceptors(y):
 
 def totalReceptors(yVec):
     """This function takes in a vector y and returns the amounts of all 8 receptors in both cell compartments"""
-    return surfaceReceptors(yVec) + __internalStrength * surfaceReceptors(yVec[__halfL : __halfL * 2])
+    return surfaceReceptors(yVec) + __internalStrength * surfaceReceptors(yVec[__halfL: __halfL * 2])
 
 
 def ligandDeg(yVec, sortF, kDeg, cytokineIDX):
     """ This function calculates rate of total ligand degradation. """
-    yVec_endo_species = yVec[__halfL : (__halfL * 2)].copy()  # get all endosomal complexes
-    yVec_endo_lig = yVec[(__halfL * 2) : :].copy()  # get all endosomal ligands
+    yVec_endo_species = yVec[__halfL: (__halfL * 2)].copy()  # get all endosomal complexes
+    yVec_endo_lig = yVec[(__halfL * 2)::].copy()  # get all endosomal ligands
     sum_active = np.sum(getActiveCytokine(cytokineIDX, yVec_endo_species))
     __cytok_species_IDX = np.zeros(__halfL, dtype=np.bool)  # create array of size halfL
     __cytok_species_IDX[getCytokineSpecies()[cytokineIDX]] = 1  # assign 1's for species corresponding to the cytokineIDX
