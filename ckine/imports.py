@@ -143,50 +143,6 @@ def import_samples_4_7(ret_trace=False, N=None):
     return unkVec, scales
 
 
-def import_visterra_2_15(Traf=True, ret_trace=False, N=None):
-    """ Imports the sampling results from fitting to visterra data in fit_visterra.py. """
-    from .fit_visterra import build_model as build_model_visterra
-
-    bmodel = build_model_visterra(traf=Traf)
-    n_params = nParams()
-
-    if Traf:
-        trace = pm.backends.text.load(join(path_here, "ckine/data/fits/IL2_visterra_results"), bmodel.M)
-    else:
-        trace = pm.backends.text.load(join(path_here, "ckine/data/fits/IL2_15_no_traf_visterra"), bmodel.M)
-
-    # option to return trace instead of numpy array
-    if ret_trace:
-        return trace
-
-    scales = trace.get_values("scales")
-    num = trace.get_values("kfwd").size
-
-    unkVec = np.zeros((n_params, num))
-    unkVec[6, :] = np.squeeze(trace.get_values("kfwd"))
-    unkVec[7:13, :] = np.squeeze(trace.get_values("rxn")).T
-    unkVec[13:17, :] = 1.0
-
-    unkVec[22, :] = np.squeeze(trace.get_values("Rexpr_2Ra"))
-    unkVec[23, :] = np.squeeze(trace.get_values("Rexpr_2Rb"))
-    unkVec[25, :] = np.squeeze(trace.get_values("Rexpr_15Ra"))
-
-    if Traf:
-        unkVec[17, :] = np.squeeze(trace.get_values("endo"))
-        unkVec[18, :] = np.squeeze(trace.get_values("activeEndo"))
-        unkVec[19, :] = np.squeeze(trace.get_values("sortF"))
-        unkVec[20, :] = np.squeeze(trace.get_values("kRec"))
-        unkVec[21, :] = np.squeeze(trace.get_values("kDeg"))
-
-    if N is not None:
-        assert 0 < N < num, "The N specified is out of bounds."
-
-        idx = np.random.randint(num, size=N)  # pick N numbers without replacement from 0 to num
-        unkVec, scales = unkVec[:, idx], scales[idx, :]
-
-    return unkVec, scales
-
-
 def import_pstat(combine_samples=True):
     """ Loads CSV file containing pSTAT5 levels from Visterra data. Incorporates only Replicate 1 since data missing in Replicate 2. """
     path = os.path.dirname(os.path.dirname(__file__))
