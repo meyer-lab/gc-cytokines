@@ -12,15 +12,19 @@ from .figureCommon import subplotLabel, getSetup
 from .figureS5 import calc_dose_response
 from ..imports import import_pstat, import_Rexpr, import_samples_2_15
 
-ckineConc, cell_names_pstat, IL2_data, IL15_data = import_pstat()
+ckineConc, cell_names_pstat, IL2_data, IL2_data2, IL15_data, IL15_data2 = import_pstat(combine_samples=False)
 unkVec_2_15, scales = import_samples_2_15(N=1)  # use one rate
 _, receptor_data, cell_names_receptor = import_Rexpr()
+
+pstat_data = {'Experiment 1': np.concatenate((IL2_data.astype(np.float), IL15_data.astype(np.float)), axis=None), 'Experiment 2': np.concatenate((IL2_data2.astype(np.float), IL15_data2.astype(
+    np.float)), axis=None), 'IL': np.concatenate(((np.tile(np.array('IL-2'), len(cell_names_pstat) * 4 * len(ckineConc))), np.tile(np.array('IL-15'), len(cell_names_pstat) * 4 * len(ckineConc))), axis=None)}
+pstat_df = pd.DataFrame(data=pstat_data)
 
 
 def makeFigure():
     """Get a list of the axis objects and create a figure"""
     # Get list of axis objects
-    ax, f = getSetup((7, 3), (1, 2))
+    ax, f = getSetup((7, 6), (2, 2))
 
     for ii, item in enumerate(ax):
         subplotLabel(item, string.ascii_uppercase[ii])
@@ -62,9 +66,18 @@ def makeFigure():
     df = pd.DataFrame(data)
 
     catplot_comparison(ax[0], df)
-    plot_corrcoef(ax[1], df, cell_names_pstat)
+    compare_experimental_data(ax[1], pstat_df)
+    plot_corrcoef(ax[2], df, cell_names_pstat)
 
     return f
+
+
+def compare_experimental_data(ax, df):
+    """ Compare both pSTAT5 replicates. """
+    df.dropna(axis=0, how='any', inplace=True)
+    sns.set_palette(sns.xkcd_palette(["violet", "goldenrod"]))
+    sns.scatterplot(x="Experiment 1", y="Experiment 2", hue="IL", data=df, ax=ax, s=10)
+    ax.set_aspect('equal', 'box')
 
 
 def catplot_comparison(ax, df):
@@ -77,10 +90,12 @@ def catplot_comparison(ax, df):
     sns.catplot(x="Cell Type", y="EC-50", hue="IL",
                 data=df.loc[(df['Time Point'] == 60.) & (df["Data Type"] == 'Predicted')],
                 legend=False, legend_out=False, ax=ax, marker='o')
+
     # plot experimental EC50
     sns.catplot(x="Cell Type", y="EC-50", hue="IL",
                 data=df.loc[(df['Time Point'] == 60.) & (df["Data Type"] == 'Experimental')],
                 legend=False, legend_out=False, ax=ax, marker='^')
+
     ax.set_xticklabels(ax.get_xticklabels(), rotation=35, rotation_mode="anchor", ha="right", position=(0, 0.02))
     ax.set_xlabel("")  # remove "Cell Type" from xlabel
     ax.set_ylabel(r"EC-50 (log$_{10}$[nM])")
