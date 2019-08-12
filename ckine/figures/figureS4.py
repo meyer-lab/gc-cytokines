@@ -18,7 +18,7 @@ cell_dim = 1  # For this figure, the cell dimension is along the second [python 
 def makeFigure():
     """Get a list of the axis objects and create a figure"""
     x, y = 2, 3
-    ax, f = getSetup((7.5, 5), (x, y))
+    ax, f = getSetup((7.5, 4.5), (x, y))
 
     _, _, cell_names = import_Rexpr()
     for ii, item in enumerate(ax):
@@ -46,4 +46,6 @@ def makeFigure():
 def plot_core(ax, core):
     """Generate heatmaps for the core tensor."""
     # Begin by unfolding the core tensor on its 3 faces.
-    sns.heatmap(np.squeeze(core), cmap="YlGnBu", cbar=True, ax=ax)
+    sns.heatmap(np.squeeze(core), cmap="YlGnBu", cbar=True, ax=ax, annot=True, square=True, fmt='.1f', xticklabels=['1', '2'], yticklabels=['1', '2', '3'])
+    ax.set_xlabel("Ligands")
+    ax.set_ylabel("Cells")
