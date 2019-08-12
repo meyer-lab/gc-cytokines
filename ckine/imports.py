@@ -187,7 +187,7 @@ def import_visterra_2_15(Traf=True, ret_trace=False, N=None):
     return unkVec, scales
 
 
-def import_pstat():
+def import_pstat(combine_samples=True):
     """ Loads CSV file containing pSTAT5 levels from Visterra data. Incorporates only Replicate 1 since data missing in Replicate 2. """
     path = os.path.dirname(os.path.dirname(__file__))
     data = np.array(pds.read_csv(join(path, "ckine/data/pSTAT_data.csv"), encoding="latin1"))
@@ -212,6 +212,9 @@ def import_pstat():
         IL2_data2[4 * i: 4 * (i + 1), :] = np.flip(data[6 + (12 * i): 10 + (12 * i), 19:31].astype(np.float) - zero_treatment2, 0)
         IL15_data[4 * i: 4 * (i + 1), :] = np.flip(data[10 + (12 * i): 14 + (12 * i), 2:14].astype(np.float) - zero_treatment, 0)
         IL15_data2[4 * i: 4 * (i + 1), :] = np.flip(data[10 + (12 * i): 14 + (12 * i), 19:31].astype(np.float) - zero_treatment2, 0)
+
+    if combine_samples is False:
+        return ckineConc, cell_names, IL2_data, IL2_data2, IL15_data, IL15_data2
 
     for i in range(IL2_data.shape[0]):
         for j in range(IL2_data.shape[1]):
