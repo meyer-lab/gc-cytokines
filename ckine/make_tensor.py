@@ -12,11 +12,11 @@ rxntfR = np.squeeze(rxntfR)
 
 
 # generate n_timepoints evenly spaced timepoints to 4 hrs
-tensor_time = np.linspace(0., 240., 200)
+tensor_time = np.linspace(0.0, 240.0, 200)
 
 
 def n_lig(mut):
-    '''Function to return the number of cytokines used in building the tensor.'''
+    """Function to return the number of cytokines used in building the tensor."""
     # Mutant here refers to a tensor made exclusively of WT IL-2 and mutant affinity IL-2s.
     if mut:
         nlig = 3
@@ -34,8 +34,7 @@ def ySolver(matIn, ts, tensor=True):
         rxn[22:30] = matIn[6:14]  # Receptor expression
     rxn[0:6] = matIn[0:6]  # Cytokine stimulation concentrations in the following order: IL2, 15, 7, 9, 4, 21, and in nM
 
-    temp, retVal = runCkineU(ts, rxn)
-    assert retVal >= 0
+    temp = runCkineU(ts, rxn)
 
     return temp
 
@@ -48,18 +47,14 @@ def ySolver_IL2_mut(matIn, ts, mut):
     k2rev = 0.6 * 144.0
     k11rev = 63.0 * k5rev / 1.5
 
-    if mut == 'a':
+    if mut == "a":
         k2rev *= 10.0  # 10x weaker binding to IL2Rb
-    elif mut == 'b':
+    elif mut == "b":
         k2rev *= 0.01  # 100x more bindng to IL2Rb
 
-    rxntfr = np.array([matIn[0], kfwd, k1rev, k2rev, k4rev, k5rev, k11rev,
-                       matIn[6], matIn[7], matIn[8],  # IL2Ra, IL2Rb, gc
-                       k1rev * 5.0, k2rev * 5.0, k4rev * 5.0, k5rev * 5.0, k11rev * 5.0])
+    rxntfr = np.array([matIn[0], kfwd, k1rev, k2rev, k4rev, k5rev, k11rev, matIn[6], matIn[7], matIn[8], k1rev * 5.0, k2rev * 5.0, k4rev * 5.0, k5rev * 5.0, k11rev * 5.0])  # IL2Ra, IL2Rb, gc
 
-    yOut, retVal = runCkineU_IL2(ts, rxntfr)
-
-    assert retVal >= 0
+    yOut = runCkineU_IL2(ts, rxntfr)
 
     return yOut
 
@@ -75,14 +70,18 @@ def meshprep(mut):
     # Make mesh grid of all ligand concentrations, First is IL-2 WT, Third is IL-15; Fourth is IL7
     # Set interleukins other than IL2&15 to zero. Should be of shape 3(IL2,mutIL2,IL15)*(len(ILs)) by 6 (6 for all ILs)
     if mut:
-        concMesh = np.vstack((np.array(np.meshgrid(ILs, 0, 0, 0, 0, 0)).T.reshape(-1, 6),
-                              np.array(np.meshgrid(ILs, 0, 0, 0, 0, 0)).T.reshape(-1, 6),
-                              np.array(np.meshgrid(ILs, 0, 0, 0, 0, 0)).T.reshape(-1, 6)))
+        concMesh = np.vstack(
+            (np.array(np.meshgrid(ILs, 0, 0, 0, 0, 0)).T.reshape(-1, 6), np.array(np.meshgrid(ILs, 0, 0, 0, 0, 0)).T.reshape(-1, 6), np.array(np.meshgrid(ILs, 0, 0, 0, 0, 0)).T.reshape(-1, 6))
+        )
     else:
-        concMesh = np.vstack((np.array(np.meshgrid(ILs, 0, 0, 0, 0, 0)).T.reshape(-1, 6),
-                              np.array(np.meshgrid(ILs, 0, 0, 0, 0, 0)).T.reshape(-1, 6),
-                              np.array(np.meshgrid(0, ILs, 0, 0, 0, 0)).T.reshape(-1, 6),
-                              np.array(np.meshgrid(0, 0, ILs, 0, 0, 0)).T.reshape(-1, 6)))
+        concMesh = np.vstack(
+            (
+                np.array(np.meshgrid(ILs, 0, 0, 0, 0, 0)).T.reshape(-1, 6),
+                np.array(np.meshgrid(ILs, 0, 0, 0, 0, 0)).T.reshape(-1, 6),
+                np.array(np.meshgrid(0, ILs, 0, 0, 0, 0)).T.reshape(-1, 6),
+                np.array(np.meshgrid(0, 0, ILs, 0, 0, 0)).T.reshape(-1, 6),
+            )
+        )
     # Repeat the cytokine stimulations (concMesh) an X amount of times where X here is number of cells (12).
     # Just stacks up concMesh on top of each other 10 times (or however many cells are available)
     concMesh_stacked = np.tile(concMesh, (len(cell_names), 1))
@@ -125,9 +124,9 @@ def prep_tensor(mut):
 
         for jj, row in enumerate(Conc_recept_cell):
             if jj in IL2Ra_idxs:
-                y_of_combos[jj] = ySolver_IL2_mut(row, tensor_time, mut='a')  # Solve using the mutant IL2-IL2Ra solver
+                y_of_combos[jj] = ySolver_IL2_mut(row, tensor_time, mut="a")  # Solve using the mutant IL2-IL2Ra solver
             elif jj in IL2Rb_idxs:
-                y_of_combos[jj] = ySolver_IL2_mut(row, tensor_time, mut='b')  # Solve using the mutant IL2-IL2Rb solver
+                y_of_combos[jj] = ySolver_IL2_mut(row, tensor_time, mut="b")  # Solve using the mutant IL2-IL2Rb solver
             else:
                 y_of_combos[jj] = ySolver(row, tensor_time)  # Solve using the WT solver for IL2.
     else:
@@ -140,7 +139,7 @@ def prep_tensor(mut):
         for jj, row in enumerate(Conc_recept_cell):
             # Solve using the WT solver for each of IL2, IL15, and IL7. And the mutant Solver for IL-2--Il-2Ra.
             if jj in IL2Ra_idxs:
-                y_of_combos[jj] = ySolver_IL2_mut(row, tensor_time, mut='a')  # Solve using the mutant IL2-IL2Ra solver
+                y_of_combos[jj] = ySolver_IL2_mut(row, tensor_time, mut="a")  # Solve using the mutant IL2-IL2Ra solver
             else:
                 y_of_combos[jj] = ySolver(row, tensor_time)
 
