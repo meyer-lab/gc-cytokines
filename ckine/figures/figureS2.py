@@ -43,6 +43,7 @@ def plot_geweke_2_15(ax, traf):
              'IL-2Rα': max(abs(score[0]['Rexpr_2Ra'][:, 1])),
              'IL-2Rβ': max(abs(score[0]['Rexpr_2Rb'][:, 1])),
              'IL-15Rα': max(abs(score[0]['Rexpr_15Ra'][:, 1])),
+             r'$γ_{c}$': max(abs(score[0]['Rexpr_gc'][:, 1])),
              r'$C_{5}$': max(abs(score[0]['scales'][:, 1])),
              r'$k_{fwd}$': max(abs(score[0]['kfwd'][:, 1]))}
 

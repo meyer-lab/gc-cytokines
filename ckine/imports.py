@@ -5,7 +5,7 @@ import pymc3 as pm
 import numpy as np
 import scipy as sp
 import pandas as pds
-from .fit import build_model as build_model_2_15, find_gc
+from .fit import build_model as build_model_2_15
 from .fit_others import build_model as build_model_4_7
 from .model import nParams
 
@@ -79,6 +79,7 @@ def import_samples_2_15(Traf=True, ret_trace=False, N=None, tensor=False):
 
     unkVec[22, :] = np.squeeze(trace.get_values("Rexpr_2Ra"))
     unkVec[23, :] = np.squeeze(trace.get_values("Rexpr_2Rb"))
+    unkVec[24, :] = np.squeeze(trace.get_values("Rexpr_gc"))
     unkVec[25, :] = np.squeeze(trace.get_values("Rexpr_15Ra"))
 
     if Traf:
@@ -87,8 +88,6 @@ def import_samples_2_15(Traf=True, ret_trace=False, N=None, tensor=False):
         unkVec[19, :] = np.squeeze(trace.get_values("sortF"))
         unkVec[20, :] = np.squeeze(trace.get_values("kRec"))
         unkVec[21, :] = np.squeeze(trace.get_values("kDeg"))
-
-    unkVec[24, :] = np.squeeze(find_gc(Traf, unkVec[17, :], unkVec[20, :], unkVec[19, :], unkVec[21, :]))
 
     if N is not None:
         assert 0 < N < num, "The N specified is out of bounds."

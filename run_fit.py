@@ -25,26 +25,26 @@ if __name__ == "__main__":  # only go into this loop if you're running fit.py di
         from ckine.fit import build_model
         if traf:
             print('Running IL2/15 model with trafficking')
-            filename = "IL2_model_results"
+            filename = "ckine/data/fits/IL2_model_results"
         else:
             print('Running IL2/15 model without trafficking')
-            filename = "IL2_15_no_traf"
+            filename = "ckine/data/fits/IL2_15_no_traf"
     elif args.cytokines == '4':
         from ckine.fit_others import build_model
         if traf:
             print('Running IL4/7 model with trafficking')
-            filename = "IL4-7_model_results"
+            filename = "ckine/data/fits/IL4-7_model_results"
         else:
             print('Running IL4/7 model without trafficking')
-            filename = "IL4_7_no_traf"
+            filename = "ckine/data/fits/IL4_7_no_traf"
     elif args.cytokines == '2v':
         from ckine.fit_visterra import build_model
         if traf:
             print('Running IL2/15 Visterra model with trafficking')
-            filename = "IL2_visterra_results"
+            filename = "ckine/data/fits/IL2_visterra_results"
         else:
             print('Running IL2/15 Visterra model without trafficking')
-            filename = "IL2_15_no_traf_visterra"
+            filename = "ckine/data/fits/IL2_15_no_traf_visterra"
     else:
         print("enter valid cytokine parameter")
         raise ValueError
