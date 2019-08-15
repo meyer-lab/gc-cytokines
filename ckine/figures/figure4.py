@@ -9,26 +9,31 @@ import seaborn as sns
 from scipy.optimize import least_squares
 from scipy.stats import pearsonr
 from .figureCommon import subplotLabel, getSetup
-from .figureS5 import calc_dose_response
+from .figureS5 import calc_dose_response, plot_exp_v_pred
 from ..imports import import_pstat, import_Rexpr, import_samples_2_15
 
 ckineConc, cell_names_pstat, IL2_data, IL2_data2, IL15_data, IL15_data2 = import_pstat(combine_samples=False)
 unkVec_2_15, scales = import_samples_2_15(N=1)  # use one rate
 _, receptor_data, cell_names_receptor = import_Rexpr()
 
-pstat_data = {'Experiment 1': np.concatenate((IL2_data.astype(np.float), IL15_data.astype(np.float)), axis=None), 'Experiment 2': np.concatenate((IL2_data2.astype(np.float), IL15_data2.astype(
-    np.float)), axis=None), 'IL': np.concatenate(((np.tile(np.array('IL-2'), len(cell_names_pstat) * 4 * len(ckineConc))), np.tile(np.array('IL-15'), len(cell_names_pstat) * 4 * len(ckineConc))), axis=None)}
+pstat_data = {'Experiment 1': np.concatenate((IL2_data.astype(np.float), IL15_data.astype(np.float)), axis=None), 'Experiment 2': np.concatenate((IL2_data2.astype(np.float), IL15_data2.astype(np.float)), axis=None),
+              'IL': np.concatenate(((np.tile(np.array('IL-2'), len(cell_names_pstat) * 4 * len(ckineConc))),
+                                    np.tile(np.array('IL-15'), len(cell_names_pstat) * 4 * len(ckineConc))), axis=None)}
 pstat_df = pd.DataFrame(data=pstat_data)
 
 
 def makeFigure():
     """Get a list of the axis objects and create a figure"""
     # Get list of axis objects
-    ax, f = getSetup((7, 6), (2, 2))
+    ax, f = getSetup((7, 6), (3, 3))
 
     for ii, item in enumerate(ax):
         subplotLabel(item, string.ascii_uppercase[ii])
 
+    compare_experimental_data(ax[0], pstat_df)  # compare experiment 1 to 2
+    plot_exp_v_pred(ax[1:7], cell_subset=["NK", "CD8+", "T-reg"])  # NK, CD8+, and Treg subplots taken from fig S5
+
+    # main routine for EC-50 analysis
     df = pd.DataFrame(columns=['Time Point', 'Cell Type', 'IL', 'Data Type', 'EC50'])
 
     x0 = [1, 2., 1000.]
@@ -65,9 +70,8 @@ def makeFigure():
     data = {'Time Point': np.tile(np.array(tps), len(cell_names_pstat) * 4), 'IL': IL, 'Cell Type': cell_types.reshape(160,), 'Data Type': data_types.reshape(160,), 'EC-50': EC50}
     df = pd.DataFrame(data)
 
-    catplot_comparison(ax[0], df)
-    compare_experimental_data(ax[1], pstat_df)
-    plot_corrcoef(ax[2], df, cell_names_pstat)
+    catplot_comparison(ax[7], df)  # compare experiments to model predictions
+    plot_corrcoef(ax[8], df, cell_names_pstat)  # find correlation coefficients
 
     return f
 
