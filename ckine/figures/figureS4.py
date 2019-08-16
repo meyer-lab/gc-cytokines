@@ -21,7 +21,7 @@ def makeFigure():
     ax, f = getSetup((7.5, 4.5), (x, y))
 
     _, _, cell_names = import_Rexpr()
-    for ii, item in enumerate(ax):
+    for ii, item in enumerate(ax[0:5]):
         subplotLabel(item, string.ascii_uppercase[ii])  # Add subplot labels
 
     rank_list = [2, 2, 3]
