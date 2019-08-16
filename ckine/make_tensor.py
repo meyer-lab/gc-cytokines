@@ -77,7 +77,6 @@ def meshprep(mut):
         concMesh = np.vstack(
             (
                 np.array(np.meshgrid(ILs, 0, 0, 0, 0, 0)).T.reshape(-1, 6),
-                np.array(np.meshgrid(ILs, 0, 0, 0, 0, 0)).T.reshape(-1, 6),
                 np.array(np.meshgrid(0, ILs, 0, 0, 0, 0)).T.reshape(-1, 6),
                 np.array(np.meshgrid(0, 0, ILs, 0, 0, 0)).T.reshape(-1, 6),
             )
@@ -132,16 +131,12 @@ def prep_tensor(mut):
     else:
         mut2 = np.arange(0, Conc_recept_cell.shape[0], idx_ref)
         IL2Ra = mut2[np.arange(1, mut2.size, numlig)]
-        IL2Ra_idxs = np.zeros((IL2Ra.size, idx_ref))
         for jj, _ in enumerate(IL2Ra):
             IL2Ra_idxs[jj] = np.array(range(IL2Ra[jj], IL2Ra[jj] + idx_ref))  # Find the indices where the IL2-mutant is.
 
         for jj, row in enumerate(Conc_recept_cell):
             # Solve using the WT solver for each of IL2, IL15, and IL7. And the mutant Solver for IL-2--Il-2Ra.
-            if jj in IL2Ra_idxs:
-                y_of_combos[jj] = ySolver_IL2_mut(row, tensor_time, mut="a")  # Solve using the mutant IL2-IL2Ra solver
-            else:
-                y_of_combos[jj] = ySolver(row, tensor_time)
+            y_of_combos[jj] = ySolver(row, tensor_time)
 
     return y_of_combos, Conc_recept_cell, concMesh, concMesh_stacked, cell_names
 
