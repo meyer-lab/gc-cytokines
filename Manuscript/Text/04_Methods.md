@@ -1,6 +1,6 @@
 # Methods
 
-All analysis was implemented in Python, and can be found at <https://github.com/meyer-lab/type-I-ckine-model>, release 1.0.
+All analysis was implemented in Python, and can be found at <https://github.com/meyer-lab/gc-cytokines>, release 1.0.
 
 ## Model
 
@@ -16,7 +16,7 @@ Initial values were calculated by assuming steady-state in the absence of ligand
 
 ### Model fitting
 
-We used Markov chain Monte Carlo to fit the unknown parameters in our model using previously published cytokine response data [@ring_mechanistic_2012; @Gonnordeaal1253]. Experimental measurements include p-STAT activity under stimulation with varying concentrations of IL-2, -15, -4, and -7 as well as time-course measurements of surface IL-2Rβ upon IL-2 and -15 stimulation. YT-1 human NK cells were used for all data-sets involving IL-2 and IL-15. Human PBMC-derived CD4+TCR+CCR7^high^ cells were used for all IL-4 and -7 response data. All YT-1 cell experiments were performed both with the wild-type cell line, lacking IL-2Rα, and cells sorted for appreciable expression of the receptor. Data from Ring *et al* and Gonnord *et al* can be found in Figure 5 and Figure S3, respectively [@ring_mechanistic_2012; @Gonnordeaal1253]. Measurements of receptor counts at steady state in Gonnord et al. were used to solve for IL-7Rα, IL-4Rα, and γ~c~ expression rates in human PBMCs. We created functions that calculated p-STAT activity and percent of surface IL-2Rβ under various cellular conditions in order to calculate the residuals between our model predictions and experimental data.
+We used Markov chain Monte Carlo to fit the unknown parameters in our model using previously published cytokine response data [@ring_mechanistic_2012; @Gonnordeaal1253]. Experimental measurements include pSTAT activity under stimulation with varying concentrations of IL-2, -15, -4, and -7 as well as time-course measurements of surface IL-2Rβ upon IL-2 and -15 stimulation. YT-1 human NK cells were used for all data-sets involving IL-2 and IL-15. Human PBMC-derived CD4+TCR+CCR7^high^ cells were used for all IL-4 and -7 response data. All YT-1 cell experiments were performed both with the wild-type cell line, lacking IL-2Rα, and cells sorted for appreciable expression of the receptor. Data from Ring *et al* and Gonnord *et al* can be found in Figure 5 and Figure S3, respectively [@ring_mechanistic_2012; @Gonnordeaal1253]. Measurements of receptor counts at steady state in Gonnord *et al* were used to solve for IL-7Rα, IL-4Rα, and γ~c~ expression rates in human PBMCs.
 
 Fitting was performed with the Python package PyMC3. All unknown rate parameters were assumed to have a lognormal distribution with a standard deviation of 0.1; the only exception to these distributions was f~sort~ which was assumed to have a beta distribution with shape parameters of α=20 and β=40. Executing this fitting process yielded likelihood distributions of each unknown parameter and sum of squared error between model prediction and experimental data at each point of experimental data. The Geweke criterion metric was used to verify fitting convergance for all versions of the model ([@Fig:supp2]) [@Geweke92].
 
@@ -28,7 +28,7 @@ To perform factorization of model predictions, we generated a three-dimensional 
 
 ### Receptor abundance quantitation
 
-Cryopreserved PBMCs (ATCC, PCS-800-011, lot#81115172) were thawed to room temperature and slowly diluted with 9 mL pre-warmed RPMI-1640 medium (Gibco, 11875-093) supplemented with 10% fetal bovine serum (FBS, Seradigm, 1500-500, lot#322B15). Media was removed, and cells washed once more with 10 mL warm RPMI-1640 + 10% FBS. Cells were brought to $1.5\times10^{6}$ cells/mL, distributed at 250,000 cells per well in a 96-well V-bottom plate, and allowed to recover 2 hours at 37℃ in an incubator at 5% CO2. Cells were then washed twice with PBS + 0.1% BSA (PBSA, Gibco, 15260-037, Lot#2000843) then suspended in 50 µL PBSA + 10% FBS for 10 min on ice to reduce background binding to IgG.
+Cryopreserved PBMCs (ATCC, PCS-800-011, lot#81115172) were thawed to room temperature and slowly diluted with 9 mL pre-warmed RPMI-1640 medium (Gibco, 11875-093) supplemented with 10% fetal bovine serum (FBS, Seradigm, 1500-500, lot#322B15). Media was removed, and cells washed once more with 10 mL warm RPMI-1640 + 10% FBS. Cells were brought to $1.5\times10^{6}$ cells/mL, distributed at 250,000 cells per well in a 96-well V-bottom plate, and allowed to recover 2 hrs at 37℃ in an incubator at 5% CO2. Cells were then washed twice with PBS + 0.1% BSA (PBSA, Gibco, 15260-037, Lot#2000843) then suspended in 50 µL PBSA + 10% FBS for 10 min on ice to reduce background binding to IgG.
 
 Antibodies were diluted in PBSA + 10% FBS and cells were stained for 1 hr at 4℃ in darkness with a gating panel (Panel 1, Panel 2, Panel 3, or Panel 4) and one anti-receptor antibody, or an equal concentration of matched isotype/fluorochrome control antibody. Stain for CD25 was included in Panel 1 when CD122, CD132, CD127, or CD215 was being measured (CD25 is used to separate T~reg~s from other CD4+ T cells).
 
