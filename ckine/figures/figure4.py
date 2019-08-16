@@ -31,7 +31,6 @@ def makeFigure():
         subplotLabel(item, string.ascii_uppercase[ii])
 
     compare_experimental_data(ax[0], pstat_df)  # compare experiment 1 to 2
-    plot_exp_v_pred(ax[1:7], cell_subset=["NK", "CD8+", "T-reg"])  # NK, CD8+, and Treg subplots taken from fig S5
 
     # main routine for EC-50 analysis
     df = pd.DataFrame(columns=['Time Point', 'Cell Type', 'IL', 'Data Type', 'EC50'])
@@ -70,8 +69,10 @@ def makeFigure():
     data = {'Time Point': np.tile(np.array(tps), len(cell_names_pstat) * 4), 'IL': IL, 'Cell Type': cell_types.reshape(160,), 'Data Type': data_types.reshape(160,), 'EC-50': EC50}
     df = pd.DataFrame(data)
 
-    catplot_comparison(ax[7], df)  # compare experiments to model predictions
-    plot_corrcoef(ax[8], df, cell_names_pstat)  # find correlation coefficients
+    catplot_comparison(ax[1], df)  # compare experiments to model predictions
+    plot_corrcoef(ax[2], df, cell_names_pstat)  # find correlation coefficients
+
+    plot_exp_v_pred(ax[3:9], cell_subset=["NK", "CD8+", "T-reg"])  # NK, CD8+, and Treg subplots taken from fig S5
 
     return f
 
