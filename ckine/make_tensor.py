@@ -125,11 +125,6 @@ def prep_tensor(mut):
             else:
                 y_of_combos[jj] = ySolver(row, tensor_time)  # Solve using the WT solver for IL2.
     else:
-        mut2 = np.arange(0, Conc_recept_cell.shape[0], idx_ref)
-        IL2Ra = mut2[np.arange(1, mut2.size, numlig)]
-        for jj, _ in enumerate(IL2Ra):
-            IL2Ra_idxs[jj] = np.array(range(IL2Ra[jj], IL2Ra[jj] + idx_ref))  # Find the indices where the IL2-mutant is.
-
         for jj, row in enumerate(Conc_recept_cell):
             # Solve using the WT solver for each of IL2, IL15, and IL7. And the mutant Solver for IL-2--Il-2Ra.
             y_of_combos[jj] = ySolver(row, tensor_time)
