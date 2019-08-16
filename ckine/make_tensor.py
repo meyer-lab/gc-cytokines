@@ -15,16 +15,6 @@ rxntfR = np.squeeze(rxntfR)
 tensor_time = np.linspace(0.0, 240.0, 200)
 
 
-def n_lig(mut):
-    """Function to return the number of cytokines used in building the tensor."""
-    # Mutant here refers to a tensor made exclusively of WT IL-2 and mutant affinity IL-2s.
-    if mut:
-        nlig = 3
-    else:
-        nlig = 4
-    return nlig
-
-
 def ySolver(matIn, ts, tensor=True):
     """ This generates all the solutions for the Wild Type interleukins across conditions defined in meshprep(). """
     matIn = np.squeeze(matIn)
@@ -77,7 +67,6 @@ def meshprep(mut):
         concMesh = np.vstack(
             (
                 np.array(np.meshgrid(ILs, 0, 0, 0, 0, 0)).T.reshape(-1, 6),
-                np.array(np.meshgrid(ILs, 0, 0, 0, 0, 0)).T.reshape(-1, 6),
                 np.array(np.meshgrid(0, ILs, 0, 0, 0, 0)).T.reshape(-1, 6),
                 np.array(np.meshgrid(0, 0, ILs, 0, 0, 0)).T.reshape(-1, 6),
             )
@@ -106,7 +95,7 @@ def meshprep(mut):
 def prep_tensor(mut):
     """Function to solve the model for initial conditions in meshprep()."""
     Conc_recept_cell, concMesh, concMesh_stacked, cell_names = meshprep(mut)
-    numlig = n_lig(mut)
+    numlig = 3
     idx_ref = int(concMesh.shape[0] / numlig)  # Provides a reference for the order of indices at which the mutant is present.
 
     # Allocate a y_of_combos
@@ -130,18 +119,9 @@ def prep_tensor(mut):
             else:
                 y_of_combos[jj] = ySolver(row, tensor_time)  # Solve using the WT solver for IL2.
     else:
-        mut2 = np.arange(0, Conc_recept_cell.shape[0], idx_ref)
-        IL2Ra = mut2[np.arange(1, mut2.size, numlig)]
-        IL2Ra_idxs = np.zeros((IL2Ra.size, idx_ref))
-        for jj, _ in enumerate(IL2Ra):
-            IL2Ra_idxs[jj] = np.array(range(IL2Ra[jj], IL2Ra[jj] + idx_ref))  # Find the indices where the IL2-mutant is.
-
         for jj, row in enumerate(Conc_recept_cell):
             # Solve using the WT solver for each of IL2, IL15, and IL7. And the mutant Solver for IL-2--Il-2Ra.
-            if jj in IL2Ra_idxs:
-                y_of_combos[jj] = ySolver_IL2_mut(row, tensor_time, mut="a")  # Solve using the mutant IL2-IL2Ra solver
-            else:
-                y_of_combos[jj] = ySolver(row, tensor_time)
+            y_of_combos[jj] = ySolver(row, tensor_time)
 
     return y_of_combos, Conc_recept_cell, concMesh, concMesh_stacked, cell_names
 
