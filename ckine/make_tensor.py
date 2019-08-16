@@ -15,12 +15,6 @@ rxntfR = np.squeeze(rxntfR)
 tensor_time = np.linspace(0.0, 240.0, 200)
 
 
-def n_lig(mut):
-    """Function to return the number of cytokines used in building the tensor."""
-    # Mutant here refers to a tensor made exclusively of WT IL-2 and mutant affinity IL-2s.
-    return 3
-
-
 def ySolver(matIn, ts, tensor=True):
     """ This generates all the solutions for the Wild Type interleukins across conditions defined in meshprep(). """
     matIn = np.squeeze(matIn)
@@ -101,7 +95,7 @@ def meshprep(mut):
 def prep_tensor(mut):
     """Function to solve the model for initial conditions in meshprep()."""
     Conc_recept_cell, concMesh, concMesh_stacked, cell_names = meshprep(mut)
-    numlig = n_lig(mut)
+    numlig = 3
     idx_ref = int(concMesh.shape[0] / numlig)  # Provides a reference for the order of indices at which the mutant is present.
 
     # Allocate a y_of_combos
