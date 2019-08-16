@@ -7,7 +7,6 @@ from hypothesis import given, settings
 from hypothesis.strategies import floats
 from hypothesis.extra.numpy import arrays as harrays
 from ..model import fullModel, getTotalActiveCytokine, runCkineU, nSpecies, runCkineUP, runCkineU_IL2, ligandDeg
-from ..figures.figureB1 import runIL2simple
 
 
 settings.register_profile("ci", max_examples=1000, deadline=None)
@@ -266,13 +265,3 @@ class TestModel(unittest.TestCase):
         yOut = runCkineU(self.ts, rxntfR)
         tot_endo = np.sum(yOut[1, 28::])
         self.assertEqual(tot_endo, 0.0)
-
-    def test_IL2_endo_binding(self):
-        """ Make sure that the runIL2simple works and that increasing the endosomal reverse reaction rates causes tighter binding (less ligand degradation). """
-        inp_normal = np.array([1.0, 1.0, 5.0])
-        inp_tight = np.array([1.0, 1.0, 1.0])  # lower reverse rates in the endosome
-
-        out_norm = runIL2simple(inp_normal, 1.0, ligandDegradation=True)
-        out_tight = runIL2simple(inp_tight, 1.0, ligandDegradation=True)
-
-        self.assertLess(out_tight, out_norm)  # tighter binding will have a lower rate of ligand degradation since all free ligand is degraded
