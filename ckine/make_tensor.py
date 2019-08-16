@@ -18,11 +18,7 @@ tensor_time = np.linspace(0.0, 240.0, 200)
 def n_lig(mut):
     """Function to return the number of cytokines used in building the tensor."""
     # Mutant here refers to a tensor made exclusively of WT IL-2 and mutant affinity IL-2s.
-    if mut:
-        nlig = 3
-    else:
-        nlig = 4
-    return nlig
+    return 3
 
 
 def ySolver(matIn, ts, tensor=True):
