@@ -28,6 +28,8 @@ Cytokine signaling:
 - Aaron Ring (Yale)
 - Jamie Spangler (Johns Hopkins)
 
+<!-- G Altan-Bonnet? -->
+
 Computational modeling:
 
 - Stacey Finley (USC)
