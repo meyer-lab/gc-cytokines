@@ -7,7 +7,7 @@ import numpy as np
 import pandas as pd
 import seaborn as sns
 from scipy.optimize import least_squares
-from scipy.stats import pearsonr
+from scipy.spatial.distance import cosine
 from .figureCommon import subplotLabel, getSetup
 from .figureS5 import calc_dose_response, plot_exp_v_pred
 from ..imports import import_pstat, import_Rexpr, import_samples_2_15
@@ -112,11 +112,17 @@ def plot_corrcoef(ax, df, cell_types):
     ILs = np.array(['IL-2', 'IL-15'])
     for i, name in enumerate(cell_types):
         for j, IL in enumerate(ILs):
+            print(name, IL)
             experimental_data = np.array(df.loc[(df['Data Type'] == 'Experimental') & (df['Cell Type'] == name) & (df['IL'] == IL), "EC-50"])
+            print(experimental_data)
             predicted_data = np.array(df.loc[(df['Data Type'] == 'Predicted') & (df['Cell Type'] == name) & (df['IL'] == IL), "EC-50"])
-            corr_coef = pearsonr(experimental_data, predicted_data)
-            corr_coefs[j * len(cell_types) + i] = corr_coef[0]
+            print(predicted_data)
+            
+            corr_coef = cosine(experimental_data, predicted_data)
+            print(corr_coef)
+            corr_coefs[j * len(cell_types) + i] = corr_coef
 
+    print(corr_coefs)
     x_pos = np.arange(len(cell_types))
     ax.bar(x_pos - 0.15, corr_coefs[0:len(cell_types)], width=0.3, color='darkorchid', label='IL2', tick_label=cell_types)
     ax.bar(x_pos + 0.15, corr_coefs[len(cell_types):(2 * len(cell_types))], width=0.3, color='goldenrod', label='IL15', tick_label=cell_types)
