@@ -1,5 +1,5 @@
 ---
-title: Tensor Factorization Maps Regulation of the Common Gamma Chain Cytokines
+title: Modeling Cell-Specific Dynamics and Regulation of the Common Gamma Chain Cytokines
 author:
 - name: Ali M. Farhat
   affilnum: a,c
