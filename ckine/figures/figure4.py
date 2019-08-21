@@ -7,12 +7,13 @@ import numpy as np
 import pandas as pd
 import seaborn as sns
 from scipy.optimize import least_squares
-from scipy.spatial.distance import cosine
+from scipy.stats import pearsonr
 from .figureCommon import subplotLabel, getSetup
 from .figureS5 import calc_dose_response, plot_exp_v_pred
 from ..imports import import_pstat, import_Rexpr, import_samples_2_15
 
 ckineConc, cell_names_pstat, IL2_data, IL2_data2, IL15_data, IL15_data2 = import_pstat(combine_samples=False)
+_, _, IL2_data_avg, IL15_data_avg = import_pstat(combine_samples=True)
 unkVec_2_15, scales = import_samples_2_15(N=1)  # use one rate
 _, receptor_data, cell_names_receptor = import_Rexpr()
 
@@ -44,7 +45,7 @@ def makeFigure():
 
     for i, name in enumerate(cell_names_pstat):
         assert cell_names_pstat[i] == cell_names_receptor[i]
-        celltype_data_2 = IL2_data[(i * 4):((i + 1) * 4)]
+        celltype_data_2 = IL2_data[(i * 4):((i + 1) * 4)] #TODO: make sure okay to combine samples
         celltype_data_15 = IL15_data[(i * 4):((i + 1) * 4)]
         data_types.append(np.tile(np.array('Predicted'), len(tps)))
         # predicted EC50
@@ -70,7 +71,7 @@ def makeFigure():
     df = pd.DataFrame(data)
 
     catplot_comparison(ax[1], df)  # compare experiments to model predictions
-    plot_corrcoef(ax[2], df, cell_names_pstat)  # find correlation coefficients
+    plot_corrcoef(ax[2], tps)  # find correlation coefficients
 
     plot_exp_v_pred(ax[3:9], cell_subset=["NK", "CD8+", "T-reg"])  # NK, CD8+, and Treg subplots taken from fig S5
 
@@ -106,26 +107,22 @@ def catplot_comparison(ax, df):
     ax.set_ylabel(r"EC-50 (log$_{10}$[nM])")
 
 
-def plot_corrcoef(ax, df, cell_types):
+def plot_corrcoef(ax, tps):
     """ Plot correlation coefficients between predicted and experimental data for all cell types. """
-    corr_coefs = np.zeros(2 * len(cell_types))
-    ILs = np.array(['IL-2', 'IL-15'])
-    for i, name in enumerate(cell_types):
-        for j, IL in enumerate(ILs):
-            print(name, IL)
-            experimental_data = np.array(df.loc[(df['Data Type'] == 'Experimental') & (df['Cell Type'] == name) & (df['IL'] == IL), "EC-50"])
-            print(experimental_data)
-            predicted_data = np.array(df.loc[(df['Data Type'] == 'Predicted') & (df['Cell Type'] == name) & (df['IL'] == IL), "EC-50"])
-            print(predicted_data)
-            
-            corr_coef = cosine(experimental_data, predicted_data)
-            print(corr_coef)
-            corr_coefs[j * len(cell_types) + i] = corr_coef
+    corr_coefs = np.zeros(2 * len(cell_names_receptor))
+    for i, name in enumerate(cell_names_receptor):
+        assert cell_names_receptor[i] == cell_names_pstat[i]
+        experimental_2 = IL2_data_avg[(i * 4):((i + 1) * 4)]
+        experimental_15 = IL15_data_avg[(i * 4):((i + 1) * 4)]
+        predicted_2, predicted_15 = calc_dose_response(unkVec_2_15, scales, receptor_data[i], tps, ckineConc, experimental_2, experimental_15)
+        corr_coef2 = pearsonr(experimental_2.astype(float), np.squeeze(predicted_2).T.astype(float))
+        corr_coef15 = pearsonr(experimental_15.astype(float), np.squeeze(predicted_15).T.astype(float))
+        corr_coefs[i] = corr_coef2[0]
+        corr_coefs[len(cell_names_receptor) + i] = corr_coef15[0]
 
-    print(corr_coefs)
     x_pos = np.arange(len(cell_types))
-    ax.bar(x_pos - 0.15, corr_coefs[0:len(cell_types)], width=0.3, color='darkorchid', label='IL2', tick_label=cell_types)
-    ax.bar(x_pos + 0.15, corr_coefs[len(cell_types):(2 * len(cell_types))], width=0.3, color='goldenrod', label='IL15', tick_label=cell_types)
+    ax.bar(x_pos - 0.15, corr_coefs[0:len(cell_names_receptor)], width=0.3, color='darkorchid', label='IL2', tick_label=cell_types)
+    ax.bar(x_pos + 0.15, corr_coefs[len(cell_names_receptor):(2 * len(cell_names_receptor))], width=0.3, color='goldenrod', label='IL15', tick_label=cell_types)
     ax.set(ylabel=("Correlation Coefficient"), ylim=(0., 1.))
     ax.set_xticklabels(ax.get_xticklabels(), rotation=35, rotation_mode="anchor", ha="right", position=(0, 0.02))
     ax.legend(bbox_to_anchor=(1.02, 1), loc="upper left")
