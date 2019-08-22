@@ -6,6 +6,8 @@ import string
 import numpy as np
 import pandas as pd
 import seaborn as sns
+import matplotlib.lines as mlines
+import matplotlib.patches as mpatches
 from scipy.optimize import least_squares
 from scipy.stats import pearsonr
 from .figureCommon import subplotLabel, getSetup
@@ -72,6 +74,7 @@ def makeFigure():
 
     catplot_comparison(ax[1], df)  # compare experiments to model predictions
     plot_corrcoef(ax[2], tps)  # find correlation coefficients
+    global_legend(ax[2]) # add legend subplots A-C
 
     plot_exp_v_pred(ax[3:9], cell_subset=["NK", "CD8+", "T-reg"])  # NK, CD8+, and Treg subplots taken from fig S5
 
@@ -82,7 +85,7 @@ def compare_experimental_data(ax, df):
     """ Compare both pSTAT5 replicates. """
     df.dropna(axis=0, how='any', inplace=True)
     sns.set_palette(sns.xkcd_palette(["violet", "goldenrod"]))
-    sns.scatterplot(x="Experiment 1", y="Experiment 2", hue="IL", data=df, ax=ax, s=10)
+    sns.scatterplot(x="Experiment 1", y="Experiment 2", hue="IL", data=df, ax=ax, s=10, legend=False)
     ax.set_aspect('equal', 'box')
 
 
@@ -95,16 +98,17 @@ def catplot_comparison(ax, df):
     # plot predicted EC50
     sns.catplot(x="Cell Type", y="EC-50", hue="IL",
                 data=df.loc[(df['Time Point'] == 60.) & (df["Data Type"] == 'Predicted')],
-                legend=False, legend_out=False, ax=ax, marker='o')
+                legend=False, legend_out=False, ax=ax, marker='^')
 
     # plot experimental EC50
     sns.catplot(x="Cell Type", y="EC-50", hue="IL",
                 data=df.loc[(df['Time Point'] == 60.) & (df["Data Type"] == 'Experimental')],
-                legend=False, legend_out=False, ax=ax, marker='^')
+                legend=False, legend_out=False, ax=ax, marker='o')
 
     ax.set_xticklabels(ax.get_xticklabels(), rotation=35, rotation_mode="anchor", ha="right", position=(0, 0.02))
     ax.set_xlabel("")  # remove "Cell Type" from xlabel
     ax.set_ylabel(r"EC-50 (log$_{10}$[nM])")
+    ax.get_legend().remove()
 
 
 def plot_corrcoef(ax, tps):
@@ -123,9 +127,17 @@ def plot_corrcoef(ax, tps):
     x_pos = np.arange(len(cell_names_receptor))
     ax.bar(x_pos - 0.15, corr_coefs[0:len(cell_names_receptor)], width=0.3, color='darkorchid', label='IL2', tick_label=cell_names_receptor)
     ax.bar(x_pos + 0.15, corr_coefs[len(cell_names_receptor):(2 * len(cell_names_receptor))], width=0.3, color='goldenrod', label='IL15', tick_label=cell_names_receptor)
-    ax.set(ylabel=("Correlation Coefficient"), ylim=(0., 1.))
+    ax.set(ylabel=("Correlation"), ylim=(0., 1.))
     ax.set_xticklabels(ax.get_xticklabels(), rotation=35, rotation_mode="anchor", ha="right", position=(0, 0.02))
-    ax.legend(bbox_to_anchor=(1.02, 1), loc="upper left")
+
+
+def global_legend(ax):
+    """ Create legend for colors and markers in subplots A-C. """
+    purple = mpatches.Patch(color='darkorchid', label='IL-2')
+    yellow = mpatches.Patch(color='goldenrod', label='IL-15')
+    circle = mlines.Line2D([], [], color='black', marker='o', linestyle='None', markersize=6, label='Experimental')
+    triangle = mlines.Line2D([], [], color='black', marker='^', linestyle='None', markersize=6, label='Predicted')
+    ax.legend(handles=[purple, yellow, circle, triangle], bbox_to_anchor=(1.02, 1), loc="upper left")
 
 
 def calculate_predicted_EC50(x0, cell_receptor_data, tps, IL2_pstat, IL15_pstat):
