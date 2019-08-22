@@ -110,7 +110,7 @@ def catplot_comparison(ax, df):
 def plot_corrcoef(ax, tps):
     """ Plot correlation coefficients between predicted and experimental data for all cell types. """
     corr_coefs = np.zeros(2 * len(cell_names_receptor))
-    for i, name in enumerate(cell_names_receptor):
+    for i, _ in enumerate(cell_names_receptor):
         assert cell_names_receptor[i] == cell_names_pstat[i]
         experimental_2 = IL2_data_avg[(i * 4):((i + 1) * 4)]
         experimental_15 = IL15_data_avg[(i * 4):((i + 1) * 4)]
