@@ -127,7 +127,7 @@ def plot_corrcoef(ax, tps):
     x_pos = np.arange(len(cell_names_receptor))
     ax.bar(x_pos - 0.15, corr_coefs[0:len(cell_names_receptor)], width=0.3, color='darkorchid', label='IL2', tick_label=cell_names_receptor)
     ax.bar(x_pos + 0.15, corr_coefs[len(cell_names_receptor):(2 * len(cell_names_receptor))], width=0.3, color='goldenrod', label='IL15', tick_label=cell_names_receptor)
-    ax.set(ylabel=("Correlation Coefficient"), ylim=(0., 1.))
+    ax.set(ylabel=("Correlation"), ylim=(0., 1.))
     ax.set_xticklabels(ax.get_xticklabels(), rotation=35, rotation_mode="anchor", ha="right", position=(0, 0.02))
 
 
