@@ -45,8 +45,8 @@ def makeFigure():
 
     for i, name in enumerate(cell_names_pstat):
         assert cell_names_pstat[i] == cell_names_receptor[i]
-        celltype_data_2 = IL2_data[(i * 4):((i + 1) * 4)] #TODO: make sure okay to combine samples
-        celltype_data_15 = IL15_data[(i * 4):((i + 1) * 4)]
+        celltype_data_2 = IL2_data_avg[(i * 4):((i + 1) * 4)]
+        celltype_data_15 = IL15_data_avg[(i * 4):((i + 1) * 4)]
         data_types.append(np.tile(np.array('Predicted'), len(tps)))
         # predicted EC50
         EC50_2, EC50_15 = calculate_predicted_EC50(x0, receptor_data[i], tps, celltype_data_2, celltype_data_15)
@@ -120,9 +120,9 @@ def plot_corrcoef(ax, tps):
         corr_coefs[i] = corr_coef2[0]
         corr_coefs[len(cell_names_receptor) + i] = corr_coef15[0]
 
-    x_pos = np.arange(len(cell_types))
-    ax.bar(x_pos - 0.15, corr_coefs[0:len(cell_names_receptor)], width=0.3, color='darkorchid', label='IL2', tick_label=cell_types)
-    ax.bar(x_pos + 0.15, corr_coefs[len(cell_names_receptor):(2 * len(cell_names_receptor))], width=0.3, color='goldenrod', label='IL15', tick_label=cell_types)
+    x_pos = np.arange(len(cell_names_receptor))
+    ax.bar(x_pos - 0.15, corr_coefs[0:len(cell_names_receptor)], width=0.3, color='darkorchid', label='IL2', tick_label=cell_names_receptor)
+    ax.bar(x_pos + 0.15, corr_coefs[len(cell_names_receptor):(2 * len(cell_names_receptor))], width=0.3, color='goldenrod', label='IL15', tick_label=cell_names_receptor)
     ax.set(ylabel=("Correlation Coefficient"), ylim=(0., 1.))
     ax.set_xticklabels(ax.get_xticklabels(), rotation=35, rotation_mode="anchor", ha="right", position=(0, 0.02))
     ax.legend(bbox_to_anchor=(1.02, 1), loc="upper left")
