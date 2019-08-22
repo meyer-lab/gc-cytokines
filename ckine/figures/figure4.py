@@ -6,6 +6,8 @@ import string
 import numpy as np
 import pandas as pd
 import seaborn as sns
+import matplotlib.lines as mlines
+import matplotlib.patches as mpatches
 from scipy.optimize import least_squares
 from scipy.stats import pearsonr
 from .figureCommon import subplotLabel, getSetup
@@ -13,6 +15,7 @@ from .figureS5 import calc_dose_response, plot_exp_v_pred
 from ..imports import import_pstat, import_Rexpr, import_samples_2_15
 
 ckineConc, cell_names_pstat, IL2_data, IL2_data2, IL15_data, IL15_data2 = import_pstat(combine_samples=False)
+_, _, IL2_data_avg, IL15_data_avg = import_pstat(combine_samples=True)
 unkVec_2_15, scales = import_samples_2_15(N=1)  # use one rate
 _, receptor_data, cell_names_receptor = import_Rexpr()
 
@@ -44,8 +47,8 @@ def makeFigure():
 
     for i, name in enumerate(cell_names_pstat):
         assert cell_names_pstat[i] == cell_names_receptor[i]
-        celltype_data_2 = IL2_data[(i * 4):((i + 1) * 4)]
-        celltype_data_15 = IL15_data[(i * 4):((i + 1) * 4)]
+        celltype_data_2 = IL2_data_avg[(i * 4):((i + 1) * 4)]
+        celltype_data_15 = IL15_data_avg[(i * 4):((i + 1) * 4)]
         data_types.append(np.tile(np.array('Predicted'), len(tps)))
         # predicted EC50
         EC50_2, EC50_15 = calculate_predicted_EC50(x0, receptor_data[i], tps, celltype_data_2, celltype_data_15)
@@ -70,7 +73,8 @@ def makeFigure():
     df = pd.DataFrame(data)
 
     catplot_comparison(ax[1], df)  # compare experiments to model predictions
-    plot_corrcoef(ax[2], df, cell_names_pstat)  # find correlation coefficients
+    plot_corrcoef(ax[2], tps)  # find correlation coefficients
+    global_legend(ax[2])  # add legend subplots A-C
 
     plot_exp_v_pred(ax[3:9], cell_subset=["NK", "CD8+", "T-reg"])  # NK, CD8+, and Treg subplots taken from fig S5
 
@@ -81,7 +85,7 @@ def compare_experimental_data(ax, df):
     """ Compare both pSTAT5 replicates. """
     df.dropna(axis=0, how='any', inplace=True)
     sns.set_palette(sns.xkcd_palette(["violet", "goldenrod"]))
-    sns.scatterplot(x="Experiment 1", y="Experiment 2", hue="IL", data=df, ax=ax, s=10)
+    sns.scatterplot(x="Experiment 1", y="Experiment 2", hue="IL", data=df, ax=ax, s=10, legend=False)
     ax.set_aspect('equal', 'box')
 
 
@@ -94,35 +98,45 @@ def catplot_comparison(ax, df):
     # plot predicted EC50
     sns.catplot(x="Cell Type", y="EC-50", hue="IL",
                 data=df.loc[(df['Time Point'] == 60.) & (df["Data Type"] == 'Predicted')],
-                legend=False, legend_out=False, ax=ax, marker='o')
+                legend=False, legend_out=False, ax=ax, marker='^')
 
     # plot experimental EC50
     sns.catplot(x="Cell Type", y="EC-50", hue="IL",
                 data=df.loc[(df['Time Point'] == 60.) & (df["Data Type"] == 'Experimental')],
-                legend=False, legend_out=False, ax=ax, marker='^')
+                legend=False, legend_out=False, ax=ax, marker='o')
 
     ax.set_xticklabels(ax.get_xticklabels(), rotation=35, rotation_mode="anchor", ha="right", position=(0, 0.02))
     ax.set_xlabel("")  # remove "Cell Type" from xlabel
     ax.set_ylabel(r"EC-50 (log$_{10}$[nM])")
+    ax.get_legend().remove()
 
 
-def plot_corrcoef(ax, df, cell_types):
+def plot_corrcoef(ax, tps):
     """ Plot correlation coefficients between predicted and experimental data for all cell types. """
-    corr_coefs = np.zeros(2 * len(cell_types))
-    ILs = np.array(['IL-2', 'IL-15'])
-    for i, name in enumerate(cell_types):
-        for j, IL in enumerate(ILs):
-            experimental_data = np.array(df.loc[(df['Data Type'] == 'Experimental') & (df['Cell Type'] == name) & (df['IL'] == IL), "EC-50"])
-            predicted_data = np.array(df.loc[(df['Data Type'] == 'Predicted') & (df['Cell Type'] == name) & (df['IL'] == IL), "EC-50"])
-            corr_coef = pearsonr(experimental_data, predicted_data)
-            corr_coefs[j * len(cell_types) + i] = corr_coef[0]
+    corr_coefs = np.zeros(2 * len(cell_names_receptor))
+    for i, _ in enumerate(cell_names_receptor):
+        assert cell_names_receptor[i] == cell_names_pstat[i]
+        experimental_2 = IL2_data_avg[(i * 4):((i + 1) * 4)]
+        experimental_15 = IL15_data_avg[(i * 4):((i + 1) * 4)]
+        predicted_2, predicted_15 = calc_dose_response(unkVec_2_15, scales, receptor_data[i], tps, ckineConc, experimental_2, experimental_15)
+        corr_coef2 = pearsonr(experimental_2.flatten(), np.squeeze(predicted_2).T.flatten())
+        corr_coef15 = pearsonr(experimental_15.flatten(), np.squeeze(predicted_15).T.flatten())
+        corr_coefs[i] = corr_coef2[0]
+        corr_coefs[len(cell_names_receptor) + i] = corr_coef15[0]
 
-    x_pos = np.arange(len(cell_types))
-    ax.bar(x_pos - 0.15, corr_coefs[0:len(cell_types)], width=0.3, color='darkorchid', label='IL2', tick_label=cell_types)
-    ax.bar(x_pos + 0.15, corr_coefs[len(cell_types):(2 * len(cell_types))], width=0.3, color='goldenrod', label='IL15', tick_label=cell_types)
+    x_pos = np.arange(len(cell_names_receptor))
+    ax.bar(x_pos - 0.15, corr_coefs[0:len(cell_names_receptor)], width=0.3, color='darkorchid', label='IL2', tick_label=cell_names_receptor)
+    ax.bar(x_pos + 0.15, corr_coefs[len(cell_names_receptor):(2 * len(cell_names_receptor))], width=0.3, color='goldenrod', label='IL15', tick_label=cell_names_receptor)
     ax.set(ylabel=("Correlation Coefficient"), ylim=(0., 1.))
     ax.set_xticklabels(ax.get_xticklabels(), rotation=35, rotation_mode="anchor", ha="right", position=(0, 0.02))
-    ax.legend(bbox_to_anchor=(1.02, 1), loc="upper left")
+
+
+def global_legend(ax):
+    purple = mpatches.Patch(color='darkorchid', label='IL-2')
+    yellow = mpatches.Patch(color='goldenrod', label='IL-15')
+    circle = mlines.Line2D([], [], color='black', marker='o', linestyle='None', markersize=6, label='Experimental')
+    triangle = mlines.Line2D([], [], color='black', marker='^', linestyle='None', markersize=6, label='Predicted')
+    ax.legend(handles=[purple, yellow, circle, triangle], bbox_to_anchor=(1.02, 1), loc="upper left")
 
 
 def calculate_predicted_EC50(x0, cell_receptor_data, tps, IL2_pstat, IL15_pstat):
