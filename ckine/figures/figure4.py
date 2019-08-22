@@ -115,8 +115,8 @@ def plot_corrcoef(ax, tps):
         experimental_2 = IL2_data_avg[(i * 4):((i + 1) * 4)]
         experimental_15 = IL15_data_avg[(i * 4):((i + 1) * 4)]
         predicted_2, predicted_15 = calc_dose_response(unkVec_2_15, scales, receptor_data[i], tps, ckineConc, experimental_2, experimental_15)
-        corr_coef2 = pearsonr(experimental_2.astype(float), np.squeeze(predicted_2).T.astype(float))
-        corr_coef15 = pearsonr(experimental_15.astype(float), np.squeeze(predicted_15).T.astype(float))
+        corr_coef2 = pearsonr(experimental_2.flatten(), np.squeeze(predicted_2).T.flatten())
+        corr_coef15 = pearsonr(experimental_15.flatten(), np.squeeze(predicted_15).T.flatten())
         corr_coefs[i] = corr_coef2[0]
         corr_coefs[len(cell_names_receptor) + i] = corr_coef15[0]
 
