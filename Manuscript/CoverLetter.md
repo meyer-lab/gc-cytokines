@@ -11,9 +11,9 @@ cc:
 
 Dear Editors,
 
-We are pleased to submit an original manuscript entitled "Tensor Factorization Maps Regulation of the Common Gamma Chain Receptors," for consideration as an article in *Molecular Systems Biology*. 
+We are pleased to submit an original manuscript entitled "Modeling Cell-Specific Dynamics and Regulation of the Common Gamma Chain Cytokines," for consideration as an article in *Molecular Systems Biology*. 
 
-Many receptor families exhibit both pleiotropy and redundancy in their regulation, with multiple ligands, receptors, and responding cell populations. This situation, that one intervention can have many effects, confounds intuition about how to carry out precise therapeutic manipulation. The common γ-chain cytokine receptor dimerizes with complexes of the cytokines interleukin (IL)-2, IL-4, IL-7, IL-9, IL-15, and IL-21 and their corresponding "private" receptors. These cytokines have existing uses and future potential as immune therapies by regulating immune cell population abundance. Like with therapies targeting this family, a common therapeutic goal is to target a specific population of cells. Thus, understanding the link between changes in receptor binding and cell type specificity can help to improve both potency and alleviate toxicities.
+Many receptor families exhibit both pleiotropy and redundancy in their regulation, with multiple ligands, receptors, and responding cell populations. This situation, that one intervention can have many effects, confounds intuition about how to carry out precise therapeutic manipulation. The common γ-chain cytokine receptor dimerizes with complexes of the cytokines interleukin (IL)-2, IL-4, IL-7, IL-9, IL-15, and IL-21 and their corresponding "private" receptors. These cytokines have existing uses and future potential as immune therapies by regulating immune cell population abundance and function. Like with therapies targeting this family, a common therapeutic goal is to target a specific population of cells. Thus, understanding the link between changes in receptor binding and cell type specificity can help to improve both potency and alleviate toxicities.
 
 Here, we build a binding-reaction model for the ligand-receptor interactions of common γ-chain cytokines. This model allows us to quantitatively predict the response of cells based upon their receptor expression. Building upon earlier models of this family, we show that accounting for both the structure of ligand binding and receptor-ligand trafficking is essential to accurately model cell response. This model accurately predicts ligand response across a wide panel of cell types under diverse experimental designs.
 
@@ -25,14 +25,14 @@ We wish to include supplementary figures with this paper, to be posted online. S
 
 Cytokine signaling:
 
+- Dane Wittrup (MIT)
 - Aaron Ring (Yale)
 - Jamie Spangler (Johns Hopkins)
-
-<!-- G Altan-Bonnet? -->
 
 Computational modeling:
 
 - Stacey Finley (USC)
 - Kevin Janes (UVA)
+- Carlos Lopez (Vanderbilt)
 
 My coauthors and I are grateful for your time in considering our submission.
