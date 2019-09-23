@@ -227,5 +227,5 @@ def rateComp(ax, unkVec, fsize=6.2):
     a.scatter(0.1, np.log10(kfbnd * 0.065), color='goldenrod')  # overlay point for k13rev
     a.scatter(0.7, np.log10(kfbnd * 144), color="darkviolet")   # overlay point for k2rev
     a.scatter(1.1, np.log10(kfbnd * 468), color='goldenrod')  # overlay point for k14rev
-    a.set_xticklabels(a.get_xticklabels(), fontsize=fsize)
+    a.set_xticklabels(a.get_xticklabels(), rotation=25, fontsize=fsize)
     a.set_title("Analogous Dissociation Rates")

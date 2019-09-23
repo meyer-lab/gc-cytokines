@@ -84,6 +84,8 @@ def makeFigure():
 def compare_experimental_data(ax, df):
     """ Compare both pSTAT5 replicates. """
     df.dropna(axis=0, how='any', inplace=True)
+    df["Experiment 1"] /= 100.0
+    df["Experiment 2"] /= 100.0
     sns.set_palette(sns.xkcd_palette(["violet", "goldenrod"]))
     sns.scatterplot(x="Experiment 1", y="Experiment 2", hue="IL", data=df, ax=ax, s=10, legend=False)
     ax.set_aspect('equal', 'box')
@@ -105,7 +107,7 @@ def catplot_comparison(ax, df):
                 data=df.loc[(df['Time Point'] == 60.) & (df["Data Type"] == 'Experimental')],
                 legend=False, legend_out=False, ax=ax, marker='o')
 
-    ax.set_xticklabels(ax.get_xticklabels(), rotation=35, rotation_mode="anchor", ha="right", position=(0, 0.02))
+    ax.set_xticklabels(ax.get_xticklabels(), rotation=40, fontsize=6.8, rotation_mode="anchor", ha="right")
     ax.set_xlabel("")  # remove "Cell Type" from xlabel
     ax.set_ylabel(r"EC-50 (log$_{10}$[nM])")
     ax.get_legend().remove()
@@ -128,7 +130,7 @@ def plot_corrcoef(ax, tps):
     ax.bar(x_pos - 0.15, corr_coefs[0:len(cell_names_receptor)], width=0.3, color='darkorchid', label='IL2', tick_label=cell_names_receptor)
     ax.bar(x_pos + 0.15, corr_coefs[len(cell_names_receptor):(2 * len(cell_names_receptor))], width=0.3, color='goldenrod', label='IL15', tick_label=cell_names_receptor)
     ax.set(ylabel=("Correlation"), ylim=(0., 1.))
-    ax.set_xticklabels(ax.get_xticklabels(), rotation=35, rotation_mode="anchor", ha="right", position=(0, 0.02))
+    ax.set_xticklabels(ax.get_xticklabels(), rotation=40, fontsize=6.8, rotation_mode="anchor", ha="right")
 
 
 def global_legend(ax):
