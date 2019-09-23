@@ -107,7 +107,7 @@ def catplot_comparison(ax, df):
                 data=df.loc[(df['Time Point'] == 60.) & (df["Data Type"] == 'Experimental')],
                 legend=False, legend_out=False, ax=ax, marker='o')
 
-    ax.set_xticklabels(ax.get_xticklabels(), rotation=35, fontsize=8, rotation_mode="anchor", ha="right", position=(0, 0.01))
+    ax.set_xticklabels(ax.get_xticklabels(), rotation=35, fontsize=7, rotation_mode="anchor", ha="right")
     ax.set_xlabel("")  # remove "Cell Type" from xlabel
     ax.set_ylabel(r"EC-50 (log$_{10}$[nM])")
     ax.get_legend().remove()
@@ -130,7 +130,7 @@ def plot_corrcoef(ax, tps):
     ax.bar(x_pos - 0.15, corr_coefs[0:len(cell_names_receptor)], width=0.3, color='darkorchid', label='IL2', tick_label=cell_names_receptor)
     ax.bar(x_pos + 0.15, corr_coefs[len(cell_names_receptor):(2 * len(cell_names_receptor))], width=0.3, color='goldenrod', label='IL15', tick_label=cell_names_receptor)
     ax.set(ylabel=("Correlation"), ylim=(0., 1.))
-    ax.set_xticklabels(ax.get_xticklabels(), rotation=35, rotation_mode="anchor", ha="right", position=(0, 0.02))
+    ax.set_xticklabels(ax.get_xticklabels(), rotation=35, fontsize=7, rotation_mode="anchor", ha="right")
 
 
 def global_legend(ax):
