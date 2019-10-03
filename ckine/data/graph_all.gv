@@ -154,10 +154,10 @@ digraph cgamma_cytok {
         "7Rα" -> "25";
         "25" -> "7·7Rα";
 
-        "27" [shape=tripleoctagon,style=filled,height=.1,width=.1, fontname = "helvetica"];
-        "7·7Rα" -> "27";
-        "gc" -> "27";
-        "27" -> "7·7Rα·gc";
+        "26" [shape=tripleoctagon,style=filled,height=.1,width=.1, fontname = "helvetica"];
+        "7·7Rα" -> "26";
+        "gc" -> "26";
+        "26" -> "7·7Rα·gc";
     }
 
     subgraph cluster_IL4 {
@@ -165,14 +165,14 @@ digraph cgamma_cytok {
         edge [dir=none, weight=1];
         penwidth=0;
         
-        "32" [shape=diamond, style=filled, height=0.1, width=0.1, fontname = "helvetica"];
-        "IL-4" -> "32";
-        "4Rα" -> "32";
-        "32" -> "4·4Rα";
+        "27" [shape=diamond, style=filled, height=0.1, width=0.1, fontname = "helvetica"];
+        "IL-4" -> "27";
+        "4Rα" -> "27";
+        "27" -> "4·4Rα";
 
-        "33" [shape=tripleoctagon,style=filled,height=.1,width=.1, fontname = "helvetica"];
-        "4·4Rα" -> "33";
-        "gc" -> "33";
-        "33" -> "4·4Rα·gc";
+        "28" [shape=tripleoctagon,style=filled,height=.1,width=.1, fontname = "helvetica"];
+        "4·4Rα" -> "28";
+        "gc" -> "28";
+        "28" -> "4·4Rα·gc";
     }
 }
