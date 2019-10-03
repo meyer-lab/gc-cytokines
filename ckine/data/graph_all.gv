@@ -37,20 +37,10 @@ digraph cgamma_cytok {
         "7·7Rα" [shape=box, fontname = "helvetica", fillcolor=dodgerblue, style=filled];
         "7·7Rα·gc"  [label=<7·7Rα·γ<SUB>c</SUB>>, shape=box, color=red, fontname = "helvetica", fillcolor=dodgerblue, style=filled, penwidth=2.5];
 
-        "IL-9"   [shape=circle, fontname = "helvetica", fillcolor=darkolivegreen2, style=filled];
-        "9R" [shape=box , fontname = "helvetica" , fillcolor=darkolivegreen2, style=filled  ];
-        "9·9R" [shape=box, fontname = "helvetica", fillcolor=darkolivegreen2, style=filled];
-        "9·9R·gc" [label=<9·9R·γ<SUB>c</SUB>>, shape=box, color=red, fontname = "helvetica", fillcolor=darkolivegreen2, style=filled , penwidth=2.5];
-
         "IL-4"   [shape=circle, fontname = "helvetica", fillcolor=lightcyan, style=filled];
         "4Rα" [shape=box, fontname = "helvetica" , fillcolor=lightcyan, style=filled   ];
         "4·4Rα" [shape=box, fontname = "helvetica", fillcolor=lightcyan, style=filled];
         "4·4Rα·gc" [label=<4·4Rα·γ<SUB>c</SUB>>, shape=box, color=red, fontname = "helvetica" , fillcolor=lightcyan, style=filled , penwidth=2.5];
-
-        "IL-21"   [shape=circle, fontname = "helvetica", fillcolor=slategray2, style=filled];
-        "21Rα" [shape=box , fontname = "helvetica", fillcolor=slategray2, style=filled   ];
-        "21·21Rα" [shape=box, fontname = "helvetica", fillcolor=slategray2, style=filled];
-        "21·21Rα·gc" [label=<21·21Rα·γ<SUB>c</SUB>>, shape=box, color=red, fontname = "helvetica", fillcolor=slategray2, style=filled , penwidth=2.5 ];
     }
 
     subgraph cluster_IL2 {
@@ -170,22 +160,6 @@ digraph cgamma_cytok {
         "27" -> "7·7Rα·gc";
     }
 
-    subgraph cluster_IL9 {
-    	node [style=filled,color=darkolivegreen3, margin=0];
-        edge [dir=none, weight=1];
-        penwidth=0;
-        
-        "29" [shape=diamond, style=filled, height=.1, width=.1, fontname = "helvetica"];
-        "IL-9" -> "29";
-        "9R" -> "29";
-        "29" -> "9·9R";
-
-        "31" [shape=tripleoctagon,style=filled,height=.1,width=.1, fontname = "helvetica"];
-        "9·9R" -> "31";
-        "gc" -> "31";
-        "31" -> "9·9R·gc";
-    }
-
     subgraph cluster_IL4 {
     	node [style=filled, color=lightcyan2, margin=0];
         edge [dir=none, weight=1];
@@ -200,20 +174,5 @@ digraph cgamma_cytok {
         "4·4Rα" -> "33";
         "gc" -> "33";
         "33" -> "4·4Rα·gc";
-    }
-    subgraph cluster_IL21 {
-    	node [style=filled, color=slategray3, margin=0];
-        edge [dir=none, weight=1];
-        penwidth=0;
-        
-        "34" [shape=diamond,style=filled,height=.1,width=.1, fontname = "helvetica"];
-        "IL-21" -> "34";
-        "21Rα" -> "34";
-        "34" -> "21·21Rα";
-
-        "35" [shape=tripleoctagon,style=filled, height=.1, width=.1, fontname = "helvetica"];
-        "21·21Rα" -> "35";
-        "gc" -> "35";
-        "35" -> "21·21Rα·gc";
     }
 }
