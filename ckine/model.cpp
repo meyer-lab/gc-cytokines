@@ -331,8 +331,6 @@ int Jac(double t, N_Vector yv, N_Vector, SUNMatrix J, void *user_data, N_Vector,
 	if (t < sMem->preT)
 		preTreat(t - sMem->preT, rattes.ILs, sMem->preL);
 
-	Eigen::Map<Eigen::Matrix<double, Nspecies, Nspecies>> jac(SM_DATA_D(J));
-
 	// Actually get the Jacobian
 	std::array<adept::adouble, Nspecies> y, dydt;
 
@@ -346,7 +344,7 @@ int Jac(double t, N_Vector yv, N_Vector, SUNMatrix J, void *user_data, N_Vector,
 	sMem->stack.independent(&y[0], Nspecies);
 	sMem->stack.dependent(&dydt[0], Nspecies);
 
-	sMem->stack.jacobian(jac.data());
+	sMem->stack.jacobian(SM_DATA_D(J));
 
 	return 0;
 }
