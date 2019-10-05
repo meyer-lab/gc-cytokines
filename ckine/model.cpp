@@ -43,8 +43,6 @@ static int fQB(double, N_Vector y, N_Vector yB, N_Vector qBdot, void *user_dataB
 
 std::mutex print_mutex; // mutex to prevent threads printing on top of each other
 
-typedef Eigen::Map<Eigen::Matrix<double, Eigen::Dynamic, 1>> eigenV;
-typedef Eigen::Map<Eigen::Matrix<double, Nspecies, 1>> eigenVC;
 typedef Eigen::Matrix<double, Nspecies, Eigen::Dynamic> x0JacM;
 
 
