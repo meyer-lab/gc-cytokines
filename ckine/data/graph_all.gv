@@ -170,7 +170,7 @@ digraph cgamma_cytok {
         "4Rα" -> "27";
         "27" -> "4·4Rα";
 
-        "28" [shape=tripleoctagon,style=filled,height=.1,width=.1, fontname = "helvetica"];
+        "28" [shape=tripleoctagon, style=filled, height=0.1, width=0.1, fontname = "helvetica"];
         "4·4Rα" -> "28";
         "gc" -> "28";
         "28" -> "4·4Rα·gc";
