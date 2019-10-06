@@ -32,7 +32,7 @@ using std::endl;
 using std::cout;
 using adept::adouble;
 
-constexpr double solveTol = 1.0E-4;
+constexpr double solveTol = 1.0E-5;
 
 static void errorHandler(int, const char *, const char *, char *, void *);
 int Jac(double, N_Vector, N_Vector, SUNMatrix, void *, N_Vector, N_Vector, N_Vector);
@@ -111,7 +111,7 @@ public:
 		}
 		
 		// Set the scalar relative and absolute tolerances
-		if (CVodeSStolerances(cvode_mem, 1.0E-9, 1.0E-9) < 0) {
+		if (CVodeSStolerances(cvode_mem, 1.0E-10, 1.0E-9) < 0) {
 			throw std::runtime_error(string("Error calling CVodeSStolerances in solver_setup."));
 		}
 
@@ -148,7 +148,7 @@ public:
 		commonSetup(paramsIn, preTin, preLin);
 
 		// CVodeAdjInit to update CVODES memory block by allocting the internal memory needed for backward integration
-		constexpr int steps = 10; // no. of integration steps between two consecutive ckeckpoints
+		constexpr int steps = 100; // no. of integration steps between two consecutive ckeckpoints
 		if (CVodeAdjInit(cvode_mem, steps, CV_HERMITE) < 0) {
 			throw std::runtime_error(string("Error calling CVodeAdjInit in solver_setup."));
 		}
