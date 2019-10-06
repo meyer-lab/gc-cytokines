@@ -32,7 +32,7 @@ using std::endl;
 using std::cout;
 using adept::adouble;
 
-constexpr double solveTol = 1.0E-4;
+constexpr double solveTol = 1.0E-5;
 
 static void errorHandler(int, const char *, const char *, char *, void *);
 int Jac(double, N_Vector, N_Vector, SUNMatrix, void *, N_Vector, N_Vector, N_Vector);
@@ -69,7 +69,7 @@ public:
 	void *cvode_mem;
 	SUNLinearSolver LS, LSB;
 	N_Vector state, qB, yB;
-	SUNMatrix A, AB;
+	SUNMatrix A;
 	bool sensi;
 	int ncheck, indexB;
 	double tret;
@@ -111,7 +111,7 @@ public:
 		}
 		
 		// Set the scalar relative and absolute tolerances
-		if (CVodeSStolerances(cvode_mem, 1.0E-9, 1.0E-9) < 0) {
+		if (CVodeSStolerances(cvode_mem, 1.0E-10, 1.0E-9) < 0) {
 			throw std::runtime_error(string("Error calling CVodeSStolerances in solver_setup."));
 		}
 
@@ -148,7 +148,7 @@ public:
 		commonSetup(paramsIn, preTin, preLin);
 
 		// CVodeAdjInit to update CVODES memory block by allocting the internal memory needed for backward integration
-		constexpr int steps = 10; // no. of integration steps between two consecutive ckeckpoints
+		constexpr int steps = 100; // no. of integration steps between two consecutive ckeckpoints
 		if (CVodeAdjInit(cvode_mem, steps, CV_HERMITE) < 0) {
 			throw std::runtime_error(string("Error calling CVodeAdjInit in solver_setup."));
 		}
@@ -178,11 +178,10 @@ public:
 		if (CVodeSetUserDataB(cvode_mem, indexB, static_cast<void *>(this)) < 0)
 			throw std::runtime_error(string("Error calling CVodeSetUserDataB in solver_setup."));
 
-		AB = SUNDenseMatrix(Nspecies, Nspecies);
-		LSB = SUNDenseLinearSolver(state, AB);
+		LSB = SUNDenseLinearSolver(state, A);
 		
 		// Call CVDense to specify the CVDENSE dense linear solver
-		if (CVodeSetLinearSolverB(cvode_mem, indexB, LSB, AB) < 0) {
+		if (CVodeSetLinearSolverB(cvode_mem, indexB, LSB, A) < 0) {
 			throw std::runtime_error(string("Error calling CVodeSetLinearSolverB in solver_setup."));
 		}
 
@@ -275,7 +274,6 @@ public:
 			N_VDestroy_Serial(qB);
 			N_VDestroy_Serial(yB);
 			SUNLinSolFree(LSB);
-			SUNMatDestroy(AB);
 		}
 
 		N_VDestroy_Serial(state);
