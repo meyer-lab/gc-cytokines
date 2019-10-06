@@ -67,7 +67,7 @@ constexpr bool debug = false;
 class solver {
 public:
 	void *cvode_mem;
-	SUNLinearSolver LS, LSB;
+	SUNLinearSolver LS;
 	N_Vector state, qB, yB;
 	SUNMatrix A;
 	bool sensi;
@@ -177,11 +177,9 @@ public:
 		// Attach the user data for backward problem
 		if (CVodeSetUserDataB(cvode_mem, indexB, static_cast<void *>(this)) < 0)
 			throw std::runtime_error(string("Error calling CVodeSetUserDataB in solver_setup."));
-
-		LSB = SUNDenseLinearSolver(state, A);
 		
 		// Call CVDense to specify the CVDENSE dense linear solver
-		if (CVodeSetLinearSolverB(cvode_mem, indexB, LSB, A) < 0) {
+		if (CVodeSetLinearSolverB(cvode_mem, indexB, LS, A) < 0) {
 			throw std::runtime_error(string("Error calling CVodeSetLinearSolverB in solver_setup."));
 		}
 
@@ -273,7 +271,6 @@ public:
 			CVodeSensFree(cvode_mem);
 			N_VDestroy_Serial(qB);
 			N_VDestroy_Serial(yB);
-			SUNLinSolFree(LSB);
 		}
 
 		N_VDestroy_Serial(state);
