@@ -69,7 +69,7 @@ public:
 	void *cvode_mem;
 	SUNLinearSolver LS, LSB;
 	N_Vector state, qB, yB;
-	SUNMatrix A, AB;
+	SUNMatrix A;
 	bool sensi;
 	int ncheck, indexB;
 	double tret;
@@ -178,11 +178,10 @@ public:
 		if (CVodeSetUserDataB(cvode_mem, indexB, static_cast<void *>(this)) < 0)
 			throw std::runtime_error(string("Error calling CVodeSetUserDataB in solver_setup."));
 
-		AB = SUNDenseMatrix(Nspecies, Nspecies);
-		LSB = SUNDenseLinearSolver(state, AB);
+		LSB = SUNDenseLinearSolver(state, A);
 		
 		// Call CVDense to specify the CVDENSE dense linear solver
-		if (CVodeSetLinearSolverB(cvode_mem, indexB, LSB, AB) < 0) {
+		if (CVodeSetLinearSolverB(cvode_mem, indexB, LSB, A) < 0) {
 			throw std::runtime_error(string("Error calling CVodeSetLinearSolverB in solver_setup."));
 		}
 
@@ -275,7 +274,6 @@ public:
 			N_VDestroy_Serial(qB);
 			N_VDestroy_Serial(yB);
 			SUNLinSolFree(LSB);
-			SUNMatDestroy(AB);
 		}
 
 		N_VDestroy_Serial(state);
