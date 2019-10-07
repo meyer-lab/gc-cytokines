@@ -113,7 +113,7 @@ public:
 		}
 		
 		// Set the scalar relative and absolute tolerances
-		if (CVodeSStolerances(cvode_mem, 1.0E-10, 1.0E-9) < 0) {
+		if (CVodeSStolerances(cvode_mem, 1.0E-12, 1.0E-9) < 0) {
 			throw std::runtime_error(string("Error calling CVodeSStolerances in solver_setup."));
 		}
 
