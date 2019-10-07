@@ -17,6 +17,7 @@
 #include <cvode/cvode_direct.h>
 #include <cvode/cvode_spils.h>
 #include <cvode/cvode_bandpre.h>
+#include <sunlinsol/sunlinsol_spgmr.h>
 #include <iostream>
 #include <Eigen/Core>
 #include <Eigen/Dense>
