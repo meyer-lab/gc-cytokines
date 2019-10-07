@@ -15,6 +15,8 @@
 #include <sunlinsol/sunlinsol_dense.h>
 #include <cvodes/cvodes.h>             /* prototypes for CVODE fcts., consts.  */
 #include <cvode/cvode_direct.h>
+#include <cvode/cvode_spils.h>
+#include <cvode/cvode_bandpre.h>
 #include <iostream>
 #include <Eigen/Core>
 #include <Eigen/Dense>
@@ -69,7 +71,6 @@ public:
 	void *cvode_mem;
 	SUNLinearSolver LS;
 	N_Vector state, qB, yB;
-	SUNMatrix A;
 	bool sensi;
 	int ncheck, indexB;
 	double tret;
@@ -115,15 +116,14 @@ public:
 			throw std::runtime_error(string("Error calling CVodeSStolerances in solver_setup."));
 		}
 
-		A = SUNDenseMatrix(Nspecies, Nspecies);
-		LS = SUNDenseLinearSolver(state, A);
+		LS = SUNLinSol_SPGMR(state, PREC_NONE, 0);
 		
 		// Call CVDense to specify the CVDENSE dense linear solver
-		if (CVDlsSetLinearSolver(cvode_mem, LS, A) < 0) {
-			throw std::runtime_error(string("Error calling CVDlsSetLinearSolver in solver_setup."));
+		if (CVodeSetLinearSolver(cvode_mem, LS, NULL) < 0) {
+			throw std::runtime_error(string("Error calling CVodeSetLinearSolver in solver_setup."));
 		}
 
-		CVDlsSetJacFn(cvode_mem, Jac);
+		CVBandPrecInit(cvode_mem, static_cast<long>(Nspecies), 2, 2);
 
 		CVodeSetMaxNumSteps(cvode_mem, 10000);
 
@@ -179,14 +179,11 @@ public:
 			throw std::runtime_error(string("Error calling CVodeSetUserDataB in solver_setup."));
 		
 		// Call CVDense to specify the CVDENSE dense linear solver
-		if (CVodeSetLinearSolverB(cvode_mem, indexB, LS, A) < 0) {
+		if (CVodeSetLinearSolverB(cvode_mem, indexB, LS, NULL) < 0) {
 			throw std::runtime_error(string("Error calling CVodeSetLinearSolverB in solver_setup."));
 		}
-
-		// Set the user-supplied Jacobian routine JacB
-		if (CVodeSetJacFnB(cvode_mem, indexB, JacB) < 0) {
-			throw std::runtime_error(string("Error calling CVodeSetJacFnB in solver_setup."));
-		}
+		
+		CVBandPrecInitB(cvode_mem, indexB, static_cast<long>(Nspecies), 2, 2);
 
 		// Allocate internal memory and initialize backward quadrature integration
 		if (CVodeQuadInitB(cvode_mem, indexB, fQB, qB) < 0) {
