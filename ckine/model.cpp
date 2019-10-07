@@ -124,7 +124,7 @@ public:
 			throw std::runtime_error(string("Error calling CVodeSetLinearSolver in solver_setup."));
 		}
 
-		CVBandPrecInit(cvode_mem, static_cast<long>(Nspecies), 12, 12);
+		CVBandPrecInit(cvode_mem, static_cast<long>(Nspecies), 30, 30);
 
 		CVodeSetMaxNumSteps(cvode_mem, 10000);
 
@@ -184,7 +184,7 @@ public:
 			throw std::runtime_error(string("Error calling CVodeSetLinearSolverB in solver_setup."));
 		}
 		
-		CVBandPrecInitB(cvode_mem, indexB, static_cast<long>(Nspecies), 12, 12);
+		CVBandPrecInitB(cvode_mem, indexB, static_cast<long>(Nspecies), 30, 30);
 
 		// Allocate internal memory and initialize backward quadrature integration
 		if (CVodeQuadInitB(cvode_mem, indexB, fQB, qB) < 0) {
