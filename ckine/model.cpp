@@ -273,7 +273,6 @@ public:
 		N_VDestroy_Serial(state);
 		CVodeFree(&cvode_mem);
 		SUNLinSolFree(LS);
-		SUNMatDestroy(A);
 	}
 };
 
