@@ -13,8 +13,10 @@
 #include <sundials/sundials_dense.h>
 #include <sunmatrix/sunmatrix_dense.h>
 #include <sunlinsol/sunlinsol_dense.h>
+#include <sunlinsol/sunlinsol_spgmr.h>
 #include <cvodes/cvodes.h>             /* prototypes for CVODE fcts., consts.  */
 #include <cvode/cvode_direct.h>
+#include <cvodes/cvodes_spils.h>
 #include <iostream>
 #include <Eigen/Core>
 #include <Eigen/Dense>
@@ -115,12 +117,11 @@ public:
 			throw std::runtime_error(string("Error calling CVodeSStolerances in solver_setup."));
 		}
 
-		A = SUNDenseMatrix(Nspecies, Nspecies);
-		LS = SUNDenseLinearSolver(state, A);
+		LS = SUNLinSol_SPGMR(state, PREC_NONE, 0);
 		
 		// Call CVDense to specify the CVDENSE dense linear solver
-		if (CVDlsSetLinearSolver(cvode_mem, LS, A) < 0) {
-			throw std::runtime_error(string("Error calling CVDlsSetLinearSolver in solver_setup."));
+		if (CVSpilsSetLinearSolver(cvode_mem, LS) < 0) {
+			throw std::runtime_error(string("Error calling CVSpilsSetLinearSolver in solver_setup."));
 		}
 
 		CVDlsSetJacFn(cvode_mem, Jac);
@@ -179,8 +180,8 @@ public:
 			throw std::runtime_error(string("Error calling CVodeSetUserDataB in solver_setup."));
 		
 		// Call CVDense to specify the CVDENSE dense linear solver
-		if (CVodeSetLinearSolverB(cvode_mem, indexB, LS, A) < 0) {
-			throw std::runtime_error(string("Error calling CVodeSetLinearSolverB in solver_setup."));
+		if (CVSpilsSetLinearSolverB(cvode_mem, indexB, LS) < 0) {
+			throw std::runtime_error(string("Error calling CVSpilsSetLinearSolverB in solver_setup."));
 		}
 
 		// Set the user-supplied Jacobian routine JacB
