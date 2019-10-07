@@ -34,7 +34,7 @@ using std::endl;
 using std::cout;
 using adept::adouble;
 
-constexpr double solveTol = 1.0E-6;
+constexpr double solveTol = 1.0E-9;
 
 static void errorHandler(int, const char *, const char *, char *, void *);
 int Jac(double, N_Vector, N_Vector, SUNMatrix, void *, N_Vector, N_Vector, N_Vector);
