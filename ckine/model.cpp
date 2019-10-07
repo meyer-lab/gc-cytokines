@@ -71,7 +71,6 @@ public:
 	void *cvode_mem;
 	SUNLinearSolver LS;
 	N_Vector state, qB, yB;
-	SUNMatrix A;
 	bool sensi;
 	int ncheck, indexB;
 	double tret;
@@ -124,7 +123,7 @@ public:
 			throw std::runtime_error(string("Error calling CVSpilsSetLinearSolver in solver_setup."));
 		}
 
-		CVDlsSetJacFn(cvode_mem, Jac);
+		//CVDlsSetJacFn(cvode_mem, Jac);
 
 		CVodeSetMaxNumSteps(cvode_mem, 10000);
 
@@ -185,9 +184,9 @@ public:
 		}
 
 		// Set the user-supplied Jacobian routine JacB
-		if (CVodeSetJacFnB(cvode_mem, indexB, JacB) < 0) {
-			throw std::runtime_error(string("Error calling CVodeSetJacFnB in solver_setup."));
-		}
+		//if (CVodeSetJacFnB(cvode_mem, indexB, JacB) < 0) {
+		//	throw std::runtime_error(string("Error calling CVodeSetJacFnB in solver_setup."));
+		//}
 
 		// Allocate internal memory and initialize backward quadrature integration
 		if (CVodeQuadInitB(cvode_mem, indexB, fQB, qB) < 0) {
@@ -277,7 +276,7 @@ public:
 		N_VDestroy_Serial(state);
 		CVodeFree(&cvode_mem);
 		SUNLinSolFree(LS);
-		SUNMatDestroy(A);
+		//SUNMatDestroy(A);
 	}
 };
 
