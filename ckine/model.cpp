@@ -117,7 +117,7 @@ public:
 			throw std::runtime_error(string("Error calling CVodeSStolerances in solver_setup."));
 		}
 
-		LS = SUNLinSol_SPGMR(state, PREC_NONE, 0);
+		LS = SUNLinSol_SPGMR(state, PREC_LEFT, 0);
 		
 		// Call CVDense to specify the CVDENSE dense linear solver
 		if (CVodeSetLinearSolver(cvode_mem, LS, NULL) < 0) {
