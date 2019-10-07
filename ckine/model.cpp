@@ -14,9 +14,9 @@
 #include <sunmatrix/sunmatrix_dense.h>
 #include <sunlinsol/sunlinsol_dense.h>
 #include <cvodes/cvodes.h>             /* prototypes for CVODE fcts., consts.  */
-#include <cvode/cvode_direct.h>
-#include <cvode/cvode_spils.h>
-#include <cvode/cvode_bandpre.h>
+#include <cvodes/cvodes_direct.h>
+#include <cvodes/cvodes_spils.h>
+#include <cvodes/cvodes_bandpre.h>
 #include <sunlinsol/sunlinsol_spgmr.h>
 #include <iostream>
 #include <Eigen/Core>
