@@ -5,6 +5,7 @@
 #include <numeric>
 #include <array>
 #include <thread>
+#include <future>
 #include <vector>
 #include <list>
 #include <nvector/nvector_serial.h>  /* serial N_Vector types, fcts., macros */
@@ -21,7 +22,6 @@
 #include "model.hpp"
 #include <adept.h>
 #include "reaction.hpp"
-#include "thread_pool.hpp"
 
 using std::array;
 using std::copy;
@@ -44,14 +44,6 @@ static int fQB(double, N_Vector y, N_Vector yB, N_Vector qBdot, void *user_dataB
 std::mutex print_mutex; // mutex to prevent threads printing on top of each other
 
 typedef Eigen::Matrix<double, Nspecies, Eigen::Dynamic> x0JacM;
-
-
-extern "C" void dydt_C(double *y_in, double, double *dydt_out, double *rxn_in) {
-	std::vector<double> v(rxn_in, rxn_in + Nparams);
-	ratesS<double> r(v);
-
-	dy_dt(y_in, &r.surface, dydt_out, r.ILs.data());
-}
 
 
 extern "C" void fullModel_C(const double * const y_in, double, double *dydt_out, double *rxn_in) {
@@ -111,7 +103,7 @@ public:
 		}
 		
 		// Set the scalar relative and absolute tolerances
-		if (CVodeSStolerances(cvode_mem, 1.0E-10, 1.0E-9) < 0) {
+		if (CVodeSStolerances(cvode_mem, 1.0E-11, 1.0E-9) < 0) {
 			throw std::runtime_error(string("Error calling CVodeSStolerances in solver_setup."));
 		}
 
@@ -148,7 +140,7 @@ public:
 		commonSetup(paramsIn, preTin, preLin);
 
 		// CVodeAdjInit to update CVODES memory block by allocting the internal memory needed for backward integration
-		constexpr int steps = 100; // no. of integration steps between two consecutive ckeckpoints
+		constexpr int steps = 20; // no. of integration steps between two consecutive ckeckpoints
 		if (CVodeAdjInit(cvode_mem, steps, CV_HERMITE) < 0) {
 			throw std::runtime_error(string("Error calling CVodeAdjInit in solver_setup."));
 		}
@@ -516,13 +508,13 @@ extern "C" int runCkineS (const double * const tps, const size_t ntps, double * 
 
 
 extern "C" int runCkineParallel (const double * const rxnRatesIn, const double * const tps, const size_t ntps, size_t nDoses, double *out, const double preT, const double * const preL) {
-	ThreadPool pool;
 	int retVal = 1000;
 	std::list<std::future<int>> results;
 
 	// Actually run the simulations
-	for (size_t ii = 0; ii < nDoses; ii++)
-		results.push_back(pool.enqueue(runCkine, tps, ntps, out + Nspecies*ii*ntps, rxnRatesIn + ii*Nparams, false, preT, preL));
+	for (size_t ii = 0; ii < nDoses; ii++) {
+		results.push_back(std::async(std::launch::async, runCkine, tps, ntps, out + Nspecies*ii*ntps, rxnRatesIn + ii*Nparams, false, preT, preL));
+	}
 
 	// Synchronize all threads
 	for (std::future<int> &th:results) retVal = std::min(th.get(), retVal);
@@ -533,13 +525,12 @@ extern "C" int runCkineParallel (const double * const rxnRatesIn, const double *
 
 
 extern "C" int runCkineSParallel (const double * const rxnRatesIn, const double * const tps, const size_t ntps, const size_t nDoses, double * const out, double * const Sout, double * const actV, const double preT, const double * const preL) {
-	ThreadPool pool;
 	int retVal = 1000;
 	std::list<std::future<int>> results;
 
 	// Actually run the simulations
 	for (size_t ii = 0; ii < nDoses; ii++) {
-		results.push_back(pool.enqueue(runCkineS, tps, ntps, out + ii*ntps, Sout + Nparams*ii*ntps, actV, rxnRatesIn + Nparams*ii, false, preT, preL));
+		results.push_back(std::async(std::launch::async, runCkineS, tps, ntps, out + ii*ntps, Sout + Nparams*ii*ntps, actV, rxnRatesIn + Nparams*ii, false, preT, preL));
 	}
 
 	// Synchronize all threads

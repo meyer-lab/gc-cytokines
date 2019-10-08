@@ -174,5 +174,4 @@ constexpr size_t Nspecies = 62; // number of complexes in surface + endosome + f
 constexpr size_t halfL = 28; // number of complexes on surface alone
 
 extern "C" int runCkine (const double *tps, size_t ntps, double *out, const double * const rxnRatesIn, bool, const double preT, const double * const preL);
-extern "C" int runCkinePretreat (const double pret, const double tt, double * const out, const double * const rxnRatesIn, const double * const postStim, const double preT, const double * const preL);
 extern "C" int runCkineS (const double * const tps, const size_t ntps, double * const out, double * const Sout, const double * const actV, const double * const rxnRatesIn, const bool IL2case, const double preT, const double * const preL);
