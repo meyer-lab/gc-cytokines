@@ -46,14 +46,6 @@ std::mutex print_mutex; // mutex to prevent threads printing on top of each othe
 typedef Eigen::Matrix<double, Nspecies, Eigen::Dynamic> x0JacM;
 
 
-extern "C" void dydt_C(double *y_in, double, double *dydt_out, double *rxn_in) {
-	std::vector<double> v(rxn_in, rxn_in + Nparams);
-	ratesS<double> r(v);
-
-	dy_dt(y_in, &r.surface, dydt_out, r.ILs.data());
-}
-
-
 extern "C" void fullModel_C(const double * const y_in, double, double *dydt_out, double *rxn_in) {
 	std::vector<double> v(rxn_in, rxn_in + Nparams);
 	ratesS<double> r(v);
