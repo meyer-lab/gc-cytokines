@@ -5,6 +5,7 @@
 #include <numeric>
 #include <array>
 #include <thread>
+#include <future>
 #include <vector>
 #include <list>
 #include <nvector/nvector_serial.h>  /* serial N_Vector types, fcts., macros */
@@ -21,7 +22,6 @@
 #include "model.hpp"
 #include <adept.h>
 #include "reaction.hpp"
-#include "thread_pool.hpp"
 
 using std::array;
 using std::copy;
@@ -516,13 +516,13 @@ extern "C" int runCkineS (const double * const tps, const size_t ntps, double * 
 
 
 extern "C" int runCkineParallel (const double * const rxnRatesIn, const double * const tps, const size_t ntps, size_t nDoses, double *out, const double preT, const double * const preL) {
-	ThreadPool pool;
 	int retVal = 1000;
 	std::list<std::future<int>> results;
 
 	// Actually run the simulations
-	for (size_t ii = 0; ii < nDoses; ii++)
-		results.push_back(pool.enqueue(runCkine, tps, ntps, out + Nspecies*ii*ntps, rxnRatesIn + ii*Nparams, false, preT, preL));
+	for (size_t ii = 0; ii < nDoses; ii++) {
+		results.push_back(std::async(std::launch::async, runCkine, tps, ntps, out + Nspecies*ii*ntps, rxnRatesIn + ii*Nparams, false, preT, preL));
+	}
 
 	// Synchronize all threads
 	for (std::future<int> &th:results) retVal = std::min(th.get(), retVal);
@@ -533,13 +533,12 @@ extern "C" int runCkineParallel (const double * const rxnRatesIn, const double *
 
 
 extern "C" int runCkineSParallel (const double * const rxnRatesIn, const double * const tps, const size_t ntps, const size_t nDoses, double * const out, double * const Sout, double * const actV, const double preT, const double * const preL) {
-	ThreadPool pool;
 	int retVal = 1000;
 	std::list<std::future<int>> results;
 
 	// Actually run the simulations
 	for (size_t ii = 0; ii < nDoses; ii++) {
-		results.push_back(pool.enqueue(runCkineS, tps, ntps, out + ii*ntps, Sout + Nparams*ii*ntps, actV, rxnRatesIn + Nparams*ii, false, preT, preL));
+		results.push_back(std::async(std::launch::async, runCkineS, tps, ntps, out + ii*ntps, Sout + Nparams*ii*ntps, actV, rxnRatesIn + Nparams*ii, false, preT, preL));
 	}
 
 	// Synchronize all threads
