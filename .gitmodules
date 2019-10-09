@@ -1,3 +1,6 @@
 [submodule "common"]
 	path = common
 	url = https://github.com/meyer-lab/common.git
+[submodule "gcSolver"]
+	path = gcSolver
+	url = https://github.com/meyer-lab/gcSolver.git
