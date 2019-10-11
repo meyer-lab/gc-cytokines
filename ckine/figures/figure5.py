@@ -17,15 +17,11 @@ cell_dim = 0  # For this figure, the cell dimension is along the first [python i
 def makeFigure():
     """Get a list of the axis objects and create a figure"""
     # Get list of axis objects
-    ax, f = getSetup((7.5, 5), (2, 4))
-    ax[5].axis('off')
-    ax[6].axis('off')
-    ax[7].axis('off')
+    ax, f = getSetup((7.5, 3), (1, 4))
 
     # Add subplot labels
     for ii, item in enumerate(ax):
-        if ii < 5:
-            subplotLabel(item, string.ascii_uppercase[ii])
+        subplotLabel(item, string.ascii_uppercase[ii])
 
     _, cell_names, IL2_data, IL15_data = import_pstat()
 
@@ -53,10 +49,6 @@ def makeFigure():
     # Predicted tensor
     predicted_cell_factors = predicted_factors[n_pred_comps - 1]
     correlation_cells(ax[4], experimental_decomposition[0], predicted_cell_factors[1])
-    legend = ax[4].get_legend()
-    labels = (x.get_text() for x in legend.get_texts())
-    ax[5].legend(legend.legendHandles, labels, loc='upper left', title="Predicted Cmp#")
-    ax[4].get_legend().remove()
 
     return f
 
@@ -64,8 +56,4 @@ def makeFigure():
 def correlation_cells(ax, experimental, predicted):
     """Function that takes in predicted and experimental components from cell decomposion and gives a bar graph of the Cosine Similarity."""
     corr_df = pds.DataFrame(columns=['Experimental Cmp#', 'Predicted Cmp#', 'Cosine Similarity'])
-    for ii in range(experimental.shape[1]):
-        for jj in range(predicted.shape[1]):
-            corr_df = corr_df.append({'Experimental Cmp#': ii + 1, 'Predicted Cmp#': jj + 1, 'Cosine Similarity': 1.0 - cosine(experimental[:, ii], predicted[:, jj])}, ignore_index=True)
-    corr_df = corr_df.astype({'Experimental Cmp#': int, 'Predicted Cmp#': int})
-    sns.catplot(x='Experimental Cmp#', y='Cosine Similarity', hue='Predicted Cmp#', data=corr_df, kind='bar', ax=ax)
+    print(corr_df)
