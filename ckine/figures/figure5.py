@@ -4,7 +4,6 @@ This creates Figure 5. CP decomposition of measured pSTAT data.
 import string
 import numpy as np
 import pandas as pds
-import seaborn as sns
 from scipy.spatial.distance import cosine
 from .figureCommon import subplotLabel, getSetup, plot_cells, plot_ligands, plot_timepoints
 from .figure3 import plot_R2X, n_pred_comps, factors_activity as predicted_factors
@@ -17,7 +16,7 @@ cell_dim = 0  # For this figure, the cell dimension is along the first [python i
 def makeFigure():
     """Get a list of the axis objects and create a figure"""
     # Get list of axis objects
-    ax, f = getSetup((7.5, 2.5), (1, 4))
+    ax, f = getSetup((7.5, 2), (1, 4))
 
     # Add subplot labels
     for ii, item in enumerate(ax):
