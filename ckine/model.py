@@ -283,25 +283,25 @@ def getparamsdict(trafvec, IL2Ra=True):
     ratesParamsDict['kRec'] = kRec
     ratesParamsDict['kDeg'] = kDeg
     ratesParamsDict['sortF'] = sortF
-    ratesParamsDict['surface.k1rev'] = ratesParamsDict['Kf Bound'] * 10
-    ratesParamsDict['surface.k2rev'] = ratesParamsDict['Kf Bound'] * 144
+    ratesParamsDict['surface.k1rev'] = ratesParamsDict['kfbnd'] * 10
+    ratesParamsDict['surface.k2rev'] = ratesParamsDict['kfbnd'] * 144
     ratesParamsDict['surface.k4rev'] = pm.Lognormal('surface.k4rev', sd=0.5, shape=1)
     ratesParamsDict['surface.k5rev'] = pm.Lognormal('surface.k5rev', sd=0.5, shape=1)
     ratesParamsDict['surface.k10rev'] = 12.0 * ratesParamsDict['k5revs'] / 1.5
     ratesParamsDict['surface.k11rev'] = 63.0 * ratesParamsDict['k5revs'] / 1.5
-    ratesParamsDict['surface.k13rev'] = ratesParamsDict['Kf Bound'] * 0.065
-    ratesParamsDict['surface.k14rev'] = ratesParamsDict['Kf Bound'] * 438
+    ratesParamsDict['surface.k13rev'] = ratesParamsDict['kfbnd'] * 0.065
+    ratesParamsDict['surface.k14rev'] = ratesParamsDict['kfbnd'] * 438
     ratesParamsDict['surface.k16rev'] = pm.Lognormal('surface.k16rev', sd=0.5, shape=1)
     ratesParamsDict['surface.k17rev'] = pm.Lognormal('surface.k17rev', sd=0.5, shape=1)
     ratesParamsDict['surface.k22rev'] = pm.Lognormal('surface.k22rev', sd=0.5, shape=1)
     ratesParamsDict['surface.k23rev'] = pm.Lognormal('surface.k23rev', sd=0.5, shape=1)
-    ratesParamsDict['surface.k25rev'] = ratesParamsDict['Kf Bound'] * 59
+    ratesParamsDict['surface.k25rev'] = ratesParamsDict['kfbnd'] * 59
     ratesParamsDict['surface.k27rev'] = T.ones(1, dtype=np.float64)
-    ratesParamsDict['surface.k29rev'] = ratesParamsDict['Kf Bound'] * 0.1
+    ratesParamsDict['surface.k29rev'] = ratesParamsDict['kfbnd'] * 0.1
     ratesParamsDict['surface.k31rev'] = T.ones(1, dtype=np.float64)
-    ratesParamsDict['surface.k32rev'] = ratesParamsDict['Kf Bound'] * 1.0
+    ratesParamsDict['surface.k32rev'] = ratesParamsDict['kfbnd'] * 1.0
     ratesParamsDict['surface.k33rev'] = T.ones(1, dtype=np.float64)
-    ratesParamsDict['surface.k34rev'] = ratesParamsDict['Kf Bound'] * 0.07
+    ratesParamsDict['surface.k34rev'] = ratesParamsDict['kfbnd'] * 0.07
     ratesParamsDict['surface.k35rev'] = T.ones(1, dtype=np.float64)
     ratesParamsDict['endosome.k1rev'] = ratesParamsDict['surface.k1rev'] * 5.0
     ratesParamsDict['endosome.k2rev'] = ratesParamsDict['surface.k2rev'] * 5.0
