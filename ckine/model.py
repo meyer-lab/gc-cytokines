@@ -102,6 +102,8 @@ def runCkineUP(tps, rxntfr, preT=0.0, prestim=None):
     assert np.all(np.any(rxntfr > 0.0, axis=1))  # make sure at least one element is >0 for all rows
 
     yOut = np.zeros((rxntfr.shape[0] * tps.size, __nSpecies), dtype=np.float64)
+    print("UP")
+    print(rxntfr)
     trafvec = [rxntfr[6], rxntfr[17], rxntfr[18], rxntfr[21], rxntfr[22], rxntfr[20]]
 
     if rxntfr[23] == pm.Lognormal('Rexpr_2Ra', sd=0.5, shape=1):
@@ -131,6 +133,8 @@ def runCkineSP(tps, rxntfr, actV, preT=0.0, prestim=None):
     assert rxntfr.size % __nParams == 0
     assert rxntfr.shape[1] == __nParams
     assert (rxntfr[:, 19] < 1.0).all()  # Check that sortF won't throw
+    print("SP")
+    print(rxntfr)
 
     yOut = np.zeros((rxntfr.shape[0] * tps.size), dtype=np.float64)
     sensV = np.zeros((rxntfr.shape[0] * tps.size, __nParams), dtype=np.float64, order="C")
@@ -169,6 +173,8 @@ def fullModel(y, t, rxntfr):
     assert rxntfr.size == __nParams
 
     yOut = np.zeros_like(y)
+    print("Full Model")
+    print(rxntfr)
 
     trafvec = [rxntfr[6], rxntfr[17], rxntfr[18], rxntfr[21], rxntfr[22], rxntfr[20]]
 
@@ -274,7 +280,7 @@ def getparamsdict(trafvec, IL2Ra=True):
         ratesParamsDict['Rexpr_2Ra'] = pm.Lognormal('Rexpr_2Ra', sd=0.5, shape=1)
     else:
         ratesParamsDict['Rexpr_2Ra'] = T.zeros(1, dtype=np.float64)
-    ratesParamsDict['Rexpr_15ra'] = pm.Lognormal('Rexpr_15ra', sd=0.5, shape=1)
+    ratesParamsDict['Rexpr_15Ra'] = pm.Lognormal('Rexpr_15Ra', sd=0.5, shape=1)
     ratesParamsDict['Rexpr_2Rb'] = pm.Lognormal('Rexpr_2Rb', sd=0.5, shape=1)
     ratesParamsDict['Rexpr_gc'] = pm.Lognormal('Rexpr_gc', sd=0.5, shape=1)
     ratesParamsDict['kfwd'] = kfwd
