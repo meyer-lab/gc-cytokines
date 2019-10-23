@@ -69,6 +69,14 @@ def runCkineU_IL2(tps, rxntfr):
     assert rxntfr.size == 15
 
     yOut = np.zeros((tps.size, __nSpecies), dtype=np.float64)
+    trafvec = [rxntfr[6], rxntfr[17], rxntfr[18], rxntfr[21], rxntfr[22], rxntfr[20]]
+
+    if rxntfr[23] == pm.Lognormal('Rexpr_2Ra', sd=0.5, shape=1):
+        IL2Ra = True
+    else:
+        IL2Ra = False
+
+    _, rxntfr = getRateVec(trafvec, IL2Ra)
 
     retVal = libb.runCkine(tps.ctypes.data_as(ct.POINTER(ct.c_double)), tps.size, yOut.ctypes.data_as(ct.POINTER(ct.c_double)), rxntfr.ctypes.data_as(ct.POINTER(ct.c_double)), True, 0.0, None)
 
