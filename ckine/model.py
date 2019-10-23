@@ -93,7 +93,7 @@ def runCkineUP(tps, rxntfr, preT=0.0, prestim=None):
     yOut = np.zeros((rxntfr.shape[0] * tps.size, __nSpecies), dtype=np.float64)
     trafvec = [rxntfr[6], rxntfr[17], rxntfr[18], rxntfr[21], rxntfr[22], rxntfr[20]]
 
-    if rxntfr[23] = pm.Lognormal('Rexpr_2Ra', sd=0.5, shape=1):
+    if rxntfr[23] == pm.Lognormal('Rexpr_2Ra', sd=0.5, shape=1):
         IL2Ra = True
     else:
         IL2Ra = False
