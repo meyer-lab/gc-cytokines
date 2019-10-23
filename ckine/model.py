@@ -71,9 +71,11 @@ def runCkineU_IL2(tps, rxntfr):
     assert rxntfr.size == 15
 
     yOut = np.zeros((tps.size, __nSpecies), dtype=np.float64)
-    trafvec = [rxntfr[:, 6], rxntfr[:, 16], rxntfr[:, 17], rxntfr[:, 20], rxntfr[:, 21], rxntfr[:, 19]]
+    print("CkineU_IL2")
+    print(rxntfr)
+    trafvec = [rxntfr[6], rxntfr[16], rxntfr[17], rxntfr[20], rxntfr[21], rxntfr[19]]
 
-    if rxntfr[23] == pm.Lognormal('Rexpr_2Ra', sd=0.5, shape=1):
+    if rxntfr[:, 22] == pm.Lognormal('Rexpr_2Ra', sd=0.5, shape=1):
         IL2Ra = True
     else:
         IL2Ra = False
@@ -102,11 +104,11 @@ def runCkineUP(tps, rxntfr, preT=0.0, prestim=None):
     assert np.all(np.any(rxntfr > 0.0, axis=1))  # make sure at least one element is >0 for all rows
 
     yOut = np.zeros((rxntfr.shape[0] * tps.size, __nSpecies), dtype=np.float64)
-    print("UP")
+    print("UPMod")
     print(rxntfr)
     trafvec = [rxntfr[:, 6], rxntfr[:, 16], rxntfr[:, 17], rxntfr[:, 20], rxntfr[:, 21], rxntfr[:, 19]]
 
-    if rxntfr[23] == pm.Lognormal('Rexpr_2Ra', sd=0.5, shape=1):
+    if rxntfr[:, 22] == pm.Lognormal('Rexpr_2Ra', sd=0.5, shape=1):
         IL2Ra = True
     else:
         IL2Ra = False
@@ -133,7 +135,7 @@ def runCkineSP(tps, rxntfr, actV, preT=0.0, prestim=None):
     assert rxntfr.size % __nParams == 0
     assert rxntfr.shape[1] == __nParams
     assert (rxntfr[:, 19] < 1.0).all()  # Check that sortF won't throw
-    print("SP")
+    print("SPMod")
     print(rxntfr)
 
     yOut = np.zeros((rxntfr.shape[0] * tps.size), dtype=np.float64)
@@ -141,7 +143,7 @@ def runCkineSP(tps, rxntfr, actV, preT=0.0, prestim=None):
     trafvec = [rxntfr[:, 6], rxntfr[:, 16], rxntfr[:, 17], rxntfr[:, 20], rxntfr[:, 21], rxntfr[:, 19]]
 
 
-    if rxntfr[23] == pm.Lognormal('Rexpr_2Ra', sd=0.5, shape=1):
+    if rxntfr[:, 22] == pm.Lognormal('Rexpr_2Ra', sd=0.5, shape=1):
         IL2Ra = True
     else:
         IL2Ra = False
@@ -176,9 +178,9 @@ def fullModel(y, t, rxntfr):
     print("Full Model")
     print(rxntfr)
 
-    trafvec = [rxntfr[:, 6], rxntfr[:, 16], rxntfr[:, 17], rxntfr[:, 20], rxntfr[:, 21], rxntfr[:, 19]]
+    trafvec = [rxntfr[6], rxntfr[16], rxntfr[17], rxntfr[20], rxntfr[21], rxntfr[19]]
 
-    if rxntfr[23] == pm.Lognormal('Rexpr_2Ra', sd=0.5, shape=1):
+    if rxntfr[22] == pm.Lognormal('Rexpr_2Ra', sd=0.5, shape=1):
         IL2Ra = True
     else:
         IL2Ra = False
