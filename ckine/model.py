@@ -71,7 +71,7 @@ def runCkineU_IL2(tps, rxntfr):
     assert rxntfr.size == 15
 
     yOut = np.zeros((tps.size, __nSpecies), dtype=np.float64)
-    trafvec = [rxntfr[6], rxntfr[17], rxntfr[18], rxntfr[21], rxntfr[22], rxntfr[20]]
+    trafvec = [rxntfr[:, 6], rxntfr[:, 16], rxntfr[:, 17], rxntfr[:, 20], rxntfr[:, 21], rxntfr[:, 19]]
 
     if rxntfr[23] == pm.Lognormal('Rexpr_2Ra', sd=0.5, shape=1):
         IL2Ra = True
@@ -104,7 +104,7 @@ def runCkineUP(tps, rxntfr, preT=0.0, prestim=None):
     yOut = np.zeros((rxntfr.shape[0] * tps.size, __nSpecies), dtype=np.float64)
     print("UP")
     print(rxntfr)
-    trafvec = [rxntfr[6], rxntfr[17], rxntfr[18], rxntfr[21], rxntfr[22], rxntfr[20]]
+    trafvec = [rxntfr[:, 6], rxntfr[:, 16], rxntfr[:, 17], rxntfr[:, 20], rxntfr[:, 21], rxntfr[:, 19]]
 
     if rxntfr[23] == pm.Lognormal('Rexpr_2Ra', sd=0.5, shape=1):
         IL2Ra = True
@@ -138,7 +138,7 @@ def runCkineSP(tps, rxntfr, actV, preT=0.0, prestim=None):
 
     yOut = np.zeros((rxntfr.shape[0] * tps.size), dtype=np.float64)
     sensV = np.zeros((rxntfr.shape[0] * tps.size, __nParams), dtype=np.float64, order="C")
-    trafvec = [rxntfr[6], rxntfr[17], rxntfr[18], rxntfr[21], rxntfr[22], rxntfr[20]]
+    trafvec = [rxntfr[:, 6], rxntfr[:, 16], rxntfr[:, 17], rxntfr[:, 20], rxntfr[:, 21], rxntfr[:, 19]]
 
 
     if rxntfr[23] == pm.Lognormal('Rexpr_2Ra', sd=0.5, shape=1):
@@ -176,7 +176,7 @@ def fullModel(y, t, rxntfr):
     print("Full Model")
     print(rxntfr)
 
-    trafvec = [rxntfr[6], rxntfr[17], rxntfr[18], rxntfr[21], rxntfr[22], rxntfr[20]]
+    trafvec = [rxntfr[:, 6], rxntfr[:, 16], rxntfr[:, 17], rxntfr[:, 20], rxntfr[:, 21], rxntfr[:, 19]]
 
     if rxntfr[23] == pm.Lognormal('Rexpr_2Ra', sd=0.5, shape=1):
         IL2Ra = True
@@ -329,7 +329,7 @@ def getparamsdict(trafvec, IL2Ra=True):
     ratesParamsDict['endosome.k33rev'] = ratesParamsDict['surface.k33rev'] * 5.0
     ratesParamsDict['endosome.k34rev'] = ratesParamsDict['surface.k34rev'] * 5.0
     ratesParamsDict['endosome.k35rev'] = ratesParamsDict['surface.k35rev'] * 5.0
-    ratesParamsDict['Null Rates'] = T.ones(1, dtype=np.float64) * 0.0
+    ratesParamsDict['Null Rates'] = T.ones(4, dtype=np.float64)
 
     return ratesParamsDict
 
@@ -390,7 +390,7 @@ def getRateVec(trafvec, IL2Ra=True):
          ratesParamsDict['Rexpr_2Rb'],
          ratesParamsDict['Rexpr_gc'],
          ratesParamsDict['Rexpr_15Ra'],
-         ratesParamsDict['Null Rates']))
+         ratesParamsDict['Null Rates'] * 0.0))
 
     unkVec = T.concatenate(
         (ratesParamsDict['kfwd'],
@@ -412,6 +412,6 @@ def getRateVec(trafvec, IL2Ra=True):
          ratesParamsDict['Rexpr_2Rb'],
          ratesParamsDict['Rexpr_gc'],
          ratesParamsDict['Rexpr_15Ra'],
-         ratesParamsDict['Null Rates']))
+         ratesParamsDict['Null Rates'] * 0.0))
 
     return unkVec, FullRateVec
