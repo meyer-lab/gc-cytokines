@@ -4,6 +4,8 @@ A file that includes the model and important helper functions.
 import os
 import ctypes as ct
 import numpy as np
+import pymc3 as pm
+import theano.tensor as T
 from collections import OrderedDict
 
 
