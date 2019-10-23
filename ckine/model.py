@@ -287,8 +287,8 @@ def getparamsdict(trafvec, IL2Ra=True):
     ratesParamsDict['surface.k2rev'] = ratesParamsDict['kfbnd'] * 144
     ratesParamsDict['surface.k4rev'] = pm.Lognormal('surface.k4rev', sd=0.5, shape=1)
     ratesParamsDict['surface.k5rev'] = pm.Lognormal('surface.k5rev', sd=0.5, shape=1)
-    ratesParamsDict['surface.k10rev'] = 12.0 * ratesParamsDict['k5revs'] / 1.5
-    ratesParamsDict['surface.k11rev'] = 63.0 * ratesParamsDict['k5revs'] / 1.5
+    ratesParamsDict['surface.k10rev'] = 12.0 * ratesParamsDict['surface.k5rev'] / 1.5
+    ratesParamsDict['surface.k11rev'] = 63.0 * ratesParamsDict['surface.k5rev'] / 1.5
     ratesParamsDict['surface.k13rev'] = ratesParamsDict['kfbnd'] * 0.065
     ratesParamsDict['surface.k14rev'] = ratesParamsDict['kfbnd'] * 438
     ratesParamsDict['surface.k16rev'] = pm.Lognormal('surface.k16rev', sd=0.5, shape=1)
