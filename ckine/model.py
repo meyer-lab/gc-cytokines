@@ -170,6 +170,15 @@ def fullModel(y, t, rxntfr):
 
     yOut = np.zeros_like(y)
 
+    trafvec = [rxntfr[6], rxntfr[17], rxntfr[18], rxntfr[21], rxntfr[22], rxntfr[20]]
+
+    if rxntfr[23] == pm.Lognormal('Rexpr_2Ra', sd=0.5, shape=1):
+        IL2Ra = True
+    else:
+        IL2Ra = False
+
+    _, rxntfr = getRateVec(trafvec, IL2Ra)
+
     libb.fullModel_C(y.ctypes.data_as(ct.POINTER(ct.c_double)), t, yOut.ctypes.data_as(ct.POINTER(ct.c_double)), rxntfr.ctypes.data_as(ct.POINTER(ct.c_double)))
 
     return yOut
