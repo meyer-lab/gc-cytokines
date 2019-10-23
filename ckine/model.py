@@ -4,6 +4,7 @@ A file that includes the model and important helper functions.
 import os
 import ctypes as ct
 import numpy as np
+from collections import OrderedDict
 
 
 filename = os.path.join(os.path.dirname(os.path.abspath(__file__)), "./ckine.so")
@@ -243,6 +244,7 @@ def receptor_expression(receptor_abundance, endo, kRec, sortF, kDeg):
     rec_ex = (receptor_abundance * endo) / (1.0 + ((kRec * (1.0 - sortF)) / (kDeg * sortF)))
     return rec_ex
 
+
 def getparamsdict(trafvec, IL2Ra=True):
     """Where rate vectors and constants are defined, organized in an ordered dictionary"""
     ratesParamsDict = OrderedDict()
@@ -279,7 +281,7 @@ def getparamsdict(trafvec, IL2Ra=True):
     ratesParamsDict['surface.k31rev'] = T.ones(1, dtype=np.float64)
     ratesParamsDict['surface.k32rev'] = ratesParamsDict['Kf Bound'] * 1.0
     ratesParamsDict['surface.k33rev'] = T.ones(1, dtype=np.float64)
-    ratesParamsDict['surface.k34rev'] = ratesParamsDict['Kf Bound'] * 0.07   
+    ratesParamsDict['surface.k34rev'] = ratesParamsDict['Kf Bound'] * 0.07
     ratesParamsDict['surface.k35rev'] = T.ones(1, dtype=np.float64)
     ratesParamsDict['endosome.k1rev'] = ratesParamsDict['surface.k1rev'] * 5.0
     ratesParamsDict['endosome.k2rev'] = ratesParamsDict['surface.k2rev'] * 5.0
@@ -305,13 +307,85 @@ def getparamsdict(trafvec, IL2Ra=True):
 
     return ratesParamsDict
 
+
 def getRateVec(trafvec, IL2Ra=True):
     """Retrieves and unpacks ordered dict + constructs rate vector for model fitting"""
 
     ratesParamsDict = getparamsdict(trafvec, IL2Ra)
 
-    FullRateVec = T.concatenate((ratesParamsDict['kfwd'], ratesParamsDict['surface.k1rev'], ratesParamsDict['surface.k2rev'], ratesParamsDict['surface.k4rev'], ratesParamsDict['surface.k5rev'], ratesParamsDict['surface.k10rev'], ratesParamsDict['surface.k11rev'], ratesParamsDict['surface.k13rev'], ratesParamsDict['surface.k14rev'], ratesParamsDict['surface.k16rev'], ratesParamsDict['surface.k17rev'], ratesParamsDict['surface.k22rev'], ratesParamsDict['surface.k23rev'], ratesParamsDict['surface.k25rev'], ratesParamsDict['surface.k27rev'], ratesParamsDict['surface.k29rev'], ratesParamsDict['surface.k31rev'], ratesParamsDict['surface.k32rev'], ratesParamsDict['surface.k33rev'], ratesParamsDict['surface.k34rev'], ratesParamsDict['surface.k35rev'], ratesParamsDict['endosome.k1rev'], ratesParamsDict['endosome.k2rev'], ratesParamsDict['endosome.k4rev'], ratesParamsDict['endosome.k5rev'], ratesParamsDict['endosome.k10rev'], ratesParamsDict['endosome.k11rev'], ratesParamsDict['endosome.k13rev'], ratesParamsDict['endosome.k14rev'], ratesParamsDict['endosome.k16rev'], ratesParamsDict['endosome.k17rev'], ratesParamsDict['endosome.k22rev'], ratesParamsDict['endosome.k23rev'], ratesParamsDict['endosome.k25rev'], ratesParamsDict['endosome.k27rev'], ratesParamsDict['endosome.k29rev'], ratesParamsDict['endosome.k31rev'], ratesParamsDict['endosome.k32rev'], ratesParamsDict['endosome.k33rev'], ratesParamsDict['endosome.k34rev'], ratesParamsDict['endosome.k35rev'], ratesParamsDict['endo'], ratesParamsDict['activeEndo'], ratesParamsDict['sortF'], ratesParamsDict['kRec'], ratesParamsDict['kDeg'], ratesParamsDict['Rexpr_2Ra'], ratesParamsDict['Rexpr_2Rb'], ratesParamsDict['Rexpr_gc'], ratesParamsDict['Rexpr_15Ra'], ratesParamsDict['Null Rates']))
+    FullRateVec = T.concatenate(
+        (ratesParamsDict['kfwd'],
+         ratesParamsDict['surface.k1rev'],
+         ratesParamsDict['surface.k2rev'],
+         ratesParamsDict['surface.k4rev'],
+         ratesParamsDict['surface.k5rev'],
+         ratesParamsDict['surface.k10rev'],
+         ratesParamsDict['surface.k11rev'],
+         ratesParamsDict['surface.k13rev'],
+         ratesParamsDict['surface.k14rev'],
+         ratesParamsDict['surface.k16rev'],
+         ratesParamsDict['surface.k17rev'],
+         ratesParamsDict['surface.k22rev'],
+         ratesParamsDict['surface.k23rev'],
+         ratesParamsDict['surface.k25rev'],
+         ratesParamsDict['surface.k27rev'],
+         ratesParamsDict['surface.k29rev'],
+         ratesParamsDict['surface.k31rev'],
+         ratesParamsDict['surface.k32rev'],
+         ratesParamsDict['surface.k33rev'],
+         ratesParamsDict['surface.k34rev'],
+         ratesParamsDict['surface.k35rev'],
+         ratesParamsDict['endosome.k1rev'],
+         ratesParamsDict['endosome.k2rev'],
+         ratesParamsDict['endosome.k4rev'],
+         ratesParamsDict['endosome.k5rev'],
+         ratesParamsDict['endosome.k10rev'],
+         ratesParamsDict['endosome.k11rev'],
+         ratesParamsDict['endosome.k13rev'],
+         ratesParamsDict['endosome.k14rev'],
+         ratesParamsDict['endosome.k16rev'],
+         ratesParamsDict['endosome.k17rev'],
+         ratesParamsDict['endosome.k22rev'],
+         ratesParamsDict['endosome.k23rev'],
+         ratesParamsDict['endosome.k25rev'],
+         ratesParamsDict['endosome.k27rev'],
+         ratesParamsDict['endosome.k29rev'],
+         ratesParamsDict['endosome.k31rev'],
+         ratesParamsDict['endosome.k32rev'],
+         ratesParamsDict['endosome.k33rev'],
+         ratesParamsDict['endosome.k34rev'],
+         ratesParamsDict['endosome.k35rev'],
+         ratesParamsDict['endo'],
+         ratesParamsDict['activeEndo'],
+         ratesParamsDict['sortF'],
+         ratesParamsDict['kRec'],
+         ratesParamsDict['kDeg'],
+         ratesParamsDict['Rexpr_2Ra'],
+         ratesParamsDict['Rexpr_2Rb'],
+         ratesParamsDict['Rexpr_gc'],
+         ratesParamsDict['Rexpr_15Ra'],
+         ratesParamsDict['Null Rates']))
 
-    unkVec = T.concatenate((ratesParamsDict['kfwd'], ratesParamsDict['surface.k4rev'], ratesParamsDict['surface.k5rev'], ratesParamsDict['surface.k16rev'], ratesParamsDict['surface.k17rev'], ratesParamsDict['surface.k22rev'], ratesParamsDict['surface.k23rev'], ratesParamsDict['surface.k31rev'], ratesParamsDict['surface.k33rev'], ratesParamsDict['surface.k35rev'], ratesParamsDict['endo'], ratesParamsDict['activeEndo'], ratesParamsDict['sortF'], ratesParamsDict['kRec'], ratesParamsDict['kDeg'], ratesParamsDict['Rexpr_2Ra'], ratesParamsDict['Rexpr_2Rb'], ratesParamsDict['Rexpr_gc'], ratesParamsDict['Rexpr_15Ra'], ratesParamsDict['Null Rates'])) 
+    unkVec = T.concatenate(
+        (ratesParamsDict['kfwd'],
+         ratesParamsDict['surface.k4rev'],
+         ratesParamsDict['surface.k5rev'],
+         ratesParamsDict['surface.k16rev'],
+         ratesParamsDict['surface.k17rev'],
+         ratesParamsDict['surface.k22rev'],
+         ratesParamsDict['surface.k23rev'],
+         ratesParamsDict['surface.k31rev'],
+         ratesParamsDict['surface.k33rev'],
+         ratesParamsDict['surface.k35rev'],
+         ratesParamsDict['endo'],
+         ratesParamsDict['activeEndo'],
+         ratesParamsDict['sortF'],
+         ratesParamsDict['kRec'],
+         ratesParamsDict['kDeg'],
+         ratesParamsDict['Rexpr_2Ra'],
+         ratesParamsDict['Rexpr_2Rb'],
+         ratesParamsDict['Rexpr_gc'],
+         ratesParamsDict['Rexpr_15Ra'],
+         ratesParamsDict['Null Rates']))
 
     return unkVec, FullRateVec

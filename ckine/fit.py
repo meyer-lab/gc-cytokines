@@ -169,4 +169,3 @@ class build_model:
             pm.Deterministic('logp', M.logpt)
 
         return M
-

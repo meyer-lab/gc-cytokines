@@ -74,7 +74,7 @@ def makeFigure():
 
     catplot_comparison(ax[1], df)  # compare experiments to model predictions
     plot_corrcoef(ax[2], tps)  # find correlation coefficients
-    global_legend(ax[2]) # add legend subplots A-C
+    global_legend(ax[2])  # add legend subplots A-C
 
     plot_exp_v_pred(ax[3:9], cell_subset=["NK", "CD8+", "T-reg"])  # NK, CD8+, and Treg subplots taken from fig S5
 
