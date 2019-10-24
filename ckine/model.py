@@ -311,25 +311,25 @@ def getparamsdict(trafvec, IL2Ra=True):
     ratesParamsDict['surface.k33rev'] = T.ones(1, dtype=np.float64)
     ratesParamsDict['surface.k34rev'] = np.array([ratesParamsDict['kfbnd'] * 0.07])
     ratesParamsDict['surface.k35rev'] = T.ones(1, dtype=np.float64)
-    ratesParamsDict['endosome.k1rev'] = np.array([ratesParamsDict['surface.k1rev'] * 5.0])
-    ratesParamsDict['endosome.k2rev'] = np.array([ratesParamsDict['surface.k2rev'] * 5.0])
+    ratesParamsDict['endosome.k1rev'] = np.array([ratesParamsDict['kfbnd'] * 10 * 5.0])
+    ratesParamsDict['endosome.k2rev'] = np.array([ratesParamsDict['kfbnd'] * 144 * 5.0])
     ratesParamsDict['endosome.k4rev'] = ratesParamsDict['surface.k4rev'] * 5.0
     ratesParamsDict['endosome.k5rev'] = ratesParamsDict['surface.k5rev'] * 5.0
     ratesParamsDict['endosome.k10rev'] = ratesParamsDict['surface.k10rev'] * 5.0
     ratesParamsDict['endosome.k11rev'] = ratesParamsDict['surface.k11rev'] * 5.0
-    ratesParamsDict['endosome.k13rev'] = np.array([ratesParamsDict['surface.k13rev'] * 5.0])
-    ratesParamsDict['endosome.k14rev'] = np.array([ratesParamsDict['surface.k14rev'] * 5.0])
+    ratesParamsDict['endosome.k13rev'] = np.array([ratesParamsDict['kfbnd'] * 0.065 * 5.0])
+    ratesParamsDict['endosome.k14rev'] = np.array([ratesParamsDict['kfbnd'] * 438 * 5.0])
     ratesParamsDict['endosome.k16rev'] = ratesParamsDict['surface.k16rev'] * 5.0
     ratesParamsDict['endosome.k17rev'] = ratesParamsDict['surface.k17rev'] * 5.0
     ratesParamsDict['endosome.k22rev'] = ratesParamsDict['surface.k22rev'] * 5.0
     ratesParamsDict['endosome.k23rev'] = ratesParamsDict['surface.k23rev'] * 5.0
-    ratesParamsDict['endosome.k25rev'] = np.array([ratesParamsDict['surface.k25rev'] * 5.0])
+    ratesParamsDict['endosome.k25rev'] = np.array([ratesParamsDict['kfbnd'] * 59 * 5.0])
     ratesParamsDict['endosome.k27rev'] = ratesParamsDict['surface.k27rev'] * 5.0
-    ratesParamsDict['endosome.k29rev'] = np.array([ratesParamsDict['surface.k29rev'] * 5.0])
+    ratesParamsDict['endosome.k29rev'] = np.array([ratesParamsDict['kfbnd'] * 0.1 * 5.0])
     ratesParamsDict['endosome.k31rev'] = ratesParamsDict['surface.k31rev'] * 5.0
-    ratesParamsDict['endosome.k32rev'] = np.array([ratesParamsDict['surface.k32rev'] * 5.0])
+    ratesParamsDict['endosome.k32rev'] = np.array([ratesParamsDict['kfbnd'] * 1.0 * 5.0])
     ratesParamsDict['endosome.k33rev'] = ratesParamsDict['surface.k33rev'] * 5.0
-    ratesParamsDict['endosome.k34rev'] = np.array([ratesParamsDict['surface.k34rev'] * 5.0])
+    ratesParamsDict['endosome.k34rev'] = np.array([ratesParamsDict['kfbnd'] * 0.07 * 5.0])
     ratesParamsDict['endosome.k35rev'] = ratesParamsDict['surface.k35rev'] * 5.0
     ratesParamsDict['Null Rates1'] = T.ones(1, dtype=np.float64)
     ratesParamsDict['Null Rates2'] = T.ones(1, dtype=np.float64)
