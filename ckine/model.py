@@ -285,16 +285,16 @@ def getparamsdict(trafvec, IL2Ra=True):
     ratesParamsDict['sortF'] = sortF
     ratesParamsDict['surface.k1rev'] = np.array([ratesParamsDict['kfbnd'] * 10])
     ratesParamsDict['surface.k2rev'] = np.array([ratesParamsDict['kfbnd'] * 144])
-    ratesParamsDict['surface.k4rev'] = pm.Lognormal('surface.k4rev', sd=0.5, shape=1)
-    ratesParamsDict['surface.k5rev'] = pm.Lognormal('surface.k5rev', sd=0.5, shape=1)
+    ratesParamsDict['surface.k4rev'] = pm.Lognormal('surface.k4rev' + IL2RaTag, sd=0.5, shape=1)
+    ratesParamsDict['surface.k5rev'] = pm.Lognormal('surface.k5rev' + IL2RaTag, sd=0.5, shape=1)
     ratesParamsDict['surface.k10rev'] = 12.0 * ratesParamsDict['surface.k5rev'] / 1.5
     ratesParamsDict['surface.k11rev'] = 63.0 * ratesParamsDict['surface.k5rev'] / 1.5
     ratesParamsDict['surface.k13rev'] = np.array([ratesParamsDict['kfbnd'] * 0.065])
     ratesParamsDict['surface.k14rev'] = np.array([ratesParamsDict['kfbnd'] * 438])
-    ratesParamsDict['surface.k16rev'] = pm.Lognormal('surface.k16rev', sd=0.5, shape=1)
-    ratesParamsDict['surface.k17rev'] = pm.Lognormal('surface.k17rev', sd=0.5, shape=1)
-    ratesParamsDict['surface.k22rev'] = pm.Lognormal('surface.k22rev', sd=0.5, shape=1)
-    ratesParamsDict['surface.k23rev'] = pm.Lognormal('surface.k23rev', sd=0.5, shape=1)
+    ratesParamsDict['surface.k16rev'] = pm.Lognormal('surface.k16rev' + IL2RaTag, sd=0.5, shape=1)
+    ratesParamsDict['surface.k17rev'] = pm.Lognormal('surface.k17rev' + IL2RaTag, sd=0.5, shape=1)
+    ratesParamsDict['surface.k22rev'] = pm.Lognormal('surface.k22rev' + IL2RaTag, sd=0.5, shape=1)
+    ratesParamsDict['surface.k23rev'] = pm.Lognormal('surface.k23rev' + IL2RaTag, sd=0.5, shape=1)
     ratesParamsDict['surface.k25rev'] = np.array([ratesParamsDict['kfbnd'] * 59])
     ratesParamsDict['surface.k27rev'] = T.ones(1, dtype=np.float64)
     ratesParamsDict['surface.k29rev'] = np.array([ratesParamsDict['kfbnd'] * 0.1])
