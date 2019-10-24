@@ -331,7 +331,10 @@ def getparamsdict(trafvec, IL2Ra=True):
     ratesParamsDict['endosome.k33rev'] = ratesParamsDict['surface.k33rev'] * 5.0
     ratesParamsDict['endosome.k34rev'] = np.array([ratesParamsDict['surface.k34rev'] * 5.0])
     ratesParamsDict['endosome.k35rev'] = ratesParamsDict['surface.k35rev'] * 5.0
-    ratesParamsDict['Null Rates'] = T.ones(4, dtype=np.float64)
+    ratesParamsDict['Null Rates1'] = T.ones(1, dtype=np.float64)
+    ratesParamsDict['Null Rates2'] = T.ones(1, dtype=np.float64)
+    ratesParamsDict['Null Rates3'] = T.ones(1, dtype=np.float64)
+    ratesParamsDict['Null Rates4'] = T.ones(1, dtype=np.float64)
 
     return ratesParamsDict
 
@@ -340,8 +343,6 @@ def getRateVec(trafvec, IL2Ra=True):
     """Retrieves and unpacks ordered dict + constructs rate vector for model fitting"""
 
     ratesParamsDict = getparamsdict(trafvec, IL2Ra)
-    
-
 
     FullRateVec = T.concatenate(
         (ratesParamsDict['kfwd'],
@@ -394,7 +395,10 @@ def getRateVec(trafvec, IL2Ra=True):
          ratesParamsDict['Rexpr_2Rb'],
          ratesParamsDict['Rexpr_gc'],
          ratesParamsDict['Rexpr_15Ra'],
-         ratesParamsDict['Null Rates'] * 0.0))
+         ratesParamsDict['Null Rates1'] * 0.0,
+         ratesParamsDict['Null Rates2'] * 0.0,
+         ratesParamsDict['Null Rates3'] * 0.0,
+         ratesParamsDict['Null Rates4'] * 0.0))
 
     unkVec = T.concatenate(
         (ratesParamsDict['kfwd'],
