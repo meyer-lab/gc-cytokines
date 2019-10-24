@@ -340,7 +340,7 @@ def getRateVec(trafvec, IL2Ra=True):
     """Retrieves and unpacks ordered dict + constructs rate vector for model fitting"""
 
     ratesParamsDict = getparamsdict(trafvec, IL2Ra)
-
+    """
     FullRateVec = T.concatenate(
         (ratesParamsDict['kfwd'],
          ratesParamsDict['surface.k1rev'],
@@ -393,7 +393,7 @@ def getRateVec(trafvec, IL2Ra=True):
          ratesParamsDict['Rexpr_gc'],
          ratesParamsDict['Rexpr_15Ra'],
          ratesParamsDict['Null Rates'] * 0.0))
-
+"""
     unkVec = T.concatenate(
         (ratesParamsDict['kfwd'],
          ratesParamsDict['surface.k4rev'],
@@ -415,5 +415,40 @@ def getRateVec(trafvec, IL2Ra=True):
          ratesParamsDict['Rexpr_gc'],
          ratesParamsDict['Rexpr_15Ra'],
          ratesParamsDict['Null Rates'] * 0.0))
+    
+    FullRateVec = [T.concatenate((
+         unkVec,
+         ratesParamsDict['endosome.k4rev'],
+         ratesParamsDict['endosome.k5rev'],
+         ratesParamsDict['endosome.k16rev'],
+         ratesParamsDict['endosome.k17rev'],
+         ratesParamsDict['endosome.k22rev'],
+         ratesParamsDict['endosome.k23rev'],
+         ratesParamsDict['endosome.k31rev'],
+         ratesParamsDict['endosome.k33rev'],
+         ratesParamsDict['endosome.k35rev'])),
+         ratesParamsDict['surface.k1rev'],
+         ratesParamsDict['surface.k2rev'],
+         ratesParamsDict['surface.k10rev'],
+         ratesParamsDict['surface.k11rev'],
+         ratesParamsDict['surface.k13rev'],
+         ratesParamsDict['surface.k14rev'],
+         ratesParamsDict['surface.k25rev'],
+         ratesParamsDict['surface.k27rev'],
+         ratesParamsDict['surface.k29rev'],
+         ratesParamsDict['surface.k32rev'],
+         ratesParamsDict['surface.k34rev'],
+         ratesParamsDict['endosome.k1rev'],
+         ratesParamsDict['endosome.k2rev'],
+         ratesParamsDict['endosome.k10rev'],
+         ratesParamsDict['endosome.k11rev'],
+         ratesParamsDict['endosome.k13rev'],
+         ratesParamsDict['endosome.k14rev'],
+         ratesParamsDict['endosome.k25rev'],
+         ratesParamsDict['endosome.k27rev'],
+         ratesParamsDict['endosome.k29rev'],
+         ratesParamsDict['endosome.k32rev'],
+         ratesParamsDict['endosome.k34rev'],
+
 
     return unkVec, FullRateVec
