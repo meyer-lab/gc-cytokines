@@ -262,8 +262,8 @@ def getparamsdict(trafvec, IL2Ra=True):
     kfwd, endo, activeEndo, kRec, kDeg, sortF = trafvec[0], trafvec[1], trafvec[2], trafvec[3], trafvec[4], trafvec[5]
     ratesParamsDict['kfbnd'] = float(0.60)
     if IL2Ra:
-        ratesParamsDict['Rexpr_2Ra'] = pm.Lognormal('Rexpr_2Ra', sd=0.5, shape=1)
         IL2RaTag = " IL2Ra"
+        ratesParamsDict['Rexpr_2Ra'] = pm.Lognormal('Rexpr_2Ra' + IL2RaTag, sd=0.5, shape=1)
     else:
         ratesParamsDict['Rexpr_2Ra'] = T.zeros(1, dtype=np.float64)
         IL2RaTag = " no IL2Ra"
