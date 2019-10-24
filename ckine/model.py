@@ -340,48 +340,48 @@ def getRateVec(trafvec, IL2Ra=True):
     """Retrieves and unpacks ordered dict + constructs rate vector for model fitting"""
 
     ratesParamsDict = getparamsdict(trafvec, IL2Ra)
-    """
+
     FullRateVec = T.concatenate(
         (ratesParamsDict['kfwd'],
-         ratesParamsDict['surface.k1rev'],
-         ratesParamsDict['surface.k2rev'],
+         T.as_tensor_variable(ratesParamsDict['surface.k1rev']),
+         T.as_tensor_variable(ratesParamsDict['surface.k2rev']),
          ratesParamsDict['surface.k4rev'],
          ratesParamsDict['surface.k5rev'],
-         ratesParamsDict['surface.k10rev'],
-         ratesParamsDict['surface.k11rev'],
-         ratesParamsDict['surface.k13rev'],
-         ratesParamsDict['surface.k14rev'],
+         T.as_tensor_variable(ratesParamsDict['surface.k10rev']),
+         T.as_tensor_variable(ratesParamsDict['surface.k11rev']),
+         T.as_tensor_variable(ratesParamsDict['surface.k13rev']),
+         T.as_tensor_variable(ratesParamsDict['surface.k14rev']),
          ratesParamsDict['surface.k16rev'],
          ratesParamsDict['surface.k17rev'],
          ratesParamsDict['surface.k22rev'],
          ratesParamsDict['surface.k23rev'],
-         ratesParamsDict['surface.k25rev'],
+         T.as_tensor_variable(ratesParamsDict['surface.k25rev']),
          ratesParamsDict['surface.k27rev'],
-         ratesParamsDict['surface.k29rev'],
+         T.as_tensor_variable(ratesParamsDict['surface.k29rev']),
          ratesParamsDict['surface.k31rev'],
-         ratesParamsDict['surface.k32rev'],
+         T.as_tensor_variable(ratesParamsDict['surface.k32rev']),
          ratesParamsDict['surface.k33rev'],
-         ratesParamsDict['surface.k34rev'],
+         T.as_tensor_variable(ratesParamsDict['surface.k34rev']),
          ratesParamsDict['surface.k35rev'],
-         ratesParamsDict['endosome.k1rev'],
-         ratesParamsDict['endosome.k2rev'],
+         T.as_tensor_variable(ratesParamsDict['endosome.k1rev']),
+         T.as_tensor_variable(ratesParamsDict['endosome.k2rev']),
          ratesParamsDict['endosome.k4rev'],
          ratesParamsDict['endosome.k5rev'],
-         ratesParamsDict['endosome.k10rev'],
-         ratesParamsDict['endosome.k11rev'],
-         ratesParamsDict['endosome.k13rev'],
-         ratesParamsDict['endosome.k14rev'],
+         T.as_tensor_variable(ratesParamsDict['endosome.k10rev']),
+         T.as_tensor_variable(ratesParamsDict['endosome.k11rev']),
+         T.as_tensor_variable(ratesParamsDict['endosome.k13rev']),
+         T.as_tensor_variable(ratesParamsDict['endosome.k14rev']),
          ratesParamsDict['endosome.k16rev'],
          ratesParamsDict['endosome.k17rev'],
          ratesParamsDict['endosome.k22rev'],
          ratesParamsDict['endosome.k23rev'],
-         ratesParamsDict['endosome.k25rev'],
+         T.as_tensor_variable(ratesParamsDict['endosome.k25rev']),
          ratesParamsDict['endosome.k27rev'],
-         ratesParamsDict['endosome.k29rev'],
+         T.as_tensor_variable(ratesParamsDict['endosome.k29rev']),
          ratesParamsDict['endosome.k31rev'],
-         ratesParamsDict['endosome.k32rev'],
+         T.as_tensor_variable(ratesParamsDict['endosome.k32rev']),
          ratesParamsDict['endosome.k33rev'],
-         ratesParamsDict['endosome.k34rev'],
+         T.as_tensor_variable(ratesParamsDict['endosome.k34rev']),
          ratesParamsDict['endosome.k35rev'],
          ratesParamsDict['endo'],
          ratesParamsDict['activeEndo'],
@@ -393,7 +393,7 @@ def getRateVec(trafvec, IL2Ra=True):
          ratesParamsDict['Rexpr_gc'],
          ratesParamsDict['Rexpr_15Ra'],
          ratesParamsDict['Null Rates'] * 0.0))
-"""
+
     unkVec = T.concatenate(
         (ratesParamsDict['kfwd'],
          ratesParamsDict['surface.k4rev'],
@@ -415,7 +415,7 @@ def getRateVec(trafvec, IL2Ra=True):
          ratesParamsDict['Rexpr_gc'],
          ratesParamsDict['Rexpr_15Ra'],
          ratesParamsDict['Null Rates'] * 0.0))
-    
+    """
     FullRateVec = [T.concatenate((
          unkVec,
          ratesParamsDict['endosome.k4rev'],
@@ -449,6 +449,6 @@ def getRateVec(trafvec, IL2Ra=True):
          ratesParamsDict['endosome.k29rev'],
          ratesParamsDict['endosome.k32rev'],
          ratesParamsDict['endosome.k34rev']]
-
+        """
 
     return unkVec, FullRateVec
