@@ -400,9 +400,12 @@ def getRateVec(trafvec, IL2Ra=True):
          ratesParamsDict['Null Rates4'] * 0.0]
     
     for i, entry in enumerate(bugshooter):
-        print(entry)
-        print(type(entry))
-        T.concatenate((entry, entry))
+        for entry2 in bugshooter
+            print(entry)
+            print(type(entry))
+            print(entry2)
+            print(type(entry2))
+            a = T.concatenate((entry, entry2))
 
     FullRateVec = T.concatenate(
         (ratesParamsDict['kfwd'],
@@ -458,7 +461,7 @@ def getRateVec(trafvec, IL2Ra=True):
          ratesParamsDict['Null Rates1'] * 0.0,
          ratesParamsDict['Null Rates2'] * 0.0,
          ratesParamsDict['Null Rates3'] * 0.0,
-         ratesParamsDict['Null Rates4'] * 0.0))
+         ratesParamsDict['Null Rates4'] * 0.0), axis = 0)
 
     unkVec = T.concatenate(
         (ratesParamsDict['kfwd'],
@@ -481,6 +484,9 @@ def getRateVec(trafvec, IL2Ra=True):
          ratesParamsDict['Rexpr_2Rb'],
          ratesParamsDict['Rexpr_gc'],
          ratesParamsDict['Rexpr_15Ra'],
-         ratesParamsDict['Null Rates'] * 0.0))
+         ratesParamsDict['Null Rates1'],
+         ratesParamsDict['Null Rates2'],
+         ratesParamsDict['Null Rates3'],
+         ratesParamsDict['Null Rates4']))
 
     return unkVec, FullRateVec
