@@ -402,7 +402,7 @@ def getRateVec(trafvec, IL2Ra=True):
     for i, entry in enumerate(bugshooter):
         print(entry)
         print(type(entry))
-        T.concatenate(entry, entry)
+        T.concatenate((entry, entry))
 
     FullRateVec = T.concatenate(
         (ratesParamsDict['kfwd'],
