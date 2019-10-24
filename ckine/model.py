@@ -400,7 +400,7 @@ def getRateVec(trafvec, IL2Ra=True):
          ratesParamsDict['Null Rates4'] * 0.0]
     
     for i, entry in enumerate(bugshooter):
-        for entry2 in bugshooter
+        for entry2 in bugshooter:
             print(entry)
             print(type(entry))
             print(entry2)
