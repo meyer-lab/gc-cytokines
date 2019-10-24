@@ -99,7 +99,9 @@ def runCkineUP(tps, rxntfr, preT=0.0, prestim=None):
     trafvec = [rxntfr[:, 6], rxntfr[:, 17], rxntfr[:, 18], rxntfr[:, 21], rxntfr[:, 22], rxntfr[:, 20]]
     IL2Ra = True
 
-    _, rxntfr = getRateVec(trafvec, IL2Ra)
+    _, rxntfrN = getRateVec(trafvec, IL2Ra)
+    rxntfrN = np.reshape(np.tile(rxntfrN[0], rxntfr.shape[0]), (rxntfr[0], -1))
+    rxntfrN = np.concatenate((rxntfr[:, 0], rxntfrN), axis=1)
 
     if preT != 0.0:
         assert preT > 0.0
@@ -130,7 +132,10 @@ def runCkineSP(tps, rxntfr, actV, preT=0.0, prestim=None):
 
     IL2Ra = True
 
-    _, rxntfr = getRateVec(trafvec, IL2Ra)
+    _, rxntfrN = getRateVec(trafvec, IL2Ra)
+    rxntfrN = np.reshape(np.tile(rxntfrN[0], rxntfr.shape[0]), (rxntfr[0], -1))
+    rxntfrN = np.concatenate((rxntfr[:, 0], rxntfrN), axis=1)
+
 
     if preT != 0.0:
         assert preT > 0.0
@@ -157,19 +162,15 @@ def fullModel(y, t, rxntfr):
     assert rxntfr.size == __nParams
 
     yOut = np.zeros_like(y)
-    print("Full Model")
-    print(rxntfr)
 
     trafvec = [rxntfr[6], rxntfr[17], rxntfr[18], rxntfr[21], rxntfr[22], rxntfr[20]]
+    IL2Ra = True
 
-    if rxntfr[23] == pm.Lognormal('Rexpr_2Ra', sd=0.5, shape=1):
-        IL2Ra = True
-    else:
-        IL2Ra = False
+    _, rxntfrN = getRateVec(trafvec, IL2Ra)
+    rxntfrN = np.reshape(np.tile(rxntfrN[0], rxntfr.shape[0]), (rxntfr[0], -1))
+    rxntfrN = np.concatenate((rxntfr[:, 0], rxntfrN), axis=1)
 
-    _, rxntfr = getRateVec(trafvec, IL2Ra)
-
-    libb.fullModel_C(y.ctypes.data_as(ct.POINTER(ct.c_double)), t, yOut.ctypes.data_as(ct.POINTER(ct.c_double)), rxntfr.ctypes.data_as(ct.POINTER(ct.c_double)))
+    libb.fullModel_C(y.ctypes.data_as(ct.POINTER(ct.c_double)), t, yOut.ctypes.data_as(ct.POINTER(ct.c_double)), rxntfrN.ctypes.data_as(ct.POINTER(ct.c_double)))
 
     return yOut
 
@@ -329,47 +330,47 @@ def getRateVec(trafvec, IL2Ra=True):
     ratesParamsDict = getparamsdict(trafvec, IL2Ra)
 
 
-    FullRateVec = np.concatenate(
+    FullRateVec = T.concatenate(
         (ratesParamsDict['kfwd'],
-         ratesParamsDict['surface.k1rev'],
-         ratesParamsDict['surface.k2rev'],
+         T.as_tensor_variable(ratesParamsDict['surface.k1rev']),
+         T.as_tensor_variable(ratesParamsDict['surface.k2rev']),
          ratesParamsDict['surface.k4rev'],
          ratesParamsDict['surface.k5rev'],
          ratesParamsDict['surface.k10rev'],
          ratesParamsDict['surface.k11rev'],
-         ratesParamsDict['surface.k13rev'],
-         ratesParamsDict['surface.k14rev'],
+         T.as_tensor_variable(ratesParamsDict['surface.k13rev']),
+         T.as_tensor_variable(ratesParamsDict['surface.k14rev']),
          ratesParamsDict['surface.k16rev'],
          ratesParamsDict['surface.k17rev'],
          ratesParamsDict['surface.k22rev'],
          ratesParamsDict['surface.k23rev'],
-         ratesParamsDict['surface.k25rev'],
+         T.as_tensor_variable(ratesParamsDict['surface.k25rev']),
          ratesParamsDict['surface.k27rev'],
-         ratesParamsDict['surface.k29rev'],
+         T.as_tensor_variable(ratesParamsDict['surface.k29rev']),
          ratesParamsDict['surface.k31rev'],
-         ratesParamsDict['surface.k32rev'],
+         T.as_tensor_variable(ratesParamsDict['surface.k32rev']),
          ratesParamsDict['surface.k33rev'],
-         ratesParamsDict['surface.k34rev'],
+         T.as_tensor_variable(ratesParamsDict['surface.k34rev']),
          ratesParamsDict['surface.k35rev'],
-         ratesParamsDict['endosome.k1rev'],
-         ratesParamsDict['endosome.k2rev'],
+         T.as_tensor_variable(ratesParamsDict['endosome.k1rev']),
+         T.as_tensor_variable(ratesParamsDict['endosome.k2rev']),
          ratesParamsDict['endosome.k4rev'],
          ratesParamsDict['endosome.k5rev'],
          ratesParamsDict['endosome.k10rev'],
          ratesParamsDict['endosome.k11rev'],
-         ratesParamsDict['endosome.k13rev'],
-         ratesParamsDict['endosome.k14rev'],
+         T.as_tensor_variable(ratesParamsDict['endosome.k13rev']),
+         T.as_tensor_variable(ratesParamsDict['endosome.k14rev']),
          ratesParamsDict['endosome.k16rev'],
          ratesParamsDict['endosome.k17rev'],
          ratesParamsDict['endosome.k22rev'],
          ratesParamsDict['endosome.k23rev'],
-         ratesParamsDict['endosome.k25rev'],
+         T.as_tensor_variable(ratesParamsDict['endosome.k25rev']),
          ratesParamsDict['endosome.k27rev'],
-         ratesParamsDict['endosome.k29rev'],
+         T.as_tensor_variable(ratesParamsDict['endosome.k29rev']),
          ratesParamsDict['endosome.k31rev'],
-         ratesParamsDict['endosome.k32rev'],
+         T.as_tensor_variable(ratesParamsDict['endosome.k32rev']),
          ratesParamsDict['endosome.k33rev'],
-         ratesParamsDict['endosome.k34rev'],
+         T.as_tensor_variable(ratesParamsDict['endosome.k34rev']),
          ratesParamsDict['endosome.k35rev'],
          ratesParamsDict['endo'],
          ratesParamsDict['activeEndo'],
