@@ -148,6 +148,7 @@ class build_model:
 
             unkVec, _ = getRateVec(trafvec, IL2Ra=True)
             unkVec_2Ra_minus, _ = getRateVec(trafvec, IL2Ra=False)
+            scale = pm.Lognormal('scales', mu=np.log(100.), sd=1, shape=1)
 
             Y_15 = self.dst15.calc(unkVec, scale)  # fitting the data based on dst15.calc for the given parameters
             sd_15 = T.minimum(T.std(Y_15), 0.03)  # Add bounds for the stderr to help force the fitting solution
@@ -169,3 +170,4 @@ class build_model:
             pm.Deterministic('logp', M.logpt)
 
         return M
+
