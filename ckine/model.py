@@ -71,16 +71,6 @@ def runCkineU_IL2(tps, rxntfr):
     assert rxntfr.size == 15
 
     yOut = np.zeros((tps.size, __nSpecies), dtype=np.float64)
-    print("CkineU_IL2")
-    print(rxntfr)
-    trafvec = [rxntfr[6], rxntfr[17], rxntfr[18], rxntfr[21], rxntfr[22], rxntfr[20]]
-
-    if rxntfr[23] == pm.Lognormal('Rexpr_2Ra', sd=0.5, shape=1):
-        IL2Ra = True
-    else:
-        IL2Ra = False
-
-    _, rxntfr = getRateVec(trafvec, IL2Ra)
 
     retVal = libb.runCkine(tps.ctypes.data_as(ct.POINTER(ct.c_double)), tps.size, yOut.ctypes.data_as(ct.POINTER(ct.c_double)), rxntfr.ctypes.data_as(ct.POINTER(ct.c_double)), True, 0.0, None)
 
@@ -344,68 +334,6 @@ def getRateVec(trafvec, IL2Ra=True):
 
     ratesParamsDict = getparamsdict(trafvec, IL2Ra)
 
-    bugshooter = [ratesParamsDict['kfwd'],
-         T.as_tensor_variable(ratesParamsDict['surface.k1rev']),
-         T.as_tensor_variable(ratesParamsDict['surface.k2rev']),
-         ratesParamsDict['surface.k4rev'],
-         ratesParamsDict['surface.k5rev'],
-         ratesParamsDict['surface.k10rev'],
-         ratesParamsDict['surface.k11rev'],
-         T.as_tensor_variable(ratesParamsDict['surface.k13rev']),
-         T.as_tensor_variable(ratesParamsDict['surface.k14rev']),
-         ratesParamsDict['surface.k16rev'],
-         ratesParamsDict['surface.k17rev'],
-         ratesParamsDict['surface.k22rev'],
-         ratesParamsDict['surface.k23rev'],
-         T.as_tensor_variable(ratesParamsDict['surface.k25rev']),
-         ratesParamsDict['surface.k27rev'],
-         T.as_tensor_variable(ratesParamsDict['surface.k29rev']),
-         ratesParamsDict['surface.k31rev'],
-         T.as_tensor_variable(ratesParamsDict['surface.k32rev']),
-         ratesParamsDict['surface.k33rev'],
-         T.as_tensor_variable(ratesParamsDict['surface.k34rev']),
-         ratesParamsDict['surface.k35rev'],
-         T.as_tensor_variable(ratesParamsDict['endosome.k1rev']),
-         T.as_tensor_variable(ratesParamsDict['endosome.k2rev']),
-         ratesParamsDict['endosome.k4rev'],
-         ratesParamsDict['endosome.k5rev'],
-         ratesParamsDict['endosome.k10rev'],
-         ratesParamsDict['endosome.k11rev'],
-         T.as_tensor_variable(ratesParamsDict['endosome.k13rev']),
-         T.as_tensor_variable(ratesParamsDict['endosome.k14rev']),
-         ratesParamsDict['endosome.k16rev'],
-         ratesParamsDict['endosome.k17rev'],
-         ratesParamsDict['endosome.k22rev'],
-         ratesParamsDict['endosome.k23rev'],
-         T.as_tensor_variable(ratesParamsDict['endosome.k25rev']),
-         ratesParamsDict['endosome.k27rev'],
-         T.as_tensor_variable(ratesParamsDict['endosome.k29rev']),
-         ratesParamsDict['endosome.k31rev'],
-         T.as_tensor_variable(ratesParamsDict['endosome.k32rev']),
-         ratesParamsDict['endosome.k33rev'],
-         T.as_tensor_variable(ratesParamsDict['endosome.k34rev']),
-         ratesParamsDict['endosome.k35rev'],
-         ratesParamsDict['endo'],
-         ratesParamsDict['activeEndo'],
-         ratesParamsDict['sortF'],
-         ratesParamsDict['kRec'],
-         ratesParamsDict['kDeg'],
-         ratesParamsDict['Rexpr_2Ra'],
-         ratesParamsDict['Rexpr_2Rb'],
-         ratesParamsDict['Rexpr_gc'],
-         ratesParamsDict['Rexpr_15Ra'],
-         ratesParamsDict['Null Rates1'] * 0.0,
-         ratesParamsDict['Null Rates2'] * 0.0,
-         ratesParamsDict['Null Rates3'] * 0.0,
-         ratesParamsDict['Null Rates4'] * 0.0]
-    
-    for i, entry in enumerate(bugshooter):
-        for entry2 in bugshooter:
-            print(entry)
-            print(type(entry))
-            print(entry2)
-            print(type(entry2))
-            a = T.concatenate((entry, entry2))
 
     FullRateVec = T.concatenate(
         (ratesParamsDict['kfwd'],
