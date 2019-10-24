@@ -448,7 +448,7 @@ def getRateVec(trafvec, IL2Ra=True):
          ratesParamsDict['endosome.k27rev'],
          ratesParamsDict['endosome.k29rev'],
          ratesParamsDict['endosome.k32rev'],
-         ratesParamsDict['endosome.k34rev'],
+         ratesParamsDict['endosome.k34rev']]
 
 
     return unkVec, FullRateVec
