@@ -97,11 +97,7 @@ def runCkineUP(tps, rxntfr, preT=0.0, prestim=None):
     print("UPMod")
     print(rxntfr)
     trafvec = [rxntfr[:, 6], rxntfr[:, 17], rxntfr[:, 18], rxntfr[:, 21], rxntfr[:, 22], rxntfr[:, 20]]
-
-    if rxntfr[:, 23] == pm.Lognormal('Rexpr_2Ra', sd=0.5, shape=1):
-        IL2Ra = True
-    else:
-        IL2Ra = False
+    IL2Ra = True
 
     _, rxntfr = getRateVec(trafvec, IL2Ra)
 
@@ -132,11 +128,7 @@ def runCkineSP(tps, rxntfr, actV, preT=0.0, prestim=None):
     sensV = np.zeros((rxntfr.shape[0] * tps.size, __nParams), dtype=np.float64, order="C")
     trafvec = [rxntfr[:, 6], rxntfr[:, 17], rxntfr[:, 18], rxntfr[:, 21], rxntfr[:, 22], rxntfr[:, 20]]
 
-
-    if rxntfr[:, 23] == pm.Lognormal('Rexpr_2Ra', sd=0.5, shape=1):
-        IL2Ra = True
-    else:
-        IL2Ra = False
+    IL2Ra = True
 
     _, rxntfr = getRateVec(trafvec, IL2Ra)
 
@@ -337,47 +329,47 @@ def getRateVec(trafvec, IL2Ra=True):
     ratesParamsDict = getparamsdict(trafvec, IL2Ra)
 
 
-    FullRateVec = T.concatenate(
+    FullRateVec = np.concatenate(
         (ratesParamsDict['kfwd'],
-         T.as_tensor_variable(ratesParamsDict['surface.k1rev']),
-         T.as_tensor_variable(ratesParamsDict['surface.k2rev']),
+         ratesParamsDict['surface.k1rev'],
+         ratesParamsDict['surface.k2rev'],
          ratesParamsDict['surface.k4rev'],
          ratesParamsDict['surface.k5rev'],
          ratesParamsDict['surface.k10rev'],
          ratesParamsDict['surface.k11rev'],
-         T.as_tensor_variable(ratesParamsDict['surface.k13rev']),
-         T.as_tensor_variable(ratesParamsDict['surface.k14rev']),
+         ratesParamsDict['surface.k13rev'],
+         ratesParamsDict['surface.k14rev'],
          ratesParamsDict['surface.k16rev'],
          ratesParamsDict['surface.k17rev'],
          ratesParamsDict['surface.k22rev'],
          ratesParamsDict['surface.k23rev'],
-         T.as_tensor_variable(ratesParamsDict['surface.k25rev']),
+         ratesParamsDict['surface.k25rev'],
          ratesParamsDict['surface.k27rev'],
-         T.as_tensor_variable(ratesParamsDict['surface.k29rev']),
+         ratesParamsDict['surface.k29rev'],
          ratesParamsDict['surface.k31rev'],
-         T.as_tensor_variable(ratesParamsDict['surface.k32rev']),
+         ratesParamsDict['surface.k32rev'],
          ratesParamsDict['surface.k33rev'],
-         T.as_tensor_variable(ratesParamsDict['surface.k34rev']),
+         ratesParamsDict['surface.k34rev'],
          ratesParamsDict['surface.k35rev'],
-         T.as_tensor_variable(ratesParamsDict['endosome.k1rev']),
-         T.as_tensor_variable(ratesParamsDict['endosome.k2rev']),
+         ratesParamsDict['endosome.k1rev'],
+         ratesParamsDict['endosome.k2rev'],
          ratesParamsDict['endosome.k4rev'],
          ratesParamsDict['endosome.k5rev'],
          ratesParamsDict['endosome.k10rev'],
          ratesParamsDict['endosome.k11rev'],
-         T.as_tensor_variable(ratesParamsDict['endosome.k13rev']),
-         T.as_tensor_variable(ratesParamsDict['endosome.k14rev']),
+         ratesParamsDict['endosome.k13rev'],
+         ratesParamsDict['endosome.k14rev'],
          ratesParamsDict['endosome.k16rev'],
          ratesParamsDict['endosome.k17rev'],
          ratesParamsDict['endosome.k22rev'],
          ratesParamsDict['endosome.k23rev'],
-         T.as_tensor_variable(ratesParamsDict['endosome.k25rev']),
+         ratesParamsDict['endosome.k25rev'],
          ratesParamsDict['endosome.k27rev'],
-         T.as_tensor_variable(ratesParamsDict['endosome.k29rev']),
+         ratesParamsDict['endosome.k29rev'],
          ratesParamsDict['endosome.k31rev'],
-         T.as_tensor_variable(ratesParamsDict['endosome.k32rev']),
+         ratesParamsDict['endosome.k32rev'],
          ratesParamsDict['endosome.k33rev'],
-         T.as_tensor_variable(ratesParamsDict['endosome.k34rev']),
+         ratesParamsDict['endosome.k34rev'],
          ratesParamsDict['endosome.k35rev'],
          ratesParamsDict['endo'],
          ratesParamsDict['activeEndo'],
