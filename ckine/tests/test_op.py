@@ -9,6 +9,11 @@ import numpy as np
 from ..differencing_op import runCkineDoseOp
 from ..model import nSpecies, nParams, getTotalActiveSpecies
 
+import sys
+a = sys.getrecursionlimit()
+print("I'm Here!!!")
+print(a)
+
 
 def setupJacobian(Op, unk):
     """ Take an Op, and a vector at which to evaluate the Op. Pass back the return value and Jacobian. """
