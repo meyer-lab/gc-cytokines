@@ -56,6 +56,8 @@ def meshprep(mut):
     print(a)
     print("Up Here!")
     sys.setrecursionlimit(1000000)
+    a = sys.getrecursionlimit()
+    print(a)
     # Load the data from csv file
     _, numpy_data, cell_names = import_Rexpr()
     ILs, _, _, _ = import_pstat()  # Cytokine stimulation concentrations in nM
