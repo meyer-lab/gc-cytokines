@@ -100,6 +100,7 @@ def runCkineUP(tps, rxntfr, preT=0.0, prestim=None):
     a = sys.getrecursionlimit()
     print(a)
     print("Up Here!")
+    sys.setrecursionlimit(1000000)
 
     yOut = np.zeros((rxntfr.shape[0] * tps.size, __nSpecies), dtype=np.float64)
 
