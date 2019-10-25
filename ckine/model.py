@@ -69,9 +69,10 @@ def runCkineU_IL2(tps, rxntfr):
     """ Standard version of solver that returns species abundances given times and unknown rates. """
     rxntfr = rxntfr.copy()
     assert rxntfr.size == 15
-
+    
     rxntfr = getRateVec(rxntfr)
-
+    assert rxntfr == 60
+    
     yOut = np.zeros((tps.size, __nSpecies), dtype=np.float64)
 
     retVal = libb.runCkine(tps.ctypes.data_as(ct.POINTER(ct.c_double)), tps.size, yOut.ctypes.data_as(ct.POINTER(ct.c_double)), rxntfr.ctypes.data_as(ct.POINTER(ct.c_double)), True, 0.0, None)
@@ -98,6 +99,7 @@ def runCkineUP(tps, rxntfr, preT=0.0, prestim=None):
     yOut = np.zeros((rxntfr.shape[0] * tps.size, __nSpecies), dtype=np.float64)
 
     rxntfr = getRateVec(rxntfr)
+    assert rxntfr == 60
 
     if preT != 0.0:
         assert preT > 0.0
@@ -124,6 +126,8 @@ def runCkineSP(tps, rxntfr, actV, preT=0.0, prestim=None):
     sensV = np.zeros((rxntfr.shape[0] * tps.size, __nParams), dtype=np.float64, order="C")
 
     rxntfr = getRateVec(rxntfr)
+    assert rxntfr == 60
+
 
     if preT != 0.0:
         assert preT > 0.0
@@ -152,6 +156,7 @@ def fullModel(y, t, rxntfr):
     yOut = np.zeros_like(y)
 
     rxntfr = getRateVec(rxntfr)
+    assert rxntfr == 60
 
     libb.fullModel_C(y.ctypes.data_as(ct.POINTER(ct.c_double)), t, yOut.ctypes.data_as(ct.POINTER(ct.c_double)), rxntfrN.ctypes.data_as(ct.POINTER(ct.c_double)))
 
@@ -305,6 +310,7 @@ def getparamsdict(rxntfr):
         ratesParamsDict['Rexpr_9R'] = 0.0
         ratesParamsDict['Rexpr_4Ra'] = 0.0
         ratesParamsDict['Rexpr_21Ra'] = 0.0
+        
 
     else:
         ratesParamsDict['Il2'] = rxntfr[0, 0]
@@ -355,7 +361,7 @@ def getparamsdict(rxntfr):
         ratesParamsDict['endosome.k33rev'] = ratesParamsDict['surface.k33rev'] * 5.0
         ratesParamsDict['endosome.k34rev'] = ratesParamsDict['surface.k34rev'] * 5.0
         ratesParamsDict['endosome.k35rev'] = ratesParamsDict['surface.k35rev'] * 5.0
-        ratesParamsDict['endo'] = rxntfr[0, 17]
+        ratesParamsDict['endo'] =rxntfr[0, 17]
         ratesParamsDict['activeEndo'] = rxntfr[0, 18]
         ratesParamsDict['sortF'] = rxntfr[0, 19]
         ratesParamsDict['kRec'] = rxntfr[0, 20]
@@ -368,6 +374,7 @@ def getparamsdict(rxntfr):
         ratesParamsDict['Rexpr_9R'] = rxntfr[0, 27]
         ratesParamsDict['Rexpr_4Ra'] = rxntfr[0, 28]
         ratesParamsDict['Rexpr_21Ra'] = rxntfr[0, 29]
+        
 
     return ratesParamsDict
 
@@ -381,66 +388,6 @@ def getRateVec(rxntfr):
 
     for i in numRuns:
         row = int(i)
-        FullRateVec[row,
-                    :] = [ratesParamsDict['Il2'],
-                          ratesParamsDict['Il15'],
-                          ratesParamsDict['Il7'],
-                          ratesParamsDict['Il9'],
-                          ratesParamsDict['Il4'],
-                          ratesParamsDict['Il21'],
-                          ratesParamsDict['kfwd'],
-                          ratesParamsDict['surface.k1rev'],
-                          ratesParamsDict['surface.k2rev'],
-                          ratesParamsDict['surface.k4rev'],
-                          ratesParamsDict['surface.k5rev'],
-                          ratesParamsDict['surface.k10rev'],
-                          ratesParamsDict['surface.k11rev'],
-                          ratesParamsDict['surface.k13rev'],
-                          ratesParamsDict['surface.k14rev'],
-                          ratesParamsDict['surface.k16rev'],
-                          ratesParamsDict['surface.k17rev'],
-                          ratesParamsDict['surface.k22rev'],
-                          ratesParamsDict['surface.k23rev'],
-                          ratesParamsDict['surface.k25rev'],
-                          ratesParamsDict['surface.k27rev'],
-                          ratesParamsDict['surface.k29rev'],
-                          ratesParamsDict['surface.k31rev'],
-                          ratesParamsDict['surface.k32rev'],
-                          ratesParamsDict['surface.k33rev'],
-                          ratesParamsDict['surface.k34rev'],
-                          ratesParamsDict['surface.k35rev'],
-                          ratesParamsDict['endosome.k1rev'],
-                          ratesParamsDict['endosome.k2rev'],
-                          ratesParamsDict['endosome.k4rev'],
-                          ratesParamsDict['endosome.k5rev'],
-                          ratesParamsDict['endosome.k10rev'],
-                          ratesParamsDict['endosome.k11rev'],
-                          ratesParamsDict['endosome.k13rev'],
-                          ratesParamsDict['endosome.k14rev'],
-                          ratesParamsDict['endosome.k16rev'],
-                          ratesParamsDict['endosome.k17rev'],
-                          ratesParamsDict['endosome.k22rev'],
-                          ratesParamsDict['endosome.k23rev'],
-                          ratesParamsDict['endosome.k25rev'],
-                          ratesParamsDict['endosome.k27rev'],
-                          ratesParamsDict['endosome.k29rev'],
-                          ratesParamsDict['endosome.k31rev'],
-                          ratesParamsDict['endosome.k32rev'],
-                          ratesParamsDict['endosome.k33rev'],
-                          ratesParamsDict['endosome.k34rev'],
-                          ratesParamsDict['endosome.k35rev'],
-                          ratesParamsDict['endo'],
-                          ratesParamsDict['activeEndo'],
-                          ratesParamsDict['sortF'],
-                          ratesParamsDict['kRec'],
-                          ratesParamsDict['kDeg'],
-                          ratesParamsDict['Rexpr_2Ra'],
-                          ratesParamsDict['Rexpr_2Rb'],
-                          ratesParamsDict['Rexpr_gc'],
-                          ratesParamsDict['Rexpr_15Ra'],
-                          ratesParamsDict['Rexpr_7R'],
-                          ratesParamsDict['Rexpr_9R'],
-                          ratesParamsDict['Rexpr_4Ra'],
-                          ratesParamsDict['Rexpr_21Ra']]
+        FullRateVec[row, :] = [ratesParamsDict['Il2'], ratesParamsDict['Il15'], ratesParamsDict['Il7'], ratesParamsDict['Il9'], ratesParamsDict['Il4'], ratesParamsDict['Il21'], ratesParamsDict['kfwd'], ratesParamsDict['surface.k1rev'], ratesParamsDict['surface.k2rev'], ratesParamsDict['surface.k4rev'], ratesParamsDict['surface.k5rev'], ratesParamsDict['surface.k10rev'], ratesParamsDict['surface.k11rev'], ratesParamsDict['surface.k13rev'], ratesParamsDict['surface.k14rev'], ratesParamsDict['surface.k16rev'], ratesParamsDict['surface.k17rev'], ratesParamsDict['surface.k22rev'], ratesParamsDict['surface.k23rev'], ratesParamsDict['surface.k25rev'], ratesParamsDict['surface.k27rev'], ratesParamsDict['surface.k29rev'], ratesParamsDict['surface.k31rev'], ratesParamsDict['surface.k32rev'], ratesParamsDict['surface.k33rev'], ratesParamsDict['surface.k34rev'], ratesParamsDict['surface.k35rev'], ratesParamsDict['endosome.k1rev'], ratesParamsDict['endosome.k2rev'], ratesParamsDict['endosome.k4rev'], ratesParamsDict['endosome.k5rev'], ratesParamsDict['endosome.k10rev'], ratesParamsDict['endosome.k11rev'], ratesParamsDict['endosome.k13rev'], ratesParamsDict['endosome.k14rev'], ratesParamsDict['endosome.k16rev'], ratesParamsDict['endosome.k17rev'], ratesParamsDict['endosome.k22rev'], ratesParamsDict['endosome.k23rev'], ratesParamsDict['endosome.k25rev'], ratesParamsDict['endosome.k27rev'], ratesParamsDict['endosome.k29rev'], ratesParamsDict['endosome.k31rev'], ratesParamsDict['endosome.k32rev'], ratesParamsDict['endosome.k33rev'], ratesParamsDict['endosome.k34rev'], ratesParamsDict['endosome.k35rev'], ratesParamsDict['endo'], ratesParamsDict['activeEndo'], ratesParamsDict['sortF'], ratesParamsDict['kRec'], ratesParamsDict['kDeg'], ratesParamsDict['Rexpr_2Ra'], ratesParamsDict['Rexpr_2Rb'], ratesParamsDict['Rexpr_gc'], ratesParamsDict['Rexpr_15Ra'], ratesParamsDict['Rexpr_7R'], ratesParamsDict['Rexpr_9R'], ratesParamsDict['Rexpr_4Ra'], ratesParamsDict['Rexpr_21Ra']]
 
     return FullRateVec
