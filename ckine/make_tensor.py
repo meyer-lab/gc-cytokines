@@ -14,10 +14,7 @@ rxntfR = np.squeeze(rxntfR)
 
 # generate n_timepoints evenly spaced timepoints to 4 hrs
 tensor_time = np.linspace(0.0, 240.0, 200)
-a = sys.getrecursionlimit()
-print(a)
-print("Up Here!")
-sys.setrecursionlimit(1000000)
+
 
 def ySolver(matIn, ts, tensor=True):
     """ This generates all the solutions for the Wild Type interleukins across conditions defined in meshprep(). """
@@ -55,6 +52,10 @@ def ySolver_IL2_mut(matIn, ts, mut):
 
 def meshprep(mut):
     """ Prepares the initial conditions for the tensor. The mutant condition here includes IL-2 mutein binding. """
+    a = sys.getrecursionlimit()
+    print(a)
+    print("Up Here!")
+    sys.setrecursionlimit(1000000)
     # Load the data from csv file
     _, numpy_data, cell_names = import_Rexpr()
     ILs, _, _, _ = import_pstat()  # Cytokine stimulation concentrations in nM
