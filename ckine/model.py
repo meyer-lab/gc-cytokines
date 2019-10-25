@@ -71,7 +71,7 @@ def runCkineU_IL2(tps, rxntfr):
     assert rxntfr.size == 15
     
     rxntfr = getRateVec(rxntfr)
-    assert rxntfr == 60
+    assert rxntfr.shape[1] == 60
     
     yOut = np.zeros((tps.size, __nSpecies), dtype=np.float64)
 
@@ -99,7 +99,7 @@ def runCkineUP(tps, rxntfr, preT=0.0, prestim=None):
     yOut = np.zeros((rxntfr.shape[0] * tps.size, __nSpecies), dtype=np.float64)
 
     rxntfr = getRateVec(rxntfr)
-    assert rxntfr == 60
+    assert rxntfr.shape[1] == 60
 
     if preT != 0.0:
         assert preT > 0.0
@@ -126,7 +126,7 @@ def runCkineSP(tps, rxntfr, actV, preT=0.0, prestim=None):
     sensV = np.zeros((rxntfr.shape[0] * tps.size, __nParams), dtype=np.float64, order="C")
 
     rxntfr = getRateVec(rxntfr)
-    assert rxntfr == 60
+    assert rxntfr.shape[1] == 60
 
 
     if preT != 0.0:
@@ -156,7 +156,7 @@ def fullModel(y, t, rxntfr):
     yOut = np.zeros_like(y)
 
     rxntfr = getRateVec(rxntfr)
-    assert rxntfr == 60
+    assert rxntfr.shape[1] == 60
 
     libb.fullModel_C(y.ctypes.data_as(ct.POINTER(ct.c_double)), t, yOut.ctypes.data_as(ct.POINTER(ct.c_double)), rxntfrN.ctypes.data_as(ct.POINTER(ct.c_double)))
 
