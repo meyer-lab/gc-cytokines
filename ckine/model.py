@@ -125,10 +125,11 @@ def runCkineSP(tps, rxntfr, actV, preT=0.0, prestim=None):
     assert (rxntfr[:, 19] < 1.0).all()  # Check that sortF won't throw
 
     yOut = np.zeros((rxntfr.shape[0] * tps.size), dtype=np.float64)
-    sensV = np.zeros((rxntfr.shape[0] * tps.size, __nParams), dtype=np.float64, order="C")
+    
 
     rxntfr = getRateVec(rxntfr)
     assert rxntfr.shape[1] == 60
+    sensV = np.zeros((rxntfr.shape[0] * tps.size, 60), dtype=np.float64, order="C")
 
 
     if preT != 0.0:
