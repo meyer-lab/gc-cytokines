@@ -6,6 +6,7 @@ Cell lines are defined by the number of each receptor subspecies on their surfac
 import numpy as np
 from .model import runCkineU, nSpecies, runCkineU_IL2, getTotalActiveSpecies, receptor_expression
 from .imports import import_Rexpr, import_samples_2_15, import_pstat
+import sys
 
 rxntfR, _ = import_samples_2_15(N=1, tensor=True)
 rxntfR = np.squeeze(rxntfR)
@@ -13,7 +14,10 @@ rxntfR = np.squeeze(rxntfR)
 
 # generate n_timepoints evenly spaced timepoints to 4 hrs
 tensor_time = np.linspace(0.0, 240.0, 200)
-
+a = sys.getrecursionlimit()
+print(a)
+print("Up Here!")
+sys.setrecursionlimit(1000000)
 
 def ySolver(matIn, ts, tensor=True):
     """ This generates all the solutions for the Wild Type interleukins across conditions defined in meshprep(). """
