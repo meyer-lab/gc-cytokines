@@ -7,6 +7,8 @@ import numpy as np
 import pymc3 as pm
 import theano.tensor as T
 from collections import OrderedDict
+import sys
+
 
 
 filename = os.path.join(os.path.dirname(os.path.abspath(__file__)), "./ckine.so")
@@ -95,6 +97,9 @@ def runCkineUP(tps, rxntfr, preT=0.0, prestim=None):
 
     assert (rxntfr[:, 19] < 1.0).all()  # Check that sortF won't throw
     assert np.all(np.any(rxntfr > 0.0, axis=1))  # make sure at least one element is >0 for all rows
+    a = sys.getrecursionlimit()
+    print(a)
+    print("Up Here!")
 
     yOut = np.zeros((rxntfr.shape[0] * tps.size, __nSpecies), dtype=np.float64)
 
