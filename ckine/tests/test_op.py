@@ -10,7 +10,6 @@ from ..differencing_op import runCkineDoseOp
 from ..model import nSpecies, nParams, getTotalActiveSpecies
 
 
-
 def setupJacobian(Op, unk):
     """ Take an Op, and a vector at which to evaluate the Op. Pass back the return value and Jacobian. """
     a = T.dvector('tempVar')
