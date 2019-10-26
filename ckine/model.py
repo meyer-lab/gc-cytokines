@@ -156,7 +156,7 @@ def fullModel(y, t, rxntfr):
 
     rxntfr = getRateVec(rxntfr)
 
-    libb.fullModel_C(y.ctypes.data_as(ct.POINTER(ct.c_double)), t, yOut.ctypes.data_as(ct.POINTER(ct.c_double)), rxntfrN.ctypes.data_as(ct.POINTER(ct.c_double)))
+    libb.fullModel_C(y.ctypes.data_as(ct.POINTER(ct.c_double)), t, yOut.ctypes.data_as(ct.POINTER(ct.c_double)), rxntfr.ctypes.data_as(ct.POINTER(ct.c_double)))
 
     return yOut
 
