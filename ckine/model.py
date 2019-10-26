@@ -254,7 +254,7 @@ def getparamsdict(rxntfr):
         ratesParamsDict['Il4'] = 0.0
         ratesParamsDict['Il21'] = 0.0
         ratesParamsDict['kfbnd'] = float(0.60)
-        ratesParamsDict['kfwd'] = rxntfr[0, 1]
+        ratesParamsDict['kfwd'] = rxntfr[1]
         ratesParamsDict['surface.k1rev'] = rxntfr[2]
         ratesParamsDict['surface.k2rev'] = rxntfr[3]
         ratesParamsDict['surface.k4rev'] = rxntfr[4]
