@@ -386,7 +386,7 @@ def getRateVec(rxntfr):
     """Retrieves and unpacks ordered dict + constructs rate vector for model fitting"""
 
     FullRateVec = np.zeros([rxntfr.shape[0], 60])
-    if rxntfr.shape[0] > 1:
+    np.size((a.shape)) > 1:
         numRuns = np.linspace(0, rxntfr.shape[0] - 1, rxntfr.shape[0])
         for i in numRuns:
             row = int(i)
