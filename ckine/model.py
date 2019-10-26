@@ -9,6 +9,7 @@ import theano.tensor as T
 from collections import OrderedDict
 
 
+
 filename = os.path.join(os.path.dirname(os.path.abspath(__file__)), "./ckine.so")
 libb = ct.cdll.LoadLibrary(filename)
 pcd = ct.POINTER(ct.c_double)
@@ -34,6 +35,7 @@ def halfL():
 
 
 __nParams = 60
+__rxParams = 30
 
 
 def nParams():
@@ -69,10 +71,12 @@ def runCkineU_IL2(tps, rxntfr):
     """ Standard version of solver that returns species abundances given times and unknown rates. """
     rxntfr = rxntfr.copy()
     assert rxntfr.size == 15
-
+    
     yOut = np.zeros((tps.size, __nSpecies), dtype=np.float64)
     rxntfr = getRateVec(rxntfr)
     assert rxntfr.shape[1] == 60
+    
+    
 
     retVal = libb.runCkine(tps.ctypes.data_as(ct.POINTER(ct.c_double)), tps.size, yOut.ctypes.data_as(ct.POINTER(ct.c_double)), rxntfr.ctypes.data_as(ct.POINTER(ct.c_double)), True, 0.0, None)
 
@@ -93,6 +97,7 @@ def runCkineUP(tps, rxntfr, preT=0.0, prestim=None):
 
     assert (rxntfr[:, 19] < 1.0).all()  # Check that sortF won't throw
     assert np.all(np.any(rxntfr > 0.0, axis=1))  # make sure at least one element is >0 for all rows
+   
 
     yOut = np.zeros((rxntfr.shape[0] * tps.size, __nSpecies), dtype=np.float64)
 
@@ -125,6 +130,8 @@ def runCkineSP(tps, rxntfr, actV, preT=0.0, prestim=None):
     assert rxntfr.shape[1] == __nParams
 
     sensV = np.zeros((rxntfr.shape[0] * tps.size, 60), dtype=np.float64, order="C")
+    
+
 
     if preT != 0.0:
         assert preT > 0.0
@@ -148,7 +155,7 @@ def runCkineSP(tps, rxntfr, actV, preT=0.0, prestim=None):
 
 def fullModel(y, t, rxntfr):
     """ Implement the full model based on dydt, trafficking, expression. """
-    assert rxntfr.size == __nParams
+    assert rxntfr.size == 30
 
     yOut = np.zeros_like(y)
 
@@ -307,7 +314,7 @@ def getparamsdict(rxntfr):
         ratesParamsDict['Rexpr_9R'] = 0.0
         ratesParamsDict['Rexpr_4Ra'] = 0.0
         ratesParamsDict['Rexpr_21Ra'] = 0.0
-
+        
     else:
         ratesParamsDict['Il2'] = rxntfr[0]
         ratesParamsDict['Il15'] = rxntfr[1]
@@ -357,7 +364,7 @@ def getparamsdict(rxntfr):
         ratesParamsDict['endosome.k33rev'] = ratesParamsDict['surface.k33rev'] * 5.0
         ratesParamsDict['endosome.k34rev'] = ratesParamsDict['surface.k34rev'] * 5.0
         ratesParamsDict['endosome.k35rev'] = ratesParamsDict['surface.k35rev'] * 5.0
-        ratesParamsDict['endo'] = rxntfr[17]
+        ratesParamsDict['endo'] =rxntfr[17]
         ratesParamsDict['activeEndo'] = rxntfr[18]
         ratesParamsDict['sortF'] = rxntfr[19]
         ratesParamsDict['kRec'] = rxntfr[20]
@@ -370,6 +377,7 @@ def getparamsdict(rxntfr):
         ratesParamsDict['Rexpr_9R'] = rxntfr[27]
         ratesParamsDict['Rexpr_4Ra'] = rxntfr[28]
         ratesParamsDict['Rexpr_21Ra'] = rxntfr[29]
+        
 
     return ratesParamsDict
 
@@ -378,12 +386,16 @@ def getRateVec(rxntfr):
     """Retrieves and unpacks ordered dict + constructs rate vector for model fitting"""
 
     FullRateVec = np.zeros([rxntfr.shape[0], 60])
-    numRuns = np.linspace(0, rxntfr.shape[0] - 1, rxntfr.shape[0])
-
-    for i in numRuns:
-        row = int(i)
-        ratesParamsDict = getparamsdict(rxntfr[row, :])
+    if rxntfr.shape[0] > 0:
+        numRuns = np.linspace(0, rxntfr.shape[0] - 1, rxntfr.shape[0])
+        for i in numRuns:
+            row = int(i)
+            ratesParamsDict = getparamsdict(rxntfr[row, :])
+            del ratesParamsDict['kfbnd']
+            FullRateVec[row, :] = np.array(list(ratesParamsDict.values()))
+    else:
+        ratesParamsDict = getparamsdict(rxntfr)
         del ratesParamsDict['kfbnd']
-        FullRateVec[row, :] = np.array(list(ratesParamsDict.values()))
+        FullRateVec = np.array(list(ratesParamsDict.values()))
 
     return FullRateVec
