@@ -378,9 +378,11 @@ def getparamsdict(rxntfr):
 
 def getRateVec(rxntfr):
     """Retrieves and unpacks ordered dict + constructs rate vector for model fitting"""
-
-    FullRateVec = np.zeros([rxntfr.shape[0], 60])
-    if np.size((rxntfr.shape)) > 1:
+    entries = rxntfr.size
+    rxnlength = rxntfr.shape[0]    
+    
+    if (entries/rxnlength) > 1:
+        FullRateVec = np.zeros([rxntfr.shape[0], 60])
         numRuns = np.linspace(0, rxntfr.shape[0] - 1, rxntfr.shape[0])
         for i in numRuns:
             row = int(i)
@@ -388,6 +390,7 @@ def getRateVec(rxntfr):
             del ratesParamsDict['kfbnd']
             FullRateVec[row, :] = np.array(list(ratesParamsDict.values()))
     else:
+        FullRateVec = np.zeros(1, 60)
         ratesParamsDict = getparamsdict(rxntfr)
         del ratesParamsDict['kfbnd']
         FullRateVec = np.array(list(ratesParamsDict.values()))
