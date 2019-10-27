@@ -6,7 +6,7 @@ import ctypes as ct
 import numpy as np
 import pymc3 as pm
 import theano.tensor as T
-from collections.abc import OrderedDict
+from collections import OrderedDict
 
 
 
