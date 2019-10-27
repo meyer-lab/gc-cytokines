@@ -6,7 +6,7 @@ import ctypes as ct
 import numpy as np
 import pymc3 as pm
 import theano.tensor as T
-from collections import OrderedDict
+from collections.abc import OrderedDict
 
 
 
@@ -34,7 +34,7 @@ def halfL():
     return __halfL
 
 
-__nParams = 60
+__nParams = 30
 __rxParams = 30
 
 
@@ -117,7 +117,7 @@ def runCkineUP(tps, rxntfr, preT=0.0, prestim=None):
 def runCkineSP(tps, rxntfr, actV, preT=0.0, prestim=None):
     """ Version of runCkine that runs in parallel. """
     tps = np.array(tps)
-    assert rxntfr.size % __nParams == 0
+    #assert rxntfr.size % __nParams == 0
     assert (rxntfr[:, 19] < 1.0).all()  # Check that sortF won't throw
 
     yOut = np.zeros((rxntfr.shape[0] * tps.size), dtype=np.float64)
@@ -318,19 +318,19 @@ def getparamsdict(rxntfr):
         ratesParamsDict['Il21'] = rxntfr[5]
         ratesParamsDict['kfbnd'] = float(0.60)
         ratesParamsDict['kfwd'] = rxntfr[6]
-        ratesParamsDict['surface.k1rev'] = np.array([ratesParamsDict['kfbnd'] * 10])
-        ratesParamsDict['surface.k2rev'] = np.array([ratesParamsDict['kfbnd'] * 144])
+        ratesParamsDict['surface.k1rev'] = np.array([ratesParamsDict['kfbnd'] * 10.0])
+        ratesParamsDict['surface.k2rev'] = np.array([ratesParamsDict['kfbnd'] * 144.0])
         ratesParamsDict['surface.k4rev'] = rxntfr[7]
         ratesParamsDict['surface.k5rev'] = rxntfr[8]
         ratesParamsDict['surface.k10rev'] = 12.0 * ratesParamsDict['surface.k5rev'] / 1.5
         ratesParamsDict['surface.k11rev'] = 63.0 * ratesParamsDict['surface.k5rev'] / 1.5
         ratesParamsDict['surface.k13rev'] = ratesParamsDict['kfbnd'] * 0.065
-        ratesParamsDict['surface.k14rev'] = ratesParamsDict['kfbnd'] * 438
+        ratesParamsDict['surface.k14rev'] = ratesParamsDict['kfbnd'] * 438.0
         ratesParamsDict['surface.k16rev'] = rxntfr[9]
         ratesParamsDict['surface.k17rev'] = rxntfr[10]
         ratesParamsDict['surface.k22rev'] = rxntfr[11]
         ratesParamsDict['surface.k23rev'] = rxntfr[12]
-        ratesParamsDict['surface.k25rev'] = ratesParamsDict['kfbnd'] * 59
+        ratesParamsDict['surface.k25rev'] = ratesParamsDict['kfbnd'] * 59.0
         ratesParamsDict['surface.k27rev'] = rxntfr[13]
         ratesParamsDict['surface.k29rev'] = ratesParamsDict['kfbnd'] * 0.1
         ratesParamsDict['surface.k31rev'] = rxntfr[14]
@@ -380,6 +380,8 @@ def getRateVec(rxntfr):
     """Retrieves and unpacks ordered dict + constructs rate vector for model fitting"""
     entries = rxntfr.size
     rxnlength = rxntfr.shape[0]
+    print(rxntfr)
+    print("Right Here!")
     
     if (entries/rxnlength) > 1:
         FullRateVec = np.zeros([rxntfr.shape[0], 60])
@@ -390,7 +392,7 @@ def getRateVec(rxntfr):
             del ratesParamsDict['kfbnd']
             FullRateVec[row, :] = np.array(list(ratesParamsDict.values()))
     else:
-        FullRateVec = np.zeros([1, 60])
+        FullRateVec = np.zeros(60)
         ratesParamsDict = getparamsdict(rxntfr)
         del ratesParamsDict['kfbnd']
         FullRateVec = np.array(list(ratesParamsDict.values()))
