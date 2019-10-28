@@ -34,13 +34,17 @@ def halfL():
     return __halfL
 
 
-__nParams = 60
-__rxParams = 30
+__nParams = 30
+__rxParams = 60
 
 
 def nParams():
     """ Returns the length of the rxntfR vector. """
     return __nParams
+
+def rxParams():
+    """ Returns the length of the rxntfR vector. """
+    return __rxParams
 
 
 __internalStrength = 0.5  # strength of endosomal activity relative to surface

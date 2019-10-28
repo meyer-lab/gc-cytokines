@@ -28,7 +28,7 @@ class TestOp(unittest.TestCase):
     """ Test Theano Ops. """
 
     def setUp(self):
-        self.unkV = np.full(nParams(), 0.3)
+        self.unkV = np.full(rxParams(), 0.3)
         self.doseUnkV = self.unkV[6::]
         self.cond = np.full(nSpecies(), 0.1)
         self.conditions = np.full((3, 6), 10.)
