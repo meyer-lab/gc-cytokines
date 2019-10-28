@@ -134,24 +134,12 @@ def runCkineSP(tps, rxntfr, actV, preT=0.0, prestim=None):
     
     sensV = condenseSENV(sensV)
 
-    #sensV = np.delete(sensV, slice(0, 6), 1)
-    sensV = np.delete(sensV, slice(7, 9), 1)
-    sensV = np.delete(sensV, slice(9, 13), 1)
-    sensV = np.delete(sensV, [13], 1)
-    sensV = np.delete(sensV, [14], 1)
-    sensV = np.delete(sensV, [15], 1)
-    sensV = np.delete(sensV, [16], 1)
-    sensV = np.delete(sensV, slice(17, 37), 1)
-    print(sensV)
-    print(type(sensV))
-    print(sensV.shape)
-
     return (yOut, retVal, sensV)
 
 
 def fullModel(y, t, rxntfr):
     """ Implement the full model based on dydt, trafficking, expression. """
-    assert rxntfr.size == 30
+    assert rxntfr.size == __nParams
 
     yOut = np.zeros_like(y)
 
