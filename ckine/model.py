@@ -390,18 +390,22 @@ def getRateVec(rxntfr):
             ratesParamsDict = getparamsdict(rxntfr[row, :])
             del ratesParamsDict['kfbnd']
             FullRateVec[row, :] = np.array(list(ratesParamsDict.values()))
-            for rate in FullRateVec[row, :]:
+            for i, rate in enumerate(FullRateVec[row, :]):
                 if isinstance(rate, float) == False:
                     print("Here is a problem!")
                     print(rate)
+                    FullRateVec[row, i] = float(FullRateVec[row, i])
+            
+ 
     else:
         FullRateVec = np.zeros(60)
         ratesParamsDict = getparamsdict(rxntfr)
         del ratesParamsDict['kfbnd']
         FullRateVec = np.array(list(ratesParamsDict.values()))
-        for rate in FullRateVec:
+        for i, rate in enumerate(FullRateVec):
             if isinstance(rate, float) == False:
                 print("Here is a problem!")
                 print(rate)
+                FullRateVec[i] = float(FullRateVec[i])
 
     return FullRateVec

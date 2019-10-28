@@ -7,7 +7,7 @@ import theano.tensor as T
 from theano.tests import unittest_tools as utt
 import numpy as np
 from ..differencing_op import runCkineDoseOp
-from ..model import nSpecies, nParams, getTotalActiveSpecies
+from ..model import nSpecies, nParams, getTotalActiveSpecies, rxParams
 
 
 def setupJacobian(Op, unk):
