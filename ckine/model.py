@@ -146,7 +146,7 @@ def runCkineSP(tps, rxntfr, actV, preT=0.0, prestim=None):
         preT,
         prestim,
     )
-
+    '''
     sensVnp = np.array([sensV])
     np.delete(sensVnp, [0, 6], 2)
     np.delete(sensVnp, [1, 3], 2)
@@ -157,7 +157,9 @@ def runCkineSP(tps, rxntfr, actV, preT=0.0, prestim=None):
     np.delete(sensVnp, [10], 2)
     np.delete(sensVnp, [11, 31], 2)
     sensV = sensVnp
-
+    '''
+    print(sensV)
+    print(type(sensV))
 
     return (yOut, retVal, sensV)
 
