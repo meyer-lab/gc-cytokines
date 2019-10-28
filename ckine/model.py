@@ -146,16 +146,15 @@ def runCkineSP(tps, rxntfr, actV, preT=0.0, prestim=None):
         preT,
         prestim,
     )
-    '''
-    np.delete(sensV, [0, 6], 2)
-    np.delete(sensV, [1, 3], 2)
-    np.delete(sensV, [3, 7], 2)
-    np.delete(sensV, [7], 2)
-    np.delete(sensV, [8], 2)
-    np.delete(sensV, [9], 2)
-    np.delete(sensV, [10], 2)
-    np.delete(sensV, [11, 31], 2)
-    '''
+
+    np.delete(sensV, [0, 6], 1)
+    np.delete(sensV, [1, 3], 1)
+    np.delete(sensV, [3, 7], 1)
+    np.delete(sensV, [7], 1)
+    np.delete(sensV, [8], 1)
+    np.delete(sensV, [9], 1)
+    np.delete(sensV, [10], 1)
+    np.delete(sensV, [11, 31], 1)
     print(sensV)
     print(type(sensV))
     print(sensV.shape)
