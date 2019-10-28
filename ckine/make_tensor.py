@@ -6,7 +6,6 @@ Cell lines are defined by the number of each receptor subspecies on their surfac
 import numpy as np
 from .model import runCkineU, nSpecies, runCkineU_IL2, getTotalActiveSpecies, receptor_expression
 from .imports import import_Rexpr, import_samples_2_15, import_pstat
-import sys
 
 rxntfR, _ = import_samples_2_15(N=1, tensor=True)
 rxntfR = np.squeeze(rxntfR)
