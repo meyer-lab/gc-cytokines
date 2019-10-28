@@ -52,14 +52,6 @@ def internalStrength():
     return __internalStrength
 
 
-__internalV = 623.0  # endosomal volume
-
-
-def internalV():
-    """ Returns __internalV. """
-    return __internalV
-
-
 __nRxn = 17
 
 
@@ -210,18 +202,6 @@ def totalReceptors(yVec):
     return surfaceReceptors(yVec) + __internalStrength * surfaceReceptors(yVec[__halfL: __halfL * 2])
 
 
-def ligandDeg(yVec, sortF, kDeg, cytokineIDX):
-    """ This function calculates rate of total ligand degradation. """
-    yVec_endo_species = yVec[__halfL: (__halfL * 2)].copy()  # get all endosomal complexes
-    yVec_endo_lig = yVec[(__halfL * 2)::].copy()  # get all endosomal ligands
-    sum_active = np.sum(getActiveCytokine(cytokineIDX, yVec_endo_species))
-    __cytok_species_IDX = np.zeros(__halfL, dtype=np.bool)  # create array of size halfL
-    __cytok_species_IDX[getCytokineSpecies()[cytokineIDX]] = 1  # assign 1's for species corresponding to the cytokineIDX
-    sum_total = np.sum(yVec_endo_species * __cytok_species_IDX)
-    sum_inactive = (sum_total - sum_active) * sortF  # scale the inactive species by sortF
-    return kDeg * (((sum_inactive + sum_active) * __internalStrength) + (yVec_endo_lig[cytokineIDX] * __internalV))  # can assume all free ligand and active species are degraded at rate kDeg
-
-
 def receptor_expression(receptor_abundance, endo, kRec, sortF, kDeg):
     """ Uses receptor abundance (from flow) and trafficking rates to calculate receptor expression rate at steady state. """
     rec_ex = (receptor_abundance * endo) / (1.0 + ((kRec * (1.0 - sortF)) / (kDeg * sortF)))
@@ -267,19 +247,8 @@ def getparamsdict(rxntfr):
     for ii in ('1', '2', '4', '5', '10', '11', '13', '14', '16', '17', '22', '23', '25', '27', '29', '31', '32', '33', '34', '35'):
         rd['endosome.k' + ii + 'rev'] = rd['surface.k' + ii + 'rev'] * 5.0
 
-    rd['endo'] = rxntfr[17]
-    rd['activeEndo'] = rxntfr[18]
-    rd['sortF'] = rxntfr[19]
-    rd['kRec'] = rxntfr[20]
-    rd['kDeg'] = rxntfr[21]
-    rd['Rexpr_2Ra'] = rxntfr[22]
-    rd['Rexpr_2Rb'] = rxntfr[23]
-    rd['Rexpr_gc'] = rxntfr[24]
-    rd['Rexpr_15Ra'] = rxntfr[25]
-    rd['Rexpr_7R'] = rxntfr[26]
-    rd['Rexpr_9R'] = rxntfr[27]
-    rd['Rexpr_4Ra'] = rxntfr[28]
-    rd['Rexpr_21Ra'] = rxntfr[29]
+    rd['endo'], rd['activeEndo'], rd['sortF'], rd['kRec'], rd['kDeg'] = tuple(rxntfr[17:22])
+    rd['Rexpr_2Ra'], rd['Rexpr_2Rb'], rd['Rexpr_gc'], rd['Rexpr_15Ra'], rd['Rexpr_7R'], rd['Rexpr_9R'], rd['Rexpr_4Ra'], rd['Rexpr_21Ra'] = tuple(rxntfr[22:30])
 
     return rd
 
