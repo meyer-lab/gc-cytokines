@@ -9,7 +9,6 @@ import theano.tensor as T
 from collections import OrderedDict
 
 
-
 filename = os.path.join(os.path.dirname(os.path.abspath(__file__)), "./ckine.so")
 libb = ct.cdll.LoadLibrary(filename)
 pcd = ct.POINTER(ct.c_double)
@@ -41,6 +40,7 @@ __rxParams = 60
 def nParams():
     """ Returns the length of the rxntfR vector. """
     return __nParams
+
 
 def rxParams():
     """ Returns the length of the rxntfR vector. """
@@ -75,7 +75,7 @@ def runCkineU_IL2(tps, rxntfr):
     """ Standard version of solver that returns species abundances given times and unknown rates. """
     rxntfr = rxntfr.copy()
     assert rxntfr.size == 15
-    
+
     yOut = np.zeros((tps.size, __nSpecies), dtype=np.float64)
     rxntfr = getRateVec(rxntfr)
 
@@ -98,7 +98,6 @@ def runCkineUP(tps, rxntfr, preT=0.0, prestim=None):
 
     assert (rxntfr[:, 19] < 1.0).all()  # Check that sortF won't throw
     assert np.all(np.any(rxntfr > 0.0, axis=1))  # make sure at least one element is >0 for all rows
-   
 
     yOut = np.zeros((rxntfr.shape[0] * tps.size, __nSpecies), dtype=np.float64)
 
@@ -127,7 +126,7 @@ def runCkineSP(tps, rxntfr, actV, preT=0.0, prestim=None):
     yOut = np.zeros((rxntfr.shape[0] * tps.size), dtype=np.float64)
 
     rxntfr = getRateVec(rxntfr)
-    sensV = np.zeros((rxntfr.shape[0] * tps.size, 60), dtype=np.float64, order="C")
+    sensV = np.zeros((rxntfr.shape[0] * tps.size, __rxParams), dtype=np.float64, order="C")
 
     if preT != 0.0:
         assert preT > 0.0
@@ -309,7 +308,7 @@ def getparamsdict(rxntfr):
         ratesParamsDict['Rexpr_9R'] = 0.0
         ratesParamsDict['Rexpr_4Ra'] = 0.0
         ratesParamsDict['Rexpr_21Ra'] = 0.0
-        
+
     else:
         ratesParamsDict['Il2'] = rxntfr[0]
         ratesParamsDict['Il15'] = rxntfr[1]
@@ -318,7 +317,7 @@ def getparamsdict(rxntfr):
         ratesParamsDict['Il4'] = rxntfr[4]
         ratesParamsDict['Il21'] = rxntfr[5]
         ratesParamsDict['kfbnd'] = float(0.60)
-        ratesParamsDict['kfwd'] = rxntfr[6]
+        ratesParamsDict['surface.kfwd'] = rxntfr[6]
         ratesParamsDict['surface.k1rev'] = np.array([ratesParamsDict['kfbnd'] * 10.0])
         ratesParamsDict['surface.k2rev'] = np.array([ratesParamsDict['kfbnd'] * 144.0])
         ratesParamsDict['surface.k4rev'] = rxntfr[7]
@@ -372,7 +371,6 @@ def getparamsdict(rxntfr):
         ratesParamsDict['Rexpr_9R'] = rxntfr[27]
         ratesParamsDict['Rexpr_4Ra'] = rxntfr[28]
         ratesParamsDict['Rexpr_21Ra'] = rxntfr[29]
-        
 
     return ratesParamsDict
 
@@ -381,8 +379,8 @@ def getRateVec(rxntfr):
     """Retrieves and unpacks ordered dict + constructs rate vector for model fitting"""
     entries = rxntfr.size
     rxnlength = rxntfr.shape[0]
-    
-    if (entries/rxnlength) > 1:
+
+    if (entries / rxnlength) > 1:
         FullRateVec = np.zeros([rxntfr.shape[0], 60])
         numRuns = np.linspace(0, rxntfr.shape[0] - 1, rxntfr.shape[0])
         for i in numRuns:
@@ -402,6 +400,5 @@ def getRateVec(rxntfr):
         for i, rate in enumerate(FullRateVec):
             if isinstance(rate, float) == False:
                 FullRateVec[i] = float(FullRateVec[i])
-        
 
     return FullRateVec
