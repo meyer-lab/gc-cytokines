@@ -146,15 +146,16 @@ def runCkineSP(tps, rxntfr, actV, preT=0.0, prestim=None):
         preT,
         prestim,
     )
-    sensVnp = np.array([])
-    del sensV[:, 0:6]
-    del sensV[:, 1:3]
-    del sensV[:, 3:7]
-    del sensV[:, 7]
-    del sensV[:, 8]
-    del sensV[:, 9]
-    del sensV[:, 10]
-    del sensV[:, 11:31]
+    sensVnp = np.array([sensV])
+    np.delete(sensVnp[:, 0:6])
+    np.delete(sensVnp[:, 1:3])
+    np.delete(sensVnp[:, 3:7])
+    np.delete(sensVnp[:, 7])
+    np.delete(sensVnp[:, 8])
+    np.delete(sensVnp[:, 9])
+    np.delete(sensVnp[:, 10])
+    np.delete(sensVnp[:, 11:31])
+    sensV = np.tolist(sensVnp)
 
     return (yOut, retVal, sensV)
 
