@@ -72,7 +72,7 @@ class TestModel(unittest.TestCase):
 
     def test_equlibrium(self):
         """System should still come to equilibrium after being stimulated with ligand"""
-        t = np.array([0.0, 1000000.0])
+        t = np.array([0.0, 100000.0])
         rxn = self.rxntfR.copy()
         rxn[0:6] = 0.0  # set ligands to 0
         rxnIL2, rxnIL15, rxnIL7, rxnIL9, rxnIL4, rxnIL21 = rxn.copy(), rxn.copy(), rxn.copy(), rxn.copy(), rxn.copy(), rxn.copy()
