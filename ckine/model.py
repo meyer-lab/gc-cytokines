@@ -105,6 +105,7 @@ def runCkineSP(tps, rxntfr, actV, preT=0.0, prestim=None):
     """ Version of runCkine that runs in parallel. """
     tps = np.array(tps)
     assert rxntfr.size % __nParams == 0
+    assert rxntfr.shape[1] == __nParams
     assert (rxntfr[:, 19] < 1.0).all()  # Check that sortF won't throw
 
     yOut = np.zeros((rxntfr.shape[0] * tps.size), dtype=np.float64)
