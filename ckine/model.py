@@ -244,17 +244,10 @@ def getparamsdict(rxntfr):
     rd = OrderedDict()
 
     kfbnd = 0.60
-    rd['IL2'] = rxntfr[0]
-    rd['IL15'] = rxntfr[1]
-    rd['IL7'] = rxntfr[2]
-    rd['IL9'] = rxntfr[3]
-    rd['IL4'] = rxntfr[4]
-    rd['IL21'] = rxntfr[5]
-    rd['kfwd'] = rxntfr[6]
+    rd['IL2'], rd['IL15'], rd['IL7'], rd['IL9'], rd['IL4'], rd['IL21'], rd['kfwd'] = tuple(rxntfr[0:7])
     rd['surface.k1rev'] = kfbnd * 10.0
     rd['surface.k2rev'] = kfbnd * 144.0
-    rd['surface.k4rev'] = rxntfr[7]
-    rd['surface.k5rev'] = rxntfr[8]
+    rd['surface.k4rev'], rd['surface.k5rev'] = rxntfr[7], rxntfr[8]
     rd['surface.k10rev'] = 12.0 * rd['surface.k5rev'] / 1.5
     rd['surface.k11rev'] = 63.0 * rd['surface.k5rev'] / 1.5
     rd['surface.k13rev'] = kfbnd * 0.065
@@ -271,26 +264,10 @@ def getparamsdict(rxntfr):
     rd['surface.k33rev'] = rxntfr[15]
     rd['surface.k34rev'] = kfbnd * 0.07
     rd['surface.k35rev'] = rxntfr[16]
-    rd['endosome.k1rev'] = rd['surface.k1rev'] * 5.0
-    rd['endosome.k2rev'] = rd['surface.k2rev'] * 5.0
-    rd['endosome.k4rev'] = rd['surface.k4rev'] * 5.0
-    rd['endosome.k5rev'] = rd['surface.k5rev'] * 5.0
-    rd['endosome.k10rev'] = rd['surface.k10rev'] * 5.0
-    rd['endosome.k11rev'] = rd['surface.k11rev'] * 5.0
-    rd['endosome.k13rev'] = rd['surface.k13rev'] * 5.0
-    rd['endosome.k14rev'] = rd['surface.k14rev'] * 5.0
-    rd['endosome.k16rev'] = rd['surface.k16rev'] * 5.0
-    rd['endosome.k17rev'] = rd['surface.k17rev'] * 5.0
-    rd['endosome.k22rev'] = rd['surface.k22rev'] * 5.0
-    rd['endosome.k23rev'] = rd['surface.k23rev'] * 5.0
-    rd['endosome.k25rev'] = rd['surface.k25rev'] * 5.0
-    rd['endosome.k27rev'] = rd['surface.k27rev'] * 5.0
-    rd['endosome.k29rev'] = rd['surface.k29rev'] * 5.0
-    rd['endosome.k31rev'] = rd['surface.k31rev'] * 5.0
-    rd['endosome.k32rev'] = rd['surface.k32rev'] * 5.0
-    rd['endosome.k33rev'] = rd['surface.k33rev'] * 5.0
-    rd['endosome.k34rev'] = rd['surface.k34rev'] * 5.0
-    rd['endosome.k35rev'] = rd['surface.k35rev'] * 5.0
+
+    for ii in ('1', '2', '4', '5', '10', '11', '13', '14', '16', '17', '22', '23', '25', '27', '29', '31', '32', '33', '34', '35'):
+        rd['endosome.k' + ii + 'rev'] = rd['surface.k' + ii + 'rev'] * 5.0
+
     rd['endo'] = rxntfr[17]
     rd['activeEndo'] = rxntfr[18]
     rd['sortF'] = rxntfr[19]
