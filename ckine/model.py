@@ -231,78 +231,81 @@ def receptor_expression(receptor_abundance, endo, kRec, sortF, kDeg):
 
 def condenseSENV(sensVin):
     """ Condense sensitivities down into the old rxnRates format. """
+    sensVin[:, 7:27] += sensVin[:, 27:47] / 5.0
     sensV = sensVin[:, np.array([0, 1, 2, 3, 4, 5, 6, 9, 10, 15, 16, 17, 18, 20, 22, 24, 26, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59])]
     
+    sensV[:, 8] += 1.5 * sensVin[:, 11] / 12.0 + 1.5 * sensVin[:, 12] / 63.0
+
     return sensV
 
 
 def getparamsdict(rxntfr):
     """Where rate vectors and constants are defined, organized in an ordered dictionary"""
-    ratesParamsDict = OrderedDict()
+    rd = OrderedDict()
 
     kfbnd = 0.60
-    ratesParamsDict['Il2'] = rxntfr[0]
-    ratesParamsDict['Il15'] = rxntfr[1]
-    ratesParamsDict['Il7'] = rxntfr[2]
-    ratesParamsDict['Il9'] = rxntfr[3]
-    ratesParamsDict['Il4'] = rxntfr[4]
-    ratesParamsDict['Il21'] = rxntfr[5]
-    ratesParamsDict['kfwd'] = rxntfr[6]
-    ratesParamsDict['surface.k1rev'] = kfbnd * 10.0
-    ratesParamsDict['surface.k2rev'] = kfbnd * 144.0
-    ratesParamsDict['surface.k4rev'] = rxntfr[7]
-    ratesParamsDict['surface.k5rev'] = rxntfr[8]
-    ratesParamsDict['surface.k10rev'] = 12.0 * ratesParamsDict['surface.k5rev'] / 1.5
-    ratesParamsDict['surface.k11rev'] = 63.0 * ratesParamsDict['surface.k5rev'] / 1.5
-    ratesParamsDict['surface.k13rev'] = kfbnd * 0.065
-    ratesParamsDict['surface.k14rev'] = kfbnd * 438.0
-    ratesParamsDict['surface.k16rev'] = rxntfr[9]
-    ratesParamsDict['surface.k17rev'] = rxntfr[10]
-    ratesParamsDict['surface.k22rev'] = rxntfr[11]
-    ratesParamsDict['surface.k23rev'] = rxntfr[12]
-    ratesParamsDict['surface.k25rev'] = kfbnd * 59.0
-    ratesParamsDict['surface.k27rev'] = rxntfr[13]
-    ratesParamsDict['surface.k29rev'] = kfbnd * 0.1
-    ratesParamsDict['surface.k31rev'] = rxntfr[14]
-    ratesParamsDict['surface.k32rev'] = kfbnd * 1.0
-    ratesParamsDict['surface.k33rev'] = rxntfr[15]
-    ratesParamsDict['surface.k34rev'] = kfbnd * 0.07
-    ratesParamsDict['surface.k35rev'] = rxntfr[16]
-    ratesParamsDict['endosome.k1rev'] = ratesParamsDict['surface.k1rev'] * 5.0
-    ratesParamsDict['endosome.k2rev'] = ratesParamsDict['surface.k2rev'] * 5.0
-    ratesParamsDict['endosome.k4rev'] = ratesParamsDict['surface.k4rev'] * 5.0
-    ratesParamsDict['endosome.k5rev'] = ratesParamsDict['surface.k5rev'] * 5.0
-    ratesParamsDict['endosome.k10rev'] = ratesParamsDict['surface.k10rev'] * 5.0
-    ratesParamsDict['endosome.k11rev'] = ratesParamsDict['surface.k11rev'] * 5.0
-    ratesParamsDict['endosome.k13rev'] = ratesParamsDict['surface.k13rev'] * 5.0
-    ratesParamsDict['endosome.k14rev'] = ratesParamsDict['surface.k14rev'] * 5.0
-    ratesParamsDict['endosome.k16rev'] = ratesParamsDict['surface.k16rev'] * 5.0
-    ratesParamsDict['endosome.k17rev'] = ratesParamsDict['surface.k17rev'] * 5.0
-    ratesParamsDict['endosome.k22rev'] = ratesParamsDict['surface.k22rev'] * 5.0
-    ratesParamsDict['endosome.k23rev'] = ratesParamsDict['surface.k23rev'] * 5.0
-    ratesParamsDict['endosome.k25rev'] = ratesParamsDict['surface.k25rev'] * 5.0
-    ratesParamsDict['endosome.k27rev'] = ratesParamsDict['surface.k27rev'] * 5.0
-    ratesParamsDict['endosome.k29rev'] = ratesParamsDict['surface.k29rev'] * 5.0
-    ratesParamsDict['endosome.k31rev'] = ratesParamsDict['surface.k31rev'] * 5.0
-    ratesParamsDict['endosome.k32rev'] = ratesParamsDict['surface.k32rev'] * 5.0
-    ratesParamsDict['endosome.k33rev'] = ratesParamsDict['surface.k33rev'] * 5.0
-    ratesParamsDict['endosome.k34rev'] = ratesParamsDict['surface.k34rev'] * 5.0
-    ratesParamsDict['endosome.k35rev'] = ratesParamsDict['surface.k35rev'] * 5.0
-    ratesParamsDict['endo'] = rxntfr[17]
-    ratesParamsDict['activeEndo'] = rxntfr[18]
-    ratesParamsDict['sortF'] = rxntfr[19]
-    ratesParamsDict['kRec'] = rxntfr[20]
-    ratesParamsDict['kDeg'] = rxntfr[21]
-    ratesParamsDict['Rexpr_2Ra'] = rxntfr[22]
-    ratesParamsDict['Rexpr_2Rb'] = rxntfr[23]
-    ratesParamsDict['Rexpr_gc'] = rxntfr[24]
-    ratesParamsDict['Rexpr_15Ra'] = rxntfr[25]
-    ratesParamsDict['Rexpr_7R'] = rxntfr[26]
-    ratesParamsDict['Rexpr_9R'] = rxntfr[27]
-    ratesParamsDict['Rexpr_4Ra'] = rxntfr[28]
-    ratesParamsDict['Rexpr_21Ra'] = rxntfr[29]
+    rd['IL2'] = rxntfr[0]
+    rd['IL15'] = rxntfr[1]
+    rd['IL7'] = rxntfr[2]
+    rd['IL9'] = rxntfr[3]
+    rd['IL4'] = rxntfr[4]
+    rd['IL21'] = rxntfr[5]
+    rd['kfwd'] = rxntfr[6]
+    rd['surface.k1rev'] = kfbnd * 10.0
+    rd['surface.k2rev'] = kfbnd * 144.0
+    rd['surface.k4rev'] = rxntfr[7]
+    rd['surface.k5rev'] = rxntfr[8]
+    rd['surface.k10rev'] = 12.0 * rd['surface.k5rev'] / 1.5
+    rd['surface.k11rev'] = 63.0 * rd['surface.k5rev'] / 1.5
+    rd['surface.k13rev'] = kfbnd * 0.065
+    rd['surface.k14rev'] = kfbnd * 438.0
+    rd['surface.k16rev'] = rxntfr[9]
+    rd['surface.k17rev'] = rxntfr[10]
+    rd['surface.k22rev'] = rxntfr[11]
+    rd['surface.k23rev'] = rxntfr[12]
+    rd['surface.k25rev'] = kfbnd * 59.0
+    rd['surface.k27rev'] = rxntfr[13]
+    rd['surface.k29rev'] = kfbnd * 0.1
+    rd['surface.k31rev'] = rxntfr[14]
+    rd['surface.k32rev'] = kfbnd * 1.0
+    rd['surface.k33rev'] = rxntfr[15]
+    rd['surface.k34rev'] = kfbnd * 0.07
+    rd['surface.k35rev'] = rxntfr[16]
+    rd['endosome.k1rev'] = rd['surface.k1rev'] * 5.0
+    rd['endosome.k2rev'] = rd['surface.k2rev'] * 5.0
+    rd['endosome.k4rev'] = rd['surface.k4rev'] * 5.0
+    rd['endosome.k5rev'] = rd['surface.k5rev'] * 5.0
+    rd['endosome.k10rev'] = rd['surface.k10rev'] * 5.0
+    rd['endosome.k11rev'] = rd['surface.k11rev'] * 5.0
+    rd['endosome.k13rev'] = rd['surface.k13rev'] * 5.0
+    rd['endosome.k14rev'] = rd['surface.k14rev'] * 5.0
+    rd['endosome.k16rev'] = rd['surface.k16rev'] * 5.0
+    rd['endosome.k17rev'] = rd['surface.k17rev'] * 5.0
+    rd['endosome.k22rev'] = rd['surface.k22rev'] * 5.0
+    rd['endosome.k23rev'] = rd['surface.k23rev'] * 5.0
+    rd['endosome.k25rev'] = rd['surface.k25rev'] * 5.0
+    rd['endosome.k27rev'] = rd['surface.k27rev'] * 5.0
+    rd['endosome.k29rev'] = rd['surface.k29rev'] * 5.0
+    rd['endosome.k31rev'] = rd['surface.k31rev'] * 5.0
+    rd['endosome.k32rev'] = rd['surface.k32rev'] * 5.0
+    rd['endosome.k33rev'] = rd['surface.k33rev'] * 5.0
+    rd['endosome.k34rev'] = rd['surface.k34rev'] * 5.0
+    rd['endosome.k35rev'] = rd['surface.k35rev'] * 5.0
+    rd['endo'] = rxntfr[17]
+    rd['activeEndo'] = rxntfr[18]
+    rd['sortF'] = rxntfr[19]
+    rd['kRec'] = rxntfr[20]
+    rd['kDeg'] = rxntfr[21]
+    rd['Rexpr_2Ra'] = rxntfr[22]
+    rd['Rexpr_2Rb'] = rxntfr[23]
+    rd['Rexpr_gc'] = rxntfr[24]
+    rd['Rexpr_15Ra'] = rxntfr[25]
+    rd['Rexpr_7R'] = rxntfr[26]
+    rd['Rexpr_9R'] = rxntfr[27]
+    rd['Rexpr_4Ra'] = rxntfr[28]
+    rd['Rexpr_21Ra'] = rxntfr[29]
 
-    return ratesParamsDict
+    return rd
 
 
 def getRateVec(rxntfr):
