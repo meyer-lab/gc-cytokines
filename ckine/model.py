@@ -78,10 +78,10 @@ def runCkineUP(tps, rxntfr, preT=0.0, prestim=None):
     """ Version of runCkine that runs in parallel. """
     tps = np.array(tps)
     assert rxntfr.size % __nParams == 0
+    assert rxntfr.shape[1] == __nParams
 
     assert (rxntfr[:, 19] < 1.0).all()  # Check that sortF won't throw
     assert np.all(np.any(rxntfr > 0.0, axis=1))  # make sure at least one element is >0 for all rows
-   
 
     yOut = np.zeros((rxntfr.shape[0] * tps.size, __nSpecies), dtype=np.float64)
 
@@ -111,7 +111,6 @@ def runCkineSP(tps, rxntfr, actV, preT=0.0, prestim=None):
 
     rxntfr = getRateVec(rxntfr)
     sensV = np.zeros((rxntfr.shape[0] * tps.size, __rxParams), dtype=np.float64, order="C")
-    
 
     if preT != 0.0:
         assert preT > 0.0
