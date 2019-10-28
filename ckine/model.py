@@ -359,7 +359,7 @@ def getparamsdict(rxntfr):
         ratesParamsDict['endosome.k33rev'] = ratesParamsDict['surface.k33rev'] * 5.0
         ratesParamsDict['endosome.k34rev'] = ratesParamsDict['surface.k34rev'] * 5.0
         ratesParamsDict['endosome.k35rev'] = ratesParamsDict['surface.k35rev'] * 5.0
-        ratesParamsDict['endo'] =rxntfr[17]
+        ratesParamsDict['endo'] = rxntfr[17]
         ratesParamsDict['activeEndo'] = rxntfr[18]
         ratesParamsDict['sortF'] = rxntfr[19]
         ratesParamsDict['kRec'] = rxntfr[20]
@@ -392,11 +392,8 @@ def getRateVec(rxntfr):
             FullRateVec[row, :] = np.array(list(ratesParamsDict.values()))
             for i, rate in enumerate(FullRateVec[row, :]):
                 if isinstance(rate, float) == False:
-                    print("Here is a problem!")
-                    print(rate)
                     FullRateVec[row, i] = float(FullRateVec[row, i])
-            
- 
+
     else:
         FullRateVec = np.zeros(60)
         ratesParamsDict = getparamsdict(rxntfr)
@@ -404,8 +401,7 @@ def getRateVec(rxntfr):
         FullRateVec = np.array(list(ratesParamsDict.values()))
         for i, rate in enumerate(FullRateVec):
             if isinstance(rate, float) == False:
-                print("Here is a problem!")
-                print(rate)
                 FullRateVec[i] = float(FullRateVec[i])
+        
 
     return FullRateVec
