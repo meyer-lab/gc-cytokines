@@ -146,14 +146,15 @@ def runCkineSP(tps, rxntfr, actV, preT=0.0, prestim=None):
         preT,
         prestim,
     )
-    del sensV[0:6]
-    del sensV[1:3]
-    del sensV[3:7]
-    del sensV[7]
-    del sensV[8]
-    del sensV[9]
-    del sensV[10]
-    del sensV[11:31]
+    sensVnp = np.array([])
+    del sensV[:, 0:6]
+    del sensV[:, 1:3]
+    del sensV[:, 3:7]
+    del sensV[:, 7]
+    del sensV[:, 8]
+    del sensV[:, 9]
+    del sensV[:, 10]
+    del sensV[:, 11:31]
 
     return (yOut, retVal, sensV)
 
