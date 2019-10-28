@@ -155,7 +155,7 @@ def runCkineSP(tps, rxntfr, actV, preT=0.0, prestim=None):
     np.delete(sensVnp, [9], 1)
     np.delete(sensVnp, [10], 1)
     np.delete(sensVnp, [11, 31], 1)
-    sensV = np.tolist(sensVnp)
+    sensV = sensVnp.tolist()
 
     return (yOut, retVal, sensV)
 
