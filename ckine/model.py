@@ -112,7 +112,8 @@ def runCkineSP(tps, rxntfr, actV, preT=0.0, prestim=None):
     yOut = np.zeros((rxntfr.shape[0] * tps.size), dtype=np.float64)
 
     rxntfr = getRateVec(rxntfr)
-    sensV = np.zeros((rxntfr.shape[0] * tps.size, 60), dtype=np.float64, order="C")
+    sensV = np.zeros((rxntfr.shape[0] * tps.size, __rxParams), dtype=np.float64, order="C")
+    
 
     if preT != 0.0:
         assert preT > 0.0
@@ -132,6 +133,18 @@ def runCkineSP(tps, rxntfr, actV, preT=0.0, prestim=None):
     )
     
     sensV = condenseSENV(sensV)
+
+    #sensV = np.delete(sensV, slice(0, 6), 1)
+    sensV = np.delete(sensV, slice(7, 9), 1)
+    sensV = np.delete(sensV, slice(9, 13), 1)
+    sensV = np.delete(sensV, [13], 1)
+    sensV = np.delete(sensV, [14], 1)
+    sensV = np.delete(sensV, [15], 1)
+    sensV = np.delete(sensV, [16], 1)
+    sensV = np.delete(sensV, slice(17, 37), 1)
+    print(sensV)
+    print(type(sensV))
+    print(sensV.shape)
 
     return (yOut, retVal, sensV)
 
