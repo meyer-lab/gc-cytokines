@@ -74,7 +74,6 @@ def runCkineU_IL2(tps, rxntfr):
     
     yOut = np.zeros((tps.size, __nSpecies), dtype=np.float64)
     rxntfr = getRateVec(rxntfr)
-    assert rxntfr.shape[1] == 60
 
     retVal = libb.runCkine(tps.ctypes.data_as(ct.POINTER(ct.c_double)), tps.size, yOut.ctypes.data_as(ct.POINTER(ct.c_double)), rxntfr.ctypes.data_as(ct.POINTER(ct.c_double)), True, 0.0, None)
 
@@ -100,7 +99,6 @@ def runCkineUP(tps, rxntfr, preT=0.0, prestim=None):
     yOut = np.zeros((rxntfr.shape[0] * tps.size, __nSpecies), dtype=np.float64)
 
     rxntfr = getRateVec(rxntfr)
-    assert rxntfr.shape[1] == 60
 
     if preT != 0.0:
         assert preT > 0.0
@@ -125,7 +123,6 @@ def runCkineSP(tps, rxntfr, actV, preT=0.0, prestim=None):
     yOut = np.zeros((rxntfr.shape[0] * tps.size), dtype=np.float64)
 
     rxntfr = getRateVec(rxntfr)
-    assert rxntfr.shape[1] == 60
     sensV = np.zeros((rxntfr.shape[0] * tps.size, 60), dtype=np.float64, order="C")
 
     if preT != 0.0:
@@ -155,7 +152,6 @@ def fullModel(y, t, rxntfr):
     yOut = np.zeros_like(y)
 
     rxntfr = getRateVec(rxntfr)
-    assert rxntfr.shape[1] == 60
 
     libb.fullModel_C(y.ctypes.data_as(ct.POINTER(ct.c_double)), t, yOut.ctypes.data_as(ct.POINTER(ct.c_double)), rxntfr.ctypes.data_as(ct.POINTER(ct.c_double)))
 
@@ -390,10 +386,18 @@ def getRateVec(rxntfr):
             ratesParamsDict = getparamsdict(rxntfr[row, :])
             del ratesParamsDict['kfbnd']
             FullRateVec[row, :] = np.array(list(ratesParamsDict.values()))
+            for rate in FullRateVec[row, :]:
+                if isinstance(rate, float) == False:
+                    print("Here is a problem!")
+                    print(rate)
     else:
         FullRateVec = np.zeros(60)
         ratesParamsDict = getparamsdict(rxntfr)
         del ratesParamsDict['kfbnd']
         FullRateVec = np.array(list(ratesParamsDict.values()))
+        for rate in FullRateVec[row, :]:
+            if isinstance(rate, float) == False:
+                print("Here is a problem!")
+                print(rate)
 
     return FullRateVec
