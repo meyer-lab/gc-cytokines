@@ -9,10 +9,8 @@ import svgutils.transform as st
 from matplotlib import gridspec, pyplot as plt
 from matplotlib.lines import Line2D
 from matplotlib.patches import Patch
-import svgutils.transform as st
 from ..tensor import find_R2X
 from ..imports import import_pstat
-
 
 
 matplotlib.rcParams['legend.labelspacing'] = 0.2
