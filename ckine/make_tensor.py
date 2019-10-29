@@ -76,17 +76,16 @@ def prep_tensor(mut):
     """Function to solve the model for initial conditions in meshprep()."""
     Conc_recept_cell, concMesh, concMesh_stacked, cell_names = meshprep(mut)
     numlig = 3
-    idx_ref = int(concMesh.shape[0] / numlig)  # Provides a reference for the order of indices at which the mutant is present.
+    #idx_ref = int(concMesh.shape[0] / numlig)
 
     # Allocate a y_of_combos
     y_of_combos = np.zeros((len(Conc_recept_cell), tensor_time.size, nSpecies()))
 
     if mut:
         raise ValueError("mut not supported.")
-    else:
-        for jj, row in enumerate(Conc_recept_cell):
-            # Solve using the WT solver for each of IL2, IL15, and IL7. And the mutant Solver for IL-2--Il-2Ra.
-            y_of_combos[jj] = ySolver(row, tensor_time)
+    for jj, row in enumerate(Conc_recept_cell):
+        # Solve using the WT solver for each of IL2, IL15, and IL7. And the mutant Solver for IL-2--Il-2Ra.
+        y_of_combos[jj] = ySolver(row, tensor_time)
 
     return y_of_combos, Conc_recept_cell, concMesh, concMesh_stacked, cell_names
 
