@@ -10,6 +10,7 @@ from matplotlib.lines import Line2D
 from matplotlib.patches import Patch
 from ..tensor import find_R2X
 from ..imports import import_pstat
+import svgutils.transform as st
 
 
 matplotlib.rcParams['legend.labelspacing'] = 0.2
@@ -123,7 +124,6 @@ def plot_cells(ax, factors, component_x, component_y, cell_names):
 
 def overlayCartoon(figFile, cartoonFile, x, y, scalee=1, scale_x=1, scale_y=1):
     """ Add cartoon to a figure file. """
-    import svgutils.transform as st
 
     # Overlay Figure cartoons
     template = st.fromfile(figFile)

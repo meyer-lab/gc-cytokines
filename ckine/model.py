@@ -39,6 +39,7 @@ def nParams():
     """ Returns the length of the rxntfR vector. """
     return __nParams
 
+
 def rxParams():
     """ Returns the length of the rxntfR vector. """
     return __rxParams
@@ -210,10 +211,9 @@ def receptor_expression(receptor_abundance, endo, kRec, sortF, kDeg):
 
 def condenseSENV(sensVin):
     """ Condense sensitivities down into the old rxnRates format. """
-    sensVin[:, 7:27] += sensVin[:, 27:47] * 5.0 #/ 5.0
-    sensVin[:, 10] += 12.0 * sensVin[:, 11] / 1.5 + 63.0 * sensVin[:, 12] / 1.5 # 1.5* sensVin/12    + 1.5* / 63.0
+    sensVin[:, 7:27] += sensVin[:, 27:47] * 5.0  # / 5.0
+    sensVin[:, 10] += 12.0 * sensVin[:, 11] / 1.5 + 63.0 * sensVin[:, 12] / 1.5  # 1.5* sensVin/12    + 1.5* / 63.0
     sensV = sensVin[:, np.array([0, 1, 2, 3, 4, 5, 6, 9, 10, 15, 16, 17, 18, 20, 22, 24, 26, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59])]
-    
 
     return sensV
 
@@ -224,15 +224,15 @@ def getparamsdict(rxntfr):
 
     kfbnd = 0.60
     rd['IL2'], rd['IL15'], rd['IL7'], rd['IL9'], rd['IL4'], rd['IL21'], rd['kfwd'] = tuple(rxntfr[0:7])
-    rd['surface.k1rev'] = kfbnd * 10.0 #7
+    rd['surface.k1rev'] = kfbnd * 10.0  # 7
     rd['surface.k2rev'] = kfbnd * 144.0
-    rd['surface.k4rev'], rd['surface.k5rev'] = rxntfr[7], rxntfr[8] #9 #10
+    rd['surface.k4rev'], rd['surface.k5rev'] = rxntfr[7], rxntfr[8]  # 9 #10
     rd['surface.k10rev'] = 12.0 * rd['surface.k5rev'] / 1.5
     rd['surface.k11rev'] = 63.0 * rd['surface.k5rev'] / 1.5
     rd['surface.k13rev'] = kfbnd * 0.065
     rd['surface.k14rev'] = kfbnd * 438.0
     rd['surface.k16rev'] = rxntfr[9]
-    rd['surface.k17rev'] = rxntfr[10] #16
+    rd['surface.k17rev'] = rxntfr[10]  # 16
     rd['surface.k22rev'] = rxntfr[11]
     rd['surface.k23rev'] = rxntfr[12]
     rd['surface.k25rev'] = kfbnd * 59.0
@@ -258,7 +258,7 @@ def getRateVec(rxntfr):
     entries = rxntfr.size
     rxnlength = rxntfr.shape[0]
 
-    if (entries/rxnlength) > 1:
+    if (entries / rxnlength) > 1:
         FullRateVec = np.zeros([rxntfr.shape[0], 60])
         for row in range(rxntfr.shape[0]):
             ratesParamsDict = getparamsdict(rxntfr[row, :])
