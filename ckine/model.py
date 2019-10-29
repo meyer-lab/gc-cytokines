@@ -213,7 +213,8 @@ def condenseSENV(sensVin):
     sensVin[:, 7:27] += sensVin[:, 27:47] / 5.0
     sensVin[:, 10] += (1.5 * sensVin[:, 11] / 12.0 + 1.5 * sensVin[:, 12] / 63.0)
     sensV = sensVin[:, np.array([0, 1, 2, 3, 4, 5, 6, 9, 10, 15, 16, 17, 18, 20, 22, 24, 26, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59])]
-
+    sensVin[6] =  sensVin[6]* 5.0
+    sensVin[12] =  sensVin[12]* 10.0
     #sensV[:, 8] += 1.5 * sensVin[:, 11] / 12.0 + 1.5 * sensVin[:, 12] / 63.0
 
     return sensV
@@ -227,13 +228,13 @@ def getparamsdict(rxntfr):
     rd['IL2'], rd['IL15'], rd['IL7'], rd['IL9'], rd['IL4'], rd['IL21'], rd['kfwd'] = tuple(rxntfr[0:7])
     rd['surface.k1rev'] = kfbnd * 10.0 #7
     rd['surface.k2rev'] = kfbnd * 144.0
-    rd['surface.k4rev'], rd['surface.k5rev'] = rxntfr[7], rxntfr[8] #9
+    rd['surface.k4rev'], rd['surface.k5rev'] = rxntfr[7], rxntfr[8] #9 #10
     rd['surface.k10rev'] = 12.0 * rd['surface.k5rev'] / 1.5
     rd['surface.k11rev'] = 63.0 * rd['surface.k5rev'] / 1.5
     rd['surface.k13rev'] = kfbnd * 0.065
     rd['surface.k14rev'] = kfbnd * 438.0
     rd['surface.k16rev'] = rxntfr[9]
-    rd['surface.k17rev'] = rxntfr[10]
+    rd['surface.k17rev'] = rxntfr[10] #16
     rd['surface.k22rev'] = rxntfr[11]
     rd['surface.k23rev'] = rxntfr[12]
     rd['surface.k25rev'] = kfbnd * 59.0
