@@ -274,15 +274,6 @@ def calc_surf_gc(t, cytokC_pg, unkVec):
     return (result / np.max(result)) * 100.0
 
 
-def data_path():
-    """ Loads the Gonnard data from the appropriate CSV files. """
-    path = os.path.dirname(os.path.abspath(__file__))
-    dataIL4 = pd.read_csv(join(path, "../data/Gonnord_S3B.csv")).values  # imports IL4 file into pandas array
-    dataIL7 = pd.read_csv(join(path, "../data/Gonnord_S3C.csv")).values
-    data_pretreat = pd.read_csv(join(path, "../data/Gonnord_S3D.csv")).values
-    return (dataIL4, dataIL7, data_pretreat)
-
-
 def relativeGC(ax, unkVec2, unkVec4):
     """ This function compares the relative complex affinities for GC. The rates included in this violin plot will be k4rev, k10rev,
     k17rev, k22rev, k27rev, and k33rev. We're currently ignoring k31rev (IL9) and k35rev (IL21) since we don't fit to any of its data. """
