@@ -210,8 +210,8 @@ def receptor_expression(receptor_abundance, endo, kRec, sortF, kDeg):
 
 def condenseSENV(sensVin):
     """ Condense sensitivities down into the old rxnRates format. """
-    sensVin[:, 7:27] += sensVin[:, 27:47] / 5.0
-    sensVin[:, 10] += (1.5 * sensVin[:, 11] / 12.0 + 1.5 * sensVin[:, 12] / 63.0)
+    sensVin[:, 7:27] += sensVin[:, 27:47] #/ 5.0
+    sensVin[:, 10] += sensVin[:, 11] + sensVin[:, 12] # 1.5* sensVin/12    + 1.5* / 63.0
     sensV = sensVin[:, np.array([0, 1, 2, 3, 4, 5, 6, 9, 10, 15, 16, 17, 18, 20, 22, 24, 26, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59])]
     
 
