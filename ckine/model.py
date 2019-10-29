@@ -215,7 +215,7 @@ def condenseSENV(sensVin):
     sensV = sensVin[:, np.array([0, 1, 2, 3, 4, 5, 6, 9, 10, 15, 16, 17, 18, 20, 22, 24, 26, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59])]
     sensV[:, 12] = sensV[:, 12]*50
     sensV[:, 16] = sensV[:, 16]*100
-
+    
 
     return sensV
 
