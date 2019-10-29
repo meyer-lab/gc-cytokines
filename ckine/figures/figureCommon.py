@@ -8,6 +8,7 @@ import matplotlib.cm as cm
 from matplotlib import gridspec, pyplot as plt
 from matplotlib.lines import Line2D
 from matplotlib.patches import Patch
+import svgutils.transform as st
 from ..tensor import find_R2X
 from ..imports import import_pstat
 
@@ -123,8 +124,6 @@ def plot_cells(ax, factors, component_x, component_y, cell_names):
 
 def overlayCartoon(figFile, cartoonFile, x, y, scalee=1, scale_x=1, scale_y=1):
     """ Add cartoon to a figure file. """
-    import svgutils.transform as st
-
     # Overlay Figure cartoons
     template = st.fromfile(figFile)
     cartoon = st.fromfile(cartoonFile).getroot()
