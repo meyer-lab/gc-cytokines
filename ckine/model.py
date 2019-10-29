@@ -213,7 +213,6 @@ def condenseSENV(sensVin):
     sensVin[:, 7:27] += sensVin[:, 27:47] / 5.0
     sensVin[:, 10] += (1.5 * sensVin[:, 11] / 12.0 + 1.5 * sensVin[:, 12] / 63.0)
     sensV = sensVin[:, np.array([0, 1, 2, 3, 4, 5, 6, 9, 10, 15, 16, 17, 18, 20, 22, 24, 26, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59])]
-    for i in 
     sensV[:, 6] =  sensV[:, 6]* 5.0
     sensV[:, 12] =  sensV[:, 12]* 10.0
     #sensV[:, 8] += 1.5 * sensVin[:, 11] / 12.0 + 1.5 * sensVin[:, 12] / 63.0
