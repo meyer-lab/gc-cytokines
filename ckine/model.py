@@ -2,6 +2,7 @@
 A file that includes the model and important helper functions.
 """
 import os
+from collections import OrderedDict
 import ctypes as ct
 import numpy as np
 
@@ -31,11 +32,17 @@ def halfL():
 
 
 __nParams = 30
+__rxParams = 60
 
 
 def nParams():
     """ Returns the length of the rxntfR vector. """
     return __nParams
+
+
+def rxParams():
+    """ Returns the length of the rxntfR vector. """
+    return __rxParams
 
 
 __internalStrength = 0.5  # strength of endosomal activity relative to surface
@@ -46,34 +53,12 @@ def internalStrength():
     return __internalStrength
 
 
-__internalV = 623.0  # endosomal volume
-
-
-def internalV():
-    """ Returns __internalV. """
-    return __internalV
-
-
 __nRxn = 17
 
 
 def nRxn():
     """ Returns the length of the rxn rates vector (doesn't include traf rates). """
     return __nRxn
-
-
-def runCkineU_IL2(tps, rxntfr):
-    """ Standard version of solver that returns species abundances given times and unknown rates. """
-    rxntfr = rxntfr.copy()
-    assert rxntfr.size == 15
-
-    yOut = np.zeros((tps.size, __nSpecies), dtype=np.float64)
-
-    retVal = libb.runCkine(tps.ctypes.data_as(ct.POINTER(ct.c_double)), tps.size, yOut.ctypes.data_as(ct.POINTER(ct.c_double)), rxntfr.ctypes.data_as(ct.POINTER(ct.c_double)), True, 0.0, None)
-
-    assert retVal >= 0  # make sure solver worked
-
-    return yOut
 
 
 def runCkineU(tps, rxntfr, preT=0.0, prestim=None):
@@ -91,6 +76,8 @@ def runCkineUP(tps, rxntfr, preT=0.0, prestim=None):
     assert np.all(np.any(rxntfr > 0.0, axis=1))  # make sure at least one element is >0 for all rows
 
     yOut = np.zeros((rxntfr.shape[0] * tps.size, __nSpecies), dtype=np.float64)
+
+    rxntfr = getRateVec(rxntfr)
 
     if preT != 0.0:
         assert preT > 0.0
@@ -114,7 +101,9 @@ def runCkineSP(tps, rxntfr, actV, preT=0.0, prestim=None):
     assert (rxntfr[:, 19] < 1.0).all()  # Check that sortF won't throw
 
     yOut = np.zeros((rxntfr.shape[0] * tps.size), dtype=np.float64)
-    sensV = np.zeros((rxntfr.shape[0] * tps.size, __nParams), dtype=np.float64, order="C")
+
+    rxntfr = getRateVec(rxntfr)
+    sensV = np.zeros((rxntfr.shape[0] * tps.size, __rxParams), dtype=np.float64, order="C")
 
     if preT != 0.0:
         assert preT > 0.0
@@ -133,6 +122,8 @@ def runCkineSP(tps, rxntfr, actV, preT=0.0, prestim=None):
         prestim,
     )
 
+    sensV = condenseSENV(sensV)
+
     return (yOut, retVal, sensV)
 
 
@@ -141,6 +132,8 @@ def fullModel(y, t, rxntfr):
     assert rxntfr.size == __nParams
 
     yOut = np.zeros_like(y)
+
+    rxntfr = getRateVec(rxntfr)
 
     libb.fullModel_C(y.ctypes.data_as(ct.POINTER(ct.c_double)), t, yOut.ctypes.data_as(ct.POINTER(ct.c_double)), rxntfr.ctypes.data_as(ct.POINTER(ct.c_double)))
 
@@ -210,19 +203,69 @@ def totalReceptors(yVec):
     return surfaceReceptors(yVec) + __internalStrength * surfaceReceptors(yVec[__halfL: __halfL * 2])
 
 
-def ligandDeg(yVec, sortF, kDeg, cytokineIDX):
-    """ This function calculates rate of total ligand degradation. """
-    yVec_endo_species = yVec[__halfL: (__halfL * 2)].copy()  # get all endosomal complexes
-    yVec_endo_lig = yVec[(__halfL * 2)::].copy()  # get all endosomal ligands
-    sum_active = np.sum(getActiveCytokine(cytokineIDX, yVec_endo_species))
-    __cytok_species_IDX = np.zeros(__halfL, dtype=np.bool)  # create array of size halfL
-    __cytok_species_IDX[getCytokineSpecies()[cytokineIDX]] = 1  # assign 1's for species corresponding to the cytokineIDX
-    sum_total = np.sum(yVec_endo_species * __cytok_species_IDX)
-    sum_inactive = (sum_total - sum_active) * sortF  # scale the inactive species by sortF
-    return kDeg * (((sum_inactive + sum_active) * __internalStrength) + (yVec_endo_lig[cytokineIDX] * __internalV))  # can assume all free ligand and active species are degraded at rate kDeg
-
-
 def receptor_expression(receptor_abundance, endo, kRec, sortF, kDeg):
     """ Uses receptor abundance (from flow) and trafficking rates to calculate receptor expression rate at steady state. """
     rec_ex = (receptor_abundance * endo) / (1.0 + ((kRec * (1.0 - sortF)) / (kDeg * sortF)))
     return rec_ex
+
+
+def condenseSENV(sensVin):
+    """ Condense sensitivities down into the old rxnRates format. """
+    sensVin[:, 7:27] += sensVin[:, 27:47] * 5.0
+    sensVin[:, 10] += 12.0 * sensVin[:, 11] / 1.5 + 63.0 * sensVin[:, 12] / 1.5
+    sensV = sensVin[:, np.array([0, 1, 2, 3, 4, 5, 6, 9, 10, 15, 16, 17, 18, 20, 22, 24, 26, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59])]
+
+    return sensV
+
+
+def getparamsdict(rxntfr):
+    """Where rate vectors and constants are defined, organized in an ordered dictionary"""
+    rd = OrderedDict()
+
+    kfbnd = 0.60
+    rd['IL2'], rd['IL15'], rd['IL7'], rd['IL9'], rd['IL4'], rd['IL21'], rd['kfwd'] = tuple(rxntfr[0:7])
+    rd['surface.k1rev'] = kfbnd * 10.0  # 7
+    rd['surface.k2rev'] = kfbnd * 144.0
+    rd['surface.k4rev'], rd['surface.k5rev'] = rxntfr[7], rxntfr[8]  # 9 #10
+    rd['surface.k10rev'] = 12.0 * rd['surface.k5rev'] / 1.5
+    rd['surface.k11rev'] = 63.0 * rd['surface.k5rev'] / 1.5
+    rd['surface.k13rev'] = kfbnd * 0.065
+    rd['surface.k14rev'] = kfbnd * 438.0
+    rd['surface.k16rev'] = rxntfr[9]
+    rd['surface.k17rev'] = rxntfr[10]  # 16
+    rd['surface.k22rev'] = rxntfr[11]
+    rd['surface.k23rev'] = rxntfr[12]
+    rd['surface.k25rev'] = kfbnd * 59.0
+    rd['surface.k27rev'] = rxntfr[13]
+    rd['surface.k29rev'] = kfbnd * 0.1
+    rd['surface.k31rev'] = rxntfr[14]
+    rd['surface.k32rev'] = kfbnd * 1.0
+    rd['surface.k33rev'] = rxntfr[15]
+    rd['surface.k34rev'] = kfbnd * 0.07
+    rd['surface.k35rev'] = rxntfr[16]
+
+    for ii in ('1', '2', '4', '5', '10', '11', '13', '14', '16', '17', '22', '23', '25', '27', '29', '31', '32', '33', '34', '35'):
+        rd['endosome.k' + ii + 'rev'] = rd['surface.k' + ii + 'rev'] * 5.0
+
+    rd['endo'], rd['activeEndo'], rd['sortF'], rd['kRec'], rd['kDeg'] = tuple(rxntfr[17:22])
+    rd['Rexpr_2Ra'], rd['Rexpr_2Rb'], rd['Rexpr_gc'], rd['Rexpr_15Ra'], rd['Rexpr_7R'], rd['Rexpr_9R'], rd['Rexpr_4Ra'], rd['Rexpr_21Ra'] = tuple(rxntfr[22:30])
+
+    return rd
+
+
+def getRateVec(rxntfr):
+    """Retrieves and unpacks ordered dict + constructs rate vector for model fitting"""
+    entries = rxntfr.size
+    rxnlength = rxntfr.shape[0]
+
+    if (entries / rxnlength) > 1:
+        FullRateVec = np.zeros([rxntfr.shape[0], 60])
+        for row in range(rxntfr.shape[0]):
+            ratesParamsDict = getparamsdict(rxntfr[row, :])
+            FullRateVec[row, :] = np.array(list(ratesParamsDict.values()), dtype=np.float)
+    else:
+        FullRateVec = np.zeros(60)
+        ratesParamsDict = getparamsdict(rxntfr)
+        FullRateVec = np.array(list(ratesParamsDict.values()), dtype=np.float)
+
+    return FullRateVec

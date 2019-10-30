@@ -4,7 +4,7 @@ The initial conditions vary the concentrations of the three ligands to simulate 
 Cell lines are defined by the number of each receptor subspecies on their surface.
 """
 import numpy as np
-from .model import runCkineU, nSpecies, runCkineU_IL2, getTotalActiveSpecies, receptor_expression
+from .model import runCkineU, nSpecies, getTotalActiveSpecies, receptor_expression
 from .imports import import_Rexpr, import_samples_2_15, import_pstat
 
 rxntfR, _ = import_samples_2_15(N=1, tensor=True)
@@ -27,26 +27,6 @@ def ySolver(matIn, ts, tensor=True):
     temp = runCkineU(ts, rxn)
 
     return temp
-
-
-def ySolver_IL2_mut(matIn, ts, mut):
-    """ This generates all the solutions of the mutant tensor. """
-    matIn = np.squeeze(matIn).copy()
-    kfwd, k4rev, k5rev = rxntfR[6], rxntfR[7], rxntfR[8]
-    k1rev = 0.6 * 10.0
-    k2rev = 0.6 * 144.0
-    k11rev = 63.0 * k5rev / 1.5
-
-    if mut == "a":
-        k2rev *= 10.0  # 10x weaker binding to IL2Rb
-    elif mut == "b":
-        k2rev *= 0.01  # 100x more bindng to IL2Rb
-
-    rxntfr = np.array([matIn[0], kfwd, k1rev, k2rev, k4rev, k5rev, k11rev, matIn[6], matIn[7], matIn[8], k1rev * 5.0, k2rev * 5.0, k4rev * 5.0, k5rev * 5.0, k11rev * 5.0])  # IL2Ra, IL2Rb, gc
-
-    yOut = runCkineU_IL2(ts, rxntfr)
-
-    return yOut
 
 
 def meshprep(mut):
@@ -95,33 +75,15 @@ def meshprep(mut):
 def prep_tensor(mut):
     """Function to solve the model for initial conditions in meshprep()."""
     Conc_recept_cell, concMesh, concMesh_stacked, cell_names = meshprep(mut)
-    numlig = 3
-    idx_ref = int(concMesh.shape[0] / numlig)  # Provides a reference for the order of indices at which the mutant is present.
 
     # Allocate a y_of_combos
     y_of_combos = np.zeros((len(Conc_recept_cell), tensor_time.size, nSpecies()))
 
     if mut:
-        mut2 = np.arange(0, Conc_recept_cell.shape[0], idx_ref)
-        IL2Ra = mut2[np.arange(1, mut2.size, numlig)]
-        IL2Rb = mut2[np.arange(2, mut2.size, numlig)]
-        IL2Ra_idxs = np.zeros((IL2Ra.size, idx_ref))
-        IL2Rb_idxs = IL2Ra_idxs.copy()
-        for jj, _ in enumerate(IL2Ra):
-            IL2Ra_idxs[jj] = np.array(range(IL2Ra[jj], IL2Ra[jj] + idx_ref))  # Find the indices where the IL2-mutant is.
-            IL2Rb_idxs[jj] = np.array(range(IL2Rb[jj], IL2Rb[jj] + idx_ref))
-
-        for jj, row in enumerate(Conc_recept_cell):
-            if jj in IL2Ra_idxs:
-                y_of_combos[jj] = ySolver_IL2_mut(row, tensor_time, mut="a")  # Solve using the mutant IL2-IL2Ra solver
-            elif jj in IL2Rb_idxs:
-                y_of_combos[jj] = ySolver_IL2_mut(row, tensor_time, mut="b")  # Solve using the mutant IL2-IL2Rb solver
-            else:
-                y_of_combos[jj] = ySolver(row, tensor_time)  # Solve using the WT solver for IL2.
-    else:
-        for jj, row in enumerate(Conc_recept_cell):
-            # Solve using the WT solver for each of IL2, IL15, and IL7. And the mutant Solver for IL-2--Il-2Ra.
-            y_of_combos[jj] = ySolver(row, tensor_time)
+        raise ValueError("mut not supported.")
+    for jj, row in enumerate(Conc_recept_cell):
+        # Solve using the WT solver for each of IL2, IL15, and IL7. And the mutant Solver for IL-2--Il-2Ra.
+        y_of_combos[jj] = ySolver(row, tensor_time)
 
     return y_of_combos, Conc_recept_cell, concMesh, concMesh_stacked, cell_names
 

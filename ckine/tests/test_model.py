@@ -6,7 +6,7 @@ import numpy as np
 from hypothesis import given, settings
 from hypothesis.strategies import floats
 from hypothesis.extra.numpy import arrays as harrays
-from ..model import fullModel, getTotalActiveCytokine, runCkineU, nSpecies, runCkineUP, runCkineU_IL2, ligandDeg
+from ..model import fullModel, getTotalActiveCytokine, runCkineU, nSpecies, runCkineUP
 
 
 settings.register_profile("ci", max_examples=1000, deadline=None)
@@ -87,12 +87,12 @@ class TestModel(unittest.TestCase):
         yOut_21 = runCkineU(t, rxnIL21)
 
         # check that dydt is ~0
-        self.assertPosEquilibrium(yOut_2[1], lambda y: fullModel(y, 100000.0, rxnIL2))
-        self.assertPosEquilibrium(yOut_15[1], lambda y: fullModel(y, 100000.0, rxnIL15))
-        self.assertPosEquilibrium(yOut_7[1], lambda y: fullModel(y, 100000.0, rxnIL7))
-        self.assertPosEquilibrium(yOut_9[1], lambda y: fullModel(y, 100000.0, rxnIL9))
-        self.assertPosEquilibrium(yOut_4[1], lambda y: fullModel(y, 100000.0, rxnIL4))
-        self.assertPosEquilibrium(yOut_21[1], lambda y: fullModel(y, 100000.0, rxnIL21))
+        self.assertPosEquilibrium(yOut_2[1], lambda y: fullModel(y, t[1], rxnIL2))
+        self.assertPosEquilibrium(yOut_15[1], lambda y: fullModel(y, t[1], rxnIL15))
+        self.assertPosEquilibrium(yOut_7[1], lambda y: fullModel(y, t[1], rxnIL7))
+        self.assertPosEquilibrium(yOut_9[1], lambda y: fullModel(y, t[1], rxnIL9))
+        self.assertPosEquilibrium(yOut_4[1], lambda y: fullModel(y, t[1], rxnIL4))
+        self.assertPosEquilibrium(yOut_21[1], lambda y: fullModel(y, t[1], rxnIL21))
 
     def test_fullModel(self):
         """ Assert that we're at autocrine steady-state at t=0. """
@@ -216,47 +216,6 @@ class TestModel(unittest.TestCase):
         self.assertTrue(np.greater(yOut_4[48:50], 0.0).all())
         self.assertTrue(np.greater(yOut_5[51:53], 0.0).all())
         self.assertTrue(np.greater(yOut_6[54:56], 0.0).all())
-
-    def test_runCkineU_IL2(self):
-        """ Make sure IL-2 activity is higher when its IL-2 binds tighter to IL-2Ra (k1rev (rxntfr[2]) is smaller). """
-        rxntfr_reg = np.ones(15)
-        rxntfr_loose = rxntfr_reg.copy()
-        rxntfr_gc = rxntfr_reg.copy()
-        rxntfr_gc[9] = 0.0  # set gc expression to 0
-        rxntfr_loose[1] = 10.0 ** -5  # "looser" dimerization occurs when kfwd is small
-
-        # find yOut vectors for both rxntfr's
-        y_reg = runCkineU_IL2(self.ts, rxntfr_reg)
-        y_loose = runCkineU_IL2(self.ts, rxntfr_loose)
-        y_gc = runCkineU_IL2(self.ts, rxntfr_gc)
-
-        # get total amount of IL-2 derived active species at end of experiment (t=100000)
-        active_reg = getTotalActiveCytokine(0, y_reg[1, :])
-        active_loose = getTotalActiveCytokine(0, y_loose[1, :])
-        active_gc = getTotalActiveCytokine(0, y_gc[1, :])
-
-        self.assertLess(active_loose, active_reg)  # lower dimerization rate leads to less active complex
-        self.assertLess(active_gc, active_reg)  # no gc expression leads to less/no active complex
-
-    def test_ligandDeg_All(self):
-        """ Verify that ligand degradation increases when sortF and kDeg increase. """
-        # case for IL2
-        y = runCkineU_IL2(self.ts, np.ones(15))
-        sortF, kDeg = 0.5, 1.0
-        reg = ligandDeg(y[1, :], sortF, kDeg, 0)
-        high_sortF = ligandDeg(y[1, :], 0.9, kDeg, 0)
-        high_kDeg = ligandDeg(y[1, :], sortF, kDeg * 10, 0)
-        low_kDeg = ligandDeg(y[1, :], sortF, kDeg * 0.1, 0)
-
-        self.assertGreater(high_sortF, reg)
-        self.assertGreater(high_kDeg, reg)
-        self.assertGreater(reg, low_kDeg)
-
-        # case for IL15
-        y = runCkineU(self.ts, self.rxntfR)
-        reg = ligandDeg(y[1, :], sortF, kDeg, 1)
-        high_kDeg = ligandDeg(y[1, :], sortF, kDeg * 10, 1)
-        self.assertGreater(high_kDeg, reg)
 
     def test_noTraff(self):
         """ Make sure no endosomal species are found when endo=0. """
