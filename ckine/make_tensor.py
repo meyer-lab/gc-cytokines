@@ -29,7 +29,7 @@ def ySolver(matIn, ts, tensor=True):
     return temp
 
 
-def meshprep(mut):
+def meshprep():
     """ Prepares the initial conditions for the tensor. The mutant condition here includes IL-2 mutein binding. """
     # Load the data from csv file
     _, numpy_data, cell_names = import_Rexpr()
@@ -39,18 +39,13 @@ def meshprep(mut):
     # Goal is to make one cell expression levels by len(mat) for every cell
     # Make mesh grid of all ligand concentrations, First is IL-2 WT, Third is IL-15; Fourth is IL7
     # Set interleukins other than IL2&15 to zero. Should be of shape 3(IL2,mutIL2,IL15)*(len(ILs)) by 6 (6 for all ILs)
-    if mut:
-        concMesh = np.vstack(
-            (np.array(np.meshgrid(ILs, 0, 0, 0, 0, 0)).T.reshape(-1, 6), np.array(np.meshgrid(ILs, 0, 0, 0, 0, 0)).T.reshape(-1, 6), np.array(np.meshgrid(ILs, 0, 0, 0, 0, 0)).T.reshape(-1, 6))
+    concMesh = np.vstack(
+        (
+            np.array(np.meshgrid(ILs, 0, 0, 0, 0, 0)).T.reshape(-1, 6),
+            np.array(np.meshgrid(0, ILs, 0, 0, 0, 0)).T.reshape(-1, 6),
+            np.array(np.meshgrid(0, 0, ILs, 0, 0, 0)).T.reshape(-1, 6),
         )
-    else:
-        concMesh = np.vstack(
-            (
-                np.array(np.meshgrid(ILs, 0, 0, 0, 0, 0)).T.reshape(-1, 6),
-                np.array(np.meshgrid(0, ILs, 0, 0, 0, 0)).T.reshape(-1, 6),
-                np.array(np.meshgrid(0, 0, ILs, 0, 0, 0)).T.reshape(-1, 6),
-            )
-        )
+    )
     # Repeat the cytokine stimulations (concMesh) an X amount of times where X here is number of cells (12).
     # Just stacks up concMesh on top of each other 10 times (or however many cells are available)
     concMesh_stacked = np.tile(concMesh, (len(cell_names), 1))
@@ -72,15 +67,13 @@ def meshprep(mut):
     return Conc_recept_cell, concMesh, concMesh_stacked, cell_names
 
 
-def prep_tensor(mut):
+def prep_tensor():
     """Function to solve the model for initial conditions in meshprep()."""
     Conc_recept_cell, concMesh, concMesh_stacked, cell_names = meshprep(mut)
 
     # Allocate a y_of_combos
     y_of_combos = np.zeros((len(Conc_recept_cell), tensor_time.size, nSpecies()))
 
-    if mut:
-        raise ValueError("mut not supported.")
     for jj, row in enumerate(Conc_recept_cell):
         # Solve using the WT solver for each of IL2, IL15, and IL7. And the mutant Solver for IL-2--Il-2Ra.
         y_of_combos[jj] = ySolver(row, tensor_time)
@@ -88,9 +81,9 @@ def prep_tensor(mut):
     return y_of_combos, Conc_recept_cell, concMesh, concMesh_stacked, cell_names
 
 
-def make_tensor(mut=False):
+def make_tensor():
     """Function to generate the 3D values tensor from the prepared solutions."""
-    y_of_combos, Conc_recept_cell, concMesh, concMesh_stacked, cell_names = prep_tensor(mut)
+    y_of_combos, Conc_recept_cell, concMesh, concMesh_stacked, cell_names = prep_tensor()
 
     values = np.zeros((y_of_combos.shape[0], y_of_combos.shape[1], 1))
 
