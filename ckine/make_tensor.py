@@ -69,7 +69,7 @@ def meshprep():
 
 def prep_tensor():
     """Function to solve the model for initial conditions in meshprep()."""
-    Conc_recept_cell, concMesh, concMesh_stacked, cell_names = meshprep(mut)
+    Conc_recept_cell, concMesh, concMesh_stacked, cell_names = meshprep()
 
     # Allocate a y_of_combos
     y_of_combos = np.zeros((len(Conc_recept_cell), tensor_time.size, nSpecies()))
