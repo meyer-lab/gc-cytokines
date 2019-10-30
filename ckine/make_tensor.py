@@ -76,7 +76,6 @@ def prep_tensor(mut):
     """Function to solve the model for initial conditions in meshprep()."""
     Conc_recept_cell, concMesh, concMesh_stacked, cell_names = meshprep(mut)
     numlig = 3
-    #idx_ref = int(concMesh.shape[0] / numlig)
 
     # Allocate a y_of_combos
     y_of_combos = np.zeros((len(Conc_recept_cell), tensor_time.size, nSpecies()))
