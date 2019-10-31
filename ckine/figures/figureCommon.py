@@ -204,3 +204,12 @@ def plot_scaled_pstat(ax, cytokC, pstat):
     ax.scatter(cytokC, pstat[1, :], c="teal", s=2)  # 1 hr
     ax.scatter(cytokC, pstat[2, :], c="forestgreen", s=2)  # 2 hr
     ax.scatter(cytokC, pstat[3, :], c="darkred", s=2)  # 4 hr
+
+
+def global_legend(ax):
+    """ Create legend for colors and markers in subplots A-C. """
+    purple = Patch(color='darkorchid', label='IL-2')
+    yellow = Patch(color='goldenrod', label='IL-15')
+    circle = Line2D([], [], color='black', marker='o', linestyle='None', markersize=6, label='Experimental')
+    triangle = Line2D([], [], color='black', marker='^', linestyle='None', markersize=6, label='Predicted')
+    ax.legend(handles=[purple, yellow, circle, triangle], bbox_to_anchor=(1.02, 1), loc="upper left")
