@@ -29,7 +29,7 @@ def plot_exp_v_pred(ax, cell_subset=None):
     if one wishes to one plot a subset of cells they must be noted in list format. """
     _, receptor_data, cell_names_receptor = import_Rexpr()
     unkVec_2_15, scales = import_samples_2_15(N=100)  # use all rates
-    ckineConc, cell_names_pstat, IL2_data, IL15_data = import_pstat()
+    ckineConc, cell_names_pstat, IL2_data, IL15_data, _ = import_pstat()
 
     # Scale all the data down so we don't have a bunch of zeros on our axes
     IL2_data = IL2_data / 1000.0

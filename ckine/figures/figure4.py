@@ -13,7 +13,7 @@ from .figureS5 import calc_dose_response, plot_exp_v_pred
 from ..imports import import_pstat, import_Rexpr, import_samples_2_15
 
 ckineConc, cell_names_pstat, IL2_data, IL2_data2, IL15_data, IL15_data2 = import_pstat(combine_samples=False)
-_, _, _, IL2_data_avg, IL15_data_avg = import_pstat(combine_samples=True)
+_, _, IL2_data_avg, IL15_data_avg, _ = import_pstat(combine_samples=True)
 unkVec_2_15, scales = import_samples_2_15(N=1)  # use one rate
 _, receptor_data, cell_names_receptor = import_Rexpr()
 
