@@ -177,8 +177,8 @@ def import_pstat(combine_samples=True):
             # take average of both replicates if specific entry isn't nan
             IL2_data[i, j] = np.nanmean(np.array([IL2_data[i, j], IL2_data2[i, j]]))
             IL15_data[i, j] = np.nanmean(np.array([IL15_data[i, j], IL15_data2[i, j]]))
-    
+
     dataMean = pds.DataFrame({'Cells': np.tile(np.repeat(cell_names, 48), 2), 'Ligand': np.concatenate((np.tile(np.array('IL2'), 480), np.tile(np.array('IL15'), 480))),
                               'Time': np.tile(np.repeat(tps, 12), 20), 'Concentration': np.tile(ckineConc, 80), 'RFU': np.concatenate((IL2_data.reshape(480,), IL15_data.reshape(480,)))})
-    
+
     return ckineConc, cell_names, IL2_data, IL15_data, dataMean
