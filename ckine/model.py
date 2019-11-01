@@ -7,6 +7,7 @@ import ctypes as ct
 import numpy as np
 
 
+
 filename = os.path.join(os.path.dirname(os.path.abspath(__file__)), "./ckine.so")
 libb = ct.cdll.LoadLibrary(filename)
 pcd = ct.POINTER(ct.c_double)
