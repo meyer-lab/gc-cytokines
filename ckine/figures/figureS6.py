@@ -7,7 +7,7 @@ import pandas as pd
 import seaborn as sns
 from scipy.optimize import least_squares
 from .figureCommon import subplotLabel, getSetup, global_legend
-from ..model import receptor_expression, runIL2simple, runCkineU, getTotalActiveCytokine
+from ..model import receptor_expression, runCkineU, getTotalActiveCytokine
 from ..imports import import_pstat, import_samples_2_15, import_Rexpr
 
 _, _, _, _, dataMean = import_pstat()
@@ -129,16 +129,13 @@ def calc_dose_response(unkVec, input_params, tps, muteinC, mutein_name, cell_rec
 
     # loop for each mutein concentration
     for i, conc in enumerate(muteinC):
-        if mutein_name == 'IL15':
-            unkVec[1] = conc
-            unkVec[22:25] = cell_receptors  # set receptor expression for IL2Ra, IL2Rb, gc
-            unkVec[25] = 0.0  # we never observed any IL-15Ra
-            yOut = runCkineU(tps, unkVec)
-            active_ckine = np.zeros(yOut.shape[0])
-            for j in range(yOut.shape[0]):
-                active_ckine[j] = getTotalActiveCytokine(1, yOut[j, :])
-        else:
-            active_ckine = runIL2simple(unkVec, input_params, conc, tps=tps, input_receptors=cell_receptors)
+        unkVec[1] = conc
+        unkVec[22:25] = cell_receptors  # set receptor expression for IL2Ra, IL2Rb, gc
+        unkVec[25] = 0.0  # we never observed any IL-15Ra
+        yOut = runCkineU(tps, unkVec)
+        active_ckine = np.zeros(yOut.shape[0])
+        for j in range(yOut.shape[0]):
+            active_ckine[j] = getTotalActiveCytokine(1, yOut[j, :])
         total_activity[i, :] = np.reshape(active_ckine, (-1, 1))  # save the activity from this concentration for all 4 tps
 
     return total_activity
