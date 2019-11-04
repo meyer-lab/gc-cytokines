@@ -27,15 +27,15 @@ def makeFigure():
     ckines = ['IL2', 'IL15']
     cell_types = dataMean.Cells.unique()
     conc = dataMean.Concentration.unique()
-    
+
     df_spec = pd.DataFrame(columns=['Cells', 'Ligand', 'Time', 'Concentration', 'Data Type', 'Specificity'])
     df_act = pd.DataFrame(columns=['Cells', 'Ligand', 'Time', 'Concentration', 'Activity Type', 'Activity'])
     dataMean.insert(5, "Activity Type", np.tile(np.array('Experimental'), 960))  # add activity type column so can append to df_act
 
     df_act = calc_scaled_activity(df_act, ckines, conc)
-    print(df_act.loc[(df_act["Ligand"] == 'IL2') & (df_act["Activity Type"] == 'Predicted')])
     df_act.drop(df_act[df_act.Cells == 'Naive Treg'].index, inplace=True)
-    df_act.drop(df_act[df_act.Cells == 'Mem Treg'].index, inplace=True) # delete Naive/Mem Treg so only comparing to non-Treg cells
+    df_act.drop(df_act[df_act.Cells == 'Mem Treg'].index, inplace=True)  # delete Naive/Mem Treg so only comparing to non-Treg cells
+    conc = np.delete(conc, 11, 0)  # delete smallest concentration since zero/negative activity
     calc_plot_specificity(ax, df_spec, df_act, ckines, conc)
     global_legend(ax[0])
 
@@ -49,30 +49,29 @@ def calc_plot_specificity(ax, df_specificity, df_activity, ligands, concs):
     for _, ckine in enumerate(ligands):
         for _, conc in enumerate(concs):
             df_specificity = specificity(df_specificity, df_activity, 'T-reg', ckine, 60., conc)
-            
-    print(df_specificity)
-            
+
     df_specificity["Concentration"] = np.log10(df_specificity["Concentration"].astype(np.float))  # logscale for plotting
 
     # plot all specificty values
     sns.set_palette(sns.xkcd_palette(["violet", "goldenrod"]))
     sns.scatterplot(x="Concentration", y="Specificity", hue="Ligand", data=df_specificity.loc[(df_specificity["Cells"] ==
-                                                                                        'T-reg') & (df_specificity["Data Type"] == 'Experimental')], ax=ax[0], marker='o', legend=False)
-    sns.scatterplot(x="Concentration", y="Specificity", hue="Ligand", data=df_specificity.loc[(df_specificity["Cells"] == 'T-reg') & (df_specificity["Data Type"] == 'Predicted')], ax=ax[0], marker='^', legend=False)
+                                                                                               'T-reg') & (df_specificity["Data Type"] == 'Experimental')], ax=ax[0], marker='o', legend=False)
+    sns.scatterplot(x="Concentration", y="Specificity", hue="Ligand", data=df_specificity.loc[(
+        df_specificity["Cells"] == 'T-reg') & (df_specificity["Data Type"] == 'Predicted')], ax=ax[0], marker='^', legend=False)
     ax[0].set(xlabel="(log$_{10}$[nM])", ylabel="Specificity", ylim=[0, 1.], title='T-reg')
 
 
 def specificity(df_specificity, df_activity, cell_type, ligand, tp, concentration):
     """ Caculate specificity value of cell type. """
-    
+
     data_types = ['Experimental', 'Predicted']
     for _, dtype in enumerate(data_types):
         pstat = df_activity.loc[(df_activity["Cells"] == cell_type) & (df_activity["Ligand"] == ligand) & (df_activity["Time"] == tp) &
-                           (df_activity["Concentration"] == concentration) & (df_activity["Activity Type"] == dtype), "RFU"].values[0]
+                                (df_activity["Concentration"] == concentration) & (df_activity["Activity Type"] == dtype), "RFU"].values[0]
         pstat_sum = 0.
         for cell in df_activity.Cells.unique():
             pstat_ = df_activity.loc[(df_activity["Cells"] == cell) & (df_activity["Ligand"] == ligand) & (df_activity["Time"] == tp) &
-                                (df_activity["Concentration"] == concentration) & (df_activity["Activity Type"] == dtype), "RFU"].values[0]
+                                     (df_activity["Concentration"] == concentration) & (df_activity["Activity Type"] == dtype), "RFU"].values[0]
             pstat_sum = pstat_sum + pstat_
         df_add = pd.DataFrame({'Cells': cell_type, 'Ligand': ligand, 'Time': tp, 'Concentration': concentration, 'Data Type': dtype, 'Specificity': pstat / pstat_sum}, index=[0])
         df_specificity = df_specificity.append(df_add, ignore_index=True)
@@ -113,7 +112,8 @@ def calc_scaled_activity(df_activity, ligands, concs):
     for _, cell_name in enumerate(df_activity.Cells.unique()):
         for i, cell_names in enumerate(cell_groups):
             if cell_name in cell_names:
-                df_activity.loc[(df_activity['Activity Type'] == 'Predicted') & (df_activity['Cells'] == cell_name), 'RFU'] = (scales[i, 1] * df_activity.loc[(df_activity['Activity Type'] == 'Predicted') & (df_activity['Cells'] == cell_name), 'Activity']) / (df_activity.loc[(df_activity['Activity Type'] == 'Predicted') & (df_activity['Cells'] == cell_name), 'Activity'] + scales[i, 0])
+                df_activity.loc[(df_activity['Activity Type'] == 'Predicted') & (df_activity['Cells'] == cell_name), 'RFU'] = (scales[i, 1] * df_activity.loc[(df_activity['Activity Type'] == 'Predicted')
+                                                                                                                                                              & (df_activity['Cells'] == cell_name), 'Activity']) / (df_activity.loc[(df_activity['Activity Type'] == 'Predicted') & (df_activity['Cells'] == cell_name), 'Activity'] + scales[i, 0])
 
     return df_activity
 
@@ -130,12 +130,15 @@ def calc_dose_response(unkVec, input_params, tps, muteinC, ligand_name, cell_rec
             unkVec[1] = conc
         elif ligand_name == 'IL2':
             unkVec[0] = conc
-        unkVec[22:25] = cell_receptors.reshape(3,1)  # set receptor expression for IL2Ra, IL2Rb, gc
+        unkVec[22:25] = cell_receptors.reshape(3, 1)  # set receptor expression for IL2Ra, IL2Rb, gc
         unkVec[25] = 0.0  # we never observed any IL-15Ra
         yOut = runCkineU(tps, unkVec.T)
         active_ckine = np.zeros(yOut.shape[0])
         for j in range(yOut.shape[0]):
-            active_ckine[j] = getTotalActiveCytokine(1, yOut[j, :])
+            if ligand_name == 'IL15':
+                active_ckine[j] = getTotalActiveCytokine(1, yOut[j, :])
+            elif ligand_name == 'IL2':
+                active_ckine[j] = getTotalActiveCytokine(0, yOut[j, :])
         total_activity[i, :] = np.reshape(active_ckine, (-1, 1))  # save the activity from this concentration for all 4 tps
 
     return total_activity
@@ -150,7 +153,7 @@ def activity_scaling(df):
     for i, cells in enumerate(cell_groups):
         subset_df = df[df['Cells'].isin(cells)]
         scales[i, :] = optimize_scale(np.array(subset_df.loc[(subset_df["Activity Type"] == 'Predicted'), "Activity"]),
-                                             np.array(subset_df.loc[(subset_df["Activity Type"] == 'Experimental'), "RFU"]))
+                                      np.array(subset_df.loc[(subset_df["Activity Type"] == 'Experimental'), "RFU"]))
 
     return scales
 
