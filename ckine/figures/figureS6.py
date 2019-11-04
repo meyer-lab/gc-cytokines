@@ -28,45 +28,44 @@ mutaff = {
 def makeFigure():
     """Get a list of the axis objects and create a figure"""
     # Get list of axis objects
-    ax, f = getSetup((7, 6), (2, 3))
+    ax, f = getSetup((7, 6), (1, 1))
 
     for ii, item in enumerate(ax):
         subplotLabel(item, string.ascii_uppercase[ii])
 
     ckines = ['IL2', 'IL15']
     cell_types = dataMean.Cells.unique()
-    tregs = cell_types[4:7]
     concs = dataMean.Concentration.unique()
-
+    
     df_spec = pd.DataFrame(columns=['Cells', 'Ligand', 'Time', 'Concentration', 'Data Type', 'Specificity'])
     df_act = pd.DataFrame(columns=['Cells', 'Ligand', 'Time', 'Concentration', 'Activity Type', 'Activity'])
     dataMean.insert(5, "Activity Type", np.tile(np.array('Experimental'), 960))  # add activity type column so can append to df_act
 
-    df_act = calc_treg_scaled_response(df_act, ckines, tregs, concs)
-    calc_plot_specificity(ax, df_spec, df_act, ckines, tregs, concs)
-    global_legend(ax[2])
+    df_act = calc_treg_scaled_response(df_act, ckines, concs)
+    df_act.drop(df_act[df_act.Cells == 'Naive Treg'].index, inplace=True)
+    df_act.drop(df_act[df_act.Cells == 'Mem Treg'].index, inplace=True) # delete Naive/Mem Treg so Tregs not weighted more in calculation
+    calc_plot_specificity(ax, df_spec, df_act, ckines, concs)
+    global_legend(ax[0])
 
     return f
 
 
-def calc_plot_specificity(ax, df_spec, df_act, ckines, tregs, concs):
+def calc_plot_specificity(ax, df_spec, df_act, ckines, concs):
     """ Calculates and plots specificity for both cytokines, all T-reg types, and for both experimental and predicted activity. """
 
     # calculate specificity and append to dataframe
     for _, ckine in enumerate(ckines):
-        for _, cell_type in enumerate(tregs):
-            for _, conc in enumerate(concs):
-                df_spec = Specif(df_spec, df_act, cell_type, ckine, 60., conc)
+        for _, conc in enumerate(concs):
+            df_spec = Specif(df_spec, df_act, 'T-reg', ckine, 60., conc)
 
     df_spec["Concentration"] = np.log10(df_spec["Concentration"].astype(np.float))  # logscale for plotting
 
     # plot all specificty values
-    for j, cell_type in enumerate(tregs):
-        sns.set_palette(sns.xkcd_palette(["violet", "goldenrod"]))
-        sns.scatterplot(x="Concentration", y="Specificity", hue="Ligand", data=df_spec.loc[(df_spec["Cells"] ==
-                                                                                            cell_type) & (df_spec["Data Type"] == 'Experimental')], ax=ax[j], marker='o', legend=False)
-        sns.scatterplot(x="Concentration", y="Specificity", hue="Ligand", data=df_spec.loc[(df_spec["Cells"] == cell_type) & (df_spec["Data Type"] == 'Predicted')], ax=ax[j], marker='^', legend=False)
-        ax[j].set(xlabel="(log$_{10}$[nM])", ylabel="Specificity", ylim=[0, 1.], title=cell_type)
+    sns.set_palette(sns.xkcd_palette(["violet", "goldenrod"]))
+    sns.scatterplot(x="Concentration", y="Specificity", hue="Ligand", data=df_spec.loc[(df_spec["Cells"] ==
+                                                                                        'T-reg') & (df_spec["Data Type"] == 'Experimental')], ax=ax[0], marker='o', legend=False)
+    sns.scatterplot(x="Concentration", y="Specificity", hue="Ligand", data=df_spec.loc[(df_spec["Cells"] == 'T-reg') & (df_spec["Data Type"] == 'Predicted')], ax=ax[0], marker='^', legend=False)
+    ax[0].set(xlabel="(log$_{10}$[nM])", ylabel="Specificity", ylim=[0, 1.], title='T-reg')
 
 
 def Specif(df, df_act, cell_type, ckine, tp, conc):
@@ -86,8 +85,8 @@ def Specif(df, df_act, cell_type, ckine, tp, conc):
     return df
 
 
-def calc_treg_scaled_response(df_act, ckines, tregs, concs):
-    """ Calculates scaled dose response for all T-reg populations. """
+def calc_treg_scaled_response(df_act, ckines, concs):
+    """ Calculates scaled dose response for all cell populations. """
 
     def organize_pred(df, cell_name, ligand_name, receptors, muteinC, tps, unkVec):
         """ Appends input dataframe with predicted activity for a given cell type and mutein. """
@@ -95,18 +94,17 @@ def calc_treg_scaled_response(df_act, ckines, tregs, concs):
         num = tps.size * len(muteinC)
 
         # calculate predicted dose response
-        pred_data = np.zeros((12, 1, unkVec.shape[1]))
-        for j in range(unkVec.shape[1]):
-            cell_receptors = receptor_expression(receptors, unkVec[17, j], unkVec[20, j], unkVec[19, j], unkVec[21, j])
-            pred_data[:, :, j] = calc_dose_response(unkVec[:, j], mutaff[ligand_name], tps, muteinC, ligand_name, cell_receptors)
-            df_pred = pd.DataFrame({'Cells': np.tile(np.array(cell_name), num), 'Ligand': np.tile(np.array(ligand_name), num), 'Time': np.tile(
-                tps, num), 'Concentration': muteinC, 'Activity Type': np.tile(np.array('Predicted'), num), 'Activity': pred_data[:, :, j].reshape(num,)})
-            df = df.append(df_pred, ignore_index=True)
+        pred_data = np.zeros((12, 1))
+        cell_receptors = receptor_expression(receptors, unkVec[17], unkVec[20], unkVec[19], unkVec[21])
+        pred_data[:, :] = calc_dose_response(unkVec, mutaff[ligand_name], tps, muteinC, ligand_name, cell_receptors)
+        df_pred = pd.DataFrame({'Cells': np.tile(np.array(cell_name), num), 'Ligand': np.tile(np.array(ligand_name), num), 'Time': np.tile(
+            tps, num), 'Concentration': muteinC, 'Activity Type': np.tile(np.array('Predicted'), num), 'Activity': pred_data[:, :].reshape(num,)})
+        df = df.append(df_pred, ignore_index=True)
 
         return df
 
     for _, ckine in enumerate(ckines):
-        for _, cell_type in enumerate(tregs):
+        for _, cell_type in enumerate(dataMean.Cells.unique()):
             IL2Ra = Rexpr.loc[(Rexpr["Cell Type"] == cell_type) & (Rexpr["Receptor"] == 'IL-2R$\\alpha$'), "Count"].values[0]
             IL2Rb = Rexpr.loc[(Rexpr["Cell Type"] == cell_type) & (Rexpr["Receptor"] == 'IL-2R$\\beta$'), "Count"].values[0]
             gc = Rexpr.loc[(Rexpr["Cell Type"] == cell_type) & (Rexpr["Receptor"] == '$\\gamma_{c}$'), "Count"].values[0]
@@ -114,10 +112,13 @@ def calc_treg_scaled_response(df_act, ckines, tregs, concs):
             df_act = organize_pred(df_act, cell_type, ckine, receptors, concs, np.array(60.), unkVec)
 
     # scale predictions
-    df_act = df_act.append(dataMean[dataMean['Cells'].isin(tregs)], ignore_index=True)
-    scales = np.squeeze(treg_scaling(df_act, unkVec))
-    df_act.loc[(df_act['Activity Type'] == 'Predicted'), 'RFU'] = (scales[1] * df_act.loc[(df_act['Activity Type'] == 'Predicted'), 'Activity']) / \
-        (df_act.loc[(df_act['Activity Type'] == 'Predicted'), 'Activity'] + scales[0])
+    df_act = df_act.append(dataMean.loc[(dataMean["Time"] == 60.)], ignore_index=True)
+    scales = activity_scaling(df_act, unkVec)
+    cell_groups = [['T-reg', 'Mem Treg', 'Naive Treg'], ['T-helper', 'Mem Th', 'Naive Th'], ['NK'], ['CD8+']]
+    for _, cell_name in enumerate(df_act.Cells.unique()):
+        for i, cell_names in enumerate(cell_groups):
+            if cell_name in cell_names:
+                df_act.loc[(df_act['Activity Type'] == 'Predicted'), 'RFU'] = (scales[i, 1] * df_act.loc[(df_act['Activity Type'] == 'Predicted'), 'Activity']) / (df_act.loc[(df_act['Activity Type'] == 'Predicted'), 'Activity'] + scales[i, 0])
 
     return df_act
 
@@ -130,9 +131,9 @@ def calc_dose_response(unkVec, input_params, tps, muteinC, mutein_name, cell_rec
     # loop for each mutein concentration
     for i, conc in enumerate(muteinC):
         unkVec[1] = conc
-        unkVec[22:25] = cell_receptors  # set receptor expression for IL2Ra, IL2Rb, gc
+        unkVec[22:25] = cell_receptors.reshape(3,1)  # set receptor expression for IL2Ra, IL2Rb, gc
         unkVec[25] = 0.0  # we never observed any IL-15Ra
-        yOut = runCkineU(tps, unkVec)
+        yOut = runCkineU(tps, unkVec.T)
         active_ckine = np.zeros(yOut.shape[0])
         for j in range(yOut.shape[0]):
             active_ckine[j] = getTotalActiveCytokine(1, yOut[j, :])
@@ -141,15 +142,16 @@ def calc_dose_response(unkVec, input_params, tps, muteinC, mutein_name, cell_rec
     return total_activity
 
 
-def treg_scaling(df, unkVec):
-    """ Determines sigmoidal scaling parameters for predicted activity of T-regs. """
+def activity_scaling(df, unkVec):
+    """ Determines scaling parameters for specified cell groups for across all muteins. """
 
-    treg_group = ['T-reg', 'Mem Treg', 'Naive Treg']
+    cell_groups = [['T-reg', 'Mem Treg', 'Naive Treg'], ['T-helper', 'Mem Th', 'Naive Th'], ['NK'], ['CD8+']]
 
-    scales = np.zeros((1, 2))
-    subset_df = df[df['Cells'].isin(treg_group)]
-    subset_df = subset_df.loc[(subset_df["Time"] == 60)]
-    scales[:, :] = optimize_scale(np.array(subset_df.loc[(subset_df["Activity Type"] == 'Predicted'), "Activity"]), np.array(subset_df.loc[(subset_df["Activity Type"] == 'Experimental'), "RFU"]))
+    scales = np.zeros((4, 2))
+    for i, cells in enumerate(cell_groups):
+        subset_df = df[df['Cells'].isin(cells)]
+        scales[i, :] = optimize_scale(np.array(subset_df.loc[(subset_df["Activity Type"] == 'Predicted'), "Activity"]),
+                                             np.array(subset_df.loc[(subset_df["Activity Type"] == 'Experimental'), "RFU"]))
 
     return scales
 
