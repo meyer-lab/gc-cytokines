@@ -81,17 +81,17 @@ def specificity(df_specificity, df_activity, cell_type, ligand, tp, concentratio
 def calc_scaled_activity(df_activity, ligands, concs):
     """ Calculates scaled dose response for all cell populations. """
 
-    def organize_pred(df, cell_name, ligand_name, receptors, muteinC, tps):
-        """ Appends input dataframe with predicted activity for a given cell type and mutein. """
+    def organize_pred(df, cell_name, ligand_name, receptors, concs, tps):
+        """ Appends input dataframe with predicted activity for a given cell type and ligand. """
 
-        num = tps.size * len(muteinC)
+        num = tps.size * len(concs)
 
         # calculate predicted dose response
         pred_data = np.zeros((12, 1))
         cell_receptors = receptor_expression(receptors, unkVec[17], unkVec[20], unkVec[19], unkVec[21])
-        pred_data[:, :] = calc_dose_response(unkVec, tps, muteinC, ligand_name, cell_receptors)
+        pred_data[:, :] = calc_dose_response(unkVec, tps, concs, ligand_name, cell_receptors)
         df_pred = pd.DataFrame({'Cells': np.tile(np.array(cell_name), num), 'Ligand': np.tile(np.array(ligand_name), num), 'Time': np.tile(
-            tps, num), 'Concentration': muteinC, 'Activity Type': np.tile(np.array('Predicted'), num), 'Activity': pred_data[:, :].reshape(num,)})
+            tps, num), 'Concentration': concs, 'Activity Type': np.tile(np.array('Predicted'), num), 'Activity': pred_data[:, :].reshape(num,)})
         df = df.append(df_pred, ignore_index=True)
 
         return df
@@ -118,13 +118,13 @@ def calc_scaled_activity(df_activity, ligands, concs):
     return df_activity
 
 
-def calc_dose_response(unkvec, tps, muteinC, ligand_name, cell_receptors):
-    """ Calculates activity for a given cell type at various mutein concentrations and timepoints. """
+def calc_dose_response(unkvec, tps, concs, ligand_name, cell_receptors):
+    """ Calculates activity for a given cell type at various concentrations and timepoints. """
 
-    total_activity = np.zeros((len(muteinC), tps.size))
+    total_activity = np.zeros((len(concs), tps.size))
 
-    # loop for each mutein concentration
-    for i, conc in enumerate(muteinC):
+    # loop for each concentration
+    for i, conc in enumerate(concs):
         unkvec[0] = unkvec[1] = 0
         if ligand_name == 'IL15':
             unkvec[1] = conc
@@ -145,7 +145,7 @@ def calc_dose_response(unkvec, tps, muteinC, ligand_name, cell_receptors):
 
 
 def activity_scaling(df):
-    """ Determines scaling parameters for specified cell groups for across all muteins. """
+    """ Determines scaling parameters for specified cell groups for across all ligands. """
 
     cell_groups = [['T-reg', 'Mem Treg', 'Naive Treg'], ['T-helper', 'Mem Th', 'Naive Th'], ['NK'], ['CD8+', 'Naive CD8+', 'Mem CD8+']]
 
