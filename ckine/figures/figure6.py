@@ -1,5 +1,5 @@
 """
-This creates Figure S6.
+This creates Figure 6.
 """
 import string
 import numpy as np
@@ -9,6 +9,7 @@ from scipy.optimize import least_squares
 from .figureCommon import subplotLabel, getSetup, global_legend
 from ..model import receptor_expression, runCkineU, getTotalActiveCytokine
 from ..imports import import_pstat, import_samples_2_15, import_Rexpr
+from .figureS5 import optimize_scale
 
 _, _, _, _, dataMean = import_pstat()
 dataMean.reset_index(inplace=True)
@@ -152,24 +153,12 @@ def activity_scaling(df):
     scales = np.zeros((4, 2))
     for i, cells in enumerate(cell_groups):
         subset_df = df[df['Cells'].isin(cells)]
-        scales[i, :] = optimize_scale(np.array(subset_df.loc[(subset_df["Activity Type"] == 'Predicted'), "Activity"]),
-                                      np.array(subset_df.loc[(subset_df["Activity Type"] == 'Experimental'), "RFU"]))
+        scales[i, :] = optimize_scale_one(np.array(subset_df.loc[(subset_df["Activity Type"] == 'Predicted'), "Activity"]),
+                                          np.array(subset_df.loc[(subset_df["Activity Type"] == 'Experimental'), "RFU"]))
 
     return scales
 
 
-def optimize_scale(model_act, exp_act):
+def optimize_scale_one(model_act, exp_act):
     """ Formulates the optimal scale to minimize the residual between model activity predictions and experimental activity measurments for a given cell type. """
-
-    # scaling factors are sigmoidal and linear, respectively
-    guess = np.array([100.0, np.mean(exp_act) / np.mean(model_act)])
-
-    def calc_res(sc):
-        """ Calculate the residuals. This is the function we minimize. """
-        scaled_act = sc[1] * model_act / (model_act + sc[0])
-        err = exp_act - scaled_act
-        return err.flatten()
-
-    # find result of minimization where both params are >= 0
-    res = least_squares(calc_res, guess, bounds=(0.0, np.inf))
-    return res.x
+    return optimize_scale(model_act, model_act, exp_act, exp_act)
