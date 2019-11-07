@@ -19,7 +19,7 @@ Rexpr, _, _ = import_Rexpr()
 def makeFigure():
     """Get a list of the axis objects and create a figure"""
     # Get list of axis objects
-    ax, f = getSetup((7, 6), (1, 1))
+    ax, f = getSetup((7.5, 2), (1, 4))
 
     for ii, item in enumerate(ax):
         subplotLabel(item, string.ascii_uppercase[ii])
