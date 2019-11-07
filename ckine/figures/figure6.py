@@ -5,7 +5,6 @@ import string
 import numpy as np
 import pandas as pd
 import seaborn as sns
-from scipy.optimize import least_squares
 from .figureCommon import subplotLabel, getSetup, global_legend
 from ..model import receptor_expression, runCkineU, getTotalActiveCytokine
 from ..imports import import_pstat, import_samples_2_15, import_Rexpr
