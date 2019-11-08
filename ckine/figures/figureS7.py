@@ -44,9 +44,9 @@ def OPgen(unkVecOP, CellTypes, OpC):
     for Ctype in CellTypes:  # Update each vec for unique cell expression levels
         cell_data = receptor_dataC[cell_names_receptorC.index(Ctype), :]
         unkVecOP = T.set_subtensor(unkVecOP[16], receptor_expression(cell_data[0], unkVecOP[11], unkVecOP[14], unkVecOP[13], unkVecOP[15]))
-        unkVec = T.set_subtensor(unkVecOP[17], receptor_expression(cell_data[1], unkVecOP[11], unkVecOP[14], unkVecOP[13], unkVecOP[15]))
-        unkVec = T.set_subtensor(unkVecOP[18], receptor_expression(cell_data[2], unkVecOP[11], unkVecOP[14], unkVecOP[13], unkVecOP[15]))
-        unkVec = T.set_subtensor(unkVecOP[19], 0)
+        unkVecOP = T.set_subtensor(unkVecOP[17], receptor_expression(cell_data[1], unkVecOP[11], unkVecOP[14], unkVecOP[13], unkVecOP[15]))
+        unkVecOP = T.set_subtensor(unkVecOP[18], receptor_expression(cell_data[2], unkVecOP[11], unkVecOP[14], unkVecOP[13], unkVecOP[15]))
+        unkVecOP = T.set_subtensor(unkVecOP[19], 0)
         Cell_Op = OpC(unkVecOP)
 
     return Cell_Op
