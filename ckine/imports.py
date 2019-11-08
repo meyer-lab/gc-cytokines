@@ -147,6 +147,7 @@ def import_pstat(combine_samples=True):
     path = os.path.dirname(os.path.dirname(__file__))
     data = np.array(pds.read_csv(join(path, "ckine/data/pSTAT_data.csv"), encoding="latin1"))
     ckineConc = data[4, 2:14]
+    tps = np.array([0.5, 1.0, 2.0, 4.0]) * 60.0
     # 4 time points, 10 cell types, 12 concentrations, 2 replicates
     IL2_data = np.zeros((40, 12))
     IL2_data2 = IL2_data.copy()
@@ -176,4 +177,8 @@ def import_pstat(combine_samples=True):
             # take average of both replicates if specific entry isn't nan
             IL2_data[i, j] = np.nanmean(np.array([IL2_data[i, j], IL2_data2[i, j]]))
             IL15_data[i, j] = np.nanmean(np.array([IL15_data[i, j], IL15_data2[i, j]]))
-    return ckineConc, cell_names, IL2_data, IL15_data
+
+    dataMean = pds.DataFrame({'Cells': np.tile(np.repeat(cell_names, 48), 2), 'Ligand': np.concatenate((np.tile(np.array('IL2'), 480), np.tile(np.array('IL15'), 480))),
+                              'Time': np.tile(np.repeat(tps, 12), 20), 'Concentration': np.tile(ckineConc, 80), 'RFU': np.concatenate((IL2_data.reshape(480,), IL15_data.reshape(480,)))})
+
+    return ckineConc, cell_names, IL2_data, IL15_data, dataMean
