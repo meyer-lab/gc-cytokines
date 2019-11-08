@@ -33,7 +33,7 @@ def meshprep():
     """ Prepares the initial conditions for the tensor. The mutant condition here includes IL-2 mutein binding. """
     # Load the data from csv file
     _, numpy_data, cell_names = import_Rexpr()
-    ILs, _, _, _ = import_pstat()  # Cytokine stimulation concentrations in nM
+    ILs, _, _, _, _ = import_pstat()  # Cytokine stimulation concentrations in nM
     ILs = np.flip(ILs)
 
     # Goal is to make one cell expression levels by len(mat) for every cell

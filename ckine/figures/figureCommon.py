@@ -9,8 +9,10 @@ import svgutils.transform as st
 from matplotlib import gridspec, pyplot as plt
 from matplotlib.lines import Line2D
 from matplotlib.patches import Patch
+from scipy.optimize import least_squares
 from ..tensor import find_R2X
 from ..imports import import_pstat
+from ..model import runCkineUP, getTotalActiveSpecies, receptor_expression
 
 
 matplotlib.rcParams['legend.labelspacing'] = 0.2
@@ -138,7 +140,7 @@ def overlayCartoon(figFile, cartoonFile, x, y, scalee=1, scale_x=1, scale_y=1):
 
 def plot_ligands(ax, factors, ligand_names, cutoff=0.0):
     """Function to put all ligand decomposition plots in one figure."""
-    ILs, _, _, _ = import_pstat()  # Cytokine stimulation concentrations in nM
+    ILs, _, _, _, _ = import_pstat()  # Cytokine stimulation concentrations in nM
     n_ligands = len(ligand_names)
     ILs = np.flip(ILs)
     colors = sns.color_palette()
@@ -204,3 +206,71 @@ def plot_scaled_pstat(ax, cytokC, pstat):
     ax.scatter(cytokC, pstat[1, :], c="teal", s=2)  # 1 hr
     ax.scatter(cytokC, pstat[2, :], c="forestgreen", s=2)  # 2 hr
     ax.scatter(cytokC, pstat[3, :], c="darkred", s=2)  # 4 hr
+
+
+def global_legend(ax):
+    """ Create legend for colors and markers in subplots A-C. """
+    purple = Patch(color='darkorchid', label='IL-2')
+    yellow = Patch(color='goldenrod', label='IL-15')
+    circle = Line2D([], [], color='black', marker='o', linestyle='None', markersize=6, label='Experimental')
+    triangle = Line2D([], [], color='black', marker='^', linestyle='None', markersize=6, label='Predicted')
+    ax.legend(handles=[purple, yellow, circle, triangle], bbox_to_anchor=(1.02, 1), loc="upper left")
+
+
+def calc_dose_response(unkVec, scales, cell_data, tps, cytokC, exp_data_2, exp_data_15):
+    """ Calculates activity for a given cell type at various cytokine concentrations and timepoints. """
+    PTS = cytokC.shape[0]  # number of cytokine concentrations
+
+    rxntfr2 = unkVec.T.copy()
+    total_activity2 = np.zeros((PTS, rxntfr2.shape[0], tps.size))
+    total_activity15 = total_activity2.copy()
+
+    # updates rxntfr for receptor expression for IL2Ra, IL2Rb, gc
+    rxntfr2[:, 22] = receptor_expression(cell_data[0], rxntfr2[:, 17], rxntfr2[:, 20], rxntfr2[:, 19], rxntfr2[:, 21])
+    rxntfr2[:, 23] = receptor_expression(cell_data[1], rxntfr2[:, 17], rxntfr2[:, 20], rxntfr2[:, 19], rxntfr2[:, 21])
+    rxntfr2[:, 24] = receptor_expression(cell_data[2], rxntfr2[:, 17], rxntfr2[:, 20], rxntfr2[:, 19], rxntfr2[:, 21])
+    rxntfr2[:, 25] = 0.0  # We never observed any IL-15Ra
+
+    rxntfr15 = rxntfr2.copy()
+
+    # loop for each IL2 concentration
+    for i in range(PTS):
+        rxntfr2[:, 0] = rxntfr15[:, 1] = cytokC[i]  # assign concs for each cytokine
+
+        # handle case of IL-2
+        yOut = runCkineUP(tps, rxntfr2)
+        activity2 = np.dot(yOut, getTotalActiveSpecies().astype(np.float))
+        # handle case of IL-15
+        yOut = runCkineUP(tps, rxntfr15)
+        activity15 = np.dot(yOut, getTotalActiveSpecies().astype(np.float))
+
+        total_activity2[i, :, :] = np.reshape(activity2, (-1, 4))  # save the activity from this concentration for all 4 tps
+        total_activity15[i, :, :] = np.reshape(activity15, (-1, 4))  # save the activity from this concentration for all 4 tps
+
+    # scale receptor/cell measurements to pSTAT activity for each sample
+    for j in range(len(scales)):
+        scale1, scale2 = optimize_scale(total_activity2[:, j, :], total_activity15[:, j, :], exp_data_2, exp_data_15)  # find optimal constants
+        total_activity2[:, j, :] = scale2 * total_activity2[:, j, :] / (total_activity2[:, j, :] + scale1)  # adjust activity for this sample
+        total_activity15[:, j, :] = scale2 * total_activity15[:, j, :] / (total_activity15[:, j, :] + scale1)  # adjust activity for this sample
+
+    return total_activity2, total_activity15
+
+
+def optimize_scale(model_act2, model_act15, exp_act2, exp_act15):
+    """ Formulates the optimal scale to minimize the residual between model activity predictions and experimental activity measurments for a given cell type. """
+    exp_act2 = exp_act2.T  # transpose to match model_act
+    exp_act15 = exp_act15.T
+
+    # scaling factors are sigmoidal and linear, respectively
+    guess = np.array([100.0, np.mean(exp_act2 + exp_act15) / np.mean(model_act2 + model_act15)])
+
+    def calc_res(sc):
+        """ Calculate the residuals. This is the function we minimize. """
+        scaled_act2 = sc[1] * model_act2 / (model_act2 + sc[0])
+        scaled_act15 = sc[1] * model_act15 / (model_act15 + sc[0])
+        err = np.hstack((exp_act2 - scaled_act2, exp_act15 - scaled_act15))
+        return np.reshape(err, (-1,))
+
+    # find result of minimization where both params are >= 0
+    res = least_squares(calc_res, guess, bounds=(0.0, np.inf))
+    return res.x

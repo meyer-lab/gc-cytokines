@@ -6,16 +6,14 @@ import string
 import numpy as np
 import pandas as pd
 import seaborn as sns
-import matplotlib.lines as mlines
-import matplotlib.patches as mpatches
 from scipy.optimize import least_squares
 from scipy.stats import pearsonr
-from .figureCommon import subplotLabel, getSetup
+from .figureCommon import subplotLabel, getSetup, global_legend
 from .figureS5 import calc_dose_response, plot_exp_v_pred
 from ..imports import import_pstat, import_Rexpr, import_samples_2_15
 
 ckineConc, cell_names_pstat, IL2_data, IL2_data2, IL15_data, IL15_data2 = import_pstat(combine_samples=False)
-_, _, IL2_data_avg, IL15_data_avg = import_pstat(combine_samples=True)
+_, _, IL2_data_avg, IL15_data_avg, _ = import_pstat(combine_samples=True)
 unkVec_2_15, scales = import_samples_2_15(N=1)  # use one rate
 _, receptor_data, cell_names_receptor = import_Rexpr()
 
@@ -131,15 +129,6 @@ def plot_corrcoef(ax, tps):
     ax.bar(x_pos + 0.15, corr_coefs[len(cell_names_receptor):(2 * len(cell_names_receptor))], width=0.3, color='goldenrod', label='IL15', tick_label=cell_names_receptor)
     ax.set(ylabel=("Correlation"), ylim=(0., 1.))
     ax.set_xticklabels(ax.get_xticklabels(), rotation=40, fontsize=6.8, rotation_mode="anchor", ha="right")
-
-
-def global_legend(ax):
-    """ Create legend for colors and markers in subplots A-C. """
-    purple = mpatches.Patch(color='darkorchid', label='IL-2')
-    yellow = mpatches.Patch(color='goldenrod', label='IL-15')
-    circle = mlines.Line2D([], [], color='black', marker='o', linestyle='None', markersize=6, label='Experimental')
-    triangle = mlines.Line2D([], [], color='black', marker='^', linestyle='None', markersize=6, label='Predicted')
-    ax.legend(handles=[purple, yellow, circle, triangle], bbox_to_anchor=(1.02, 1), loc="upper left")
 
 
 def calculate_predicted_EC50(x0, cell_receptor_data, tps, IL2_pstat, IL15_pstat):
