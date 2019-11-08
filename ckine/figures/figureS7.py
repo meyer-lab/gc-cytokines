@@ -3,14 +3,11 @@ This creates Figure S5. Full panel of measured vs simulated for IL-2 and IL-15.
 """
 import string
 import numpy as np
-import matplotlib.cm as cm
 import theano.tensor as T
 import theano
-import matplotlib.pyplot as plt
-from scipy.optimize import least_squares
-from .figureCommon import subplotLabel, getSetup, plot_conf_int, plot_scaled_pstat
-from ..model import runCkineUP, getTotalActiveSpecies, receptor_expression, nParams
-from ..imports import import_Rexpr, import_pstat, import_samples_2_15
+from .figureCommon import subplotLabel, getSetup
+from ..model import getTotalActiveSpecies, receptor_expression, nParams
+from ..imports import import_Rexpr, import_samples_2_15
 from ..differencing_op import runCkineDoseOp
 
 
@@ -27,7 +24,7 @@ def makeFigure():
     return f
 
 
-def Specificity(ax, cell_subset=None):
+def Specificity(ax):
     """ Creates Theano Function for calculating Specificity gradient with respect to various parameters"""
     S_partials = Sfunc(unkVec.flatten()) / S.eval()
     y_pos = np.arange(nParams() - 6)
@@ -38,20 +35,19 @@ def Specificity(ax, cell_subset=None):
     barlabel(Derivs, vars_string, ax)
 
 
-def OPgen(unkVec, CellTypes, Op):
-    _, receptor_data, cell_names_receptor = import_Rexpr()
-    cell_names_receptor = cell_names_receptor.tolist()
-    OpHolder = np.zeros(len(CellTypes))
+def OPgen(unkVecOP, CellTypes, OpC):
+    "Generates the UnkVec with cell specific receptor abundances and expression rates"
+    _, receptor_dataC, cell_names_receptorC = import_Rexpr()
+    cell_names_receptorC = cell_names_receptorC.tolist()
     CellTypes = [CellTypes]
-    predVec = T.zeros(1)
 
-    for i, Ctype in enumerate(CellTypes):  # Update each vec for unique cell expression levels
-        cell_data = receptor_data[cell_names_receptor.index(Ctype), :]
-        unkVec = T.set_subtensor(unkVec[16], receptor_expression(cell_data[0], unkVec[11], unkVec[14], unkVec[13], unkVec[15]))
-        unkVec = T.set_subtensor(unkVec[17], receptor_expression(cell_data[1], unkVec[11], unkVec[14], unkVec[13], unkVec[15]))
-        unkVec = T.set_subtensor(unkVec[18], receptor_expression(cell_data[2], unkVec[11], unkVec[14], unkVec[13], unkVec[15]))
-        unkVec = T.set_subtensor(unkVec[19], 0)
-        Cell_Op = Op(unkVec)
+    for Ctype in CellTypes:  # Update each vec for unique cell expression levels
+        cell_data = receptor_dataC[cell_names_receptorC.index(Ctype), :]
+        unkVecOP = T.set_subtensor(unkVecOP[16], receptor_expression(cell_data[0], unkVecOP[11], unkVecOP[14], unkVecOP[13], unkVecOP[15]))
+        unkVec = T.set_subtensor(unkVecOP[17], receptor_expression(cell_data[1], unkVecOP[11], unkVecOP[14], unkVecOP[13], unkVecOP[15]))
+        unkVec = T.set_subtensor(unkVecOP[18], receptor_expression(cell_data[2], unkVecOP[11], unkVecOP[14], unkVecOP[13], unkVecOP[15]))
+        unkVec = T.set_subtensor(unkVecOP[19], 0)
+        Cell_Op = OpC(unkVecOP)
 
     return Cell_Op
 
