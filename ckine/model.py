@@ -82,7 +82,6 @@ def runCkineUP(tps, rxntfr, preT=0.0, prestim=None, actV=None):
     else:
         assert rxntfr.size % __rxParams == 0
         assert rxntfr.shape[1] == __rxParams
-        # TODO: Note there's no sortF check here.
 
     if preT != 0.0:
         assert preT > 0.0
