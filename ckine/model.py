@@ -66,8 +66,8 @@ def runCkineU(tps, rxntfr, preT=0.0, prestim=None):
     return runCkineUP(tps, np.atleast_2d(rxntfr.copy()), preT, prestim)
 
 
-def runCkineUP(tps, rxntfr, preT=0.0, prestim=None):
-    """ Version of runCkine that runs in parallel. """
+def runCkineUP(tps, rxntfr, preT=0.0, prestim=None, actV=None):
+    """ Version of runCkine that runs in parallel. If actV is set we'll return sensitivities. """
     tps = np.array(tps)
     assert rxntfr.size % __nParams == 0
     assert rxntfr.shape[1] == __nParams
@@ -75,8 +75,6 @@ def runCkineUP(tps, rxntfr, preT=0.0, prestim=None):
     assert (rxntfr[:, 19] < 1.0).all()  # Check that sortF won't throw
     assert np.all(np.any(rxntfr > 0.0, axis=1))  # make sure at least one element is >0 for all rows
 
-    yOut = np.zeros((rxntfr.shape[0] * tps.size, __nSpecies), dtype=np.float64)
-
     rxntfr = getRateVec(rxntfr)
 
     if preT != 0.0:
@@ -84,47 +82,36 @@ def runCkineUP(tps, rxntfr, preT=0.0, prestim=None):
         assert prestim.size == 6
         prestim = prestim.ctypes.data_as(ct.POINTER(ct.c_double))
 
-    retVal = libb.runCkineParallel(
-        rxntfr.ctypes.data_as(ct.POINTER(ct.c_double)), tps.ctypes.data_as(ct.POINTER(ct.c_double)), tps.size, rxntfr.shape[0], yOut.ctypes.data_as(ct.POINTER(ct.c_double)), preT, prestim
-    )
+    if actV is None:
+        yOut = np.zeros((rxntfr.shape[0] * tps.size, __nSpecies), dtype=np.float64)
+
+        retVal = libb.runCkineParallel(
+            rxntfr.ctypes.data_as(ct.POINTER(ct.c_double)), tps.ctypes.data_as(ct.POINTER(ct.c_double)), tps.size, rxntfr.shape[0], yOut.ctypes.data_as(ct.POINTER(ct.c_double)), preT, prestim
+        )
+    else:
+        yOut = np.zeros((rxntfr.shape[0] * tps.size), dtype=np.float64)
+        sensV = np.zeros((rxntfr.shape[0] * tps.size, __rxParams), dtype=np.float64, order="C")
+
+        retVal = libb.runCkineSParallel(
+            rxntfr.ctypes.data_as(ct.POINTER(ct.c_double)),
+            tps.ctypes.data_as(ct.POINTER(ct.c_double)),
+            tps.size,
+            rxntfr.shape[0],
+            yOut.ctypes.data_as(ct.POINTER(ct.c_double)),
+            sensV.ctypes.data_as(ct.POINTER(ct.c_double)),
+            actV.ctypes.data_as(ct.POINTER(ct.c_double)),
+            preT,
+            prestim,
+        )
+
+        sensV = condenseSENV(sensV)
 
     assert retVal >= 0  # make sure solver worked
 
+    if actV is not None:
+        return (yOut, sensV)
+
     return yOut
-
-
-def runCkineSP(tps, rxntfr, actV, preT=0.0, prestim=None):
-    """ Version of runCkine that runs in parallel. """
-    tps = np.array(tps)
-    assert rxntfr.size % __nParams == 0
-    assert rxntfr.shape[1] == __nParams
-    assert (rxntfr[:, 19] < 1.0).all()  # Check that sortF won't throw
-
-    yOut = np.zeros((rxntfr.shape[0] * tps.size), dtype=np.float64)
-
-    rxntfr = getRateVec(rxntfr)
-    sensV = np.zeros((rxntfr.shape[0] * tps.size, __rxParams), dtype=np.float64, order="C")
-
-    if preT != 0.0:
-        assert preT > 0.0
-        assert prestim.size == 6
-        prestim = prestim.ctypes.data_as(ct.POINTER(ct.c_double))
-
-    retVal = libb.runCkineSParallel(
-        rxntfr.ctypes.data_as(ct.POINTER(ct.c_double)),
-        tps.ctypes.data_as(ct.POINTER(ct.c_double)),
-        tps.size,
-        rxntfr.shape[0],
-        yOut.ctypes.data_as(ct.POINTER(ct.c_double)),
-        sensV.ctypes.data_as(ct.POINTER(ct.c_double)),
-        actV.ctypes.data_as(ct.POINTER(ct.c_double)),
-        preT,
-        prestim,
-    )
-
-    sensV = condenseSENV(sensV)
-
-    return (yOut, retVal, sensV)
 
 
 def fullModel(y, t, rxntfr):
