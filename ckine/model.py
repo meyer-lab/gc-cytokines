@@ -69,13 +69,20 @@ def runCkineU(tps, rxntfr, preT=0.0, prestim=None):
 def runCkineUP(tps, rxntfr, preT=0.0, prestim=None, actV=None):
     """ Version of runCkine that runs in parallel. If actV is set we'll return sensitivities. """
     tps = np.array(tps)
-    assert rxntfr.size % __nParams == 0
-    assert rxntfr.shape[1] == __nParams
-
-    assert (rxntfr[:, 19] < 1.0).all()  # Check that sortF won't throw
-    assert np.all(np.any(rxntfr > 0.0, axis=1))  # make sure at least one element is >0 for all rows
-
-    rxntfr = getRateVec(rxntfr)
+    assert np.all(np.any(rxntfr > 0.0, axis=1)), "Make sure at least one element is >0 for all rows."
+    assert not np.any(rxntfr < 0.0), "Make sure no values are negative."
+    
+    # Convert if we're using the condensed model
+    rxnSizeStart = rxntfr.shape[1]
+    if rxntfr.shape[1] == __nParams:
+        assert rxntfr.size % __nParams == 0
+        assert (rxntfr[:, 19] < 1.0).all()  # Check that sortF won't throw
+        
+        rxntfr = getRateVec(rxntfr)
+    else:
+        assert rxntfr.size % __rxParams == 0
+        assert rxntfr.shape[1] == __rxParams
+        # TODO: Note there's no sortF check here.
 
     if preT != 0.0:
         assert preT > 0.0
@@ -104,11 +111,15 @@ def runCkineUP(tps, rxntfr, preT=0.0, prestim=None, actV=None):
             prestim,
         )
 
-        sensV = condenseSENV(sensV)
+        
 
     assert retVal >= 0  # make sure solver worked
 
     if actV is not None:
+        # If we're using the condensed model
+        if rxnSizeStart == __nParams:
+            sensV = condenseSENV(sensV)
+
         return (yOut, sensV)
 
     return yOut

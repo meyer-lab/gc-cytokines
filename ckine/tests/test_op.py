@@ -7,7 +7,7 @@ import theano.tensor as T
 from theano.tests import unittest_tools as utt
 import numpy as np
 from ..differencing_op import runCkineDoseOp
-from ..model import nSpecies, nParams, getTotalActiveSpecies
+from ..model import nSpecies, nParams, rxParams, getTotalActiveSpecies
 
 
 def setupJacobian(Op, unk):
@@ -29,7 +29,9 @@ class TestOp(unittest.TestCase):
 
     def setUp(self):
         self.unkV = np.full(nParams(), 0.3)
+        self.unkVfull = np.full(rxParams(), 0.3)
         self.doseUnkV = self.unkV[6::]
+        self.doseUnkVfull = self.unkVfull[6::]
         self.cond = np.full(nSpecies(), 0.1)
         self.conditions = np.full((3, 6), 10.)
         self.ts = np.logspace(-3, 3, num=10)
@@ -40,6 +42,13 @@ class TestOp(unittest.TestCase):
         Op = runCkineDoseOp(np.array(1.0), self.cond, self.conditions)
 
         utt.verify_grad(Op, [self.doseUnkV], abs_tol=0.01, rel_tol=0.01)
+        
+    def test_runCkineDoseOpFull(self):
+        """ Verify the Jacobian passed back by runCkineDoseOp with full param set. """
+        theano.config.compute_test_value = 'ignore'
+        Op = runCkineDoseOp(np.array(1.0), self.cond, self.conditions)
+
+        utt.verify_grad(Op, [self.doseUnkVfull], abs_tol=0.01, rel_tol=0.01)
 
     def test_runCkineDoseTpsOp(self):
         """ Verify the Jacobian passed back by runCkineDoseOp. """
@@ -47,12 +56,25 @@ class TestOp(unittest.TestCase):
         Op = runCkineDoseOp(self.ts, self.cond, self.conditions)
 
         utt.verify_grad(Op, [self.doseUnkV], abs_tol=0.01, rel_tol=0.01)
+        
+    def test_runCkineDoseTpsOpFull(self):
+        """ Verify the Jacobian passed back by runCkineDoseOp. """
+        theano.config.compute_test_value = 'ignore'
+        Op = runCkineDoseOp(self.ts, self.cond, self.conditions)
+
+        utt.verify_grad(Op, [self.doseUnkVfull], abs_tol=0.01, rel_tol=0.01)
 
     def test_runCkineDosePrestimOp(self):
         """ Verify the Jacobian passed back by runCkineDoseOp with prestimulation. """
         Op = runCkineDoseOp(np.array(1.0), self.cond, self.conditions, 10.0, np.ones(6) * 10.0)
 
         utt.verify_grad(Op, [self.doseUnkV], abs_tol=0.01, rel_tol=0.01)
+        
+    def test_runCkineDosePrestimOpFull(self):
+        """ Verify the Jacobian passed back by runCkineDoseOp with prestimulation. """
+        Op = runCkineDoseOp(np.array(1.0), self.cond, self.conditions, 10.0, np.ones(6) * 10.0)
+
+        utt.verify_grad(Op, [self.doseUnkVfull], abs_tol=0.01, rel_tol=0.01)
 
     def test_runCkineDoseOp_noActivity(self):
         """ Test that in the absence of ligand most values and gradients are zero. """
