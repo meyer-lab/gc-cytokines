@@ -75,8 +75,6 @@ def runCkineUP(tps, rxntfr, preT=0.0, prestim=None, actV=None):
     assert (rxntfr[:, 19] < 1.0).all()  # Check that sortF won't throw
     assert np.all(np.any(rxntfr > 0.0, axis=1))  # make sure at least one element is >0 for all rows
 
-    yOut = np.zeros((rxntfr.shape[0] * tps.size, __nSpecies), dtype=np.float64)
-
     rxntfr = getRateVec(rxntfr)
 
     if preT != 0.0:
@@ -85,10 +83,13 @@ def runCkineUP(tps, rxntfr, preT=0.0, prestim=None, actV=None):
         prestim = prestim.ctypes.data_as(ct.POINTER(ct.c_double))
 
     if actV is None:
+        yOut = np.zeros((rxntfr.shape[0] * tps.size, __nSpecies), dtype=np.float64)
+
         retVal = libb.runCkineParallel(
             rxntfr.ctypes.data_as(ct.POINTER(ct.c_double)), tps.ctypes.data_as(ct.POINTER(ct.c_double)), tps.size, rxntfr.shape[0], yOut.ctypes.data_as(ct.POINTER(ct.c_double)), preT, prestim
         )
     else:
+        yOut = np.zeros((rxntfr.shape[0] * tps.size), dtype=np.float64)
         sensV = np.zeros((rxntfr.shape[0] * tps.size, __rxParams), dtype=np.float64, order="C")
 
         retVal = libb.runCkineSParallel(
