@@ -3,7 +3,7 @@ Theano Op for using differencing for Jacobian calculation.
 """
 import numpy as np
 from theano.tensor import dot, dmatrix, dvector, Op
-from .model import nSpecies, nParams, runCkineUP, runCkineSP
+from .model import nSpecies, nParams, runCkineUP
 
 # pylint: disable=abstract-method
 
@@ -54,12 +54,11 @@ class runCkineOpDoseDiff(Op):
             outt = runCkineUP(self.ts, rxntfr, self.preT, self.prestim)
             return np.dot(outt, self.condense)
 
-        outt = runCkineSP(self.ts, rxntfr, self.condense, self.preT, self.prestim)
+        outt = runCkineUP(self.ts, rxntfr, self.preT, self.prestim, self.condense)
         assert outt[0].shape == (self.conditions.shape[0] * self.ts.size,)
-        assert outt[1] >= 0
 
         # We override the ligands, so don't pass along their gradient
-        return outt[2][:, 6::]
+        return outt[1][:, 6::]
 
     def perform(self, node, inputs, output_storage, params=None):
         output_storage[0][0] = self.runCkine(inputs, sensi=True)
