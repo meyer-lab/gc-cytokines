@@ -4,7 +4,7 @@ The initial conditions vary the concentrations of the three ligands to simulate 
 Cell lines are defined by the number of each receptor subspecies on their surface.
 """
 import numpy as np
-from .model import runCkineUP, nSpecies, getTotalActiveSpecies, receptor_expression
+from .model import runCkineUP, getTotalActiveSpecies, receptor_expression
 from .imports import import_Rexpr, import_samples_2_15, import_pstat
 
 rxntfR, _ = import_samples_2_15(N=1, tensor=True)
