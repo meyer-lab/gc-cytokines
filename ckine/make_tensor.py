@@ -61,12 +61,11 @@ def make_tensor():
     rxn = np.tile(rxntfR.copy(), (Conc_recept_cell.shape[0], 1))
     rxn[:, 22:30] = Conc_recept_cell[:, 6:14]  # Receptor expression
     rxn[:, 0:6] = Conc_recept_cell[:, 0:6]  # Cytokine stimulation concentrations
+
     # Calculate solutions
     y_of_combos = runCkineUP(tensor_time, rxn)
 
     values = np.tensordot(y_of_combos, getTotalActiveSpecies(), (1, 0))
-
-    #tensor3D = np.zeros((values.shape[1], len(cell_names), len(concMesh)))
 
     tensor3D = values.reshape((-1, len(concMesh), len(cell_names)), order='F')
     tensor3D = np.swapaxes(tensor3D, 1, 2)
