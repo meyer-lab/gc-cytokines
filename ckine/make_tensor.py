@@ -4,7 +4,7 @@ The initial conditions vary the concentrations of the three ligands to simulate 
 Cell lines are defined by the number of each receptor subspecies on their surface.
 """
 import numpy as np
-from .model import runCkineU, nSpecies, getTotalActiveSpecies, receptor_expression
+from .model import runCkineUP, getTotalActiveSpecies, receptor_expression
 from .imports import import_Rexpr, import_samples_2_15, import_pstat
 
 rxntfR, _ = import_samples_2_15(N=1, tensor=True)
@@ -13,20 +13,6 @@ rxntfR = np.squeeze(rxntfR)
 
 # generate n_timepoints evenly spaced timepoints to 4 hrs
 tensor_time = np.linspace(0.0, 240.0, 200)
-
-
-def ySolver(matIn, ts, tensor=True):
-    """ This generates all the solutions for the Wild Type interleukins across conditions defined in meshprep(). """
-    matIn = np.squeeze(matIn)
-    rxn = rxntfR.copy()
-
-    if tensor:
-        rxn[22:30] = matIn[6:14]  # Receptor expression
-    rxn[0:6] = matIn[0:6]  # Cytokine stimulation concentrations in the following order: IL2, 15, 7, 9, 4, 21, and in nM
-
-    temp = runCkineU(ts, rxn)
-
-    return temp
 
 
 def meshprep():
@@ -67,31 +53,21 @@ def meshprep():
     return Conc_recept_cell, concMesh, concMesh_stacked, cell_names
 
 
-def prep_tensor():
-    """Function to solve the model for initial conditions in meshprep()."""
-    Conc_recept_cell, concMesh, concMesh_stacked, cell_names = meshprep()
-
-    # Allocate a y_of_combos
-    y_of_combos = np.zeros((len(Conc_recept_cell), tensor_time.size, nSpecies()))
-
-    for jj, row in enumerate(Conc_recept_cell):
-        # Solve using the WT solver for each of IL2, IL15, and IL7. And the mutant Solver for IL-2--Il-2Ra.
-        y_of_combos[jj] = ySolver(row, tensor_time)
-
-    return y_of_combos, Conc_recept_cell, concMesh, concMesh_stacked, cell_names
-
-
 def make_tensor():
     """Function to generate the 3D values tensor from the prepared solutions."""
-    y_of_combos, Conc_recept_cell, concMesh, concMesh_stacked, cell_names = prep_tensor()
+    Conc_recept_cell, concMesh, concMesh_stacked, cell_names = meshprep()
 
-    values = np.zeros((y_of_combos.shape[0], y_of_combos.shape[1], 1))
+    # Setup all the solutions
+    rxn = np.tile(rxntfR.copy(), (Conc_recept_cell.shape[0], 1))
+    rxn[:, 22:30] = Conc_recept_cell[:, 6:14]  # Receptor expression
+    rxn[:, 0:6] = Conc_recept_cell[:, 0:6]  # Cytokine stimulation concentrations
 
-    values[:, :, 0] = np.tensordot(y_of_combos, getTotalActiveSpecies(), (2, 0))
+    # Calculate solutions
+    y_of_combos = runCkineUP(tensor_time, rxn)
 
-    tensor3D = np.zeros((values.shape[1], len(cell_names), len(concMesh)))
+    values = np.tensordot(y_of_combos, getTotalActiveSpecies(), (1, 0))
 
-    for ii in range(tensor3D.shape[0]):
-        tensor3D[ii] = values[:, ii, 0].reshape(tensor3D.shape[1:3])
+    tensor3D = values.reshape((-1, len(concMesh), len(cell_names)), order='F')
+    tensor3D = np.swapaxes(tensor3D, 1, 2)
 
     return tensor3D, Conc_recept_cell, concMesh, concMesh_stacked, cell_names
