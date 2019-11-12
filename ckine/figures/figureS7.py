@@ -6,7 +6,7 @@ import numpy as np
 import theano.tensor as T
 import theano
 from .figureCommon import subplotLabel, getSetup
-from ..model import getTotalActiveSpecies, receptor_expression, nParams, getRateVec, getparamsdict, rxParams
+from ..model import getTotalActiveSpecies, receptor_expression, getRateVec, getparamsdict, rxParams
 from ..imports import import_Rexpr, import_samples_2_15
 from ..differencing_op import runCkineDoseOp
 
