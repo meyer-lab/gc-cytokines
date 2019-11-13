@@ -247,19 +247,45 @@ def calc_dose_response(unkVec, scales, cell_data, tps, cytokC, exp_data_2, exp_d
         total_activity2[i, :, :] = np.reshape(activity2, (-1, 4))  # save the activity from this concentration for all 4 tps
         total_activity15[i, :, :] = np.reshape(activity15, (-1, 4))  # save the activity from this concentration for all 4 tps
 
-    # scale receptor/cell measurements to pSTAT activity for each sample
-    for j in range(len(scales)):
-        scale1, scale2 = optimize_scale(total_activity2[:, j, :], total_activity15[:, j, :], exp_data_2, exp_data_15)  # find optimal constants
-        total_activity2[:, j, :] = scale2 * total_activity2[:, j, :] / (total_activity2[:, j, :] + scale1)  # adjust activity for this sample
-        total_activity15[:, j, :] = scale2 * total_activity15[:, j, :] / (total_activity15[:, j, :] + scale1)  # adjust activity for this sample
-
     return total_activity2, total_activity15
+
+
+def grouped_scaling(scales, cell_names, expr_act2, expr_act15, pred_act2, pred_act15):
+    """ Determines scaling parameters for specified cell groups. """
+
+    cell_groups = [['T-reg', 'Mem Treg', 'Naive Treg'], ['T-helper', 'Mem Th', 'Naive Th'], ['NK'], ['CD8+']]
+
+    scale = np.zeros((4, 2, len(scales)))
+    for i, cells in enumerate(cell_groups):
+        expr_act_2 = np.zeros((len(cells), 12, len(scales), 4))
+        expr_act_15 = expr_act_2.copy()
+        pred_act_2 = expr_act_2.copy()
+        pred_act_15 = expr_act_2.copy()
+        for j, _ in enumerate(scales):
+            num = 0
+            for k, cell in enumerate(cell_names):
+                if cell in cells:
+                    expr_act_2[num, :, j, :] = expr_act2[(k * 4): ((k + 1) * 4)].T
+                    expr_act_15[num, :, j, :] = expr_act15[(k * 4): ((k + 1) * 4)].T
+                    pred_act_2[num, :, j, :] = pred_act2[k, :, j, :]
+                    pred_act_15[num, :, j, :] = pred_act15[k, :, j, :]
+                    num = num + 1
+            print(expr_act_2)
+            print(pred_act_2)
+            print(expr_act_2[:, :, j, :])
+            print(pred_act_2[:, :, j, :])
+            scale[i, :, j] = optimize_scale(expr_act_2[:, :, j, :], expr_act_15[:, :, j, :], pred_act_2[:, :, j, :], pred_act_15[:, :, j, :])
+            
+    return scale
 
 
 def optimize_scale(model_act2, model_act15, exp_act2, exp_act15):
     """ Formulates the optimal scale to minimize the residual between model activity predictions and experimental activity measurments for a given cell type. """
-    exp_act2 = exp_act2.T  # transpose to match model_act
-    exp_act15 = exp_act15.T
+    #exp_act2 = exp_act2.T  # transpose to match model_act
+    #exp_act15 = exp_act15.T
+    
+    print(exp_act2.shape)
+    print(model_act2.shape)
 
     # scaling factors are sigmoidal and linear, respectively
     guess = np.array([100.0, np.mean(exp_act2 + exp_act15) / np.mean(model_act2 + model_act15)])

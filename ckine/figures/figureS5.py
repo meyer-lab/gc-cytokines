@@ -4,7 +4,7 @@ This creates Figure S5. Full panel of measured vs simulated for IL-2 and IL-15.
 import string
 import numpy as np
 import matplotlib.cm as cm
-from .figureCommon import subplotLabel, getSetup, plot_conf_int, plot_scaled_pstat, calc_dose_response
+from .figureCommon import subplotLabel, getSetup, plot_conf_int, plot_scaled_pstat, calc_dose_response, grouped_scaling
 from ..imports import import_Rexpr, import_samples_2_15, import_pstat
 
 
@@ -39,18 +39,35 @@ def plot_exp_v_pred(ax, cell_subset=None):
     tps = np.array([0.5, 1.0, 2.0, 4.0]) * 60.0
     axis = 0
     shift = 10 if cell_subset == [] else len(cell_subset)  # there are 10 cells if no subset is given
-
+    
+    total_activity2 = np.zeros((len(cell_names_pstat), len(ckineConc), len(scales), len(tps)))
+    total_activity15 = total_activity2.copy()
     for i, name in enumerate(cell_names_pstat):
         if name in cell_subset or cell_subset == []:  # if a subset is provided only plot the listed names
             # plot matching experimental and predictive pSTAT data for the same cell type
             assert cell_names_pstat[i] == cell_names_receptor[i]
             IL2_activity, IL15_activity = calc_dose_response(unkVec_2_15, scales, receptor_data[i], tps, ckineConc, IL2_data[(i * 4): ((i + 1) * 4)], IL15_data[(i * 4): ((i + 1) * 4)])
-            if axis == shift - 1:  # only plot the legend for the last entry
-                plot_dose_response(ax[axis], ax[axis + shift], IL2_activity, IL15_activity, cell_names_receptor[i], tps, ckineConc, legend=True)
-            else:
-                plot_dose_response(ax[axis], ax[axis + shift], IL2_activity, IL15_activity, cell_names_receptor[i], tps, ckineConc)
-            plot_scaled_pstat(ax[axis], np.log10(ckineConc.astype(np.float)), IL2_data[(i * 4): ((i + 1) * 4)])
-            plot_scaled_pstat(ax[axis + shift], np.log10(ckineConc.astype(np.float)), IL15_data[(i * 4): ((i + 1) * 4)])
+            total_activity2[i, :, :, :] = IL2_activity
+            total_activity15[i, :, :, :] = IL15_activity
+            
+    scale = grouped_scaling(scales, cell_names_pstat, IL2_data, IL15_data, total_activity2, total_activity15)
+    
+    cell_groups = [['T-reg', 'Mem Treg', 'Naive Treg'], ['T-helper', 'Mem Th', 'Naive Th'], ['NK'], ['CD8+']]
+    
+    for j, cells in enumerate(cell_groups):
+        for k, cell in enumerate(cell_names_pstat):
+            if cell in cells:
+                for l in range(scale.shape[2]):
+                    total_activity2[k, :, l, :] = scale[j, 1, l] * total_activity2[k, :, l, :] / (total_activity2[k, :, l, :] + scale[j, 0, l])  # adjust activity for this sample
+                    total_activity15[k, :, l, :] = scale[j, 1, l] * total_activity15[k, :, l, :] / (total_activity15[k, :, l, :] + scale[j, 0, l])  # adjust activity for this sample
+    
+    for m, _ in enumerate(cell_names_pstat):
+        if axis == shift - 1:  # only plot the legend for the last entry
+            plot_dose_response(ax[axis], ax[axis + shift], total_activity2[m, :, :, :], total_activity15[m, :, :, :], cell_names_receptor[m], tps, ckineConc, legend=True)
+        else:
+            plot_dose_response(ax[axis], ax[axis + shift], total_activity2[m, :, :, :], total_activity15[m, :, :, :], cell_names_receptor[m], tps, ckineConc)
+            plot_scaled_pstat(ax[axis], np.log10(ckineConc.astype(np.float)), IL2_data[(m * 4): ((m + 1) * 4)])
+            plot_scaled_pstat(ax[axis + shift], np.log10(ckineConc.astype(np.float)), IL15_data[(m * 4): ((m + 1) * 4)])
             axis = axis + 1
 
 
