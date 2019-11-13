@@ -14,7 +14,7 @@ from ..differencing_op import runCkineDoseOp
 def makeFigure():
     """Get a list of the axis objects and create a figure"""
     # Get list of axis objects
-    ax, f = getSetup((10, 4), (1, 1))
+    ax, f = getSetup((30, 4), (1, 1))
 
     for ii, item in enumerate(ax):
         subplotLabel(item, string.ascii_uppercase[ii])
