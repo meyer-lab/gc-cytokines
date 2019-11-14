@@ -44,14 +44,11 @@ def OPgen(unkVecOP, CellTypes, OpC):
 
     for Ctype in CellTypes:  # Update each vec for unique cell expression levels
         cell_data = receptor_dataC[cell_names_receptorC.index(Ctype), :]
-        print(CellTypes)
-        print(receptor_dataC[cell_names_receptorC.index(Ctype), :])
         unkVecOP = T.set_subtensor(unkVecOP[46], receptor_expression(cell_data[0], unkVecOP[41], unkVecOP[44], unkVecOP[43], unkVecOP[45]))  # RA
         unkVecOP = T.set_subtensor(unkVecOP[47], receptor_expression(cell_data[1], unkVecOP[41], unkVecOP[44], unkVecOP[43], unkVecOP[45]))  # Rb
         unkVecOP = T.set_subtensor(unkVecOP[48], receptor_expression(cell_data[2], unkVecOP[41], unkVecOP[44], unkVecOP[43], unkVecOP[45]))  # Gc
         unkVecOP = T.set_subtensor(unkVecOP[49], 0)  # 15
-        print()
-        #unkVecOP = T.set_subtensor(unkVecOP[4], unkVecOP[4]*100)  # 15
+        #unkVecOP = T.set_subtensor(unkVecOP[1], unkVecOP[1]*100)  # 15
         #unkVecOP = T.set_subtensor(unkVecOP[0], unkVecOP[0]*100)  # 15
         Cell_Op = OpC(unkVecOP)
 
@@ -79,8 +76,8 @@ def barlabel(rects, labels, ax):
 unkVec, _ = import_samples_2_15(N=1)
 unkVec = getRateVec(unkVec)
 CondIL = np.zeros((1, 6), dtype=np.float64)
-CondIL[0, 0] = 2.59588659e-01
-Op = runCkineDoseOp(tt=np.array(240.), condense=getTotalActiveSpecies().astype(np.float64), conditions=CondIL)
+CondIL[0, 0] = 2.59588659e-02
+Op = runCkineDoseOp(tt=np.array(30.), condense=getTotalActiveSpecies().astype(np.float64), conditions=CondIL)
 unkVecTrunc = T.zeros(54)
 unkVec = unkVec[6::].flatten()
 unkVecTrunc = T.set_subtensor(unkVecTrunc[0:], np.transpose(unkVec))
