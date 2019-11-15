@@ -40,34 +40,17 @@ def plot_exp_v_pred(ax, cell_subset=None):
     axis = 0
     shift = 10 if cell_subset == [] else len(cell_subset)  # there are 10 cells if no subset is given
 
-    total_activity2 = np.zeros((len(cell_names_pstat), len(ckineConc), len(scales), len(tps)))
-    total_activity15 = total_activity2.copy()
-    for i, name in enumerate(cell_names_pstat):
-        if name in cell_subset or cell_subset == []:  # if a subset is provided only plot the listed names
-            assert cell_names_pstat[i] == cell_names_receptor[i]
-            IL2_activity, IL15_activity = calc_dose_response(unkVec_2_15, scales, receptor_data[i], tps, ckineConc, IL2_data[(i * 4): ((i + 1) * 4)], IL15_data[(i * 4): ((i + 1) * 4)])
-            total_activity2[i, :, :, :] = IL2_activity
-            total_activity15[i, :, :, :] = IL15_activity
-
-    scale = grouped_scaling(scales, cell_names_pstat, IL2_data, IL15_data, total_activity2, total_activity15)
-
-    cell_groups = [['T-reg', 'Mem Treg', 'Naive Treg'], ['T-helper', 'Mem Th', 'Naive Th'], ['NK'], ['CD8+', 'Naive CD8+', 'Mem CD8+']]
-
-    for j, cells in enumerate(cell_groups):
-        for k, cell in enumerate(cell_names_pstat):
-            if cell in cells:
-                for l in range(scale.shape[2]):
-                    total_activity2[k, :, l, :] = scale[j, 1, l] * total_activity2[k, :, l, :] / (total_activity2[k, :, l, :] + scale[j, 0, l])  # adjust activity for this sample
-                    total_activity15[k, :, l, :] = scale[j, 1, l] * total_activity15[k, :, l, :] / (total_activity15[k, :, l, :] + scale[j, 0, l])  # adjust activity for this sample
+    IL2_activity, IL15_activity = calc_dose_response(cell_names_pstat, unkVec_2_15, scales, receptor_data, tps, ckineConc, IL2_data, IL15_data)
 
     for m, name in enumerate(cell_names_pstat):
-        if axis == shift - 1:  # only plot the legend for the last entry
-            plot_dose_response(ax[axis], ax[axis + shift], total_activity2[m, :, :, :], total_activity15[m, :, :, :], name, tps, ckineConc, legend=True)
-        else:
-            plot_dose_response(ax[axis], ax[axis + shift], total_activity2[m, :, :, :], total_activity15[m, :, :, :], name, tps, ckineConc)
-        plot_scaled_pstat(ax[axis], np.log10(ckineConc.astype(np.float)), IL2_data[(m * 4): ((m + 1) * 4)])
-        plot_scaled_pstat(ax[axis + shift], np.log10(ckineConc.astype(np.float)), IL15_data[(m * 4): ((m + 1) * 4)])
-        axis = axis + 1
+        if name in cell_subset or cell_subset == []:  # if a subset is provided only plot the listed names
+            if axis == shift - 1:  # only plot the legend for the last entry
+                plot_dose_response(ax[axis], ax[axis + shift], IL2_activity[m, :, :, :], IL15_activity[m, :, :, :], name, tps, ckineConc, legend=True)
+            else:
+                plot_dose_response(ax[axis], ax[axis + shift], IL2_activity[m, :, :, :], IL15_activity[m, :, :, :], name, tps, ckineConc)
+            plot_scaled_pstat(ax[axis], np.log10(ckineConc.astype(np.float)), IL2_data[(m * 4): ((m + 1) * 4)])
+            plot_scaled_pstat(ax[axis + shift], np.log10(ckineConc.astype(np.float)), IL15_data[(m * 4): ((m + 1) * 4)])
+            axis = axis + 1
 
 
 def plot_dose_response(ax2, ax15, IL2_activity, IL15_activity, cell_type, tps, cytokC, legend=False):

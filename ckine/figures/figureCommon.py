@@ -217,35 +217,48 @@ def global_legend(ax):
     ax.legend(handles=[purple, yellow, circle, triangle], bbox_to_anchor=(1.02, 1), loc="upper left")
 
 
-def calc_dose_response(unkVec, scales, cell_data, tps, cytokC, exp_data_2, exp_data_15):
-    """ Calculates activity for a given cell type at various cytokine concentrations and timepoints. """
+def calc_dose_response(cell_names, unkVec, scales, receptor_data, tps, cytokC, expr_act2, expr_act15):
+    """ Calculates activity for all cell type at various cytokine concentrations and timepoints. """
     PTS = cytokC.shape[0]  # number of cytokine concentrations
 
     rxntfr2 = unkVec.T.copy()
-    total_activity2 = np.zeros((PTS, rxntfr2.shape[0], tps.size))
+    total_activity2 = np.zeros((len(cell_names), PTS, rxntfr2.shape[0], tps.size))
     total_activity15 = total_activity2.copy()
 
-    # updates rxntfr for receptor expression for IL2Ra, IL2Rb, gc
-    rxntfr2[:, 22] = receptor_expression(cell_data[0], rxntfr2[:, 17], rxntfr2[:, 20], rxntfr2[:, 19], rxntfr2[:, 21])
-    rxntfr2[:, 23] = receptor_expression(cell_data[1], rxntfr2[:, 17], rxntfr2[:, 20], rxntfr2[:, 19], rxntfr2[:, 21])
-    rxntfr2[:, 24] = receptor_expression(cell_data[2], rxntfr2[:, 17], rxntfr2[:, 20], rxntfr2[:, 19], rxntfr2[:, 21])
-    rxntfr2[:, 25] = 0.0  # We never observed any IL-15Ra
+    for i, cell in enumerate(cell_names):
+        # updates rxntfr for receptor expression for IL2Ra, IL2Rb, gc
+        cell_data = receptor_data[i]
+        rxntfr2[:, 22] = receptor_expression(cell_data[0], rxntfr2[:, 17], rxntfr2[:, 20], rxntfr2[:, 19], rxntfr2[:, 21])
+        rxntfr2[:, 23] = receptor_expression(cell_data[1], rxntfr2[:, 17], rxntfr2[:, 20], rxntfr2[:, 19], rxntfr2[:, 21])
+        rxntfr2[:, 24] = receptor_expression(cell_data[2], rxntfr2[:, 17], rxntfr2[:, 20], rxntfr2[:, 19], rxntfr2[:, 21])
+        rxntfr2[:, 25] = 0.0  # We never observed any IL-15Ra
 
-    rxntfr15 = rxntfr2.copy()
+        rxntfr15 = rxntfr2.copy()
 
-    # loop for each IL2 concentration
-    for i in range(PTS):
-        rxntfr2[:, 0] = rxntfr15[:, 1] = cytokC[i]  # assign concs for each cytokine
+        # loop for each IL2 concentration
+        for j in range(PTS):
+            rxntfr2[:, 0] = rxntfr15[:, 1] = cytokC[j]  # assign concs for each cytokine
 
-        # handle case of IL-2
-        yOut = runCkineUP(tps, rxntfr2)
-        activity2 = np.dot(yOut, getTotalActiveSpecies().astype(np.float))
-        # handle case of IL-15
-        yOut = runCkineUP(tps, rxntfr15)
-        activity15 = np.dot(yOut, getTotalActiveSpecies().astype(np.float))
+            # handle case of IL-2
+            yOut = runCkineUP(tps, rxntfr2)
+            activity2 = np.dot(yOut, getTotalActiveSpecies().astype(np.float))
+            # handle case of IL-15
+            yOut = runCkineUP(tps, rxntfr15)
+            activity15 = np.dot(yOut, getTotalActiveSpecies().astype(np.float))
 
-        total_activity2[i, :, :] = np.reshape(activity2, (-1, 4))  # save the activity from this concentration for all 4 tps
-        total_activity15[i, :, :] = np.reshape(activity15, (-1, 4))  # save the activity from this concentration for all 4 tps
+            total_activity2[i, j, :, :] = np.reshape(activity2, (-1, 4))  # save the activity from this concentration for all 4 tps
+            total_activity15[i, j, :, :] = np.reshape(activity15, (-1, 4))  # save the activity from this concentration for all 4 tps
+
+    scale = grouped_scaling(scales, cell_names, expr_act2, expr_act15, total_activity2, total_activity15)
+
+    cell_groups = [['T-reg', 'Mem Treg', 'Naive Treg'], ['T-helper', 'Mem Th', 'Naive Th'], ['NK'], ['CD8+', 'Naive CD8+', 'Mem CD8+']]
+
+    for k, cells in enumerate(cell_groups):
+        for l, cell in enumerate(cell_names):
+            if cell in cells:
+                for m in range(scale.shape[2]):
+                    total_activity2[l, :, m, :] = scale[k, 1, m] * total_activity2[l, :, m, :] / (total_activity2[l, :, m, :] + scale[k, 0, m])  # adjust activity for this sample
+                    total_activity15[l, :, m, :] = scale[k, 1, m] * total_activity15[l, :, m, :] / (total_activity15[l, :, m, :] + scale[k, 0, m])  # adjust activity for this sample
 
     return total_activity2, total_activity15
 
