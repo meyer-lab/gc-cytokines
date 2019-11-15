@@ -8,7 +8,7 @@ import pandas as pd
 import seaborn as sns
 from scipy.optimize import least_squares
 from scipy.stats import pearsonr
-from .figureCommon import subplotLabel, getSetup, global_legend, calc_dose_response, grouped_scaling
+from .figureCommon import subplotLabel, getSetup, global_legend, calc_dose_response
 from .figureS5 import plot_exp_v_pred
 from ..imports import import_pstat, import_Rexpr, import_samples_2_15
 
@@ -117,7 +117,7 @@ def plot_corrcoef(ax, tps):
 
     pred_data2, pred_data15 = calc_dose_response(cell_names_receptor, unkVec_2_15, scales, receptor_data, tps, ckineConc, IL2_data_avg, IL15_data_avg)
 
-    for l, cell in enumerate(cell_names_receptor):
+    for l, _ in enumerate(cell_names_receptor):
         corr_coef2 = pearsonr(IL2_data_avg[(l * 4):((l + 1) * 4)].flatten(), np.squeeze(pred_data2[l, :, :, :]).T.flatten())
         corr_coef15 = pearsonr(IL15_data_avg[(l * 4):((l + 1) * 4)].flatten(), np.squeeze(pred_data15[l, :, :, :]).T.flatten())
         corr_coefs[l] = corr_coef2[0]
@@ -130,9 +130,9 @@ def plot_corrcoef(ax, tps):
     ax.set_xticklabels(ax.get_xticklabels(), rotation=40, fontsize=6.8, rotation_mode="anchor", ha="right")
 
 
-def calculate_predicted_EC50(x0, receptor_data, tps, cell_index):
+def calculate_predicted_EC50(x0, receptors, tps, cell_index):
     """ Calculate average EC50 from model predictions. """
-    IL2_activity, IL15_activity = calc_dose_response(cell_names_pstat, unkVec_2_15, scales, receptor_data, tps, ckineConc, IL2_data_avg, IL15_data_avg)
+    IL2_activity, IL15_activity = calc_dose_response(cell_names_pstat, unkVec_2_15, scales, receptors, tps, ckineConc, IL2_data_avg, IL15_data_avg)
     EC50_2 = np.zeros(len(tps))
     EC50_15 = EC50_2.copy()
     # calculate EC50 for each timepoint... using 0 in activity matrices since we only have 1 sample from unkVec_2_15
