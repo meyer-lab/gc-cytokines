@@ -41,9 +41,10 @@ def makeFigure():
         df_act = df_act.append(df_add2, ignore_index=True)
         df_act = df_act.append(df_add15, ignore_index=True)
 
-    df_act.drop(df_act[df_act.Cells == 'Naive Treg'].index, inplace=True)
-    df_act.drop(df_act[df_act.Cells == 'Mem Treg'].index, inplace=True)  # delete Naive/Mem Treg so only comparing to non-Treg cells
+    df_act.drop(df_act[(df_act.Cells == 'Naive Treg') & (df_act.Cells == 'Mem Treg') & (df_act.Cells == 'Naive Th') & \
+                       (df_act.Cells == 'Mem Th') & (df_act.Cells == 'Naive CD8+') & (df_act.Cells == 'Mem CD8+')].index, inplace=True)
     ckineConc_ = np.delete(ckineConc, 11, 0)  # delete smallest concentration since zero/negative activity
+    
     calc_plot_specificity(ax, df_spec, df_act, ckines, ckineConc_)
     global_legend(ax[0])
 
