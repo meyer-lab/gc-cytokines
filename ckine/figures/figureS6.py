@@ -48,16 +48,16 @@ def OPgen(unkVecOP, CellTypes, OpC, ckineC):
         unkVecOP = T.set_subtensor(unkVecOP[47], receptor_expression(cell_data[1], unkVecOP[41], unkVecOP[44], unkVecOP[43], unkVecOP[45]))  # Rb
         unkVecOP = T.set_subtensor(unkVecOP[48], receptor_expression(cell_data[2], unkVecOP[41], unkVecOP[44], unkVecOP[43], unkVecOP[45]))  # Gc
         unkVecOP = T.set_subtensor(unkVecOP[49], 0)  # 15
-        #unkVecOP = T.set_subtensor(unkVecOP[1], unkVecOP[1]*100)  # 15
+        # unkVecOP = T.set_subtensor(unkVecOP[1], unkVecOP[1]*100)  # 15
         Cell_Op = OpC(unkVecOP)
-    
+
     tps = np.array([0, 0.5, 1., 2.]) * 60
     Cond2 = np.zeros((1, 6), dtype=np.float64)
     Cond2[0, 0] = ckineC
-    Cond15 =  np.zeros((1, 6), dtype=np.float64)
+    Cond15 = np.zeros((1, 6), dtype=np.float64)
     Cond15[0, 1] = ckineC
     pred2Vec, pred15Vec = np.zeros(tps.size), np.zeros(tps.size)
-    
+
     for i, time in enumerate(tps):
         ScaleOp = runCkineDoseOp(tt=np.array(time), condense=getTotalActiveSpecies().astype(np.float64), conditions=Cond2)
         pred2Vec[i] = ScaleOp(unkVecOP).eval()
@@ -66,14 +66,14 @@ def OPgen(unkVecOP, CellTypes, OpC, ckineC):
 
     ckineConc, _, IL2_data, IL15_data, _ = import_pstat()
     ckineConc = ckineConc.tolist()
-    #print(Ctype)
-    #print(IL2_data[4*cell_names_receptorC.index(Ctype) : 4*cell_names_receptorC.index(Ctype) + 4, ckineConc.index(ckineC)])
-    
-    IL2expDat = IL2_data[4*cell_names_receptorC.index(Ctype) : 4*cell_names_receptorC.index(Ctype) + 4, ckineConc.index(ckineC)]
-    IL15expDat= IL15_data[4*cell_names_receptorC.index(Ctype) : 4*cell_names_receptorC.index(Ctype) + 4, ckineConc.index(ckineC)]
+    print(Ctype)
+    print(IL2_data[4*cell_names_receptorC.index(Ctype) : 4*cell_names_receptorC.index(Ctype) + 4, ckineConc.index(ckineC)])
+
+    IL2expDat = IL2_data[4 * cell_names_receptorC.index(Ctype): 4 * cell_names_receptorC.index(Ctype) + 4, ckineConc.index(ckineC)]
+    IL15expDat = IL15_data[4 * cell_names_receptorC.index(Ctype): 4 * cell_names_receptorC.index(Ctype) + 4, ckineConc.index(ckineC)]
     scale1, scale2 = optimize_scale(pred2Vec, pred15Vec, IL2expDat, IL15expDat)
-    Cell_Op = (Cell_Op * scale2)/( Cell_Op + scale1)
-    
+    Cell_Op = (Cell_Op * scale2) / (Cell_Op + scale1)
+
     return Cell_Op
 
 
@@ -94,14 +94,15 @@ def barlabel(rects, labels, ax):
                     ha='left', va='bottom',
                     rotation=45)
 
+
 ckineC, _, _, _, _ = import_pstat()
-ckineC = ckineC[3]
+ckineC = ckineC[0]
 
 time = 60.
 unkVec, _ = import_samples_2_15(N=1)
 unkVec = getRateVec(unkVec)
 CondIL = np.zeros((1, 6), dtype=np.float64)
-CondIL[0, 0] =ckineC
+CondIL[0, 0] = ckineC
 Op = runCkineDoseOp(tt=np.array(time), condense=getTotalActiveSpecies().astype(np.float64), conditions=CondIL)
 unkVecTrunc = T.zeros(54)
 unkVec = unkVec[6::].flatten()
