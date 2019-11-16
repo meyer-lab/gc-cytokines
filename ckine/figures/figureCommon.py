@@ -218,7 +218,7 @@ def global_legend(ax):
 
 
 def calc_dose_response(cell_names, unkVec, scales, receptor_data, tps, cytokC, expr_act2, expr_act15):
-    """ Calculates activity for all cell type at various cytokine concentrations and timepoints. """
+    """ Calculates activity for all cell types at various cytokine concentrations and timepoints. """
     PTS = cytokC.shape[0]  # number of cytokine concentrations
 
     rxntfr2 = unkVec.T.copy()
