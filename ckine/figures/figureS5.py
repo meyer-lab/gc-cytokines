@@ -25,7 +25,7 @@ def plot_exp_v_pred(ax, cell_subset=None):
     """ Perform main routine for plotting all the cell predictions vs. experimental values.
     The default argument of cell_subset is an empty list which ends up plotting all 10 cell types;
     if one wishes to one plot a subset of cells they must be noted in list format. """
-    _, receptor_data, cell_names_receptor = import_Rexpr()
+    _, receptor_data, _ = import_Rexpr()
     unkVec_2_15, scales = import_samples_2_15(N=100)  # use all rates
     ckineConc, cell_names_pstat, IL2_data, IL15_data, _ = import_pstat()
 
@@ -40,17 +40,16 @@ def plot_exp_v_pred(ax, cell_subset=None):
     axis = 0
     shift = 10 if cell_subset == [] else len(cell_subset)  # there are 10 cells if no subset is given
 
-    for i, name in enumerate(cell_names_pstat):
+    IL2_activity, IL15_activity = calc_dose_response(cell_names_pstat, unkVec_2_15, scales, receptor_data, tps, ckineConc, IL2_data, IL15_data)
+
+    for m, name in enumerate(cell_names_pstat):
         if name in cell_subset or cell_subset == []:  # if a subset is provided only plot the listed names
-            # plot matching experimental and predictive pSTAT data for the same cell type
-            assert cell_names_pstat[i] == cell_names_receptor[i]
-            IL2_activity, IL15_activity = calc_dose_response(unkVec_2_15, scales, receptor_data[i], tps, ckineConc, IL2_data[(i * 4): ((i + 1) * 4)], IL15_data[(i * 4): ((i + 1) * 4)])
             if axis == shift - 1:  # only plot the legend for the last entry
-                plot_dose_response(ax[axis], ax[axis + shift], IL2_activity, IL15_activity, cell_names_receptor[i], tps, ckineConc, legend=True)
+                plot_dose_response(ax[axis], ax[axis + shift], IL2_activity[m, :, :, :], IL15_activity[m, :, :, :], name, tps, ckineConc, legend=True)
             else:
-                plot_dose_response(ax[axis], ax[axis + shift], IL2_activity, IL15_activity, cell_names_receptor[i], tps, ckineConc)
-            plot_scaled_pstat(ax[axis], np.log10(ckineConc.astype(np.float)), IL2_data[(i * 4): ((i + 1) * 4)])
-            plot_scaled_pstat(ax[axis + shift], np.log10(ckineConc.astype(np.float)), IL15_data[(i * 4): ((i + 1) * 4)])
+                plot_dose_response(ax[axis], ax[axis + shift], IL2_activity[m, :, :, :], IL15_activity[m, :, :, :], name, tps, ckineConc)
+            plot_scaled_pstat(ax[axis], np.log10(ckineConc.astype(np.float)), IL2_data[(m * 4): ((m + 1) * 4)])
+            plot_scaled_pstat(ax[axis + shift], np.log10(ckineConc.astype(np.float)), IL15_data[(m * 4): ((m + 1) * 4)])
             axis = axis + 1
 
 

@@ -8,8 +8,8 @@ import pandas as pd
 import seaborn as sns
 from scipy.optimize import least_squares
 from scipy.stats import pearsonr
-from .figureCommon import subplotLabel, getSetup, global_legend
-from .figureS5 import calc_dose_response, plot_exp_v_pred
+from .figureCommon import subplotLabel, getSetup, global_legend, calc_dose_response
+from .figureS5 import plot_exp_v_pred
 from ..imports import import_pstat, import_Rexpr, import_samples_2_15
 
 ckineConc, cell_names_pstat, IL2_data, IL2_data2, IL15_data, IL15_data2 = import_pstat(combine_samples=False)
@@ -49,7 +49,7 @@ def makeFigure():
         celltype_data_15 = IL15_data_avg[(i * 4):((i + 1) * 4)]
         data_types.append(np.tile(np.array('Predicted'), len(tps)))
         # predicted EC50
-        EC50_2, EC50_15 = calculate_predicted_EC50(x0, receptor_data[i], tps, celltype_data_2, celltype_data_15)
+        EC50_2, EC50_15 = calculate_predicted_EC50(x0, receptor_data, tps, i)
         for j, item in enumerate(EC50_2):
             EC50s_2[(2 * len(tps) * i) + j] = item
             EC50s_15[(2 * len(tps) * i) + j] = EC50_15[j]
@@ -114,15 +114,14 @@ def catplot_comparison(ax, df):
 def plot_corrcoef(ax, tps):
     """ Plot correlation coefficients between predicted and experimental data for all cell types. """
     corr_coefs = np.zeros(2 * len(cell_names_receptor))
-    for i, _ in enumerate(cell_names_receptor):
-        assert cell_names_receptor[i] == cell_names_pstat[i]
-        experimental_2 = IL2_data_avg[(i * 4):((i + 1) * 4)]
-        experimental_15 = IL15_data_avg[(i * 4):((i + 1) * 4)]
-        predicted_2, predicted_15 = calc_dose_response(unkVec_2_15, scales, receptor_data[i], tps, ckineConc, experimental_2, experimental_15)
-        corr_coef2 = pearsonr(experimental_2.flatten(), np.squeeze(predicted_2).T.flatten())
-        corr_coef15 = pearsonr(experimental_15.flatten(), np.squeeze(predicted_15).T.flatten())
-        corr_coefs[i] = corr_coef2[0]
-        corr_coefs[len(cell_names_receptor) + i] = corr_coef15[0]
+
+    pred_data2, pred_data15 = calc_dose_response(cell_names_receptor, unkVec_2_15, scales, receptor_data, tps, ckineConc, IL2_data_avg, IL15_data_avg)
+
+    for l, _ in enumerate(cell_names_receptor):
+        corr_coef2 = pearsonr(IL2_data_avg[(l * 4):((l + 1) * 4)].flatten(), np.squeeze(pred_data2[l, :, :, :]).T.flatten())
+        corr_coef15 = pearsonr(IL15_data_avg[(l * 4):((l + 1) * 4)].flatten(), np.squeeze(pred_data15[l, :, :, :]).T.flatten())
+        corr_coefs[l] = corr_coef2[0]
+        corr_coefs[len(cell_names_receptor) + l] = corr_coef15[0]
 
     x_pos = np.arange(len(cell_names_receptor))
     ax.bar(x_pos - 0.15, corr_coefs[0:len(cell_names_receptor)], width=0.3, color='darkorchid', label='IL2', tick_label=cell_names_receptor)
@@ -131,15 +130,15 @@ def plot_corrcoef(ax, tps):
     ax.set_xticklabels(ax.get_xticklabels(), rotation=40, fontsize=6.8, rotation_mode="anchor", ha="right")
 
 
-def calculate_predicted_EC50(x0, cell_receptor_data, tps, IL2_pstat, IL15_pstat):
+def calculate_predicted_EC50(x0, receptors, tps, cell_index):
     """ Calculate average EC50 from model predictions. """
-    IL2_activity, IL15_activity = calc_dose_response(unkVec_2_15, scales, cell_receptor_data, tps, ckineConc, IL2_pstat, IL15_pstat)
+    IL2_activity, IL15_activity = calc_dose_response(cell_names_pstat, unkVec_2_15, scales, receptors, tps, ckineConc, IL2_data_avg, IL15_data_avg)
     EC50_2 = np.zeros(len(tps))
     EC50_15 = EC50_2.copy()
     # calculate EC50 for each timepoint... using 0 in activity matrices since we only have 1 sample from unkVec_2_15
     for i, _ in enumerate(tps):
-        EC50_2[i] = nllsq_EC50(x0, np.log10(ckineConc.astype(np.float) * 10**4), IL2_activity[:, 0, i])
-        EC50_15[i] = nllsq_EC50(x0, np.log10(ckineConc.astype(np.float) * 10**4), IL15_activity[:, 0, i])
+        EC50_2[i] = nllsq_EC50(x0, np.log10(ckineConc.astype(np.float) * 10**4), IL2_activity[cell_index, :, 0, i])
+        EC50_15[i] = nllsq_EC50(x0, np.log10(ckineConc.astype(np.float) * 10**4), IL15_activity[cell_index, :, 0, i])
     return EC50_2, EC50_15
 
 

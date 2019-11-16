@@ -27,23 +27,24 @@ def makeFigure():
     df_spec = pd.DataFrame(columns=['Cells', 'Ligand', 'Time', 'Concentration', 'Data Type', 'Specificity'])
     df_act = pd.DataFrame(columns=['Cells', 'Ligand', 'Time', 'Concentration', 'Activity Type', 'Activity'])
 
+    IL2_activity, IL15_activity = calc_dose_response(cell_names_pstat, unkVec_2_15, scales, receptor_data, tps, ckineConc, IL2_data, IL15_data)
     for i, name in enumerate(cell_names_pstat):
         assert cell_names_pstat[i] == cell_names_receptor[i]
-        IL2_activity, IL15_activity = calc_dose_response(unkVec_2_15, scales, receptor_data[i], tps, ckineConc, IL2_data[(i * 4): ((i + 1) * 4)], IL15_data[(i * 4): ((i + 1) * 4)])
         df_add2 = pd.DataFrame({'Cells': np.tile(name, len(ckineConc) * len(tps) * 2), 'Ligand': np.tile('IL-2', len(ckineConc) * len(tps) * 2),
                                 'Time': np.tile(np.repeat(tps, len(ckineConc)), 2), 'Concentration': np.tile(ckineConc, len(tps) * 2),
                                 'Activity Type': np.concatenate((np.tile('Experimental', len(tps) * len(ckineConc)), np.tile('Predicted', len(tps) * len(ckineConc)))),
-                                'Activity': np.concatenate((IL2_data[(i * 4): ((i + 1) * 4)].reshape(48,), np.squeeze(IL2_activity).T.reshape(48,)))})
+                                'Activity': np.concatenate((IL2_data[(i * 4): ((i + 1) * 4)].reshape(48,), np.squeeze(IL2_activity[i, :, :, :]).T.reshape(48,)))})
         df_add15 = pd.DataFrame({'Cells': np.tile(name, len(ckineConc) * len(tps) * 2), 'Ligand': np.tile('IL-15', len(ckineConc) * len(tps) * 2),
                                  'Time': np.tile(np.repeat(tps, len(ckineConc)), 2), 'Concentration': np.tile(ckineConc, len(tps) * 2),
                                  'Activity Type': np.concatenate((np.tile('Experimental', len(tps) * len(ckineConc)), np.tile('Predicted', len(tps) * len(ckineConc)))),
-                                 'Activity': np.concatenate((IL15_data[(i * 4): ((i + 1) * 4)].reshape(48,), np.squeeze(IL15_activity).T.reshape(48,)))})
+                                 'Activity': np.concatenate((IL15_data[(i * 4): ((i + 1) * 4)].reshape(48,), np.squeeze(IL15_activity[i, :, :, :]).T.reshape(48,)))})
         df_act = df_act.append(df_add2, ignore_index=True)
         df_act = df_act.append(df_add15, ignore_index=True)
 
-    df_act.drop(df_act[df_act.Cells == 'Naive Treg'].index, inplace=True)
-    df_act.drop(df_act[df_act.Cells == 'Mem Treg'].index, inplace=True)  # delete Naive/Mem Treg so only comparing to non-Treg cells
+    df_act.drop(df_act[(df_act.Cells == 'Naive Treg') | (df_act.Cells == 'Mem Treg') | (df_act.Cells == 'Naive Th') |
+                       (df_act.Cells == 'Mem Th') | (df_act.Cells == 'Naive CD8+') | (df_act.Cells == 'Mem CD8+')].index, inplace=True)
     ckineConc_ = np.delete(ckineConc, 11, 0)  # delete smallest concentration since zero/negative activity
+
     calc_plot_specificity(ax, df_spec, df_act, ckines, ckineConc_)
     global_legend(ax[0])
 
