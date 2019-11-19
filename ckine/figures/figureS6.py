@@ -96,7 +96,7 @@ def barlabel(rects, labels, ax):
 
 
 ckineC, _, _, _, _ = import_pstat()
-ckineC = ckineC[0]
+ckineC = ckineC[8]
 
 time = 60.
 unkVec, _ = import_samples_2_15(N=1)
