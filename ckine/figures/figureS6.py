@@ -111,9 +111,9 @@ def genscalesT(unkVecOP):
                 ScaleOp = runCkineDoseOp(tt=np.array(timeT), condense=getTotalActiveSpecies().astype(np.float64), conditions=Cond15)
                 pred15Vec[i, j, 0, k] = ScaleOp(unkVecOP).eval()
 
-    scalesT = grouped_scaling(scale, cell_names_receptorC, IL2_data, IL15_data, pred2Vec, pred15Vec)
+    scalesTh = grouped_scaling(scale, cell_names_receptorC, IL2_data, IL15_data, pred2Vec, pred15Vec)
 
-    return scalesT
+    return scalesTh
 
 
 ckineConc, _, _, _, _ = import_pstat()
