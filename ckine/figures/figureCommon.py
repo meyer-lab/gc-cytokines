@@ -248,7 +248,6 @@ def calc_dose_response(cell_names, unkVec, scales, receptor_data, tps, cytokC, e
 
             total_activity2[i, j, :, :] = np.reshape(activity2, (-1, 4))  # save the activity from this concentration for all 4 tps
             total_activity15[i, j, :, :] = np.reshape(activity15, (-1, 4))  # save the activity from this concentration for all 4 tps
-
     scale = grouped_scaling(scales, cell_names, expr_act2, expr_act15, total_activity2, total_activity15)
 
     cell_groups = [['T-reg', 'Mem Treg', 'Naive Treg'], ['T-helper', 'Mem Th', 'Naive Th'], ['NK'], ['CD8+', 'Naive CD8+', 'Mem CD8+']]
@@ -270,7 +269,7 @@ def grouped_scaling(scales, cell_names, expr_act2, expr_act15, pred_act2, pred_a
 
     scale = np.zeros((4, 2, len(scales)))
     for i, cells in enumerate(cell_groups):
-        expr_act_2 = np.zeros((len(cells), 12, len(scales), 4))
+        expr_act_2 = np.zeros((len(cells), pred_act2.shape[1], len(scales), 4))
         expr_act_15 = expr_act_2.copy()
         pred_act_2 = expr_act_2.copy()
         pred_act_15 = expr_act_2.copy()
