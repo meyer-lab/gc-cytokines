@@ -9,6 +9,8 @@ author:
   affilnum: b
 - name: Zoe S. Kim
   affilnum: a
+- name: Brian Orcutt-Jahns
+  affilnum: a
 - name: Scott M. Carlson
   affilnum: b
 - name: Aaron S. Meyer
