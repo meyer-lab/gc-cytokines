@@ -121,18 +121,19 @@ def genscalesT(unkVecOP):
     return scalesTh
 
 
-def Spec_Aff(ax, cell, npoints, Op, unkVecAff, scalesAff):
+def Spec_Aff(ax, cell, npoints, OpAff, unkVecAff, scalesAff):
+    "Plots specificity for a cell type over a range of IL2RBG and IL2Ra affinities"
     affRange = np.logspace(2, -1, npoints)
     RaAff = np.array([1, 10])
     specHolder = np.zeros([len(RaAff), npoints])
     for i, k1Aff in enumerate(RaAff):
         for j, k5Aff in enumerate(affRange):
-            S = (OPgen(unkVecT, "T-reg", Op, scalesAff, k1Aff, k5Aff) /
-                 (OPgen(unkVecT, "T-reg", Op, scalesAff, k1Aff, k5Aff) +
-                  OPgen(unkVecT, "T-helper", Op, scalesAff, k1Aff, k5Aff) +
-                  OPgen(unkVecT, "NK", Op, scalesAff, k1Aff, k5Aff) +
-                  OPgen(unkVecT, "CD8+", Op, scalesAff, k1Aff, k5Aff)))
-            specHolder[i, j] = S.eval()
+            Saff = (OPgen(unkVecAff, cell, OpAff, scalesAff, k1Aff, k5Aff) /
+                 (OPgen(unkVecAff, "T-reg", OpAff, scalesAff, k1Aff, k5Aff) +
+                  OPgen(unkVecAff, "T-helper", OpAff, scalesAff, k1Aff, k5Aff) +
+                  OPgen(unkVecAff, "NK", OpAff, scalesAff, k1Aff, k5Aff) +
+                  OPgen(unkVecAff, "CD8+", OpAff, scalesAff, k1Aff, k5Aff)))
+            specHolder[i, j] = Saff.eval()
         ax.plot(1 / affRange, specHolder[i, :], label=str(1 / RaAff[i]) + " IL2Ra Affinity")
 
     ax.set_xscale('log')
