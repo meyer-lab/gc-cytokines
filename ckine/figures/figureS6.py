@@ -48,8 +48,10 @@ def OPgen(unkVecOP, CellTypes, OpC, scalesTh, RaAffM, RbAffM):
     unkVecOP = T.set_subtensor(unkVecOP[47], receptor_expression(cell_data[1], unkVecOP[41], unkVecOP[44], unkVecOP[43], unkVecOP[45]))  # Rb
     unkVecOP = T.set_subtensor(unkVecOP[48], receptor_expression(cell_data[2], unkVecOP[41], unkVecOP[44], unkVecOP[43], unkVecOP[45]))  # Gc
     unkVecOP = T.set_subtensor(unkVecOP[49], 0)
-    unkVecOP = T.set_subtensor(unkVecOP[1], unkVecOP[1]*RaAffM)
-    unkVecOP = T.set_subtensor(unkVecOP[4], unkVecOP[4]*RbAffM)
+    unkVecOP = T.set_subtensor(unkVecOP[1], unkVecOP[1] * RaAffM)
+    unkVecOP = T.set_subtensor(unkVecOP[21], unkVecOP[21] * RaAffM)
+    unkVecOP = T.set_subtensor(unkVecOP[4], unkVecOP[4] * RbAffM)
+    unkVecOP = T.set_subtensor(unkVecOP[24], unkVecOP[24] * RbAffM)
 
     cell_groups = np.array([['T-reg', 'Mem Treg', 'Naive Treg'], ['T-helper', 'Mem Th', 'Naive Th'], ['NK'], ['CD8+', 'Naive CD8+', 'Mem CD8+']])
     for i, group in enumerate(cell_groups):
@@ -118,31 +120,30 @@ def genscalesT(unkVecOP):
 
     return scalesTh
 
+
 def Spec_Aff(ax, cell, npoints, Op, unkVecAff, scalesAff):
     affRange = np.logspace(2, -1, npoints)
     RaAff = np.array([1, 10])
     specHolder = np.zeros([len(RaAff), npoints])
     for i, k1Aff in enumerate(RaAff):
         for j, k5Aff in enumerate(affRange):
-            print(k1Aff)
-            print(k5Aff)
             S = (OPgen(unkVecT, "T-reg", Op, scalesAff, k1Aff, k5Aff) /
                  (OPgen(unkVecT, "T-reg", Op, scalesAff, k1Aff, k5Aff) +
                   OPgen(unkVecT, "T-helper", Op, scalesAff, k1Aff, k5Aff) +
                   OPgen(unkVecT, "NK", Op, scalesAff, k1Aff, k5Aff) +
                   OPgen(unkVecT, "CD8+", Op, scalesAff, k1Aff, k5Aff)))
             specHolder[i, j] = S.eval()
-        ax.plot(1/affRange, specHolder[i, :], label = str(1/RaAff) + " IL2Ra Affinity")
-        
+        ax.plot(1 / affRange, specHolder[i, :], label=str(1 / RaAff[i]) + " IL2Ra Affinity")
+
     ax.set_xscale('log')
     ax.set_xlabel('Relative CD122/CD132 Affinity')
     ax.set_ylabel('T-reg Specificity')
-    
+    ax.legend()
 
 
 ckineConc, _, _, _, _ = import_pstat()
-ckineC = ckineConc[4]
-time = 30.
+ckineC = ckineConc[7]
+time = 60.
 unkVec, scales = import_samples_2_15(N=1)
 _, receptor_data, cell_names_receptor = import_Rexpr()
 unkVec = getRateVec(unkVec)
