@@ -20,7 +20,7 @@ def makeFigure():
         subplotLabel(item, string.ascii_uppercase[ii])
 
     Specificity(ax=ax[0])
-    Spec_Aff(ax[1], "T-reg", 100, Op, unkVecT, scalesT)
+    Spec_Aff(ax[1], "T-reg", 40, Op, unkVecT, scalesT)
 
     return f
 
@@ -48,10 +48,18 @@ def OPgen(unkVecOP, CellTypes, OpC, scalesTh, RaAffM, RbAffM):
     unkVecOP = T.set_subtensor(unkVecOP[47], receptor_expression(cell_data[1], unkVecOP[41], unkVecOP[44], unkVecOP[43], unkVecOP[45]))  # Rb
     unkVecOP = T.set_subtensor(unkVecOP[48], receptor_expression(cell_data[2], unkVecOP[41], unkVecOP[44], unkVecOP[43], unkVecOP[45]))  # Gc
     unkVecOP = T.set_subtensor(unkVecOP[49], 0)
-    unkVecOP = T.set_subtensor(unkVecOP[1], unkVecOP[1] * RaAffM)
+    unkVecOP = T.set_subtensor(unkVecOP[1], unkVecOP[1] * RaAffM)  # krev
     unkVecOP = T.set_subtensor(unkVecOP[21], unkVecOP[21] * RaAffM)
-    unkVecOP = T.set_subtensor(unkVecOP[4], unkVecOP[4] * RbAffM)
+    unkVecOP = T.set_subtensor(unkVecOP[2], unkVecOP[2] * RbAffM)  # k2rev
+    unkVecOP = T.set_subtensor(unkVecOP[22], unkVecOP[22] * RbAffM)
+    unkVecOP = T.set_subtensor(unkVecOP[3], unkVecOP[3] * RbAffM)  # k4rev
     unkVecOP = T.set_subtensor(unkVecOP[24], unkVecOP[24] * RbAffM)
+    unkVecOP = T.set_subtensor(unkVecOP[4], unkVecOP[4] * RbAffM)  # k5rev
+    unkVecOP = T.set_subtensor(unkVecOP[24], unkVecOP[24] * RbAffM)
+    unkVecOP = T.set_subtensor(unkVecOP[5], unkVecOP[5] * RbAffM)  # k10rev
+    unkVecOP = T.set_subtensor(unkVecOP[25], unkVecOP[25] * RbAffM)
+    unkVecOP = T.set_subtensor(unkVecOP[6], unkVecOP[6] * RbAffM)  # k11rev
+    unkVecOP = T.set_subtensor(unkVecOP[26], unkVecOP[26] * RbAffM)
 
     cell_groups = np.array([['T-reg', 'Mem Treg', 'Naive Treg'], ['T-helper', 'Mem Th', 'Naive Th'], ['NK'], ['CD8+', 'Naive CD8+', 'Mem CD8+']])
     for i, group in enumerate(cell_groups):
@@ -129,10 +137,10 @@ def Spec_Aff(ax, cell, npoints, OpAff, unkVecAff, scalesAff):
     for i, k1Aff in enumerate(RaAff):
         for j, k5Aff in enumerate(affRange):
             Saff = (OPgen(unkVecAff, cell, OpAff, scalesAff, k1Aff, k5Aff) /
-                 (OPgen(unkVecAff, "T-reg", OpAff, scalesAff, k1Aff, k5Aff) +
-                  OPgen(unkVecAff, "T-helper", OpAff, scalesAff, k1Aff, k5Aff) +
-                  OPgen(unkVecAff, "NK", OpAff, scalesAff, k1Aff, k5Aff) +
-                  OPgen(unkVecAff, "CD8+", OpAff, scalesAff, k1Aff, k5Aff)))
+                    (OPgen(unkVecAff, "T-reg", OpAff, scalesAff, k1Aff, k5Aff) +
+                     OPgen(unkVecAff, "T-helper", OpAff, scalesAff, k1Aff, k5Aff) +
+                     OPgen(unkVecAff, "NK", OpAff, scalesAff, k1Aff, k5Aff) +
+                     OPgen(unkVecAff, "CD8+", OpAff, scalesAff, k1Aff, k5Aff)))
             specHolder[i, j] = Saff.eval()
         ax.plot(1 / affRange, specHolder[i, :], label=str(1 / RaAff[i]) + " IL2Ra Affinity")
 
@@ -144,7 +152,7 @@ def Spec_Aff(ax, cell, npoints, OpAff, unkVecAff, scalesAff):
 
 ckineConc, _, _, _, _ = import_pstat()
 ckineC = ckineConc[7]
-time = 60.
+time = 240.
 unkVec, scales = import_samples_2_15(N=1)
 _, receptor_data, cell_names_receptor = import_Rexpr()
 unkVec = getRateVec(unkVec)
