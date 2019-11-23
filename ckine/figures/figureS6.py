@@ -22,7 +22,7 @@ def makeFigure():
         subplotLabel(item, string.ascii_uppercase[ii])
 
     Specificity(ax=ax[0])
-    Spec_Aff(ax[1], "T-reg", 40, Op, unkVecT, scalesT)
+    Spec_Aff(ax[1], 40, unkVecT, scalesT)
 
     return f
 
@@ -128,15 +128,15 @@ def OPgen(unkVecOP, CellTypes, OpC, scalesTh, RaAffM, RbAffM):
 
 def OPgenSpec(unk, scales, k1Aff=1.0, k5Aff=1.0):
     S = (OPgen(unk, "T-reg", Op, scales, k1Aff, k5Aff) /
-        (OPgen(unk, "T-reg", Op, scales, k1Aff, k5Aff) +
-         OPgen(unk, "T-helper", Op, scales, k1Aff, k5Aff) +
-         OPgen(unk, "NK", Op, scales, k1Aff, k5Aff) +
-         OPgen(unk, "CD8+", Op, scales, k1Aff, k5Aff)))
+         (OPgen(unk, "T-reg", Op, scales, k1Aff, k5Aff) +
+          OPgen(unk, "T-helper", Op, scales, k1Aff, k5Aff) +
+          OPgen(unk, "NK", Op, scales, k1Aff, k5Aff) +
+          OPgen(unk, "CD8+", Op, scales, k1Aff, k5Aff)))
 
     return S
 
 
-def Spec_Aff(ax, cell, npoints, OpAff, unkVecAff, scalesAff):
+def Spec_Aff(ax, npoints, unkVecAff, scalesAff):
     "Plots specificity for a cell type over a range of IL2RBG and IL2Ra affinities"
     affRange = np.logspace(2, -1, npoints)
     RaAff = np.array([1, 10])
