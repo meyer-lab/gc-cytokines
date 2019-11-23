@@ -3,6 +3,8 @@ This creates Figure S6. Full Partial Derivative Bar
 """
 import string
 import numpy as np
+import pandas as pd
+import seaborn as sns
 import theano.tensor as T
 import theano
 from .figureCommon import subplotLabel, getSetup, grouped_scaling
@@ -27,14 +29,18 @@ def makeFigure():
 
 def Specificity(ax):
     """ Creates Theano Function for calculating Specificity gradient with respect to various parameters"""
-    S_partials = Sfunc(unkVec.flatten()) / S.eval()
-    S_partials = np.delete(S_partials, np.s_[-8:])
-    S_partials = np.delete(S_partials, np.s_[7:21])
-    S_partials = np.delete(S_partials, np.s_[13:27])
-    y_pos = np.arange(S_partials.size)
+    S_partials = Sgradfunc(unkVec.flatten()) / Sfunc(unkVec.flatten())
+
+    names = list(getparamsdict(np.zeros(60)).keys())[6::]
+    df = pd.DataFrame(data={'rate': names, 'value': S_partials})
+
+    df.drop(df.index[-8:], inplace=True)
+    df.drop(df.index[7:21], inplace=True)
+    df.drop(df.index[13:27], inplace=True)
+
+    sns.barplot(data=df, x='rate', y='value', ax=ax)
+    ax.set_xticklabels(ax.get_xticklabels(), rotation=25, rotation_mode="anchor", ha="right")
     ax.set_ylim(-0.1, 0.1)
-    Derivs = ax.bar(y_pos, S_partials, width=1, align='center', alpha=1)
-    barlabel(Derivs, ax)
 
 
 def OPgen(unkVecOP, CellTypes, OpC, scalesTh, RaAffM, RbAffM):
@@ -48,18 +54,14 @@ def OPgen(unkVecOP, CellTypes, OpC, scalesTh, RaAffM, RbAffM):
     unkVecOP = T.set_subtensor(unkVecOP[47], receptor_expression(cell_data[1], unkVecOP[41], unkVecOP[44], unkVecOP[43], unkVecOP[45]))  # Rb
     unkVecOP = T.set_subtensor(unkVecOP[48], receptor_expression(cell_data[2], unkVecOP[41], unkVecOP[44], unkVecOP[43], unkVecOP[45]))  # Gc
     unkVecOP = T.set_subtensor(unkVecOP[49], 0)
-    unkVecOP = T.set_subtensor(unkVecOP[1], unkVecOP[1] * RaAffM)  # krev
-    unkVecOP = T.set_subtensor(unkVecOP[21], unkVecOP[21] * RaAffM)
-    unkVecOP = T.set_subtensor(unkVecOP[2], unkVecOP[2] * RbAffM)  # k2rev
-    unkVecOP = T.set_subtensor(unkVecOP[22], unkVecOP[22] * RbAffM)
-    unkVecOP = T.set_subtensor(unkVecOP[3], unkVecOP[3] * RbAffM)  # k4rev
-    unkVecOP = T.set_subtensor(unkVecOP[24], unkVecOP[24] * RbAffM)
-    unkVecOP = T.set_subtensor(unkVecOP[4], unkVecOP[4] * RbAffM)  # k5rev
-    unkVecOP = T.set_subtensor(unkVecOP[24], unkVecOP[24] * RbAffM)
-    unkVecOP = T.set_subtensor(unkVecOP[5], unkVecOP[5] * RbAffM)  # k10rev
-    unkVecOP = T.set_subtensor(unkVecOP[25], unkVecOP[25] * RbAffM)
-    unkVecOP = T.set_subtensor(unkVecOP[6], unkVecOP[6] * RbAffM)  # k11rev
-    unkVecOP = T.set_subtensor(unkVecOP[26], unkVecOP[26] * RbAffM)
+
+    # Adjust a affinities
+    for ii in [1, 21]:
+        unkVecOP = T.set_subtensor(unkVecOP[ii], unkVecOP[ii] * RaAffM)
+
+    # Adjust b/g affinities
+    for ii in [2, 3, 4, 5, 6, 22, 23, 24, 25, 26]:
+        unkVecOP = T.set_subtensor(unkVecOP[ii], unkVecOP[ii] * RbAffM)
 
     cell_groups = np.array([['T-reg', 'Mem Treg', 'Naive Treg'], ['T-helper', 'Mem Th', 'Naive Th'], ['NK'], ['CD8+', 'Naive CD8+', 'Mem CD8+']])
     for i, group in enumerate(cell_groups):
@@ -71,29 +73,6 @@ def OPgen(unkVecOP, CellTypes, OpC, scalesTh, RaAffM, RbAffM):
     Cell_Op = (OpC(unkVecOP) * scale1) / (OpC(unkVecOP) + scale2)
 
     return Cell_Op
-
-
-def barlabel(rects, ax):
-    """Attach a text label above each bar in *rects*, displaying its height."""
-    ODunk = np.zeros(60)
-    OD = getparamsdict(ODunk)
-    labels = list(OD.keys())
-    labels = np.array(labels)
-    labels = np.delete(labels, np.s_[-8:])
-    labels = np.delete(labels, np.s_[0:6])
-    labels = np.delete(labels, np.s_[7:21])
-    labels = np.delete(labels, np.s_[13:27])
-    labels = labels.tolist()
-    for i, rect in enumerate(rects):
-        height = rect.get_height()
-        if height < 0 or height > 0.1:
-            height = 0
-        ax.annotate(labels[i],
-                    xy=(rect.get_x() + rect.get_width() / 2, height),
-                    xytext=(-5, 3),  # 3 points vertical offset
-                    textcoords="offset points",
-                    ha='left', va='bottom',
-                    rotation=45)
 
 
 def genscalesT(unkVecOP):
@@ -113,7 +92,7 @@ def genscalesT(unkVecOP):
         unkVecOP = T.set_subtensor(unkVecOP[47], receptor_expression(cell_data[1], unkVecOP[41], unkVecOP[44], unkVecOP[43], unkVecOP[45]))  # Rb
         unkVecOP = T.set_subtensor(unkVecOP[48], receptor_expression(cell_data[2], unkVecOP[41], unkVecOP[44], unkVecOP[43], unkVecOP[45]))  # Gc
         unkVecOP = T.set_subtensor(unkVecOP[49], 0)  # 15
-        # unkVecOP = T.set_subtensor(unkVecOP[1], unkVecOP[1]*100)  # Zoe Use this to set affinities
+
         for j, conc in enumerate(ckineConcT):
             Cond2[0, 0] = conc
             Cond15[0, 1] = conc
@@ -172,4 +151,5 @@ S = (OPgen(unkVecT, "T-reg", Op, scalesT, 1, 1) /
       OPgen(unkVecT, "CD8+", Op, scalesT, 1, 1)))
 
 Sgrad = T.grad(S[0], unkVecT)
-Sfunc = theano.function([unkVecT], Sgrad)
+Sgradfunc = theano.function([unkVecT], Sgrad)
+Sfunc = theano.function([unkVecT], S[0])
