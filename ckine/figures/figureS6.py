@@ -126,12 +126,13 @@ def OPgen(unkVecOP, CellTypes, OpC, scalesTh, RaAffM, RbAffM):
     return Cell_Op
 
 
-def OPgenSpec(unk, scales, k1Aff=1.0, k5Aff=1.0):
-    S = (OPgen(unk, "T-reg", Op, scales, k1Aff, k5Aff) /
-         (OPgen(unk, "T-reg", Op, scales, k1Aff, k5Aff) +
-          OPgen(unk, "T-helper", Op, scales, k1Aff, k5Aff) +
-          OPgen(unk, "NK", Op, scales, k1Aff, k5Aff) +
-          OPgen(unk, "CD8+", Op, scales, k1Aff, k5Aff)))
+def OPgenSpec(unk, scalesIn, k1Aff=1.0, k5Aff=1.0):
+    """ Make an Op for specificity from the given conditions. """
+    S = (OPgen(unk, "T-reg", Op, scalesIn, k1Aff, k5Aff) /
+         (OPgen(unk, "T-reg", Op, scalesIn, k1Aff, k5Aff) +
+          OPgen(unk, "T-helper", Op, scalesIn, k1Aff, k5Aff) +
+          OPgen(unk, "NK", Op, scalesIn, k1Aff, k5Aff) +
+          OPgen(unk, "CD8+", Op, scalesIn, k1Aff, k5Aff)))
 
     return S
 
