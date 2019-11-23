@@ -27,8 +27,59 @@ def makeFigure():
     return f
 
 
+unkVec, scales = import_samples_2_15(N=1)
+ckineConc, _, IL2_data, IL15_data, _ = import_pstat()
+_, receptor_data, cell_names_receptor = import_Rexpr()
+ckineC = ckineConc[7]
+time = 240.
+unkVec = getRateVec(unkVec)
+CondIL = np.zeros((1, 6), dtype=np.float64)
+CondIL[0, 0] = ckineC
+Op = runCkineDoseOp(tt=np.array(time), condense=getTotalActiveSpecies().astype(np.float64), conditions=CondIL)
+unkVec = unkVec[6::].flatten()
+unkVecT = T.set_subtensor(T.zeros(54)[0:], np.transpose(unkVec))
+
+
+def genscalesT(unkVecOP):
+    """ This generates the group of scaling constants for our OPs """
+    cell_names_receptorC = cell_names_receptor.tolist()
+    tps = np.array([0.5, 1., 2., 4.]) * 60
+    Cond2 = np.zeros((1, 6), dtype=np.float64)
+    Cond15 = np.zeros((1, 6), dtype=np.float64)
+    pred2Vec, pred15Vec = np.zeros([len(cell_names_receptorC), ckineConc.size, 1, len(tps)]), np.zeros([len(cell_names_receptorC), ckineConc.size, 1, len(tps)])
+
+    for i, Ctype in enumerate(cell_names_receptorC):  # Update each vec for unique cell expression levels
+        cell_data = receptor_data[cell_names_receptorC.index(Ctype), :]
+        unkVecOP = T.set_subtensor(unkVecOP[46], receptor_expression(cell_data[0], unkVecOP[41], unkVecOP[44], unkVecOP[43], unkVecOP[45]))  # RA
+        unkVecOP = T.set_subtensor(unkVecOP[47], receptor_expression(cell_data[1], unkVecOP[41], unkVecOP[44], unkVecOP[43], unkVecOP[45]))  # Rb
+        unkVecOP = T.set_subtensor(unkVecOP[48], receptor_expression(cell_data[2], unkVecOP[41], unkVecOP[44], unkVecOP[43], unkVecOP[45]))  # Gc
+        unkVecOP = T.set_subtensor(unkVecOP[49], 0)  # 15
+
+        for j, conc in enumerate(ckineConc):
+            Cond2[0, 0] = conc
+            Cond15[0, 1] = conc
+            for k, timeT in enumerate(tps):
+                # calculate full tensor of predictions for all cells for all timepoints
+                ScaleOp = runCkineDoseOp(tt=np.array(timeT), condense=getTotalActiveSpecies().astype(np.float64), conditions=Cond2)
+                pred2Vec[i, j, 0, k] = ScaleOp(unkVecOP).eval()
+                ScaleOp = runCkineDoseOp(tt=np.array(timeT), condense=getTotalActiveSpecies().astype(np.float64), conditions=Cond15)
+                pred15Vec[i, j, 0, k] = ScaleOp(unkVecOP).eval()
+
+    scalesTh = grouped_scaling(scales, cell_names_receptorC, IL2_data, IL15_data, pred2Vec, pred15Vec)
+
+    return scalesTh
+
+
+scalesT = genscalesT(unkVecT)
+
+
 def Specificity(ax):
     """ Creates Theano Function for calculating Specificity gradient with respect to various parameters"""
+    S = OPgenSpec(unkVecT, scalesT)
+    Sgrad = T.grad(S[0], unkVecT)
+    Sgradfunc = theano.function([unkVecT], Sgrad)
+    Sfunc = theano.function([unkVecT], S[0])
+
     S_partials = Sgradfunc(unkVec.flatten()) / Sfunc(unkVec.flatten())
 
     names = list(getparamsdict(np.zeros(60)).keys())[6::]
@@ -75,37 +126,14 @@ def OPgen(unkVecOP, CellTypes, OpC, scalesTh, RaAffM, RbAffM):
     return Cell_Op
 
 
-def genscalesT(unkVecOP):
-    """ This generates the group of scaling constants for our OPs """
-    _, scale = import_samples_2_15(N=1)
-    _, receptor_dataC, cell_names_receptorC = import_Rexpr()
-    cell_names_receptorC = cell_names_receptorC.tolist()
-    ckineConcT, _, IL2_data, IL15_data, _ = import_pstat()
-    tps = np.array([0.5, 1., 2., 4.]) * 60
-    Cond2 = np.zeros((1, 6), dtype=np.float64)
-    Cond15 = np.zeros((1, 6), dtype=np.float64)
-    pred2Vec, pred15Vec = np.zeros([len(cell_names_receptorC), ckineConcT.size, 1, len(tps)]), np.zeros([len(cell_names_receptorC), ckineConcT.size, 1, len(tps)])
+def OPgenSpec(unk, scales, k1Aff=1.0, k5Aff=1.0):
+    S = (OPgen(unk, "T-reg", Op, scales, k1Aff, k5Aff) /
+        (OPgen(unk, "T-reg", Op, scales, k1Aff, k5Aff) +
+         OPgen(unk, "T-helper", Op, scales, k1Aff, k5Aff) +
+         OPgen(unk, "NK", Op, scales, k1Aff, k5Aff) +
+         OPgen(unk, "CD8+", Op, scales, k1Aff, k5Aff)))
 
-    for i, Ctype in enumerate(cell_names_receptorC):  # Update each vec for unique cell expression levels
-        cell_data = receptor_dataC[cell_names_receptorC.index(Ctype), :]
-        unkVecOP = T.set_subtensor(unkVecOP[46], receptor_expression(cell_data[0], unkVecOP[41], unkVecOP[44], unkVecOP[43], unkVecOP[45]))  # RA
-        unkVecOP = T.set_subtensor(unkVecOP[47], receptor_expression(cell_data[1], unkVecOP[41], unkVecOP[44], unkVecOP[43], unkVecOP[45]))  # Rb
-        unkVecOP = T.set_subtensor(unkVecOP[48], receptor_expression(cell_data[2], unkVecOP[41], unkVecOP[44], unkVecOP[43], unkVecOP[45]))  # Gc
-        unkVecOP = T.set_subtensor(unkVecOP[49], 0)  # 15
-
-        for j, conc in enumerate(ckineConcT):
-            Cond2[0, 0] = conc
-            Cond15[0, 1] = conc
-            for k, timeT in enumerate(tps):
-                # calculate full tensor of predictions for all cells for all timepoints
-                ScaleOp = runCkineDoseOp(tt=np.array(timeT), condense=getTotalActiveSpecies().astype(np.float64), conditions=Cond2)
-                pred2Vec[i, j, 0, k] = ScaleOp(unkVecOP).eval()
-                ScaleOp = runCkineDoseOp(tt=np.array(timeT), condense=getTotalActiveSpecies().astype(np.float64), conditions=Cond15)
-                pred15Vec[i, j, 0, k] = ScaleOp(unkVecOP).eval()
-
-    scalesTh = grouped_scaling(scale, cell_names_receptorC, IL2_data, IL15_data, pred2Vec, pred15Vec)
-
-    return scalesTh
+    return S
 
 
 def Spec_Aff(ax, cell, npoints, OpAff, unkVecAff, scalesAff):
@@ -115,41 +143,10 @@ def Spec_Aff(ax, cell, npoints, OpAff, unkVecAff, scalesAff):
     specHolder = np.zeros([len(RaAff), npoints])
     for i, k1Aff in enumerate(RaAff):
         for j, k5Aff in enumerate(affRange):
-            Saff = (OPgen(unkVecAff, cell, OpAff, scalesAff, k1Aff, k5Aff) /
-                    (OPgen(unkVecAff, "T-reg", OpAff, scalesAff, k1Aff, k5Aff) +
-                     OPgen(unkVecAff, "T-helper", OpAff, scalesAff, k1Aff, k5Aff) +
-                     OPgen(unkVecAff, "NK", OpAff, scalesAff, k1Aff, k5Aff) +
-                     OPgen(unkVecAff, "CD8+", OpAff, scalesAff, k1Aff, k5Aff)))
-            specHolder[i, j] = Saff.eval()
+            specHolder[i, j] = OPgenSpec(unkVecAff, scalesAff, k1Aff, k5Aff).eval()
         ax.plot(1 / affRange, specHolder[i, :], label=str(1 / RaAff[i]) + " IL2Ra Affinity")
 
     ax.set_xscale('log')
     ax.set_xlabel('Relative CD122/CD132 Affinity')
     ax.set_ylabel('T-reg Specificity')
     ax.legend()
-
-
-ckineConc, _, _, _, _ = import_pstat()
-ckineC = ckineConc[7]
-time = 240.
-unkVec, scales = import_samples_2_15(N=1)
-_, receptor_data, cell_names_receptor = import_Rexpr()
-unkVec = getRateVec(unkVec)
-CondIL = np.zeros((1, 6), dtype=np.float64)
-CondIL[0, 0] = ckineC
-Op = runCkineDoseOp(tt=np.array(time), condense=getTotalActiveSpecies().astype(np.float64), conditions=CondIL)
-unkVecTrunc = T.zeros(54)
-unkVec = unkVec[6::].flatten()
-unkVecTrunc = T.set_subtensor(unkVecTrunc[0:], np.transpose(unkVec))
-unkVecT = unkVecTrunc
-scalesT = genscalesT(unkVecT)
-
-S = (OPgen(unkVecT, "T-reg", Op, scalesT, 1, 1) /
-     (OPgen(unkVecT, "T-reg", Op, scalesT, 1, 1) +
-      OPgen(unkVecT, "T-helper", Op, scalesT, 1, 1) +
-      OPgen(unkVecT, "NK", Op, scalesT, 1, 1) +
-      OPgen(unkVecT, "CD8+", Op, scalesT, 1, 1)))
-
-Sgrad = T.grad(S[0], unkVecT)
-Sgradfunc = theano.function([unkVecT], Sgrad)
-Sfunc = theano.function([unkVecT], S[0])
