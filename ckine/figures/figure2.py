@@ -174,7 +174,8 @@ def pretreat_calc(unkVec, scales, pre_conc):
         returnn = runCkineUP(ts, unkVec2, preT=ts, prestim=ligands)
         ret = np.zeros((returnn.shape[0]))
         for ii in range(returnn.shape[0]):
-            ret[ii] = getTotalActiveCytokine(stim_cytokine, np.squeeze(returnn[ii]))  # only look at active species associated with the active cytokine
+            # only look at active species associated with the active cytokine
+            ret[ii] = getTotalActiveCytokine(stim_cytokine, np.squeeze(returnn[ii]))
         return ret
 
     # run two-cytokine simulation for varying pretreatment concnetrations

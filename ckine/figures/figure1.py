@@ -150,7 +150,9 @@ def violinPlots(ax, unkVec, scales, Traf=True):
     if Traf:  # include sortF
         misc = np.vstack((scaless, unkVec[:, 19], kfwd))
         misc = pd.DataFrame(misc.T)
-        misc.columns = [r'$\mathrm{C_{5}}$ / ' + "{:.2E}".format(np.max(scales)), r'$\mathrm{f_{sort}}$', r'$\mathrm{k_{fwd}}$ / ' + "{:.2E}".format(np.max(unkVec[:, 6]))]
+        misc.columns = [r'$\mathrm{C_{5}}$ / ' +
+                        "{:.2E}".format(np.max(scales)), r'$\mathrm{f_{sort}}$', r'$\mathrm{k_{fwd}}$ / ' +
+                        "{:.2E}".format(np.max(unkVec[:, 6]))]
     else:  # ignore sortF
         misc = np.vstack((scaless, kfwd))
         misc = pd.DataFrame(misc.T)
