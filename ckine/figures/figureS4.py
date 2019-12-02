@@ -49,6 +49,20 @@ def makeFigure():
 def plot_core(ax, core):
     """Generate heatmaps for the core tensor."""
     # Begin by unfolding the core tensor on its 3 faces.
-    sns.heatmap(np.squeeze(core), cmap="YlGnBu", cbar=True, ax=ax, annot=True, square=True, fmt='.1f', xticklabels=['1', '2', '3'], yticklabels=['1', '2'])
+    sns.heatmap(
+        np.squeeze(core),
+        cmap="YlGnBu",
+        cbar=True,
+        ax=ax,
+        annot=True,
+        square=True,
+        fmt='.1f',
+        xticklabels=[
+            '1',
+            '2',
+            '3'],
+        yticklabels=[
+            '1',
+            '2'])
     ax.set_xlabel("Ligands")
     ax.set_ylabel("Cells")
