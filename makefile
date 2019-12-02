@@ -12,7 +12,7 @@ all: ckine/ckine.so Manuscript/Manuscript.pdf Manuscript/Manuscript.docx Manuscr
 venv: venv/bin/activate
 
 venv/bin/activate: requirements.txt
-	tlmgr install pdftexcmds
+	tlmgr install stringenc
 	test -d venv || virtualenv venv
 	. venv/bin/activate && pip install -Uqr requirements.txt
 	touch venv/bin/activate
