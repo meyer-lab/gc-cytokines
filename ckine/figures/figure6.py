@@ -77,10 +77,10 @@ def calc_plot_specificity(ax, df_specificity, df_activity, ligands, concs):
 
     # plot all specificty values
     sns.set_palette(sns.xkcd_palette(["violet", "goldenrod"]))
-    sns.scatterplot(x="Concentration", y="Specificity", hue="Ligand", data=df_specificity.loc[(
-        df_specificity["Cells"] == 'T-reg') & (df_specificity["Data Type"] == 'Experimental')], ax=ax[0], marker='o', legend=False)
-    sns.scatterplot(x="Concentration", y="Specificity", hue="Ligand", data=df_specificity.loc[(
-        df_specificity["Cells"] == 'T-reg') & (df_specificity["Data Type"] == 'Predicted')], ax=ax[0], marker='^', legend=False)
+    sns.scatterplot(x="Concentration", y="Specificity", hue="Ligand", data=df_specificity.loc[(df_specificity["Cells"] ==
+                                                                                               'T-reg') & (df_specificity["Data Type"] == 'Experimental')], ax=ax[0], marker='o', legend=False)
+    sns.scatterplot(x="Concentration", y="Specificity", hue="Ligand", data=df_specificity.loc[(df_specificity["Cells"] == 'T-reg') &
+                                                                                              (df_specificity["Data Type"] == 'Predicted')], ax=ax[0], marker='^', legend=False)
     ax[0].set(xlabel="(log$_{10}$[nM])", ylabel="Specificity", ylim=[0, 1.], title='T-reg')
 
 
@@ -96,8 +96,7 @@ def specificity(df_specificity, df_activity, cell_type, ligand, tp, concentratio
             pstat_ = df_activity.loc[(df_activity["Cells"] == cell) & (df_activity["Ligand"] == ligand) & (df_activity["Time"] == tp) &
                                      (df_activity["Concentration"] == concentration) & (df_activity["Activity Type"] == dtype), "Activity"].values[0]
             pstat_sum = pstat_sum + pstat_
-        df_add = pd.DataFrame({'Cells': cell_type, 'Ligand': ligand, 'Time': tp, 'Concentration': concentration,
-                               'Data Type': dtype, 'Specificity': pstat / pstat_sum}, index=[0])
+        df_add = pd.DataFrame({'Cells': cell_type, 'Ligand': ligand, 'Time': tp, 'Concentration': concentration, 'Data Type': dtype, 'Specificity': pstat / pstat_sum}, index=[0])
         df_specificity = df_specificity.append(df_add, ignore_index=True)
 
     return df_specificity
@@ -109,8 +108,7 @@ def genscalesT(unkVecOP):
     tps = np.array([0.5, 1., 2., 4.]) * 60
     Cond2 = np.zeros((1, 6), dtype=np.float64)
     Cond15 = np.zeros((1, 6), dtype=np.float64)
-    pred2Vec, pred15Vec = np.zeros([len(cell_names_receptorC), ckineConc.size, 1, len(tps)]
-                                   ), np.zeros([len(cell_names_receptorC), ckineConc.size, 1, len(tps)])
+    pred2Vec, pred15Vec = np.zeros([len(cell_names_receptorC), ckineConc.size, 1, len(tps)]), np.zeros([len(cell_names_receptorC), ckineConc.size, 1, len(tps)])
 
     for i, Ctype in enumerate(cell_names_receptorC):  # Update each vec for unique cell expression levels
         cell_data = receptor_data[cell_names_receptorC.index(Ctype), :]

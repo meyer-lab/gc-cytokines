@@ -17,31 +17,9 @@ _, _, IL2_data_avg, IL15_data_avg, _ = import_pstat(combine_samples=True)
 unkVec_2_15, scales = import_samples_2_15(N=1)  # use one rate
 _, receptor_data, cell_names_receptor = import_Rexpr()
 
-pstat_data = {
-    'Experiment 1': np.concatenate(
-        (IL2_data.astype(
-            np.float),
-            IL15_data.astype(
-                np.float)),
-        axis=None),
-    'Experiment 2': np.concatenate(
-        (IL2_data2.astype(
-            np.float),
-         IL15_data2.astype(
-            np.float)),
-        axis=None),
-    'IL': np.concatenate(
-        ((np.tile(
-            np.array('IL-2'),
-            len(cell_names_pstat) *
-            4 *
-            len(ckineConc))),
-         np.tile(
-            np.array('IL-15'),
-            len(cell_names_pstat) *
-            4 *
-            len(ckineConc))),
-        axis=None)}
+pstat_data = {'Experiment 1': np.concatenate((IL2_data.astype(np.float), IL15_data.astype(np.float)), axis=None), 'Experiment 2': np.concatenate((IL2_data2.astype(np.float), IL15_data2.astype(np.float)), axis=None),
+              'IL': np.concatenate(((np.tile(np.array('IL-2'), len(cell_names_pstat) * 4 * len(ckineConc))),
+                                    np.tile(np.array('IL-15'), len(cell_names_pstat) * 4 * len(ckineConc))), axis=None)}
 pstat_df = pd.DataFrame(data=pstat_data)
 
 
@@ -88,30 +66,8 @@ def makeFigure():
     EC50 = EC50 - 4  # account for 10^4 multiplication
     data_types = np.tile(np.array(data_types).reshape(80,), 2)  # for IL2 and IL15
     cell_types = np.tile(np.array(cell_types).reshape(80,), 2)
-    IL = np.concatenate(
-        (np.tile(
-            np.array('IL-2'),
-            len(cell_names_pstat) *
-            len(tps) *
-            2),
-            np.tile(
-            np.array('IL-15'),
-            len(cell_names_pstat) *
-            len(tps) *
-            2)),
-        axis=None)
-    data = {
-        'Time Point': np.tile(
-            np.array(tps),
-            len(cell_names_pstat) * 4),
-        'IL': IL,
-        'Cell Type': cell_types.reshape(
-            160,
-        ),
-        'Data Type': data_types.reshape(
-            160,
-        ),
-        'EC-50': EC50}
+    IL = np.concatenate((np.tile(np.array('IL-2'), len(cell_names_pstat) * len(tps) * 2), np.tile(np.array('IL-15'), len(cell_names_pstat) * len(tps) * 2)), axis=None)
+    data = {'Time Point': np.tile(np.array(tps), len(cell_names_pstat) * 4), 'IL': IL, 'Cell Type': cell_types.reshape(160,), 'Data Type': data_types.reshape(160,), 'EC-50': EC50}
     df = pd.DataFrame(data)
 
     catplot_comparison(ax[1], df)  # compare experiments to model predictions
@@ -169,8 +125,7 @@ def plot_corrcoef(ax, tps):
 
     x_pos = np.arange(len(cell_names_receptor))
     ax.bar(x_pos - 0.15, corr_coefs[0:len(cell_names_receptor)], width=0.3, color='darkorchid', label='IL2', tick_label=cell_names_receptor)
-    ax.bar(x_pos + 0.15, corr_coefs[len(cell_names_receptor):(2 * len(cell_names_receptor))],
-           width=0.3, color='goldenrod', label='IL15', tick_label=cell_names_receptor)
+    ax.bar(x_pos + 0.15, corr_coefs[len(cell_names_receptor):(2 * len(cell_names_receptor))], width=0.3, color='goldenrod', label='IL15', tick_label=cell_names_receptor)
     ax.set(ylabel=("Correlation"), ylim=(0., 1.))
     ax.set_xticklabels(ax.get_xticklabels(), rotation=40, fontsize=6.8, rotation_mode="anchor", ha="right")
 

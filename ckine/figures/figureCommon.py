@@ -256,10 +256,8 @@ def calc_dose_response(cell_names, unkVec, scales, receptor_data, tps, cytokC, e
         for l, cell in enumerate(cell_names):
             if cell in cells:
                 for m in range(scale.shape[2]):
-                    total_activity2[l, :, m, :] = scale[k, 1, m] * total_activity2[l, :, m, :] / \
-                        (total_activity2[l, :, m, :] + scale[k, 0, m])  # adjust activity for this sample
-                    total_activity15[l, :, m, :] = scale[k, 1, m] * total_activity15[l, :, m, :] / \
-                        (total_activity15[l, :, m, :] + scale[k, 0, m])  # adjust activity for this sample
+                    total_activity2[l, :, m, :] = scale[k, 1, m] * total_activity2[l, :, m, :] / (total_activity2[l, :, m, :] + scale[k, 0, m])  # adjust activity for this sample
+                    total_activity15[l, :, m, :] = scale[k, 1, m] * total_activity15[l, :, m, :] / (total_activity15[l, :, m, :] + scale[k, 0, m])  # adjust activity for this sample
 
     return total_activity2, total_activity15
 
