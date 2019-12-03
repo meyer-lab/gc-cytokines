@@ -92,13 +92,8 @@ def runCkineUP(tps, rxntfr, preT=0.0, prestim=None, actV=None):
         yOut = np.zeros((rxntfr.shape[0] * tps.size, __nSpecies), dtype=np.float64)
 
         retVal = libb.runCkineParallel(
-            rxntfr.ctypes.data_as(
-                ct.POINTER(
-                    ct.c_double)), tps.ctypes.data_as(
-                ct.POINTER(
-                    ct.c_double)), tps.size, rxntfr.shape[0], yOut.ctypes.data_as(
-                        ct.POINTER(
-                            ct.c_double)), preT, prestim)
+            rxntfr.ctypes.data_as(ct.POINTER(ct.c_double)), tps.ctypes.data_as(ct.POINTER(ct.c_double)), tps.size, rxntfr.shape[0], yOut.ctypes.data_as(ct.POINTER(ct.c_double)), preT, prestim
+        )
     else:
         yOut = np.zeros((rxntfr.shape[0] * tps.size), dtype=np.float64)
         sensV = np.zeros((rxntfr.shape[0] * tps.size, __rxParams), dtype=np.float64, order="C")
@@ -135,14 +130,7 @@ def fullModel(y, t, rxntfr):
 
     rxntfr = getRateVec(rxntfr)
 
-    libb.fullModel_C(
-        y.ctypes.data_as(
-            ct.POINTER(
-                ct.c_double)), t, yOut.ctypes.data_as(
-            ct.POINTER(
-                ct.c_double)), rxntfr.ctypes.data_as(
-            ct.POINTER(
-                ct.c_double)))
+    libb.fullModel_C(y.ctypes.data_as(ct.POINTER(ct.c_double)), t, yOut.ctypes.data_as(ct.POINTER(ct.c_double)), rxntfr.ctypes.data_as(ct.POINTER(ct.c_double)))
 
     return yOut
 
@@ -255,8 +243,7 @@ def getparamsdict(rxntfr):
         rd['endosome.k' + ii + 'rev'] = rd['surface.k' + ii + 'rev'] * 5.0
 
     rd['endo'], rd['activeEndo'], rd['sortF'], rd['kRec'], rd['kDeg'] = tuple(rxntfr[17:22])
-    rd['Rexpr_2Ra'], rd['Rexpr_2Rb'], rd['Rexpr_gc'], rd['Rexpr_15Ra'], rd['Rexpr_7R'], rd['Rexpr_9R'], rd['Rexpr_4Ra'], rd['Rexpr_21Ra'] = tuple(
-        rxntfr[22:30])
+    rd['Rexpr_2Ra'], rd['Rexpr_2Rb'], rd['Rexpr_gc'], rd['Rexpr_15Ra'], rd['Rexpr_7R'], rd['Rexpr_9R'], rd['Rexpr_4Ra'], rd['Rexpr_21Ra'] = tuple(rxntfr[22:30])
 
     return rd
 
