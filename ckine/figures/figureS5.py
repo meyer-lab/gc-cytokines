@@ -40,7 +40,7 @@ def plot_exp_v_pred(ax, cell_subset=None):
     axis = 0
     shift = 10 if cell_subset == [] else len(cell_subset)  # there are 10 cells if no subset is given
 
-    IL2_activity, IL15_activity = calc_dose_response(cell_names_pstat, unkVec_2_15, scales, receptor_data, tps, ckineConc, IL2_data, IL15_data)
+    IL2_activity, IL15_activity, _ = calc_dose_response(cell_names_pstat, unkVec_2_15, scales, receptor_data, tps, ckineConc, IL2_data, IL15_data)
 
     for m, name in enumerate(cell_names_pstat):
         if name in cell_subset or cell_subset == []:  # if a subset is provided only plot the listed names

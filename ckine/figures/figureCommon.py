@@ -259,7 +259,7 @@ def calc_dose_response(cell_names, unkVec, scales, receptor_data, tps, cytokC, e
                     total_activity2[l, :, m, :] = scale[k, 1, m] * total_activity2[l, :, m, :] / (total_activity2[l, :, m, :] + scale[k, 0, m])  # adjust activity for this sample
                     total_activity15[l, :, m, :] = scale[k, 1, m] * total_activity15[l, :, m, :] / (total_activity15[l, :, m, :] + scale[k, 0, m])  # adjust activity for this sample
 
-    return total_activity2, total_activity15
+    return total_activity2, total_activity15, scale
 
 
 def grouped_scaling(scales, cell_names, expr_act2, expr_act15, pred_act2, pred_act15):

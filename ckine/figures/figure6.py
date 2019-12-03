@@ -39,7 +39,7 @@ def makeFigure():
     df_spec = pd.DataFrame(columns=['Cells', 'Ligand', 'Time', 'Concentration', 'Data Type', 'Specificity'])
     df_act = pd.DataFrame(columns=['Cells', 'Ligand', 'Time', 'Concentration', 'Activity Type', 'Activity'])
 
-    IL2_activity, IL15_activity = calc_dose_response(cell_names_pstat, unkVec_2_15, scales, receptor_data, tps, ckineConc, IL2_data, IL15_data)
+    IL2_activity, IL15_activity, _ = calc_dose_response(cell_names_pstat, unkVec_2_15, scales, receptor_data, tps, ckineConc, IL2_data, IL15_data)
     for i, name in enumerate(cell_names_pstat):
         assert cell_names_pstat[i] == cell_names_receptor[i]
         df_add2 = pd.DataFrame({'Cells': np.tile(name, len(ckineConc) * len(tps) * 2), 'Ligand': np.tile('IL-2', len(ckineConc) * len(tps) * 2),
@@ -102,42 +102,8 @@ def specificity(df_specificity, df_activity, cell_type, ligand, tp, concentratio
     return df_specificity
 
 
-def genscalesTh(scalesSc, unkVecSc, cytokCSc, expr_act2Sc, expr_act15Sc):
-    """Function to generate scaling factors for predicted pSTAT levels"""
-    _, receptor_dataSc, cell_names = import_Rexpr()
-    tpsSc = np.array([0.5, 1.0, 2.0, 4.0]) * 60.0
-    rxntfr2 = unkVecSc.T.copy()
-    total_activity2 = np.zeros((len(cell_names), cytokCSc.shape[0], rxntfr2.shape[0], tpsSc.size))
-    total_activity15 = total_activity2.copy()
-
-    for i, _ in enumerate(cell_names):
-        # updates rxntfr for receptor expression for IL2Ra, IL2Rb, gc
-        cell_data = receptor_dataSc[i]
-        rxntfr2[:, 22] = receptor_expression(cell_data[0], rxntfr2[:, 17], rxntfr2[:, 20], rxntfr2[:, 19], rxntfr2[:, 21])
-        rxntfr2[:, 23] = receptor_expression(cell_data[1], rxntfr2[:, 17], rxntfr2[:, 20], rxntfr2[:, 19], rxntfr2[:, 21])
-        rxntfr2[:, 24] = receptor_expression(cell_data[2], rxntfr2[:, 17], rxntfr2[:, 20], rxntfr2[:, 19], rxntfr2[:, 21])
-        rxntfr2[:, 25] = 0.0  # We never observed any IL-15Ra
-
-        rxntfr15 = rxntfr2.copy()
-
-        # loop for each IL2 concentration
-        for j in range(cytokCSc.shape[0]):
-            rxntfr2[:, 0] = rxntfr15[:, 1] = cytokCSc[1]  # assign concs for each cytokine
-
-            # handle case of IL-2
-            yOut = runCkineUP(tpsSc, rxntfr2)
-            activity2 = np.dot(yOut, getTotalActiveSpecies().astype(np.float))
-            # handle case of IL-15
-            yOut = runCkineUP(tpsSc, rxntfr15)
-            activity15 = np.dot(yOut, getTotalActiveSpecies().astype(np.float))
-
-            total_activity2[i, j, :, :] = np.reshape(activity2, (-1, 4))  # save the activity from this concentration for all 4 tps
-            total_activity15[i, j, :, :] = np.reshape(activity15, (-1, 4))  # save the activity from this concentration for all 4 tps
-    scaleTh = grouped_scaling(scalesSc, cell_names, expr_act2Sc, expr_act15Sc, total_activity2, total_activity15)
-    return scaleTh
-
-
-scalesT = genscalesTh(scales, unkVec_2_15, ckineConc, IL2_data, IL15_data)
+tpsSc = np.array([0.5, 1.0, 2.0, 4.0]) * 60.0
+_, _, scalesT = calc_dose_response(cell_names_receptor, unkVec_2_15, scales, receptor_data, tpsSc, ckineConc, IL2_data, IL15_data)
 
 
 def Specificity(ax):
@@ -160,7 +126,7 @@ def Specificity(ax):
 
     sns.barplot(data=df, x='rate', y='value', ax=ax)
     ax.set_xticklabels(ax.get_xticklabels(), rotation=25, rotation_mode="anchor", ha="right")
-    ax.set_ylim(-0.25, 0.25)
+    ax.set_ylim(-0.3, 0.3)
 
 
 def OPgen(unkVecOP, CellTypes, OpC, scalesTh, RaAffM, RbAffM):

@@ -114,7 +114,7 @@ def plot_corrcoef(ax, tps):
     """ Plot correlation coefficients between predicted and experimental data for all cell types. """
     corr_coefs = np.zeros(2 * len(cell_names_receptor))
 
-    pred_data2, pred_data15 = calc_dose_response(cell_names_receptor, unkVec_2_15, scales, receptor_data, tps, ckineConc, IL2_data_avg, IL15_data_avg)
+    pred_data2, pred_data15, _ = calc_dose_response(cell_names_receptor, unkVec_2_15, scales, receptor_data, tps, ckineConc, IL2_data_avg, IL15_data_avg)
 
     for l, _ in enumerate(cell_names_receptor):
         corr_coef2 = pearsonr(IL2_data_avg[(l * 4):((l + 1) * 4)].flatten(), np.squeeze(pred_data2[l, :, :, :]).T.flatten())
@@ -131,7 +131,7 @@ def plot_corrcoef(ax, tps):
 
 def calculate_predicted_EC50(x0, receptors, tps, cell_index):
     """ Calculate average EC50 from model predictions. """
-    IL2_activity, IL15_activity = calc_dose_response(cell_names_pstat, unkVec_2_15, scales, receptors, tps, ckineConc, IL2_data_avg, IL15_data_avg)
+    IL2_activity, IL15_activity, _ = calc_dose_response(cell_names_pstat, unkVec_2_15, scales, receptors, tps, ckineConc, IL2_data_avg, IL15_data_avg)
     EC50_2 = np.zeros(len(tps))
     EC50_15 = EC50_2.copy()
     # calculate EC50 for each timepoint... using 0 in activity matrices since we only have 1 sample from unkVec_2_15
