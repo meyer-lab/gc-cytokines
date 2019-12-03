@@ -24,6 +24,7 @@ Op = runCkineDoseOp(tt=np.array(time), condense=getTotalActiveSpecies().astype(n
 unkVec = unkVec[6::].flatten()
 unkVecT = T.set_subtensor(T.zeros(54)[0:], np.transpose(unkVec))
 
+
 def makeFigure():
     """Get a list of the axis objects and create a figure"""
     # Get list of axis objects
@@ -101,15 +102,15 @@ def specificity(df_specificity, df_activity, cell_type, ligand, tp, concentratio
     return df_specificity
 
 
-def genscalesTh(cell_names, unkVecSc, scalesSc, receptor_dataSc, cytokCSc, expr_act2Sc, expr_act15Sc):
-    PTS = cytokCSc.shape[0]  # number of cytokine concentrations
+def genscalesTh(scalesSc, unkVecSc, cytokCSc, expr_act2Sc, expr_act15Sc):
+    """Function to generate scaling factors for predicted pSTAT levels"""
+    _, receptor_dataSc, cell_names = import_Rexpr()
     tpsSc = np.array([0.5, 1.0, 2.0, 4.0]) * 60.0
-
     rxntfr2 = unkVecSc.T.copy()
-    total_activity2 = np.zeros((len(cell_names), PTS, rxntfr2.shape[0], tpsSc.size))
+    total_activity2 = np.zeros((len(cell_names), cytokCSc.shape[0], rxntfr2.shape[0], tpsSc.size))
     total_activity15 = total_activity2.copy()
 
-    for i, cell in enumerate(cell_names):
+    for i, _ in enumerate(cell_names):
         # updates rxntfr for receptor expression for IL2Ra, IL2Rb, gc
         cell_data = receptor_dataSc[i]
         rxntfr2[:, 22] = receptor_expression(cell_data[0], rxntfr2[:, 17], rxntfr2[:, 20], rxntfr2[:, 19], rxntfr2[:, 21])
@@ -120,8 +121,8 @@ def genscalesTh(cell_names, unkVecSc, scalesSc, receptor_dataSc, cytokCSc, expr_
         rxntfr15 = rxntfr2.copy()
 
         # loop for each IL2 concentration
-        for j in range(PTS):
-            rxntfr2[:, 0] = rxntfr15[:, 1] = cytokCSc[j]  # assign concs for each cytokine
+        for j in range(cytokCSc.shape[0]):
+            rxntfr2[:, 0] = rxntfr15[:, 1] = cytokCSc[1]  # assign concs for each cytokine
 
             # handle case of IL-2
             yOut = runCkineUP(tpsSc, rxntfr2)
@@ -136,7 +137,8 @@ def genscalesTh(cell_names, unkVecSc, scalesSc, receptor_dataSc, cytokCSc, expr_
     return scaleTh
 
 
-scalesT = genscalesTh(cell_names_receptor, unkVec_2_15, scales, receptor_data, ckineConc, IL2_data, IL15_data)
+scalesT = genscalesTh(scales, unkVec_2_15, ckineConc, IL2_data, IL15_data)
+
 
 def Specificity(ax):
     """ Creates Theano Function for calculating Specificity gradient with respect to various parameters"""
@@ -158,7 +160,7 @@ def Specificity(ax):
 
     sns.barplot(data=df, x='rate', y='value', ax=ax)
     ax.set_xticklabels(ax.get_xticklabels(), rotation=25, rotation_mode="anchor", ha="right")
-    ax.set_ylim(-0.3, 0.3)
+    ax.set_ylim(-0.25, 0.25)
 
 
 def OPgen(unkVecOP, CellTypes, OpC, scalesTh, RaAffM, RbAffM):
