@@ -103,8 +103,7 @@ class IL2_15_activity:  # pylint: disable=too-few-public-methods
 
     def __init__(self):
         data = load_data('./data/IL2_IL15_extracted_data.csv')
-        self.fit_data = np.concatenate((data[:, 6], data[:, 7], data[:, 2], data[:, 3])) / \
-            100.  # the IL15_IL2Ra- data is within the 4th column (index 3)
+        self.fit_data = np.concatenate((data[:, 6], data[:, 7], data[:, 2], data[:, 3])) / 100.  # the IL15_IL2Ra- data is within the 4th column (index 3)
         self.cytokC = np.logspace(-3.3, 2.7, 8)  # 8 log-spaced values between our two endpoints
         self.cytokM = np.zeros((self.cytokC.size * 2, 6), dtype=np.float64)
         self.cytokM[0:self.cytokC.size, 0] = self.cytokC
@@ -154,25 +153,8 @@ class build_model:
             Rexpr_gc = pm.Lognormal('Rexpr_gc', sd=0.5, shape=1)  # Expression: gamma chain
             scale = pm.Lognormal('scales', mu=np.log(100.), sd=1, shape=1)  # create scaling constant for activity measurements
 
-            unkVec = T.concatenate((kfwd, rxnrates, nullRates, endo, activeEndo, sortF, kRec, kDeg,
-                                    Rexpr_2Ra, Rexpr_2Rb, Rexpr_gc, Rexpr_15Ra, nullRates * 0.0))
-            unkVec_2Ra_minus = T.concatenate(
-                (kfwd,
-                 rxnrates,
-                 nullRates,
-                 endo,
-                 activeEndo,
-                 sortF,
-                 kRec,
-                 kDeg,
-                 T.zeros(
-                     1,
-                     dtype=np.float64),
-                    Rexpr_2Rb,
-                    Rexpr_gc,
-                    Rexpr_15Ra,
-                    nullRates *
-                    0.0))
+            unkVec = T.concatenate((kfwd, rxnrates, nullRates, endo, activeEndo, sortF, kRec, kDeg, Rexpr_2Ra, Rexpr_2Rb, Rexpr_gc, Rexpr_15Ra, nullRates * 0.0))
+            unkVec_2Ra_minus = T.concatenate((kfwd, rxnrates, nullRates, endo, activeEndo, sortF, kRec, kDeg, T.zeros(1, dtype=np.float64), Rexpr_2Rb, Rexpr_gc, Rexpr_15Ra, nullRates * 0.0))
 
             Y_15 = self.dst15.calc(unkVec, scale)  # fitting the data based on dst15.calc for the given parameters
             sd_15 = T.minimum(T.std(Y_15), 0.03)  # Add bounds for the stderr to help force the fitting solution
