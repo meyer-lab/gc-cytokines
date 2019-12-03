@@ -7,7 +7,7 @@ import pandas as pd
 import seaborn as sns
 import theano.tensor as T
 import theano
-from .figureCommon import subplotLabel, getSetup, global_legend, calc_dose_response, grouped_scaling
+from .figureCommon import subplotLabel, getSetup, global_legend, calc_dose_response
 from ..imports import import_pstat, import_samples_2_15, import_Rexpr
 from ..model import getTotalActiveSpecies, receptor_expression, getRateVec, getparamsdict
 from ..differencing_op import runCkineDoseOp
@@ -39,7 +39,7 @@ def makeFigure():
     df_spec = pd.DataFrame(columns=['Cells', 'Ligand', 'Time', 'Concentration', 'Data Type', 'Specificity'])
     df_act = pd.DataFrame(columns=['Cells', 'Ligand', 'Time', 'Concentration', 'Activity Type', 'Activity'])
 
-    IL2_activity, IL15_activity = calc_dose_response(cell_names_pstat, unkVec_2_15, scales, receptor_data, tps, ckineConc, IL2_data, IL15_data)
+    IL2_activity, IL15_activity, _ = calc_dose_response(cell_names_pstat, unkVec_2_15, scales, receptor_data, tps, ckineConc, IL2_data, IL15_data)
     for i, name in enumerate(cell_names_pstat):
         assert cell_names_pstat[i] == cell_names_receptor[i]
         df_add2 = pd.DataFrame({'Cells': np.tile(name, len(ckineConc) * len(tps) * 2), 'Ligand': np.tile('IL-2', len(ckineConc) * len(tps) * 2),
@@ -102,37 +102,8 @@ def specificity(df_specificity, df_activity, cell_type, ligand, tp, concentratio
     return df_specificity
 
 
-def genscalesT(unkVecOP):
-    """ This generates the group of scaling constants for our OPs """
-    cell_names_receptorC = cell_names_receptor.tolist()
-    tps = np.array([0.5, 1., 2., 4.]) * 60
-    Cond2 = np.zeros((1, 6), dtype=np.float64)
-    Cond15 = np.zeros((1, 6), dtype=np.float64)
-    pred2Vec, pred15Vec = np.zeros([len(cell_names_receptorC), ckineConc.size, 1, len(tps)]), np.zeros([len(cell_names_receptorC), ckineConc.size, 1, len(tps)])
-
-    for i, Ctype in enumerate(cell_names_receptorC):  # Update each vec for unique cell expression levels
-        cell_data = receptor_data[cell_names_receptorC.index(Ctype), :]
-        unkVecOP = T.set_subtensor(unkVecOP[46], receptor_expression(cell_data[0], unkVecOP[41], unkVecOP[44], unkVecOP[43], unkVecOP[45]))  # RA
-        unkVecOP = T.set_subtensor(unkVecOP[47], receptor_expression(cell_data[1], unkVecOP[41], unkVecOP[44], unkVecOP[43], unkVecOP[45]))  # Rb
-        unkVecOP = T.set_subtensor(unkVecOP[48], receptor_expression(cell_data[2], unkVecOP[41], unkVecOP[44], unkVecOP[43], unkVecOP[45]))  # Gc
-        unkVecOP = T.set_subtensor(unkVecOP[49], 0)  # 15
-
-        for j, conc in enumerate(ckineConc):
-            Cond2[0, 0] = conc
-            Cond15[0, 1] = conc
-            for k, timeT in enumerate(tps):
-                # calculate full tensor of predictions for all cells for all timepoints
-                ScaleOp = runCkineDoseOp(tt=np.array(timeT), condense=getTotalActiveSpecies().astype(np.float64), conditions=Cond2)
-                pred2Vec[i, j, 0, k] = ScaleOp(unkVecOP).eval()
-                ScaleOp = runCkineDoseOp(tt=np.array(timeT), condense=getTotalActiveSpecies().astype(np.float64), conditions=Cond15)
-                pred15Vec[i, j, 0, k] = ScaleOp(unkVecOP).eval()
-
-    scalesTh = grouped_scaling(scales, cell_names_receptorC, IL2_data, IL15_data, pred2Vec, pred15Vec)
-
-    return scalesTh
-
-
-scalesT = genscalesT(unkVecT)
+tpsSc = np.array([0.5, 1.0, 2.0, 4.0]) * 60.0
+_, _, scalesT = calc_dose_response(cell_names_receptor, unkVec_2_15, scales, receptor_data, tpsSc, ckineConc, IL2_data, IL15_data)
 
 
 def Specificity(ax):
@@ -150,10 +121,12 @@ def Specificity(ax):
     df.drop(df.index[-8:], inplace=True)
     df.drop(df.index[7:21], inplace=True)
     df.drop(df.index[13:27], inplace=True)
+    df.drop(df.index[0], inplace=True)
+    df.drop(df.index[-5:], inplace=True)
 
     sns.barplot(data=df, x='rate', y='value', ax=ax)
     ax.set_xticklabels(ax.get_xticklabels(), rotation=25, rotation_mode="anchor", ha="right")
-    ax.set_ylim(-0.1, 0.1)
+    ax.set_ylim(-0.3, 0.3)
 
 
 def OPgen(unkVecOP, CellTypes, OpC, scalesTh, RaAffM, RbAffM):
