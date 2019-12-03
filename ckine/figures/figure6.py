@@ -9,7 +9,7 @@ import theano.tensor as T
 import theano
 from .figureCommon import subplotLabel, getSetup, global_legend, calc_dose_response, grouped_scaling
 from ..imports import import_pstat, import_samples_2_15, import_Rexpr
-from ..model import getTotalActiveSpecies, receptor_expression, getRateVec, getparamsdict
+from ..model import getTotalActiveSpecies, receptor_expression, getRateVec, getparamsdict, runCkineUP
 from ..differencing_op import runCkineDoseOp
 
 unkVec_2_15, scales = import_samples_2_15(N=1)
@@ -23,7 +23,6 @@ CondIL[0, 0] = ckineC
 Op = runCkineDoseOp(tt=np.array(time), condense=getTotalActiveSpecies().astype(np.float64), conditions=CondIL)
 unkVec = unkVec[6::].flatten()
 unkVecT = T.set_subtensor(T.zeros(54)[0:], np.transpose(unkVec))
-
 
 def makeFigure():
     """Get a list of the axis objects and create a figure"""
@@ -102,38 +101,42 @@ def specificity(df_specificity, df_activity, cell_type, ligand, tp, concentratio
     return df_specificity
 
 
-def genscalesT(unkVecOP):
-    """ This generates the group of scaling constants for our OPs """
-    cell_names_receptorC = cell_names_receptor.tolist()
-    tps = np.array([0.5, 1., 2., 4.]) * 60
-    Cond2 = np.zeros((1, 6), dtype=np.float64)
-    Cond15 = np.zeros((1, 6), dtype=np.float64)
-    pred2Vec, pred15Vec = np.zeros([len(cell_names_receptorC), ckineConc.size, 1, len(tps)]), np.zeros([len(cell_names_receptorC), ckineConc.size, 1, len(tps)])
+def genscalesTh(cell_names, unkVecSc, scalesSc, receptor_dataSc, cytokCSc, expr_act2Sc, expr_act15Sc):
+    PTS = cytokCSc.shape[0]  # number of cytokine concentrations
+    tpsSc = np.array([0.5, 1.0, 2.0, 4.0]) * 60.0
 
-    for i, Ctype in enumerate(cell_names_receptorC):  # Update each vec for unique cell expression levels
-        cell_data = receptor_data[cell_names_receptorC.index(Ctype), :]
-        unkVecOP = T.set_subtensor(unkVecOP[46], receptor_expression(cell_data[0], unkVecOP[41], unkVecOP[44], unkVecOP[43], unkVecOP[45]))  # RA
-        unkVecOP = T.set_subtensor(unkVecOP[47], receptor_expression(cell_data[1], unkVecOP[41], unkVecOP[44], unkVecOP[43], unkVecOP[45]))  # Rb
-        unkVecOP = T.set_subtensor(unkVecOP[48], receptor_expression(cell_data[2], unkVecOP[41], unkVecOP[44], unkVecOP[43], unkVecOP[45]))  # Gc
-        unkVecOP = T.set_subtensor(unkVecOP[49], 0)  # 15
+    rxntfr2 = unkVecSc.T.copy()
+    total_activity2 = np.zeros((len(cell_names), PTS, rxntfr2.shape[0], tpsSc.size))
+    total_activity15 = total_activity2.copy()
 
-        for j, conc in enumerate(ckineConc):
-            Cond2[0, 0] = conc
-            Cond15[0, 1] = conc
-            for k, timeT in enumerate(tps):
-                # calculate full tensor of predictions for all cells for all timepoints
-                ScaleOp = runCkineDoseOp(tt=np.array(timeT), condense=getTotalActiveSpecies().astype(np.float64), conditions=Cond2)
-                pred2Vec[i, j, 0, k] = ScaleOp(unkVecOP).eval()
-                ScaleOp = runCkineDoseOp(tt=np.array(timeT), condense=getTotalActiveSpecies().astype(np.float64), conditions=Cond15)
-                pred15Vec[i, j, 0, k] = ScaleOp(unkVecOP).eval()
+    for i, cell in enumerate(cell_names):
+        # updates rxntfr for receptor expression for IL2Ra, IL2Rb, gc
+        cell_data = receptor_dataSc[i]
+        rxntfr2[:, 22] = receptor_expression(cell_data[0], rxntfr2[:, 17], rxntfr2[:, 20], rxntfr2[:, 19], rxntfr2[:, 21])
+        rxntfr2[:, 23] = receptor_expression(cell_data[1], rxntfr2[:, 17], rxntfr2[:, 20], rxntfr2[:, 19], rxntfr2[:, 21])
+        rxntfr2[:, 24] = receptor_expression(cell_data[2], rxntfr2[:, 17], rxntfr2[:, 20], rxntfr2[:, 19], rxntfr2[:, 21])
+        rxntfr2[:, 25] = 0.0  # We never observed any IL-15Ra
 
-    scalesTh = grouped_scaling(scales, cell_names_receptorC, IL2_data, IL15_data, pred2Vec, pred15Vec)
+        rxntfr15 = rxntfr2.copy()
 
-    return scalesTh
+        # loop for each IL2 concentration
+        for j in range(PTS):
+            rxntfr2[:, 0] = rxntfr15[:, 1] = cytokCSc[j]  # assign concs for each cytokine
+
+            # handle case of IL-2
+            yOut = runCkineUP(tpsSc, rxntfr2)
+            activity2 = np.dot(yOut, getTotalActiveSpecies().astype(np.float))
+            # handle case of IL-15
+            yOut = runCkineUP(tpsSc, rxntfr15)
+            activity15 = np.dot(yOut, getTotalActiveSpecies().astype(np.float))
+
+            total_activity2[i, j, :, :] = np.reshape(activity2, (-1, 4))  # save the activity from this concentration for all 4 tps
+            total_activity15[i, j, :, :] = np.reshape(activity15, (-1, 4))  # save the activity from this concentration for all 4 tps
+    scaleTh = grouped_scaling(scalesSc, cell_names, expr_act2Sc, expr_act15Sc, total_activity2, total_activity15)
+    return scaleTh
 
 
-scalesT = genscalesT(unkVecT)
-
+scalesT = genscalesTh(cell_names_receptor, unkVec_2_15, scales, receptor_data, ckineConc, IL2_data, IL15_data)
 
 def Specificity(ax):
     """ Creates Theano Function for calculating Specificity gradient with respect to various parameters"""
@@ -150,10 +153,12 @@ def Specificity(ax):
     df.drop(df.index[-8:], inplace=True)
     df.drop(df.index[7:21], inplace=True)
     df.drop(df.index[13:27], inplace=True)
+    df.drop(df.index[0], inplace=True)
+    df.drop(df.index[-5:], inplace=True)
 
     sns.barplot(data=df, x='rate', y='value', ax=ax)
     ax.set_xticklabels(ax.get_xticklabels(), rotation=25, rotation_mode="anchor", ha="right")
-    ax.set_ylim(-0.1, 0.1)
+    ax.set_ylim(-0.3, 0.3)
 
 
 def OPgen(unkVecOP, CellTypes, OpC, scalesTh, RaAffM, RbAffM):
