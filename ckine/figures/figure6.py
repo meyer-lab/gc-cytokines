@@ -7,9 +7,9 @@ import pandas as pd
 import seaborn as sns
 import theano.tensor as T
 import theano
-from .figureCommon import subplotLabel, getSetup, global_legend, calc_dose_response, grouped_scaling
+from .figureCommon import subplotLabel, getSetup, global_legend, calc_dose_response
 from ..imports import import_pstat, import_samples_2_15, import_Rexpr
-from ..model import getTotalActiveSpecies, receptor_expression, getRateVec, getparamsdict, runCkineUP
+from ..model import getTotalActiveSpecies, receptor_expression, getRateVec, getparamsdict
 from ..differencing_op import runCkineDoseOp
 
 unkVec_2_15, scales = import_samples_2_15(N=1)
