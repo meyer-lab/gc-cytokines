@@ -44,26 +44,29 @@ def importF(pathname, WellRow):
 
 # *********************************** Gating Fxns *******************************************
 
-#Panel 1 gates:naïve and memory T-regulatory and T-helper cells
+# Panel 1 gates:naïve and memory T-regulatory and T-helper cells
 def cd3cd4():
     """Function for gating CD3+CD4+ cells (generates T cells)"""
-    cd3cd4 = PolyGate([(5.2e03,5.4e03),(5.8e03,7.9e03),(7.2e03,7.9e03),(7.2e03,5.7e03)], ('VL6-H','VL4-H'),region='in', name = 'cd3cd4')
+    cd3cd4 = PolyGate([(5.2e03, 5.4e03), (5.8e03, 7.9e03), (7.2e03, 7.9e03), (7.2e03, 5.7e03)], ('VL6-H', 'VL4-H'), region='in', name='cd3cd4')
     cd3cd4_gate = cd3cd4
     return cd3cd4_gate
 
+
 def thelper():
     """Fucntion creating and returning T helper gate on CD3+CD4+ cells"""
-    thelp = PolyGate([(4.1e03, 2e03), (4.1e03, 4.6e03), (5.2e03, 5.55e03), (6.5e03,5.55e03 ), (6.5e03, 2e03)], ('BL1-H','VL1-H'),region = 'out', name = 'thelp')
+    thelp = PolyGate([(4.1e03, 2e03), (4.1e03, 4.6e03), (5.2e03, 5.55e03), (6.5e03, 5.55e03), (6.5e03, 2e03)], ('BL1-H', 'VL1-H'), region='out', name='thelp')
     thelp_gate = thelp
     return thelp_gate
 
-def treg():#switch to polygates
+
+def treg():  # switch to polygates
     """Function creating and returning the T reg gate on CD3+CD4+ cells"""
-    treg = PolyGate([(2.5e03, 4.65e03), (2.5e03, 5.8e03), (4.4e03, 5.8e03), (5.1e03,5.56e03 ), (3.9e03, 4.65e03)], ('BL1-H', 'VL1-H'), region='in', name='treg')
+    treg = PolyGate([(2.5e03, 4.65e03), (2.5e03, 5.8e03), (4.4e03, 5.8e03), (5.1e03, 5.56e03), (3.9e03, 4.65e03)], ('BL1-H', 'VL1-H'), region='in', name='treg')
     treg_gate = treg
     return treg_gate
 
-def tregMem():#switch to polygates
+
+def tregMem():  # switch to polygates
     """Function for creating and returning the Treg Memory gate on Treg CD3+CD4+ cells"""
     treg1 = QuadGate((1e+03, 1e+03), ('BL1-H', 'VL1-H'), region='top right', name='treg1')
     treg2 = QuadGate((0, 0), ('BL1-H', 'VL1-H'), region='bottom left', name='treg2')
@@ -71,7 +74,8 @@ def tregMem():#switch to polygates
     tregMem_gate = treg1 & treg2 & cd3cd4() & cd45
     return tregMem_gate
 
-def tregN():#switch to polygates
+
+def tregN():  # switch to polygates
     """Function for creating and returning the T reg gate on CD4+ cells"""
     treg1 = QuadGate((1e+03, 1e+03), ('BL1-H', 'VL1-H'), region='top right', name='treg1')
     treg2 = QuadGate((0, 0), ('BL1-H', 'VL1-H'), region='bottom left', name='treg2')
@@ -79,15 +83,17 @@ def tregN():#switch to polygates
     tregN_gate = treg1 & treg2 & cd3cd4() & cd45
     return tregN_gate
 
-def THelpMem():#switch to polygates
+
+def THelpMem():  # switch to polygates
     """Function for creating and returning the non T reg gate on CD4+ cells"""
-    thelp1 = QuadGate((2e+03,2e+03), ('BL1-H','VL1-H'),region='top right', name = 'thelp1')
-    thelp2 = QuadGate((0,0), ('BL1-H','VL1-H'),region='bottom left', name = 'thelp2')
+    thelp1 = QuadGate((2e+03, 2e+03), ('BL1-H', 'VL1-H'), region='top right', name='thelp1')
+    thelp2 = QuadGate((0, 0), ('BL1-H', 'VL1-H'), region='bottom left', name='thelp2')
     cd45 = ThresholdGate(6300, ('BL3-H'), region="below", name='cd45')
     Thelp_gate = thelper() & cd3cd4() & cd45
     return Thelp_gate
 
-def THelpN():#switch to polygates
+
+def THelpN():  # switch to polygates
     """Function for creating and returning the non T reg gate on CD4+ cells"""
     thelp1 = QuadGate((5.115e+03, 3.470e+02), ('BL1-H', 'VL1-H'), region="top left", name='thelp1')
     thelp2 = QuadGate((2.586e+03, 5.245e+03), ('BL1-H', 'VL1-H'), region="bottom right", name='thelp2')
@@ -95,7 +101,9 @@ def THelpN():#switch to polygates
     ThelpN_gate = thelp1 & thelp2 & cd3cd4() & cd45
     return ThelpN_gate
 
-#Panel 2 gates: NK and CD56bright NK cells
+# Panel 2 gates: NK and CD56bright NK cells
+
+
 def nk():
     """Function for creating and returning the NK gate"""
     # NK cells: Take quad gates for NK cells and combine them to create single, overall NK gate
@@ -103,6 +111,7 @@ def nk():
     nk2 = QuadGate((5.550e03, 5.813e03), ("BL3-H", "VL4-H"), region="bottom right", name="nk2")
     nk_gate = nk1 & nk2
     return nk_gate
+
 
 def bnk():
     """Function for creating and returning the BNK gate"""
@@ -112,7 +121,9 @@ def bnk():
     bnk_gate = bnk1 & bnk2
     return bnk_gate
 
-#Panel 3 gates: naïve and memory cytotoxic T cells
+# Panel 3 gates: naïve and memory cytotoxic T cells
+
+
 def cd3cd8():
     """Function for creating and returning the CD3+CD8+ gate"""
     cd3cd81 = QuadGate((9.016e03, 5.976e03), ("VL6-H", "VL4-H"), region="top left", name="cd3cd81")
@@ -120,20 +131,24 @@ def cd3cd8():
     cd3cd8_gate = cd3cd81 & cd3cd82
     return cd3cd8_gate
 
+
 def cytoTMem():
     cd45 = ThresholdGate(6300, ('BL3-H'), region="above", name='cd45')
     cytoTMem_gate = cd3cd8() & cd45
     return cytoTMem_gate
+
 
 def cytoTN():
     cd45 = ThresholdGate(6300, ('BL3-H'), region="below", name='cd45')
     cytoTN_gate = cd3cd4() & cd45
     return cytoTN_gate
 
-#Panel 4
-#TODO
+# Panel 4
+# TODO
 
-#Not using below
+# Not using below
+
+
 def cellCount(sample_i, gate, Tcells=True):
     """
     Function for returning the count of cells in a single .fcs. file of a single cell file. Arguments: single sample/.fcs file and the gate of the
@@ -292,33 +307,33 @@ def plotAll(sampleType, check, gate1, gate2, titles):
             title = titles[i].split("/")
             title = title[len(title) - 1]
             cd_plot(sample, gate1, title)
-            
 
-#Importing and transforming Panel 1            
+
+# Importing and transforming Panel 1
 pathName = "Documents/Desktop/PBMC receptor quant/04-23/Plate 1/Plate 1 - Panel 1 IL2R"
 sample, file = importF(pathName, "A")
 
 datafile = r'Documents/Desktop/PBMC receptor quant/04-23/Plate 1/Plate 1 - Panel 1 IL2R/Well_A01_Lymphocytes.fcs'
 sample = FCMeasurement(ID='Test Sample', datafile=datafile)
-tsample = sample.transform('hlog', channels=['BL1-H', 'VL1-H', 'VL6-H', 'VL4-H','BL3-H'])
+tsample = sample.transform('hlog', channels=['BL1-H', 'VL1-H', 'VL6-H', 'VL4-H', 'BL3-H'])
 
-#Plotting panel 1 (naïve and memory T-regulatory and T-helper cells)
+# Plotting panel 1 (naïve and memory T-regulatory and T-helper cells)
 
-fig = figure(figsize=(14,9))
+fig = figure(figsize=(14, 9))
 fig.subplots_adjust(hspace=.25)
 ax1 = subplot(221)
-xscale("symlog") #Remove
-yscale("symlog") #Remove
-sample.plot(['VL4-H', 'VL6-H'], cmap=cm.viridis, gates=cd3cd4(), gate_lw=2) #Replace sample with tsample to use hyperlogged data
+xscale("symlog")  # Remove
+yscale("symlog")  # Remove
+sample.plot(['VL4-H', 'VL6-H'], cmap=cm.viridis, gates=cd3cd4(), gate_lw=2)  # Replace sample with tsample to use hyperlogged data
 title('Singlet Lymphocytes')
-ylim(1, 1e7) #Remove
+ylim(1, 1e7)  # Remove
 ax1.set_ylabel('CD4')
 ax1.set_xlabel('CD3')
 
 cd3cd4gated_sample = tsample.gate(cd3cd4())
 
 ax2 = subplot(222)
-cd3cd4gated_sample.plot(['VL1-H','BL1-H'], cmap=cm.viridis, gates=(thelper(),treg()), gate_lw=2)
+cd3cd4gated_sample.plot(['VL1-H', 'BL1-H'], cmap=cm.viridis, gates=(thelper(), treg()), gate_lw=2)
 title('CD3+CD4+ Cells')
 ax2.set_ylabel('CD127')
 ax2.set_xlabel('CD25')
@@ -327,16 +342,16 @@ ThelpGated_sample = cd3cd4gated_sample.gate(thelper())
 TregGated_sample = cd3cd4gated_sample.gate(treg())
 
 ax3 = subplot(223)
-ThelpGated_sample.plot(['BL3-H'], color='blue');
+ThelpGated_sample.plot(['BL3-H'], color='blue')
 title('T helper')
-ax3.set_xlabel('CD45Ra');
+ax3.set_xlabel('CD45Ra')
 
-ax4= subplot(224)
-TregGated_sample.plot(['BL3-H'], color='blue');
+ax4 = subplot(224)
+TregGated_sample.plot(['BL3-H'], color='blue')
 title('T reg')
-ax4.set_xlabel('CD45Ra');
+ax4.set_xlabel('CD45Ra')
 
-#Importing and transforming Panel 2
+# Importing and transforming Panel 2
 pathName2 = "Documents/Desktop/PBMC receptor quant/04-23/Plate 1/Plate 1 - Panel 2 IL2R"
 sample2, file2 = importF(pathName2, "B")
 
@@ -344,6 +359,6 @@ datafile2 = r'Documents/Desktop/PBMC receptor quant/04-23/Plate 1/Plate 1 - Pane
 sample2 = FCMeasurement(ID='Test Sample', datafile=datafile2)
 tsample2 = sample.transform('hlog', channels=['BL3-H', 'VL4-H'])
 
-#Plotting panel 2 (NK and CD56Bright NK cells)
-fig2= figure()
-tsample2.plot(['VL4-H', 'BL3-H'], cmap=cm.viridis);
+# Plotting panel 2 (NK and CD56Bright NK cells)
+fig2 = figure()
+tsample2.plot(['VL4-H', 'BL3-H'], cmap=cm.viridis)
