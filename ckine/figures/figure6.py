@@ -202,8 +202,8 @@ def Spec_Aff(ax, npoints, unkVecAff, scalesAff):
             ax.plot(1 / affRange, specHolderNK[i, :], label="TReg/NK pSTAT5 w/ " + str(1 / RaAff[i]) + " IL2Ra Affinity", color="slateblue")
             ax.plot(1 / affRange, specHolderTh[i, :], label="TReg/Th pSTAT5 w/ " + str(1 / RaAff[i]) + " IL2Ra Affinity", color="orange")
         else:
-            ax.plot(1 / affRange, specHolderNK[i, :], label="TReg/NK pSTAT5 w/ " + str(1 / RaAff[i]) + " IL2Ra Affinity", linestyle='dashed', color="slateblue")
-            ax.plot(1 / affRange, specHolderTh[i, :], label="TReg/Th pSTAT5 w/ " + str(1 / RaAff[i]) + " IL2Ra Affinity", linestyle='dashed', color="orange")
+            ax.plot(1 / affRange, specHolderNK[i, :], label="TReg/NK pSTAT5 w/ " + str(1 / RaAff[i]) + " IL2Ra Affinity", linestyle='dotted', color="slateblue")
+            ax.plot(1 / affRange, specHolderTh[i, :], label="TReg/Th pSTAT5 w/ " + str(1 / RaAff[i]) + " IL2Ra Affinity", linestyle='dotted', color="orange")
 
     ax.set_xscale('log')
     ax.set_xlabel('Relative CD122/CD132 Affinity')
