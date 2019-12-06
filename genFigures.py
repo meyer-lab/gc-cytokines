@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
 
+from ckine.figures.figureCommon import overlayCartoon
 import sys
 import logging
 import time
 import matplotlib
 matplotlib.use('AGG')
-from ckine.figures.figureCommon import overlayCartoon
 
 fdir = './Manuscript/Figures/'
 

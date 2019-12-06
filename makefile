@@ -3,7 +3,7 @@ fdir = ./Manuscript/Figures
 tdir = ./common/templates
 pan_common = -F pandoc-crossref -F pandoc-citeproc --filter=$(tdir)/figure-filter.py -f markdown ./Manuscript/Text/*.md
 
-flist = 1 2 3 4 5 6 S1 S2 S4 S5 S6
+flist = 1 2 3 4 5 6 S1 S2 S4 S5
 
 .PHONY: clean test all testcover autopep spell
 
@@ -13,7 +13,7 @@ venv: venv/bin/activate
 
 venv/bin/activate: requirements.txt
 	test -d venv || virtualenv venv
-	. venv/bin/activate && pip install -Ur requirements.txt
+	. venv/bin/activate && pip install -Uqr requirements.txt
 	touch venv/bin/activate
 
 $(fdir)/figure%.svg: venv genFigures.py ckine/ckine.so graph_all.svg ckine/figures/figure%.py
