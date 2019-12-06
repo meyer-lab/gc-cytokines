@@ -108,25 +108,40 @@ _, _, scalesT = calc_dose_response(cell_names_receptor, unkVec_2_15, scales, rec
 
 def Specificity(ax):
     """ Creates Theano Function for calculating Specificity gradient with respect to various parameters"""
-    S = OPgenSpec(unkVecT, scalesT)
-    Sgrad = T.grad(S[0], unkVecT)
-    Sgradfunc = theano.function([unkVecT], Sgrad)
-    Sfunc = theano.function([unkVecT], S[0])
+    S_NK, S_Th = OPgenSpec(unkVecT, scalesT)
+    SNKgrad = T.grad(S_NK[0], unkVecT)
+    SThgrad = T.grad(S_Th[0], unkVecT)
+    SNKgradfunc = theano.function([unkVecT], SNKgrad)
+    SThgradfunc = theano.function([unkVecT], SThgrad)
+    SNKfunc = theano.function([unkVecT], S_NK[0])
+    SThfunc = theano.function([unkVecT], S_Th[0])
 
-    S_partials = Sgradfunc(unkVec.flatten()) / Sfunc(unkVec.flatten())
+    SNK_partials = SNKgradfunc(unkVec.flatten()) / SNKfunc(unkVec.flatten())
+    STh_partials = SThgradfunc(unkVec.flatten()) / SThfunc(unkVec.flatten())
 
     names = list(getparamsdict(np.zeros(60)).keys())[6::]
-    df = pd.DataFrame(data={'rate': names, 'value': S_partials})
+    dfNK = pd.DataFrame(data={'rate': names, 'value': SNK_partials})
+    dfNK['cell'] = 'NK'
+    dfTh = pd.DataFrame(data={'rate': names, 'value': STh_partials})
+    dfTh['cell'] = 'T-Helper'
 
-    df.drop(df.index[-8:], inplace=True)
-    df.drop(df.index[7:21], inplace=True)
-    df.drop(df.index[13:27], inplace=True)
-    df.drop(df.index[0], inplace=True)
-    df.drop(df.index[-5:], inplace=True)
+    dfNK.drop(dfNK.index[-8:], inplace=True)
+    dfNK.drop(dfNK.index[7:21], inplace=True)
+    dfNK.drop(dfNK.index[13:27], inplace=True)
+    dfNK.drop(dfNK.index[0], inplace=True)
+    dfNK.drop(dfNK.index[-5:], inplace=True)
 
-    sns.barplot(data=df, x='rate', y='value', ax=ax)
+    dfTh.drop(dfTh.index[-8:], inplace=True)
+    dfTh.drop(dfTh.index[7:21], inplace=True)
+    dfTh.drop(dfTh.index[13:27], inplace=True)
+    dfTh.drop(dfTh.index[0], inplace=True)
+    dfTh.drop(dfTh.index[-5:], inplace=True)
+
+    df = pd.concat([dfNK, dfTh])
+
+    sns.catplot(data=df, x='rate', y='value', kind="bar", hue='cell', ax=ax)
+    ax.set_yscale("symlog", linthreshy=0.01)
     ax.set_xticklabels(ax.get_xticklabels(), rotation=25, rotation_mode="anchor", ha="right")
-    ax.set_ylim(-0.3, 0.3)
 
 
 def OPgen(unkVecOP, CellTypes, OpC, scalesTh, RaAffM, RbAffM):
@@ -163,26 +178,34 @@ def OPgen(unkVecOP, CellTypes, OpC, scalesTh, RaAffM, RbAffM):
 
 def OPgenSpec(unk, scalesIn, k1Aff=1.0, k5Aff=1.0):
     """ Make an Op for specificity from the given conditions. """
-    S = (OPgen(unk, "T-reg", Op, scalesIn, k1Aff, k5Aff) /
-         (OPgen(unk, "T-reg", Op, scalesIn, k1Aff, k5Aff) +
-          OPgen(unk, "T-helper", Op, scalesIn, k1Aff, k5Aff) +
-          OPgen(unk, "NK", Op, scalesIn, k1Aff, k5Aff) +
-          OPgen(unk, "CD8+", Op, scalesIn, k1Aff, k5Aff)))
+    S_NK = (OPgen(unk, "T-reg", Op, scalesIn, k1Aff, k5Aff) /
+            OPgen(unk, "NK", Op, scalesIn, k1Aff, k5Aff))
 
-    return S
+    S_Th = (OPgen(unk, "T-reg", Op, scalesIn, k1Aff, k5Aff) /
+            OPgen(unk, "T-helper", Op, scalesIn, k1Aff, k5Aff))
+
+    return S_NK, S_Th
 
 
 def Spec_Aff(ax, npoints, unkVecAff, scalesAff):
     "Plots specificity for a cell type over a range of IL2RBG and IL2Ra affinities"
     affRange = np.logspace(2, -1, npoints)
     RaAff = np.array([1, 10])
-    specHolder = np.zeros([len(RaAff), npoints])
+    specHolderNK = np.zeros([len(RaAff), npoints])
+    specHolderTh = np.zeros([len(RaAff), npoints])
     for i, k1Aff in enumerate(RaAff):
         for j, k5Aff in enumerate(affRange):
-            specHolder[i, j] = OPgenSpec(unkVecAff, scalesAff, k1Aff, k5Aff).eval()
-        ax.plot(1 / affRange, specHolder[i, :], label=str(1 / RaAff[i]) + " IL2Ra Affinity")
+            SNKfun, SThfun = OPgenSpec(unkVecAff, scalesAff, k1Aff, k5Aff)
+            specHolderNK[i, j] = SNKfun.eval()
+            specHolderTh[i, j] = SThfun.eval()
+        if i == 0:
+            ax.plot(1 / affRange, specHolderNK[i, :], label="TReg/NK pSTAT5 w/ " + str(1 / RaAff[i]) + " IL2Ra Affinity", color="slateblue")
+            ax.plot(1 / affRange, specHolderTh[i, :], label="TReg/Th pSTAT5 w/ " + str(1 / RaAff[i]) + " IL2Ra Affinity", color="orange")
+        else:
+            ax.plot(1 / affRange, specHolderNK[i, :], label="TReg/NK pSTAT5 w/ " + str(1 / RaAff[i]) + " IL2Ra Affinity", linestyle='dashed', color="slateblue")
+            ax.plot(1 / affRange, specHolderTh[i, :], label="TReg/Th pSTAT5 w/ " + str(1 / RaAff[i]) + " IL2Ra Affinity", linestyle='dashed', color="orange")
 
     ax.set_xscale('log')
     ax.set_xlabel('Relative CD122/CD132 Affinity')
-    ax.set_ylabel('T-reg Specificity')
+    ax.set_ylabel('Specificity')
     ax.legend()
