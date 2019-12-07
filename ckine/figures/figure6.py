@@ -57,46 +57,44 @@ def makeFigure():
                        (df_act.Cells == 'Mem Th') | (df_act.Cells == 'Naive CD8+') | (df_act.Cells == 'Mem CD8+')].index, inplace=True)
     ckineConc_ = np.delete(ckineConc, 11, 0)  # delete smallest concentration since zero/negative activity
 
-    calc_plot_specificity(ax, df_spec, df_act, ckines, ckineConc_)
-    global_legend(ax[0])
+    calc_plot_specificity(ax[0], 'NK', df_spec, df_act, ckines, ckineConc_)
+    calc_plot_specificity(ax[1], 'T-helper', df_spec, df_act, ckines, ckineConc_)
+    global_legend(ax[1])
     Specificity(ax=ax[4])
     Spec_Aff(ax[5], 40, unkVecT, scalesT)
 
     return f
 
 
-def calc_plot_specificity(ax, df_specificity, df_activity, ligands, concs):
+def calc_plot_specificity(ax, cell_compare, df_specificity, df_activity, ligands, concs):
     """ Calculates and plots specificity for both cytokines and experimental/predicted activity for T-regs. """
 
     # calculate specificity and append to dataframe
     for _, ckine in enumerate(ligands):
         for _, conc in enumerate(concs):
-            df_specificity = specificity(df_specificity, df_activity, 'T-reg', ckine, 60., conc)
+            df_specificity = specificity(df_specificity, df_activity, 'T-reg', cell_compare, ckine, 60., conc)
 
     df_specificity["Concentration"] = np.log10(df_specificity["Concentration"].astype(np.float))  # logscale for plotting
 
     # plot all specificty values
     sns.set_palette(sns.xkcd_palette(["violet", "goldenrod"]))
     sns.scatterplot(x="Concentration", y="Specificity", hue="Ligand", data=df_specificity.loc[(df_specificity["Cells"] ==
-                                                                                               'T-reg') & (df_specificity["Data Type"] == 'Experimental')], ax=ax[0], marker='o', legend=False)
-    sns.scatterplot(x="Concentration", y="Specificity", hue="Ligand", data=df_specificity.loc[(df_specificity["Cells"] == 'T-reg') &
-                                                                                              (df_specificity["Data Type"] == 'Predicted')], ax=ax[0], marker='^', legend=False)
-    ax[0].set(xlabel="(log$_{10}$[nM])", ylabel="Specificity", ylim=[0, 1.], title='T-reg')
+                                                                                               cell_compare) & (df_specificity["Data Type"] == 'Experimental')], ax=ax, marker='o', legend=False)
+    sns.scatterplot(x="Concentration", y="Specificity", hue="Ligand", data=df_specificity.loc[(df_specificity["Cells"] == cell_compare) &
+                                                                                              (df_specificity["Data Type"] == 'Predicted')], ax=ax, marker='^', legend=False)
+    ax.set(xlabel="(log$_{10}$[nM])", ylabel="Specificity", title=('T-reg vs. ' + cell_compare))
 
 
-def specificity(df_specificity, df_activity, cell_type, ligand, tp, concentration):
+def specificity(df_specificity, df_activity, cell_type1, cell_type2, ligand, tp, concentration):
     """ Caculate specificity value of cell type. """
 
     data_types = ['Experimental', 'Predicted']
     for _, dtype in enumerate(data_types):
-        pstat = df_activity.loc[(df_activity["Cells"] == cell_type) & (df_activity["Ligand"] == ligand) & (df_activity["Time"] == tp) &
+        pstat1 = df_activity.loc[(df_activity["Cells"] == cell_type1) & (df_activity["Ligand"] == ligand) & (df_activity["Time"] == tp) &
                                 (df_activity["Concentration"] == concentration) & (df_activity["Activity Type"] == dtype), "Activity"].values[0]
-        pstat_sum = 0.
-        for cell in df_activity.Cells.unique():
-            pstat_ = df_activity.loc[(df_activity["Cells"] == cell) & (df_activity["Ligand"] == ligand) & (df_activity["Time"] == tp) &
-                                     (df_activity["Concentration"] == concentration) & (df_activity["Activity Type"] == dtype), "Activity"].values[0]
-            pstat_sum = pstat_sum + pstat_
-        df_add = pd.DataFrame({'Cells': cell_type, 'Ligand': ligand, 'Time': tp, 'Concentration': concentration, 'Data Type': dtype, 'Specificity': pstat / pstat_sum}, index=[0])
+        pstat2 = df_activity.loc[(df_activity["Cells"] == cell_type2) & (df_activity["Ligand"] == ligand) & (df_activity["Time"] == tp) &
+                                (df_activity["Concentration"] == concentration) & (df_activity["Activity Type"] == dtype), "Activity"].values[0]
+        df_add = pd.DataFrame({'Cells': cell_type2, 'Ligand': ligand, 'Time': tp, 'Concentration': concentration, 'Data Type': dtype, 'Specificity': pstat1 / pstat2}, index=[0])
         df_specificity = df_specificity.append(df_add, ignore_index=True)
 
     return df_specificity
