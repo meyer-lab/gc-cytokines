@@ -94,9 +94,9 @@ def specificity(df_specificity, df_activity, cell_type1, cell_type2, ligand, tp,
     data_types = ['Experimental', 'Predicted']
     for _, dtype in enumerate(data_types):
         pstat1 = df_activity.loc[(df_activity["Cells"] == cell_type1) & (df_activity["Ligand"] == ligand) & (df_activity["Time"] == tp) &
-                                (df_activity["Concentration"] == concentration) & (df_activity["Activity Type"] == dtype), "Activity"].values[0]
+                                 (df_activity["Concentration"] == concentration) & (df_activity["Activity Type"] == dtype), "Activity"].values[0]
         pstat2 = df_activity.loc[(df_activity["Cells"] == cell_type2) & (df_activity["Ligand"] == ligand) & (df_activity["Time"] == tp) &
-                                (df_activity["Concentration"] == concentration) & (df_activity["Activity Type"] == dtype), "Activity"].values[0]
+                                 (df_activity["Concentration"] == concentration) & (df_activity["Activity Type"] == dtype), "Activity"].values[0]
         df_add = pd.DataFrame({'Cells': cell_type2, 'Ligand': ligand, 'Time': tp, 'Concentration': concentration, 'Data Type': dtype, 'Specificity': pstat1 / pstat2}, index=[0])
         df_specificity = df_specificity.append(df_add, ignore_index=True)
 
