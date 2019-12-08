@@ -75,9 +75,7 @@ def calc_plot_specificity(ax, cell_compare, df_specificity, df_activity, ligands
             df_specificity = specificity(df_specificity, df_activity, 'T-reg', cell_compare, ckine, 60., conc)
 
     df_specificity["Concentration"] = np.log10(df_specificity["Concentration"].astype(np.float))  # logscale for plotting
-    
-    if cell_compare == 'T-helper':
-        df_specificity.drop(df_specificity[(df_specificity['Cells'] == 'T-helper') & (df_specificity['Data Type'] == 'Experimental') & (df_specificity["Concentration"] < -2.5) & (df_specificity['Ligand'] == 'IL-2')].index, inplace=True)
+    df_specificity.drop(df_specificity[(df_specificity["Concentration"] < -2.5)].index, inplace=True)  # drop second conc due to negative activity
 
     # plot all specificty values
     sns.set_palette(sns.xkcd_palette(["violet", "goldenrod"]))
