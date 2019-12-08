@@ -75,6 +75,7 @@ def calc_plot_specificity(ax, cell_compare, df_specificity, df_activity, ligands
             df_specificity = specificity(df_specificity, df_activity, 'T-reg', cell_compare, ckine, 60., conc)
 
     df_specificity["Concentration"] = np.log10(df_specificity["Concentration"].astype(np.float))  # logscale for plotting
+    df_specificity["Specificity"] = np.log10(df_specificity["Specificity"].astype(np.float))
     df_specificity.drop(df_specificity[(df_specificity["Concentration"] < -2.5)].index, inplace=True)  # drop second conc due to negative activity
 
     # plot all specificty values
@@ -83,7 +84,7 @@ def calc_plot_specificity(ax, cell_compare, df_specificity, df_activity, ligands
                                                                                                cell_compare) & (df_specificity["Data Type"] == 'Experimental')], ax=ax, marker='o', legend=False)
     sns.scatterplot(x="Concentration", y="Specificity", hue="Ligand", data=df_specificity.loc[(df_specificity["Cells"] == cell_compare) &
                                                                                               (df_specificity["Data Type"] == 'Predicted')], ax=ax, marker='^', legend=False)
-    ax.set(xlabel="(log$_{10}$[nM])", ylabel="Specificity", title=('T-reg vs. ' + cell_compare))
+    ax.set(xlabel="(log$_{10}$[nM])", ylabel="log$_{10}$[Specificity]", title=('T-reg vs. ' + cell_compare))
 
 
 def specificity(df_specificity, df_activity, cell_type1, cell_type2, ligand, tp, concentration):
