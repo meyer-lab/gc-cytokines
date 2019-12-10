@@ -1,18 +1,24 @@
 """
 This file contains functions that are used in multiple figures.
 """
+import os
 import seaborn as sns
 import numpy as np
+import pandas as pds
 import matplotlib
 import matplotlib.cm as cm
 import svgutils.transform as st
+from os.path import join
 from matplotlib import gridspec, pyplot as plt
 from matplotlib.lines import Line2D
 from matplotlib.patches import Patch
 from scipy.optimize import least_squares
 from ..tensor import find_R2X
 from ..imports import import_pstat
-from ..model import runCkineUP, getTotalActiveSpecies, receptor_expression
+from ..model import runCkineUP, getTotalActiveSpecies, receptor_expression, getTotalActiveCytokine, runCkineU
+
+
+path_here = os.path.dirname(os.path.dirname(__file__))
 
 
 matplotlib.rcParams['legend.labelspacing'] = 0.2
@@ -299,6 +305,133 @@ def optimize_scale(model_act2, model_act15, exp_act2, exp_act15):
         scaled_act15 = sc[1] * model_act15 / (model_act15 + sc[0])
         err = np.hstack((exp_act2 - scaled_act2, exp_act15 - scaled_act15))
         return np.reshape(err, (-1,))
+
+    # find result of minimization where both params are >= 0
+    res = least_squares(calc_res, guess, bounds=(0.0, np.inf))
+    return res.x
+
+
+def import_pMuteins():
+    """ Loads CSV file containing pSTAT5 levels from Visterra data for muteins. """
+    path = os.path.dirname(os.path.dirname(__file__))
+    data = np.array(pds.read_csv(join(path, "data/Monomeric_mutein_pSTAT.csv"), encoding="latin1"))
+    ckineConc = data[3, 2:14]
+    ckineConc[0] = 84.
+    tps = np.array([0.5, 1.0, 2.0, 4.0]) * 60.0
+    # 4 time points, 10 cell types, 12 concentrations, 2 replicates
+    IL60_mon_data = np.zeros((32, 12))
+    Cterm_IL2_data = IL60_mon_data.copy()
+    Cterm_IL2_data_V91K = IL60_mon_data.copy()
+    IL2_109_data = IL60_mon_data.copy()
+    IL2_110_data = IL60_mon_data.copy()
+    Cterm_N88_mon_data = IL60_mon_data.copy()
+    data_list = [IL60_mon_data, Cterm_IL2_data, Cterm_IL2_data_V91K, IL2_109_data, IL2_110_data, Cterm_N88_mon_data]
+
+    cell_names = list()
+    
+    for ii, mutdata in enumerate(data_list):
+        for jj in range(8):
+            if ii == 0:
+                cell_names.append(data[8 * jj + 2, 1 + 15 * ii])
+            # Subtract the zero treatment plates before assigning to returned arrays
+            zero_treatment = data[8 * jj + 4, 13 + 15 * ii]
+            # order of increasing time by cell type
+            mutdata[4 * jj: 4 * (jj + 1), :] = np.flip(data[5 + (8 * jj): 9 + (8 * jj), 2 + 15 * ii: 14 + 15 * ii].astype(np.float) - zero_treatment, 0)
+
+    dataMean = pds.DataFrame({'Cells': np.tile(np.repeat(cell_names, 48), 6), 'Ligand': np.concatenate((np.tile(np.array('IL2-060 monomeric'), 12 * 8 * 4), np.tile(np.array("Cterm IL-2 monomeric WT"), 12 * 8 * 4), np.tile(np.array("Cterm IL-2 monomeric V91K"), 12 * 8 * 4), np.tile(np.array("IL2-109 monomeric"), 12 * 8 * 4), np.tile(np.array("IL2-110 monomeric"), 12 * 8 * 4), np.tile(np.array("Cterm N88D monomeric"), 12 * 8 * 4))), 'Time': np.tile(np.repeat(tps, 12), 48), 'Concentration': np.tile(ckineConc, 6 * 8 * 4), 'RFU': np.concatenate((IL60_mon_data.reshape(12 * 8 * 4,), Cterm_IL2_data.reshape(12 * 8 * 4,), Cterm_IL2_data_V91K.reshape(12 * 8 * 4,), IL2_109_data.reshape(12 * 8 * 4,), IL2_110_data.reshape(12 * 8 * 4,), Cterm_N88_mon_data.reshape(12 * 8 * 4,), ))})
+
+    return dataMean
+
+
+def calc_dose_response_mutein(unkVec, input_params, tps, muteinC, mutein_name, cell_receptors):
+    """ Calculates activity for a given cell type at various mutein concentrations and timepoints. """
+
+    total_activity = np.zeros((len(muteinC), len(tps)))
+
+    # loop for each mutein concentration
+    for i, conc in enumerate(muteinC):
+        unkVec[1] = conc
+        unkVec[22:25] = cell_receptors  # set receptor expression for IL2Ra, IL2Rb, gc
+        unkVec[25] = 0.0  # we never observed any IL-15Ra
+        yOut = runCkineU(tps, unkVec)
+        active_ckine = np.zeros(yOut.shape[0])
+        for j in range(yOut.shape[0]):
+            active_ckine[j] = getTotalActiveCytokine(1, yOut[j, :])
+        total_activity[i, :] = np.reshape(active_ckine, (-1, 4))
+
+    return total_activity
+
+
+mutaff = {
+    "IL2-060 monomeric": [1., 1., 5.],
+    "Cterm IL-2 monomeric WT": [1., 1., 5.],
+    "Cterm IL-2 monomeric V91K": [1., 1., 5.],
+    "IL2-109 monomeric": [1., 1., 5.],
+    "IL2-110 monomeric": [1., 1., 5.],
+    "Cterm N88D monomeric": [1., 1., 5.]
+}
+
+dataMean = import_pMuteins()
+dataMean.reset_index(inplace=True)
+_, _, _, _, pstat_df = import_pstat()
+dataMean = dataMean.append(pstat_df, ignore_index=True, sort = True)
+
+
+def organize_expr_pred(df, cell_name, ligand_name, receptors, muteinC, tps, unkVec):
+    """ Appends input dataframe with experimental and predicted activity for a given cell type and mutein. """
+
+    num = len(tps) * len(muteinC)
+
+    # organize experimental pstat data
+    exp_data = np.zeros((12, 4))
+    mutein_conc = exp_data.copy()
+    for i, conc in enumerate(dataMean.Concentration.unique()):
+        exp_data[i, :] = np.array(dataMean.loc[(dataMean["Cells"] == cell_name) & (dataMean["Ligand"] == ligand_name) & (dataMean["Concentration"] == conc), "RFU"])
+        mutein_conc[i, :] = conc
+
+    df_exp = pds.DataFrame({'Cells': np.tile(np.array(cell_name), num), 'Ligand': np.tile(np.array(ligand_name), num), 'Time Point': np.tile(tps, 12),
+                           'Concentration': mutein_conc.reshape(num,), 'Activity Type': np.tile(np.array('experimental'), num), 'Replicate': np.zeros((num)), 'Activity': exp_data.reshape(num,)})
+    df = df.append(df_exp, ignore_index=True)
+
+    # calculate predicted dose response
+    pred_data = np.zeros((12, 4, unkVec.shape[1]))
+    for j in range(unkVec.shape[1]):
+        cell_receptors = receptor_expression(receptors, unkVec[17, j], unkVec[20, j], unkVec[19, j], unkVec[21, j])
+        pred_data[:, :, j] = calc_dose_response_mutein(unkVec[:, j], mutaff[ligand_name], tps, muteinC, ligand_name, cell_receptors)
+        df_pred = pds.DataFrame({'Cells': np.tile(np.array(cell_name), num), 'Ligand': np.tile(np.array(ligand_name), num), 'Time Point': np.tile(
+            tps, 12), 'Concentration': mutein_conc.reshape(num,), 'Activity Type': np.tile(np.array('predicted'), num), 'Replicate': np.tile(np.array(j + 1), num),
+            'Activity': pred_data[:, :, j].reshape(num,)})
+        df = df.append(df_pred, ignore_index=True)
+
+    return df
+
+
+def mutein_scaling(df, unkVec):
+    """ Determines scaling parameters for specified cell groups for across all muteins. """
+
+    cell_groups = [['T-reg', 'Mem Treg', 'Naive Treg'], ['T-helper', 'Mem Th', 'Naive Th'], ['NK'], ['CD8+']]
+
+    scales = np.zeros((4, 2, unkVec.shape[1]))
+    for i, cells in enumerate(cell_groups):
+        for j in range(unkVec.shape[1]):
+            subset_df = df[df['Cells'].isin(cells)]
+            scales[i, :, j] = optimize_scale_mut(np.array(subset_df.loc[(subset_df["Activity Type"] == 'predicted'), "Activity"]),
+                                             np.array(subset_df.loc[(subset_df["Activity Type"] == 'experimental'), "Activity"]))
+
+    return scales
+
+
+def optimize_scale_mut(model_act, exp_act):
+    """ Formulates the optimal scale to minimize the residual between model activity predictions and experimental activity measurments for a given cell type. """
+
+    # scaling factors are sigmoidal and linear, respectively
+    guess = np.array([100.0, np.mean(exp_act) / np.mean(model_act)])
+
+    def calc_res(sc):
+        """ Calculate the residuals. This is the function we minimize. """
+        scaled_act = sc[1] * model_act / (model_act + sc[0])
+        err = exp_act - scaled_act
+        return err.flatten()
 
     # find result of minimization where both params are >= 0
     res = least_squares(calc_res, guess, bounds=(0.0, np.inf))
