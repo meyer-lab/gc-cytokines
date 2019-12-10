@@ -328,7 +328,7 @@ def import_pMuteins():
     data_list = [IL60_mon_data, Cterm_IL2_data, Cterm_IL2_data_V91K, IL2_109_data, IL2_110_data, Cterm_N88_mon_data]
 
     cell_names = list()
-    
+
     for ii, mutdata in enumerate(data_list):
         for jj in range(8):
             if ii == 0:
@@ -338,7 +338,33 @@ def import_pMuteins():
             # order of increasing time by cell type
             mutdata[4 * jj: 4 * (jj + 1), :] = np.flip(data[5 + (8 * jj): 9 + (8 * jj), 2 + 15 * ii: 14 + 15 * ii].astype(np.float) - zero_treatment, 0)
 
-    dataMean = pds.DataFrame({'Cells': np.tile(np.repeat(cell_names, 48), 6), 'Ligand': np.concatenate((np.tile(np.array('IL2-060 monomeric'), 12 * 8 * 4), np.tile(np.array("Cterm IL-2 monomeric WT"), 12 * 8 * 4), np.tile(np.array("Cterm IL-2 monomeric V91K"), 12 * 8 * 4), np.tile(np.array("IL2-109 monomeric"), 12 * 8 * 4), np.tile(np.array("IL2-110 monomeric"), 12 * 8 * 4), np.tile(np.array("Cterm N88D monomeric"), 12 * 8 * 4))), 'Time': np.tile(np.repeat(tps, 12), 48), 'Concentration': np.tile(ckineConc, 6 * 8 * 4), 'RFU': np.concatenate((IL60_mon_data.reshape(12 * 8 * 4,), Cterm_IL2_data.reshape(12 * 8 * 4,), Cterm_IL2_data_V91K.reshape(12 * 8 * 4,), IL2_109_data.reshape(12 * 8 * 4,), IL2_110_data.reshape(12 * 8 * 4,), Cterm_N88_mon_data.reshape(12 * 8 * 4,), ))})
+    dataMean = pds.DataFrame({'Cells': np.tile(np.repeat(cell_names, 48), 6), 'Ligand': np.concatenate((np.tile(np.array('IL2-060 monomeric'), 12 *
+                                                                                                                8 *
+                                                                                                                4), np.tile(np.array("Cterm IL-2 monomeric WT"), 12 *
+                                                                                                                            8 *
+                                                                                                                            4), np.tile(np.array("Cterm IL-2 monomeric V91K"), 12 *
+                                                                                                                                        8 *
+                                                                                                                                        4), np.tile(np.array("IL2-109 monomeric"), 12 *
+                                                                                                                                                    8 *
+                                                                                                                                                    4), np.tile(np.array("IL2-110 monomeric"), 12 *
+                                                                                                                                                                8 *
+                                                                                                                                                                4), np.tile(np.array("Cterm N88D monomeric"), 12 *
+                                                                                                                                                                            8 *
+                                                                                                                                                                            4))), 'Time': np.tile(np.repeat(tps, 12), 48), 'Concentration': np.tile(ckineConc, 6 *
+                                                                                                                                                                                                                                                    8 *
+                                                                                                                                                                                                                                                    4), 'RFU': np.concatenate((IL60_mon_data.reshape(12 *
+                                                                                                                                                                                                                                                                                                     8 *
+                                                                                                                                                                                                                                                                                                     4,), Cterm_IL2_data.reshape(12 *
+                                                                                                                                                                                                                                                                                                                                 8 *
+                                                                                                                                                                                                                                                                                                                                 4,), Cterm_IL2_data_V91K.reshape(12 *
+                                                                                                                                                                                                                                                                                                                                                                  8 *
+                                                                                                                                                                                                                                                                                                                                                                  4,), IL2_109_data.reshape(12 *
+                                                                                                                                                                                                                                                                                                                                                                                            8 *
+                                                                                                                                                                                                                                                                                                                                                                                            4,), IL2_110_data.reshape(12 *
+                                                                                                                                                                                                                                                                                                                                                                                                                      8 *
+                                                                                                                                                                                                                                                                                                                                                                                                                      4,), Cterm_N88_mon_data.reshape(12 *
+                                                                                                                                                                                                                                                                                                                                                                                                                                                      8 *
+                                                                                                                                                                                                                                                                                                                                                                                                                                                      4,), ))})
 
     return dataMean
 
@@ -374,7 +400,7 @@ mutaff = {
 dataMean = import_pMuteins()
 dataMean.reset_index(inplace=True)
 _, _, _, _, pstat_df = import_pstat()
-dataMean = dataMean.append(pstat_df, ignore_index=True, sort = True)
+dataMean = dataMean.append(pstat_df, ignore_index=True, sort=True)
 
 
 def organize_expr_pred(df, cell_name, ligand_name, receptors, muteinC, tps, unkVec):
@@ -390,7 +416,7 @@ def organize_expr_pred(df, cell_name, ligand_name, receptors, muteinC, tps, unkV
         mutein_conc[i, :] = conc
 
     df_exp = pds.DataFrame({'Cells': np.tile(np.array(cell_name), num), 'Ligand': np.tile(np.array(ligand_name), num), 'Time Point': np.tile(tps, 12),
-                           'Concentration': mutein_conc.reshape(num,), 'Activity Type': np.tile(np.array('experimental'), num), 'Replicate': np.zeros((num)), 'Activity': exp_data.reshape(num,)})
+                            'Concentration': mutein_conc.reshape(num,), 'Activity Type': np.tile(np.array('experimental'), num), 'Replicate': np.zeros((num)), 'Activity': exp_data.reshape(num,)})
     df = df.append(df_exp, ignore_index=True)
 
     # calculate predicted dose response
@@ -416,7 +442,7 @@ def mutein_scaling(df, unkVec):
         for j in range(unkVec.shape[1]):
             subset_df = df[df['Cells'].isin(cells)]
             scales[i, :, j] = optimize_scale_mut(np.array(subset_df.loc[(subset_df["Activity Type"] == 'predicted') & (subset_df["Replicate"] == (j + 1)), "Activity"]),
-                                             np.array(subset_df.loc[(subset_df["Activity Type"] == 'experimental'), "Activity"]))
+                                                 np.array(subset_df.loc[(subset_df["Activity Type"] == 'experimental'), "Activity"]))
 
     return scales
 
