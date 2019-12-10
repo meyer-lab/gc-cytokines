@@ -415,7 +415,7 @@ def mutein_scaling(df, unkVec):
     for i, cells in enumerate(cell_groups):
         for j in range(unkVec.shape[1]):
             subset_df = df[df['Cells'].isin(cells)]
-            scales[i, :, j] = optimize_scale_mut(np.array(subset_df.loc[(subset_df["Activity Type"] == 'predicted'), "Activity"]),
+            scales[i, :, j] = optimize_scale_mut(np.array(subset_df.loc[(subset_df["Activity Type"] == 'predicted') & (subset_df["Replicate"] == (j + 1)), "Activity"]),
                                              np.array(subset_df.loc[(subset_df["Activity Type"] == 'experimental'), "Activity"]))
 
     return scales
