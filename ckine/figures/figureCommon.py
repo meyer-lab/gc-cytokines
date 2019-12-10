@@ -314,32 +314,10 @@ def optimize_scale(model_act2, model_act15, exp_act2, exp_act15):
 def import_pMuteins():
     """ Loads CSV file containing pSTAT5 levels from Visterra data for muteins. """
     path = os.path.dirname(os.path.dirname(__file__))
-    data = np.array(pds.read_csv(join(path, "data/Monomeric_mutein_pSTAT.csv"), encoding="latin1"))
-    ckineConc = data[3, 2:14]
-    ckineConc[0] = 84.
-    tps = np.array([0.5, 1.0, 2.0, 4.0]) * 60.0
-    # 4 time points, 10 cell types, 12 concentrations, 2 replicates
-    IL60_mon_data = np.zeros((32, 12))
-    Cterm_IL2_data = IL60_mon_data.copy()
-    Cterm_IL2_data_V91K = IL60_mon_data.copy()
-    IL2_109_data = IL60_mon_data.copy()
-    IL2_110_data = IL60_mon_data.copy()
-    Cterm_N88_mon_data = IL60_mon_data.copy()
-    data_list = [IL60_mon_data, Cterm_IL2_data, Cterm_IL2_data_V91K, IL2_109_data, IL2_110_data, Cterm_N88_mon_data]
-
-    cell_names = list()
-
-    for ii, mutdata in enumerate(data_list):
-        for jj in range(8):
-            if ii == 0:
-                cell_names.append(data[8 * jj + 2, 1 + 15 * ii])
-            # Subtract the zero treatment plates before assigning to returned arrays
-            zero_treatment = data[8 * jj + 4, 13 + 15 * ii]
-            # order of increasing time by cell type
-            mutdata[4 * jj: 4 * (jj + 1), :] = np.flip(data[5 + (8 * jj): 9 + (8 * jj), 2 + 15 * ii: 14 + 15 * ii].astype(np.float) - zero_treatment, 0)
-
-    dataMeanM = pds.DataFrame({'Cells': np.tile(np.repeat(cell_names, 48), 6), 'Ligand': np.concatenate((np.tile(np.array('IL2-060 monomeric'), 384), np.tile(np.array("Cterm IL-2 monomeric WT"), 384), np.tile(np.array("Cterm IL-2 monomeric V91K"), 384), np.tile(np.array("IL2-109 monomeric"), 384), np.tile(np.array("IL2-110 monomeric"), 384), np.tile(np.array("Cterm N88D monomeric"), 384))), 'Time': np.tile(np.repeat(tps, 12), 48), 'Concentration': np.tile(ckineConc, 192), 'RFU': np.concatenate((IL60_mon_data.reshape(384, ), Cterm_IL2_data.reshape(384, ), Cterm_IL2_data_V91K.reshape(384, ), IL2_109_data.reshape(384, ), IL2_110_data.reshape(384, ), Cterm_N88_mon_data.reshape(384,  ), ))})
-
+    data = np.array(pds.read_csv(join(path, "data/Monomeric_mutein_pSTAT_data.csv"), encoding="latin1"))
+    data["RFU"] = data["RFU"] - data.groupby(["Cells", "Ligand"])["RFU"].transform("min")
+    dataMeanM = np.array(data)
+    
     return dataMeanM
 
 
