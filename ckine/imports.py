@@ -180,5 +180,8 @@ def import_pstat(combine_samples=True):
 
     dataMean = pds.DataFrame({'Cells': np.tile(np.repeat(cell_names, 48), 2), 'Ligand': np.concatenate((np.tile(np.array('IL2'), 480), np.tile(np.array('IL15'), 480))),
                               'Time': np.tile(np.repeat(tps, 12), 20), 'Concentration': np.tile(ckineConc, 80), 'RFU': np.concatenate((IL2_data.reshape(480,), IL15_data.reshape(480,)))})
+    
+    for conc in dataMean.Concentration.unique():
+        dataMean = dataMean.replace({"Concentration" : conc}, np.round(conc, decimals = 9))
 
     return ckineConc, cell_names, IL2_data, IL15_data, dataMean

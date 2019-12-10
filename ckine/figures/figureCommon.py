@@ -314,11 +314,12 @@ def optimize_scale(model_act2, model_act15, exp_act2, exp_act15):
 def import_pMuteins():
     """ Loads CSV file containing pSTAT5 levels from Visterra data for muteins. """
     path = os.path.dirname(os.path.dirname(__file__))
-    data = np.array(pds.read_csv(join(path, "data/Monomeric_mutein_pSTAT_data.csv"), encoding="latin1"))
+    data = pds.read_csv(join(path, "data/Monomeric_mutein_pSTAT_data.csv"), encoding="latin1")
     data["RFU"] = data["RFU"] - data.groupby(["Cells", "Ligand"])["RFU"].transform("min")
-    dataMeanM = np.array(data)
+    for conc in data.Concentration.unique():
+        data = data.replace({"Concentration" : conc}, np.round(conc, decimals = 9))
     
-    return dataMeanM
+    return data
 
 
 def calc_dose_response_mutein(unkVec, input_params, tps, muteinC, mutein_name, cell_receptors):
@@ -367,8 +368,7 @@ def organize_expr_pred(df, cell_name, ligand_name, receptors, muteinC, tps, unkV
         exp_data[i, :] = np.array(dataMean.loc[(dataMean["Cells"] == cell_name) & (dataMean["Ligand"] == ligand_name) & (dataMean["Concentration"] == conc), "RFU"])
         mutein_conc[i, :] = conc
 
-    df_exp = pds.DataFrame({'Cells': np.tile(np.array(cell_name), num), 'Ligand': np.tile(np.array(ligand_name), num), 'Time Point': np.tile(tps, 12),
-                            'Concentration': mutein_conc.reshape(num,), 'Activity Type': np.tile(np.array('experimental'), num), 'Replicate': np.zeros((num)), 'Activity': exp_data.reshape(num,)})
+    df_exp = pds.DataFrame({'Cells': np.tile(np.array(cell_name), num), 'Ligand': np.tile(np.array(ligand_name), num), 'Time Point': np.tile(tps, 12), 'Concentration': mutein_conc.reshape(num,), 'Activity Type': np.tile(np.array('experimental'), num), 'Replicate': np.zeros((num)), 'Activity': exp_data.reshape(num,)})
     df = df.append(df_exp, ignore_index=True)
 
     # calculate predicted dose response
