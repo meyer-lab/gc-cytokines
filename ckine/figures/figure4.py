@@ -8,7 +8,7 @@ import pandas as pd
 import seaborn as sns
 from scipy.optimize import least_squares
 from scipy.stats import pearsonr
-from .figureCommon import subplotLabel, getSetup, global_legend, calc_dose_response
+from .figureCommon import subplotLabel, getSetup, global_legend, calc_dose_response, import_pMuteins
 from .figureS5 import plot_exp_v_pred
 from ..imports import import_pstat, import_Rexpr, import_samples_2_15
 
@@ -25,7 +25,8 @@ pstat_df = pd.DataFrame(data=pstat_data)
 def makeFigure():
     """Get a list of the axis objects and create a figure"""
     # Get list of axis objects
-    ax, f = getSetup((7, 6), (3, 3))
+    ax, f = getSetup((7, 6), (4, 3))
+    ax[11].axis("off")
 
     for ii, item in enumerate(ax):
         subplotLabel(item, string.ascii_uppercase[ii])
@@ -41,6 +42,7 @@ def makeFigure():
     cell_types = []
     EC50s_2 = np.zeros(len(cell_names_pstat) * len(tps) * 2)
     EC50s_15 = np.zeros(len(cell_names_pstat) * len(tps) * 2)
+    mutEC50s = get_Mut_EC50s()
 
     for i, name in enumerate(cell_names_pstat):
         assert cell_names_pstat[i] == cell_names_receptor[i]
@@ -88,6 +90,27 @@ def compare_experimental_data(ax, df):
     ax.set_aspect('equal', 'box')
 
 
+def get_Mut_EC50s():
+    mutData = import_pMuteins()
+    x0 = [1, 2., 1000.]
+    concentrations = mutData.Concentration.unique()
+    ligands = mutData.Ligand.unique()
+    celltypes = mutData.Cells.unique()
+    times = mutData.Time.unique()
+    EC50df = pd.DataFrame(columns = ['Time Point', 'IL', 'Cell Type', 'Data Type', 'EC-50'])
+    
+    #experimental
+    for ii, IL in enumerate(ligands):
+        for jj, cell in enumerate(celltypes):
+            for kk, time in enumerate(times):
+                doseData = np.array(mutData.loc[(mutData["Cells"] == cell) & (mutData["Ligand"] == IL) & (mutData["Time"] == time)]["RFU"])
+                EC50 = nllsq_EC50(x0, np.log10(concentrations.astype(np.float) * 10**4), doseData) - 4
+                EC50df.loc[ii * len(ligands) * len(celltypes) + jj * len(celltypes) + kk] = pd.Series({'Time Point':time, 'IL':IL, 'Cell Type':cell, 'Data Type':'Experimental', 'EC-50': EC50})
+    
+    #predicted
+
+    return EC50df
+    
 def catplot_comparison(ax, df):
     """ Construct EC50 catplots for each time point for IL2 and IL15. """
     # set a manual color palette
