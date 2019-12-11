@@ -372,7 +372,7 @@ def organize_expr_pred(df, cell_name, ligand_name, receptors, muteinC, tps, unkV
         {
             'Cells': np.tile(
                 np.array(cell_name), num), 'Ligand': np.tile(
-                np.array(ligand_name), num), 'Time Point': np.tile(
+                    np.array(ligand_name), num), 'Time Point': np.tile(
                     tps, 12), 'Concentration': mutein_conc.reshape(
                         num,), 'Activity Type': np.tile(
                             np.array('experimental'), num), 'Replicate': np.zeros(
