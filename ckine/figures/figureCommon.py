@@ -15,7 +15,7 @@ from matplotlib.patches import Patch
 from scipy.optimize import least_squares
 from ..tensor import find_R2X
 from ..imports import import_pstat
-from ..model import runCkineUP, getTotalActiveSpecies, receptor_expression, getTotalActiveCytokine, runCkineU
+from ..model import runCkineUP, getTotalActiveSpecies, receptor_expression, getTotalActiveCytokine, runCkineU, runCkineUmut
 
 
 path_here = os.path.dirname(os.path.dirname(__file__))
@@ -322,38 +322,45 @@ def import_pMuteins():
     return data
 
 
-def calc_dose_response_mutein(unkVec, input_params, tps, muteinC, mutein_name, cell_receptors):
+def getMutAff():
+    """Returns adjusted binding rates for all muteins in dictionary"""
+
+    mutaff = {
+    'IL2-060 monomeric': [1., 1.],
+    'Cterm IL-2 monomeric WT': [1., 1.],
+    'Cterm IL-2 monomeric V91K': [1., 1.],
+    'IL2-109 monomeric': [1., 1.],
+    'IL2-110 monomeric': [1., 1.],
+    'Cterm N88D monomeric': [10., 1.]
+    }
+
+    return mutaff
+
+
+mutaff = getMutAff()
+dataMean = import_pMuteins()
+dataMean.reset_index(inplace=True)
+_, _, _, _, pstat_df = import_pstat()
+dataMean = dataMean.append(pstat_df, ignore_index=True, sort=True)
+
+
+def calc_dose_response_mutein(unkVec, mutdict, tps, muteinC, mutein_name, cell_receptors):
     """ Calculates activity for a given cell type at various mutein concentrations and timepoints. """
 
     total_activity = np.zeros((len(muteinC), len(tps)))
 
     # loop for each mutein concentration
     for i, conc in enumerate(muteinC):
-        unkVec[1] = conc
-        unkVec[22:25] = cell_receptors  # set receptor expression for IL2Ra, IL2Rb, gc
-        unkVec[25] = 0.0  # we never observed any IL-15Ra
-        yOut = runCkineU(tps, unkVec)
+        unkVec[0] = conc
+        yOut = runCkineUmut(tps, unkVec, mutdict, mutein_name)
         active_ckine = np.zeros(yOut.shape[0])
-        for j in range(yOut.shape[0]):
-            active_ckine[j] = getTotalActiveCytokine(1, yOut[j, :])
-        total_activity[i, :] = np.reshape(active_ckine, (-1, 4))
-
+        # calculate for each time point
+        for ii in range(yOut.shape[0]):
+            active_ckine[ii] = getTotalActiveCytokine(0, yOut[ii, :])
+        total_activity[i, :] = np.reshape(active_ckine, (-1, 4))  # save the activity from this concentration for all 4 tps
+    
+    
     return total_activity
-
-
-mutaff = {
-    "IL2-060 monomeric": [1., 1., 5.],
-    "Cterm IL-2 monomeric WT": [1., 1., 5.],
-    "Cterm IL-2 monomeric V91K": [1., 1., 5.],
-    "IL2-109 monomeric": [1., 1., 5.],
-    "IL2-110 monomeric": [1., 1., 5.],
-    "Cterm N88D monomeric": [1., 1., 5.]
-}
-
-dataMean = import_pMuteins()
-dataMean.reset_index(inplace=True)
-_, _, _, _, pstat_df = import_pstat()
-dataMean = dataMean.append(pstat_df, ignore_index=True, sort=True)
 
 
 def organize_expr_pred(df, cell_name, ligand_name, receptors, muteinC, tps, unkVec):
@@ -384,7 +391,7 @@ def organize_expr_pred(df, cell_name, ligand_name, receptors, muteinC, tps, unkV
     pred_data = np.zeros((12, 4, unkVec.shape[1]))
     for j in range(unkVec.shape[1]):
         cell_receptors = receptor_expression(receptors, unkVec[17, j], unkVec[20, j], unkVec[19, j], unkVec[21, j])
-        pred_data[:, :, j] = calc_dose_response_mutein(unkVec[:, j], mutaff[ligand_name], tps, muteinC, ligand_name, cell_receptors)
+        pred_data[:, :, j] = calc_dose_response_mutein(unkVec[:, j], mutaff, tps, muteinC, ligand_name, cell_receptors)
         df_pred = pds.DataFrame({'Cells': np.tile(np.array(cell_name), num), 'Ligand': np.tile(np.array(ligand_name), num), 'Time Point': np.tile(tps, 12), 'Concentration': mutein_conc.reshape(
             num,), 'Activity Type': np.tile(np.array('predicted'), num), 'Replicate': np.tile(np.array(j + 1), num), 'Activity': pred_data[:, :, j].reshape(num,)})
         df = df.append(df_pred, ignore_index=True)
@@ -422,3 +429,25 @@ def optimize_scale_mut(model_act, exp_act):
     # find result of minimization where both params are >= 0
     res = least_squares(calc_res, guess, bounds=(0.0, np.inf))
     return res.x
+
+
+def catplot_comparison(ax, df):
+    """ Construct EC50 catplots for each time point for Different ligands. """
+    # set a manual color palette
+    col_list = ["violet", "goldenrod"]
+    col_list_palette = sns.xkcd_palette(col_list)
+    sns.set_palette(col_list_palette)
+    # plot predicted EC50
+    sns.catplot(x="Cell Type", y="EC-50", hue="IL",
+                data=df.loc[(df['Time Point'] == 60.) & (df["Data Type"] == 'Predicted')],
+                legend=False, legend_out=False, ax=ax, marker='^')
+
+    # plot experimental EC50
+    sns.catplot(x="Cell Type", y="EC-50", hue="IL",
+                data=df.loc[(df['Time Point'] == 60.) & (df["Data Type"] == 'Experimental')],
+                legend=False, legend_out=False, ax=ax, marker='o')
+
+    ax.set_xticklabels(ax.get_xticklabels(), rotation=40, fontsize=6.8, rotation_mode="anchor", ha="right")
+    ax.set_xlabel("")  # remove "Cell Type" from xlabel
+    ax.set_ylabel(r"EC-50 (log$_{10}$[nM])")
+    ax.get_legend().remove()

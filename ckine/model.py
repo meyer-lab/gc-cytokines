@@ -66,7 +66,7 @@ def runCkineU(tps, rxntfr, preT=0.0, prestim=None):
     return runCkineUP(tps, np.atleast_2d(rxntfr.copy()), preT, prestim)
 
 
-def runCkineUP(tps, rxntfr, preT=0.0, prestim=None, actV=None):
+def runCkineUP(tps, rxntfr,preT=0.0, prestim=None, actV=None):
     """ Version of runCkine that runs in parallel. If actV is set we'll return sensitivities. """
     tps = np.array(tps)
     assert np.all(np.any(rxntfr > 0.0, axis=1)), "Make sure at least one element is >0 for all rows."
@@ -91,6 +91,67 @@ def runCkineUP(tps, rxntfr, preT=0.0, prestim=None, actV=None):
     if actV is None:
         yOut = np.zeros((rxntfr.shape[0] * tps.size, __nSpecies), dtype=np.float64)
 
+        retVal = libb.runCkineParallel(
+            rxntfr.ctypes.data_as(ct.POINTER(ct.c_double)), tps.ctypes.data_as(ct.POINTER(ct.c_double)), tps.size, rxntfr.shape[0], yOut.ctypes.data_as(ct.POINTER(ct.c_double)), preT, prestim
+        )
+    else:
+        yOut = np.zeros((rxntfr.shape[0] * tps.size), dtype=np.float64)
+        sensV = np.zeros((rxntfr.shape[0] * tps.size, __rxParams), dtype=np.float64, order="C")
+
+        retVal = libb.runCkineSParallel(
+            rxntfr.ctypes.data_as(ct.POINTER(ct.c_double)),
+            tps.ctypes.data_as(ct.POINTER(ct.c_double)),
+            tps.size,
+            rxntfr.shape[0],
+            yOut.ctypes.data_as(ct.POINTER(ct.c_double)),
+            sensV.ctypes.data_as(ct.POINTER(ct.c_double)),
+            actV.ctypes.data_as(ct.POINTER(ct.c_double)),
+            preT,
+            prestim,
+        )
+
+    assert retVal >= 0  # make sure solver worked
+
+    if actV is not None:
+        # If we're using the condensed model
+        if rxnSizeStart == __nParams:
+            sensV = condenseSENV(sensV)
+
+        return (yOut, sensV)
+
+    return yOut
+
+
+def runCkineUmut(tps, rxntfr, mutdict, mut_name, preT=0.0, prestim=None):
+    """ Standard version of solver that returns species abundances given times and unknown rates. """
+    return runCkineUPmut(tps, np.atleast_2d(rxntfr.copy()), mutdict, mut_name, preT, prestim)
+
+
+def runCkineUPmut(tps, rxntfr, mutdict, mut_name, preT=0.0, prestim=None, actV=None):
+    """ Version of runCkine that runs in parallel. If actV is set we'll return sensitivities. """
+    tps = np.array(tps)
+    assert np.all(np.any(rxntfr > 0.0, axis=1)), "Make sure at least one element is >0 for all rows."
+    assert not np.any(rxntfr < 0.0), "Make sure no values are negative."
+
+    # Convert if we're using the condensed model
+    rxnSizeStart = rxntfr.shape[1]
+    if rxntfr.shape[1] == __nParams:
+        assert rxntfr.size % __nParams == 0
+        assert (rxntfr[:, 19] < 1.0).all()  # Check that sortF won't throw
+
+        rxntfr = getRateVec(rxntfr)
+        rxntfr = mut_adjust(rxntfr, mutdict, mut_name)
+    else:
+        assert rxntfr.size % __rxParams == 0
+        assert rxntfr.shape[1] == __rxParams
+
+    if preT != 0.0:
+        assert preT > 0.0
+        assert prestim.size == 6
+        prestim = prestim.ctypes.data_as(ct.POINTER(ct.c_double))
+
+    if actV is None:
+        yOut = np.zeros((rxntfr.shape[0] * tps.size, __nSpecies), dtype=np.float64)
         retVal = libb.runCkineParallel(
             rxntfr.ctypes.data_as(ct.POINTER(ct.c_double)), tps.ctypes.data_as(ct.POINTER(ct.c_double)), tps.size, rxntfr.shape[0], yOut.ctypes.data_as(ct.POINTER(ct.c_double)), preT, prestim
         )
@@ -264,3 +325,20 @@ def getRateVec(rxntfr):
         FullRateVec = np.array(list(ratesParamsDict.values()), dtype=np.float)
 
     return FullRateVec
+
+
+def mut_adjust(rxntfr, mutdict, mut_name):
+    """Adjust alpha beta and gamma affinities for muteins prior to run through model according to BLI data"""
+    # Adjust a affinities
+    input_params = mutdict.get(mut_name)
+
+    #change for unkVec instead of dict
+    for ii in [7, 27]:
+        rxntfr[0, ii] = rxntfr[0, ii] * input_params[0]
+
+    # Adjust b/g affinities
+    for ii in [8, 9, 10, 11, 12, 28, 29, 30, 31, 32]:
+        rxntfr[0, ii] = rxntfr[0, ii] * input_params[1]
+    
+
+    return rxntfr

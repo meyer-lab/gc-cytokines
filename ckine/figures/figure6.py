@@ -7,7 +7,7 @@ import pandas as pd
 import seaborn as sns
 import theano.tensor as T
 import theano
-from .figureCommon import subplotLabel, getSetup, global_legend, calc_dose_response
+from .figureCommon import subplotLabel, getSetup, global_legend, calc_dose_response, import_pMuteins, catplot_comparison, get_mutEC50s
 from ..imports import import_pstat, import_samples_2_15, import_Rexpr
 from ..model import getTotalActiveSpecies, receptor_expression, getRateVec, getparamsdict
 from ..differencing_op import runCkineDoseOp
@@ -59,6 +59,8 @@ def makeFigure():
 
     calc_plot_specificity(ax[0], 'NK', df_spec, df_act, ckines, ckineConc_)
     calc_plot_specificity(ax[1], 'T-helper', df_spec, df_act, ckines, ckineConc_)
+    mutEC50df = get_mutEC50s()
+    catplot_comparison(ax[2], mutEC50df)
     global_legend(ax[1])
     Specificity(ax=ax[4])
     Spec_Aff(ax[5], 40, unkVecT, scalesT)
@@ -209,3 +211,26 @@ def Spec_Aff(ax, npoints, unkVecAff, scalesAff):
     ax.set_xlabel('Relative CD122/CD132 Affinity')
     ax.set_ylabel('Specificity')
     ax.legend()
+
+def get_Mut_EC50s():
+    """Creates df with mutein EC50s included"""
+    mutData = import_pMuteins()
+    x0 = [1, 2., 1000.]
+    concentrations = mutData.Concentration.unique()
+    ligands = mutData.Ligand.unique()
+    celltypes = mutData.Cells.unique()
+    times = mutData.Time.unique()
+    EC50df = pd.DataFrame(columns = ['Time Point', 'IL', 'Cell Type', 'Data Type', 'EC-50'])
+    
+    #experimental
+    for ii, IL in enumerate(ligands):
+        for jj, cell in enumerate(celltypes):
+            for kk, time in enumerate(times):
+                doseData = np.array(mutData.loc[(mutData["Cells"] == cell) & (mutData["Ligand"] == IL) & (mutData["Time"] == time)]["RFU"])
+                EC50 = nllsq_EC50(x0, np.log10(concentrations.astype(np.float) * 10**4), doseData) - 4
+                EC50df.loc[ii * len(ligands) * len(celltypes) + jj * len(celltypes) + kk] = pd.Series({'Time Point':time, 'IL':IL, 'Cell Type':cell, 'Data Type':'Experimental', 'EC-50': EC50})
+    
+    #predicted
+    
+
+    return EC50df

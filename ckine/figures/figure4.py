@@ -8,7 +8,7 @@ import pandas as pd
 import seaborn as sns
 from scipy.optimize import least_squares
 from scipy.stats import pearsonr
-from .figureCommon import subplotLabel, getSetup, global_legend, calc_dose_response, import_pMuteins
+from .figureCommon import subplotLabel, getSetup, global_legend, calc_dose_response, catplot_comparison
 from .figureS5 import plot_exp_v_pred
 from ..imports import import_pstat, import_Rexpr, import_samples_2_15
 
@@ -25,7 +25,7 @@ pstat_df = pd.DataFrame(data=pstat_data)
 def makeFigure():
     """Get a list of the axis objects and create a figure"""
     # Get list of axis objects
-    ax, f = getSetup((7, 6), (4, 3))
+    ax, f = getSetup((7, 6), (3, 3))
     ax[11].axis("off")
 
     for ii, item in enumerate(ax):
@@ -88,49 +88,6 @@ def compare_experimental_data(ax, df):
     sns.set_palette(sns.xkcd_palette(["violet", "goldenrod"]))
     sns.scatterplot(x="Experiment 1", y="Experiment 2", hue="IL", data=df, ax=ax, s=10, legend=False)
     ax.set_aspect('equal', 'box')
-
-
-def get_Mut_EC50s():
-    mutData = import_pMuteins()
-    x0 = [1, 2., 1000.]
-    concentrations = mutData.Concentration.unique()
-    ligands = mutData.Ligand.unique()
-    celltypes = mutData.Cells.unique()
-    times = mutData.Time.unique()
-    EC50df = pd.DataFrame(columns = ['Time Point', 'IL', 'Cell Type', 'Data Type', 'EC-50'])
-    
-    #experimental
-    for ii, IL in enumerate(ligands):
-        for jj, cell in enumerate(celltypes):
-            for kk, time in enumerate(times):
-                doseData = np.array(mutData.loc[(mutData["Cells"] == cell) & (mutData["Ligand"] == IL) & (mutData["Time"] == time)]["RFU"])
-                EC50 = nllsq_EC50(x0, np.log10(concentrations.astype(np.float) * 10**4), doseData) - 4
-                EC50df.loc[ii * len(ligands) * len(celltypes) + jj * len(celltypes) + kk] = pd.Series({'Time Point':time, 'IL':IL, 'Cell Type':cell, 'Data Type':'Experimental', 'EC-50': EC50})
-    
-    #predicted
-
-    return EC50df
-    
-def catplot_comparison(ax, df):
-    """ Construct EC50 catplots for each time point for IL2 and IL15. """
-    # set a manual color palette
-    col_list = ["violet", "goldenrod"]
-    col_list_palette = sns.xkcd_palette(col_list)
-    sns.set_palette(col_list_palette)
-    # plot predicted EC50
-    sns.catplot(x="Cell Type", y="EC-50", hue="IL",
-                data=df.loc[(df['Time Point'] == 60.) & (df["Data Type"] == 'Predicted')],
-                legend=False, legend_out=False, ax=ax, marker='^')
-
-    # plot experimental EC50
-    sns.catplot(x="Cell Type", y="EC-50", hue="IL",
-                data=df.loc[(df['Time Point'] == 60.) & (df["Data Type"] == 'Experimental')],
-                legend=False, legend_out=False, ax=ax, marker='o')
-
-    ax.set_xticklabels(ax.get_xticklabels(), rotation=40, fontsize=6.8, rotation_mode="anchor", ha="right")
-    ax.set_xlabel("")  # remove "Cell Type" from xlabel
-    ax.set_ylabel(r"EC-50 (log$_{10}$[nM])")
-    ax.get_legend().remove()
 
 
 def plot_corrcoef(ax, tps):
