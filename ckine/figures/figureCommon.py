@@ -326,12 +326,12 @@ def getMutAff():
     """Returns adjusted binding rates for all muteins in dictionary"""
 
     mutaff = {
-    'IL2-060 monomeric': [1., 1.],
-    'Cterm IL-2 monomeric WT': [1., 1.],
-    'Cterm IL-2 monomeric V91K': [1., 1.],
-    'IL2-109 monomeric': [1., 1.],
-    'IL2-110 monomeric': [1., 1.],
-    'Cterm N88D monomeric': [10., 1.]
+        'IL2-060 monomeric': [1., 1.],
+        'Cterm IL-2 monomeric WT': [1., 1.],
+        'Cterm IL-2 monomeric V91K': [1., 1.],
+        'IL2-109 monomeric': [1., 1.],
+        'IL2-110 monomeric': [1., 1.],
+        'Cterm N88D monomeric': [10., 1.]
     }
 
     return mutaff
@@ -358,8 +358,7 @@ def calc_dose_response_mutein(unkVec, mutdict, tps, muteinC, mutein_name, cell_r
         for ii in range(yOut.shape[0]):
             active_ckine[ii] = getTotalActiveCytokine(0, yOut[ii, :])
         total_activity[i, :] = np.reshape(active_ckine, (-1, 4))  # save the activity from this concentration for all 4 tps
-    
-    
+
     return total_activity
 
 
@@ -452,7 +451,7 @@ def catplot_comparison(ax, df):
     ax.set_ylabel(r"EC-50 (log$_{10}$[nM])")
     ax.get_legend().remove()
 
-    
+
 def nllsq_EC50(x0, xdata, ydata):
     """ Performs nonlinear least squares on activity measurements to determine parameters of Hill equation and outputs EC50. """
     lsq_res = least_squares(residuals, x0, args=(xdata, ydata), bounds=([0., 0., 0.], [10., 10., 10**5.]), jac='3-point')
