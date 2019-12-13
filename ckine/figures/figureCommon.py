@@ -326,12 +326,12 @@ def getMutAff():
     """Returns adjusted binding rates for all muteins in dictionary"""
 
     mutaff = {
-    'IL2-060 monomeric': [1., 1.],
-    'Cterm IL-2 monomeric WT': [1., 1.],
-    'Cterm IL-2 monomeric V91K': [1., 1.],
-    'IL2-109 monomeric': [1., 1.],
-    'IL2-110 monomeric': [1., 1.],
-    'Cterm N88D monomeric': [10., 1.]
+        'IL2-060 monomeric': [1., 1.],
+        'Cterm IL-2 monomeric WT': [1., 1.],
+        'Cterm IL-2 monomeric V91K': [1., 1.],
+        'IL2-109 monomeric': [1., 1.],
+        'IL2-110 monomeric': [1., 1.],
+        'Cterm N88D monomeric': [1., 1.]
     }
 
     return mutaff
@@ -348,6 +348,9 @@ def calc_dose_response_mutein(unkVec, mutdict, tps, muteinC, mutein_name, cell_r
     """ Calculates activity for a given cell type at various mutein concentrations and timepoints. """
 
     total_activity = np.zeros((len(muteinC), len(tps)))
+    unkVec[22] = cell_receptors[0]
+    unkVec[23] = cell_receptors[1]
+    unkVec[24] = cell_receptors[2]
 
     # loop for each mutein concentration
     for i, conc in enumerate(muteinC):
@@ -355,17 +358,16 @@ def calc_dose_response_mutein(unkVec, mutdict, tps, muteinC, mutein_name, cell_r
         yOut = runCkineUmut(tps, unkVec, mutdict, mutein_name)
         active_ckine = np.zeros(yOut.shape[0])
         # calculate for each time point
+        activity2 = np.dot(yOut, getTotalActiveSpecies().astype(np.float))
         for ii in range(yOut.shape[0]):
             active_ckine[ii] = getTotalActiveCytokine(0, yOut[ii, :])
         total_activity[i, :] = np.reshape(active_ckine, (-1, 4))  # save the activity from this concentration for all 4 tps
-    
-    
+
     return total_activity
 
 
 def organize_expr_pred(df, cell_name, ligand_name, receptors, muteinC, tps, unkVec):
     """ Appends input dataframe with experimental and predicted activity for a given cell type and mutein. """
-
     num = len(tps) * len(muteinC)
 
     # organize experimental pstat data
@@ -431,7 +433,7 @@ def optimize_scale_mut(model_act, exp_act):
     return res.x
 
 
-def catplot_comparison(ax, df):
+def catplot_comparison(ax, df, legend=False):
     """ Construct EC50 catplots for each time point for Different ligands. """
     # set a manual color palette
     col_list = ["violet", "goldenrod"]
@@ -440,7 +442,7 @@ def catplot_comparison(ax, df):
     # plot predicted EC50
     sns.catplot(x="Cell Type", y="EC-50", hue="IL",
                 data=df.loc[(df['Time Point'] == 60.) & (df["Data Type"] == 'Predicted')],
-                legend=False, legend_out=False, ax=ax, marker='^')
+                legend=legend, legend_out=legend, ax=ax, marker='^')
 
     # plot experimental EC50
     sns.catplot(x="Cell Type", y="EC-50", hue="IL",
@@ -450,9 +452,17 @@ def catplot_comparison(ax, df):
     ax.set_xticklabels(ax.get_xticklabels(), rotation=40, fontsize=6.8, rotation_mode="anchor", ha="right")
     ax.set_xlabel("")  # remove "Cell Type" from xlabel
     ax.set_ylabel(r"EC-50 (log$_{10}$[nM])")
-    ax.get_legend().remove()
+    handles, _ = ax.get_legend_handles_labels()
+    circle = Line2D([], [], color='black', marker='o', linestyle='None', markersize=6, label='Experimental')
+    triangle = Line2D([], [], color='black', marker='^', linestyle='None', markersize=6, label='Predicted')
+    handles = handles[0:6]
+    handles.append(circle)
+    handles.append(triangle)
+    ax.legend(handles=handles, bbox_to_anchor=(1.02, 1))
+    if not legend:
+        ax.get_legend().remove()
 
-    
+
 def nllsq_EC50(x0, xdata, ydata):
     """ Performs nonlinear least squares on activity measurements to determine parameters of Hill equation and outputs EC50. """
     lsq_res = least_squares(residuals, x0, args=(xdata, ydata), bounds=([0., 0., 0.], [10., 10., 10**5.]), jac='3-point')

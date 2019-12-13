@@ -66,7 +66,7 @@ def runCkineU(tps, rxntfr, preT=0.0, prestim=None):
     return runCkineUP(tps, np.atleast_2d(rxntfr.copy()), preT, prestim)
 
 
-def runCkineUP(tps, rxntfr,preT=0.0, prestim=None, actV=None):
+def runCkineUP(tps, rxntfr, preT=0.0, prestim=None, actV=None):
     """ Version of runCkine that runs in parallel. If actV is set we'll return sensitivities. """
     tps = np.array(tps)
     assert np.all(np.any(rxntfr > 0.0, axis=1)), "Make sure at least one element is >0 for all rows."
@@ -332,13 +332,12 @@ def mut_adjust(rxntfr, mutdict, mut_name):
     # Adjust a affinities
     input_params = mutdict.get(mut_name)
 
-    #change for unkVec instead of dict
+    # change for unkVec instead of dict
     for ii in [7, 27]:
         rxntfr[0, ii] = rxntfr[0, ii] * input_params[0]
 
     # Adjust b/g affinities
     for ii in [8, 9, 10, 11, 12, 28, 29, 30, 31, 32]:
         rxntfr[0, ii] = rxntfr[0, ii] * input_params[1]
-    
 
     return rxntfr

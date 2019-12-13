@@ -28,7 +28,7 @@ unkVecT = T.set_subtensor(T.zeros(54)[0:], np.transpose(unkVec))
 def makeFigure():
     """Get a list of the axis objects and create a figure"""
     # Get list of axis objects
-    ax, f = getSetup((7.5, 6), (3, 4), multz={4: 3, 8: 3})
+    ax, f = getSetup((7.5, 6), (3, 4), multz={2: 1, 4: 3, 8: 3})
 
     for ii, item in enumerate(ax):
         subplotLabel(item, string.ascii_uppercase[ii])
@@ -60,10 +60,10 @@ def makeFigure():
     calc_plot_specificity(ax[0], 'NK', df_spec, df_act, ckines, ckineConc_)
     calc_plot_specificity(ax[1], 'T-helper', df_spec, df_act, ckines, ckineConc_)
     mutEC50df = get_Mut_EC50s()
-    catplot_comparison(ax[2], mutEC50df)
     global_legend(ax[1])
-    Specificity(ax=ax[4])
-    Spec_Aff(ax[5], 40, unkVecT, scalesT)
+    catplot_comparison(ax[2], mutEC50df, legend=True)
+    Specificity(ax=ax[3])
+    Spec_Aff(ax[4], 40, unkVecT, scalesT)
 
     return f
 
@@ -212,6 +212,7 @@ def Spec_Aff(ax, npoints, unkVecAff, scalesAff):
     ax.set_ylabel('Specificity')
     ax.legend()
 
+
 def get_Mut_EC50s():
     """Creates df with mutein EC50s included"""
     mutData = import_pMuteins()
@@ -220,23 +221,22 @@ def get_Mut_EC50s():
     ligands = mutData.Ligand.unique()
     celltypes = mutData.Cells.unique()
     times = mutData.Time.unique()
-    EC50df = pd.DataFrame(columns = ['Time Point', 'IL', 'Cell Type', 'Data Type', 'EC-50'])
+    EC50df = pd.DataFrame(columns=['Time Point', 'IL', 'Cell Type', 'Data Type', 'EC-50'])
     cell_groups = [['T-reg', 'Mem Treg', 'Naive Treg'], ['T-helper', 'Mem Th', 'Naive Th'], ['NK'], ['CD8+']]
-    
-    #experimental
+
+    # experimental
     for ii, IL in enumerate(ligands):
         for jj, cell in enumerate(celltypes):
             for kk, time in enumerate(times):
                 doseData = np.array(mutData.loc[(mutData["Cells"] == cell) & (mutData["Ligand"] == IL) & (mutData["Time"] == time)]["RFU"])
                 EC50 = nllsq_EC50(x0, np.log10(concentrations.astype(np.float) * 10**4), doseData) - 4
-                EC50df.loc[len(EC50df.index)] = pd.Series({'Time Point':time, 'IL':IL, 'Cell Type':cell, 'Data Type':'Experimental', 'EC-50': EC50})
+                EC50df.loc[len(EC50df.index)] = pd.Series({'Time Point': time, 'IL': IL, 'Cell Type': cell, 'Data Type': 'Experimental', 'EC-50': EC50})
 
-
-    #predicted
+    # predicted
     ligand_order = ['IL2-060 monomeric', 'Cterm IL-2 monomeric WT', 'Cterm IL-2 monomeric V91K', 'IL2-109 monomeric', 'IL2-110 monomeric', 'Cterm N88D monomeric']
     cell_order = ['NK', 'CD8+', 'T-reg', 'Naive Treg', 'Mem Treg', 'T-helper', 'Naive Th', 'Mem Th']
 
-    df = pd.DataFrame(columns=['Cells', 'Ligand', 'Time Point', 'Concentration', 'Activity Type', 'Replicate', 'Activity']) 
+    df = pd.DataFrame(columns=['Cells', 'Ligand', 'Time Point', 'Concentration', 'Activity Type', 'Replicate', 'Activity'])
 
     # loop for each cell type and mutein
     for _, cell_name in enumerate(cell_order):
@@ -254,7 +254,7 @@ def get_Mut_EC50s():
     # determine scaling constants
     scales = mutein_scaling(df, unkVec_2_15)
 
-    #scale
+    # scale
     pred_data = np.zeros((12, 4, unkVec_2_15.shape[1]))
     for i, cell_name in enumerate(cell_order):
         for j, ligand_name in enumerate(ligand_order):
@@ -262,17 +262,15 @@ def get_Mut_EC50s():
             for k, conc in enumerate(df.Concentration.unique()):
                 for l, tp in enumerate(tpsSc):
                     pred_data[k, l] = df.loc[(df["Cells"] == cell_name) & (df["Ligand"] == ligand_name) & (
-                                        df["Activity Type"] == 'predicted') & (df["Concentration"] == conc) & (df["Time Point"] == tp) & (df["Replicate"] == 1)]["Activity"]
-            
+                        df["Activity Type"] == 'predicted') & (df["Concentration"] == conc) & (df["Time Point"] == tp) & (df["Replicate"] == 1)]["Activity"]
+
             for n, cell_names in enumerate(cell_groups):
                 if cell_name in cell_names:
-                        pred_data[:, :] = scales[n, 1, 0] * pred_data[:, :] / (pred_data[:, :] + scales[n, 0, 0])
+                    pred_data[:, :] = scales[n, 1, 0] * pred_data[:, :] / (pred_data[:, :] + scales[n, 0, 0])
 
             for kk, time in enumerate(tpsSc):
                 doseData = (pred_data[:, kk]).flatten()
                 EC50 = nllsq_EC50(x0, np.log10(concentrations.astype(np.float) * 10**4), doseData) - 4
-                EC50df.loc[len(EC50df.index)] = pd.Series({'Time Point':time, 'IL':ligand_name, 'Cell Type':cell_name, 'Data Type':'Predicted', 'EC-50': EC50})
-            
-                        
+                EC50df.loc[len(EC50df.index)] = pd.Series({'Time Point': time, 'IL': ligand_name, 'Cell Type': cell_name, 'Data Type': 'Predicted', 'EC-50': EC50})
 
     return EC50df
