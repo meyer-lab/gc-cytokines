@@ -7,13 +7,13 @@ import pandas as pd
 import seaborn as sns
 import theano.tensor as T
 import theano
-from .figureCommon import subplotLabel, getSetup, global_legend, calc_dose_response, import_pMuteins, catplot_comparison, get_mutEC50s
+from .figureCommon import subplotLabel, getSetup, global_legend, calc_dose_response, import_pMuteins, catplot_comparison, nllsq_EC50, organize_expr_pred, mutein_scaling
 from ..imports import import_pstat, import_samples_2_15, import_Rexpr
 from ..model import getTotalActiveSpecies, receptor_expression, getRateVec, getparamsdict
 from ..differencing_op import runCkineDoseOp
 
 unkVec_2_15, scales = import_samples_2_15(N=1)
-_, receptor_data, cell_names_receptor = import_Rexpr()
+data, receptor_data, cell_names_receptor = import_Rexpr()
 ckineConc, cell_names_pstat, IL2_data, IL15_data, _ = import_pstat()
 ckineC = ckineConc[7]
 time = 240.
@@ -59,7 +59,7 @@ def makeFigure():
 
     calc_plot_specificity(ax[0], 'NK', df_spec, df_act, ckines, ckineConc_)
     calc_plot_specificity(ax[1], 'T-helper', df_spec, df_act, ckines, ckineConc_)
-    mutEC50df = get_mutEC50s()
+    mutEC50df = get_Mut_EC50s()
     catplot_comparison(ax[2], mutEC50df)
     global_legend(ax[1])
     Specificity(ax=ax[4])
@@ -221,6 +221,7 @@ def get_Mut_EC50s():
     celltypes = mutData.Cells.unique()
     times = mutData.Time.unique()
     EC50df = pd.DataFrame(columns = ['Time Point', 'IL', 'Cell Type', 'Data Type', 'EC-50'])
+    cell_groups = [['T-reg', 'Mem Treg', 'Naive Treg'], ['T-helper', 'Mem Th', 'Naive Th'], ['NK'], ['CD8+']]
     
     #experimental
     for ii, IL in enumerate(ligands):
@@ -228,9 +229,50 @@ def get_Mut_EC50s():
             for kk, time in enumerate(times):
                 doseData = np.array(mutData.loc[(mutData["Cells"] == cell) & (mutData["Ligand"] == IL) & (mutData["Time"] == time)]["RFU"])
                 EC50 = nllsq_EC50(x0, np.log10(concentrations.astype(np.float) * 10**4), doseData) - 4
-                EC50df.loc[ii * len(ligands) * len(celltypes) + jj * len(celltypes) + kk] = pd.Series({'Time Point':time, 'IL':IL, 'Cell Type':cell, 'Data Type':'Experimental', 'EC-50': EC50})
-    
+                EC50df.loc[len(EC50df.index)] = pd.Series({'Time Point':time, 'IL':IL, 'Cell Type':cell, 'Data Type':'Experimental', 'EC-50': EC50})
+
+
     #predicted
-    
+    ligand_order = ['IL2-060 monomeric', 'Cterm IL-2 monomeric WT', 'Cterm IL-2 monomeric V91K', 'IL2-109 monomeric', 'IL2-110 monomeric', 'Cterm N88D monomeric']
+    cell_order = ['NK', 'CD8+', 'T-reg', 'Naive Treg', 'Mem Treg', 'T-helper', 'Naive Th', 'Mem Th']
+
+    df = pd.DataFrame(columns=['Cells', 'Ligand', 'Time Point', 'Concentration', 'Activity Type', 'Replicate', 'Activity']) 
+
+    # loop for each cell type and mutein
+    for _, cell_name in enumerate(cell_order):
+
+        IL2Ra = data.loc[(data["Cell Type"] == cell_name) & (data["Receptor"] == 'IL-2R$\\alpha$'), "Count"].values[0]
+        IL2Rb = data.loc[(data["Cell Type"] == cell_name) & (data["Receptor"] == 'IL-2R$\\beta$'), "Count"].values[0]
+        gc = data.loc[(data["Cell Type"] == cell_name) & (data["Receptor"] == '$\\gamma_{c}$'), "Count"].values[0]
+        receptors = np.array([IL2Ra, IL2Rb, gc]).astype(np.float)
+
+        for _, ligand_name in enumerate(ligand_order):
+
+            # append dataframe with experimental and predicted activity
+            df = organize_expr_pred(df, cell_name, ligand_name, receptors, ckineConc, tpsSc, unkVec_2_15)
+
+    # determine scaling constants
+    scales = mutein_scaling(df, unkVec_2_15)
+
+    #scale
+    pred_data = np.zeros((12, 4, unkVec_2_15.shape[1]))
+    for i, cell_name in enumerate(cell_order):
+        for j, ligand_name in enumerate(ligand_order):
+
+            for k, conc in enumerate(df.Concentration.unique()):
+                for l, tp in enumerate(tpsSc):
+                    pred_data[k, l] = df.loc[(df["Cells"] == cell_name) & (df["Ligand"] == ligand_name) & (
+                                        df["Activity Type"] == 'predicted') & (df["Concentration"] == conc) & (df["Time Point"] == tp) & (df["Replicate"] == 1)]["Activity"]
+            
+            for n, cell_names in enumerate(cell_groups):
+                if cell_name in cell_names:
+                        pred_data[:, :] = scales[n, 1, 0] * pred_data[:, :] / (pred_data[:, :] + scales[n, 0, 0])
+
+            for kk, time in enumerate(tpsSc):
+                doseData = (pred_data[:, kk]).flatten()
+                EC50 = nllsq_EC50(x0, np.log10(concentrations.astype(np.float) * 10**4), doseData) - 4
+                EC50df.loc[len(EC50df.index)] = pd.Series({'Time Point':time, 'IL':ligand_name, 'Cell Type':cell_name, 'Data Type':'Predicted', 'EC-50': EC50})
+            
+                        
 
     return EC50df

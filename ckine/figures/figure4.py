@@ -8,7 +8,7 @@ import pandas as pd
 import seaborn as sns
 from scipy.optimize import least_squares
 from scipy.stats import pearsonr
-from .figureCommon import subplotLabel, getSetup, global_legend, calc_dose_response, catplot_comparison
+from .figureCommon import subplotLabel, getSetup, global_legend, calc_dose_response, catplot_comparison, nllsq_EC50
 from .figureS5 import plot_exp_v_pred
 from ..imports import import_pstat, import_Rexpr, import_samples_2_15
 
@@ -26,7 +26,6 @@ def makeFigure():
     """Get a list of the axis objects and create a figure"""
     # Get list of axis objects
     ax, f = getSetup((7, 6), (3, 3))
-    ax[11].axis("off")
 
     for ii, item in enumerate(ax):
         subplotLabel(item, string.ascii_uppercase[ii])
@@ -42,7 +41,6 @@ def makeFigure():
     cell_types = []
     EC50s_2 = np.zeros(len(cell_names_pstat) * len(tps) * 2)
     EC50s_15 = np.zeros(len(cell_names_pstat) * len(tps) * 2)
-    mutEC50s = get_Mut_EC50s()
 
     for i, name in enumerate(cell_names_pstat):
         assert cell_names_pstat[i] == cell_names_receptor[i]
@@ -119,23 +117,3 @@ def calculate_predicted_EC50(x0, receptors, tps, cell_index):
         EC50_2[i] = nllsq_EC50(x0, np.log10(ckineConc.astype(np.float) * 10**4), IL2_activity[cell_index, :, 0, i])
         EC50_15[i] = nllsq_EC50(x0, np.log10(ckineConc.astype(np.float) * 10**4), IL15_activity[cell_index, :, 0, i])
     return EC50_2, EC50_15
-
-
-def nllsq_EC50(x0, xdata, ydata):
-    """ Performs nonlinear least squares on activity measurements to determine parameters of Hill equation and outputs EC50. """
-    lsq_res = least_squares(residuals, x0, args=(xdata, ydata), bounds=([0., 0., 0.], [10., 10., 10**5.]), jac='3-point')
-    return lsq_res.x[0]
-
-
-def hill_equation(x, x0, solution=0):
-    """ Calculates EC50 from Hill Equation. """
-    k = x0[0]
-    n = x0[1]
-    A = x0[2]
-    xk = np.power(x / k, n)
-    return (A * xk / (1.0 + xk)) - solution
-
-
-def residuals(x0, x, y):
-    """ Residual function for Hill Equation. """
-    return hill_equation(x, x0) - y

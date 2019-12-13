@@ -451,3 +451,23 @@ def catplot_comparison(ax, df):
     ax.set_xlabel("")  # remove "Cell Type" from xlabel
     ax.set_ylabel(r"EC-50 (log$_{10}$[nM])")
     ax.get_legend().remove()
+
+    
+def nllsq_EC50(x0, xdata, ydata):
+    """ Performs nonlinear least squares on activity measurements to determine parameters of Hill equation and outputs EC50. """
+    lsq_res = least_squares(residuals, x0, args=(xdata, ydata), bounds=([0., 0., 0.], [10., 10., 10**5.]), jac='3-point')
+    return lsq_res.x[0]
+
+
+def hill_equation(x, x0, solution=0):
+    """ Calculates EC50 from Hill Equation. """
+    k = x0[0]
+    n = x0[1]
+    A = x0[2]
+    xk = np.power(x / k, n)
+    return (A * xk / (1.0 + xk)) - solution
+
+
+def residuals(x0, x, y):
+    """ Residual function for Hill Equation. """
+    return hill_equation(x, x0) - y
