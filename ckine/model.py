@@ -337,8 +337,8 @@ def mut_adjust(rxntfr, mutdict, mut_name):
     rxntfr[:, 7] = input_params[0] * 0.6
     rxntfr[:, 27] = rxntfr[:, 7] * 5.0
 
-    #Adjust b/g affinities
+    # Adjust b/g affinities
     for ii in [8, 9, 10, 11, 12, 28, 29, 30, 31, 32]:
         rxntfr[:, ii] = rxntfr[:, ii] * bg_adjust
-        
+
     return rxntfr
