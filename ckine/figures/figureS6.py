@@ -34,7 +34,8 @@ def makeFigure():
     muteinC = dataMean.Concentration.unique()
     dataMean["Concentration"] = np.log10(dataMean["Concentration"].astype(np.float))  # logscale for plotting
 
-    ligand_order = ['IL2-060 monomeric', 'Cterm IL-2 monomeric WT', 'Cterm IL-2 monomeric V91K', 'IL2-109 monomeric', 'IL2-110 monomeric', 'Cterm N88D monomeric']
+    ligand_order = ['Cterm IL-2 monomeric WT', 'Cterm IL-2 monomeric V91K', 'Cterm N88D monomeric']
+    #ligand_order = ['IL2-060 monomeric', 'Cterm IL-2 monomeric WT', 'Cterm IL-2 monomeric V91K', 'IL2-109 monomeric', 'IL2-110 monomeric', 'Cterm N88D monomeric']
     cell_order = ['NK', 'CD8+', 'T-reg', 'Naive Treg', 'Mem Treg', 'T-helper', 'Naive Th', 'Mem Th']
 
     df = pd.DataFrame(columns=['Cells', 'Ligand', 'Time Point', 'Concentration', 'Activity Type', 'Replicate', 'Activity'])  # make empty dataframe for all cell types
@@ -54,12 +55,12 @@ def makeFigure():
 
     # determine scaling constants
     scales = mutein_scaling(df, unkVec_2_15)
-    plot_expr_pred(ax, df, scales, cell_order, ligand_order, tps, muteinC)
+    plot_expr_predM(ax, df, scales, cell_order, ligand_order, tps, muteinC)
 
     return f
 
 
-def plot_expr_pred(ax, df, scales, cell_order, ligand_order, tps, muteinC):
+def plot_expr_predM(ax, df, scales, cell_order, ligand_order, tps, muteinC):
     """ Plots experimental and scaled model-predicted dose response for all cell types, muteins, and time points. """
 
     pred_data = np.zeros((12, 4, unkVec_2_15.shape[1]))
@@ -91,12 +92,12 @@ def plot_expr_pred(ax, df, scales, cell_order, ligand_order, tps, muteinC):
                 if cell_name in cell_names:
                     for o in range(unkVec_2_15.shape[1]):
                         pred_data[:, :, o] = scales[n, 1, o] * pred_data[:, :, o] / (pred_data[:, :, o] + scales[n, 0, o])
-                    plot_dose_response(ax[axis], pred_data, tps, muteinC)
+                    plot_dose_responseM(ax[axis], pred_data, tps, muteinC)
                     ax[axis].set(ylim=(0, ylims[n]))
             ax[axis].set(xlabel=("[" + ligand_name + "] (log$_{10}$[nM])"), ylabel="Activity", title=cell_name)
 
 
-def plot_dose_response(ax, mutein_activity, tps, muteinC):
+def plot_dose_responseM(ax, mutein_activity, tps, muteinC):
     """ Plots predicted activity for multiple timepoints and mutein concentrations. """
     colors = cm.rainbow(np.linspace(0, 1, tps.size))
 

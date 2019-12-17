@@ -326,12 +326,12 @@ def getMutAff():
     """Returns adjusted binding rates for all muteins in dictionary"""
 
     mutaff = {
-        'IL2-060 monomeric': [1., 1.],
-        'Cterm IL-2 monomeric WT': [1., 1.],
-        'Cterm IL-2 monomeric V91K': [1., 1.],
-        'IL2-109 monomeric': [1., 1.],
-        'IL2-110 monomeric': [1., 1.],
-        'Cterm N88D monomeric': [1., 1.]
+        'IL2-060 monomeric': [0.35, 4.29],  # change
+        'Cterm IL-2 monomeric WT': [0.35, 4.29],
+        'Cterm IL-2 monomeric V91K': [0.47, 9.56],
+        'IL2-109 monomeric': [0.35, 4.29],  # change
+        'IL2-110 monomeric': [0.35, 4.29],  # change
+        'Cterm N88D monomeric': [1.29, 24.9]
     }
 
     return mutaff
