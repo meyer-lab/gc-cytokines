@@ -331,13 +331,14 @@ def mut_adjust(rxntfr, mutdict, mut_name):
     """Adjust alpha beta and gamma affinities for muteins prior to run through model according to BLI data"""
     # Adjust a affinities
     input_params = mutdict.get(mut_name)
+    bg_adjust = input_params[1] / rxntfr[0, 10]
 
     # change for unkVec instead of dict
-    for ii in [7, 27]:
-        rxntfr[0, ii] = rxntfr[0, ii] * input_params[0]
+    rxntfr[:, 7] = input_params[0] * 0.6
+    rxntfr[:, 27] = rxntfr[:, 7] * 5.0
 
     # Adjust b/g affinities
     for ii in [8, 9, 10, 11, 12, 28, 29, 30, 31, 32]:
-        rxntfr[0, ii] = rxntfr[0, ii] * input_params[1]
+        rxntfr[:, ii] = rxntfr[:, ii] * bg_adjust
 
     return rxntfr
