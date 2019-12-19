@@ -218,14 +218,15 @@ def get_Mut_EC50s():
     mutData = import_pMuteins()
     x0 = [1, 2., 1000.]
     concentrations = mutData.Concentration.unique()
-    ligands = mutData.Ligand.unique()
+    ligand_order = ['Cterm IL-2 monomeric WT', 'Cterm IL-2 monomeric V91K', 'Cterm N88D monomeric']
+    #ligand_order = ['IL2-060 monomeric', 'Cterm IL-2 monomeric WT', 'Cterm IL-2 monomeric V91K', 'IL2-109 monomeric', 'IL2-110 monomeric', 'Cterm N88D monomeric']
     celltypes = mutData.Cells.unique()
     times = mutData.Time.unique()
     EC50df = pd.DataFrame(columns=['Time Point', 'IL', 'Cell Type', 'Data Type', 'EC-50'])
     cell_groups = [['T-reg', 'Mem Treg', 'Naive Treg'], ['T-helper', 'Mem Th', 'Naive Th'], ['NK'], ['CD8+']]
 
     # experimental
-    for ii, IL in enumerate(ligands):
+    for ii, IL in enumerate(ligand_order):
         for jj, cell in enumerate(celltypes):
             for kk, time in enumerate(times):
                 doseData = np.array(mutData.loc[(mutData["Cells"] == cell) & (mutData["Ligand"] == IL) & (mutData["Time"] == time)]["RFU"])
@@ -233,8 +234,7 @@ def get_Mut_EC50s():
                 EC50df.loc[len(EC50df.index)] = pd.Series({'Time Point': time, 'IL': IL, 'Cell Type': cell, 'Data Type': 'Experimental', 'EC-50': EC50})
 
     # predicted
-    ligand_order = ['Cterm IL-2 monomeric WT', 'Cterm IL-2 monomeric V91K', 'Cterm N88D monomeric']
-    #ligand_order = ['IL2-060 monomeric', 'Cterm IL-2 monomeric WT', 'Cterm IL-2 monomeric V91K', 'IL2-109 monomeric', 'IL2-110 monomeric', 'Cterm N88D monomeric']
+
     cell_order = ['NK', 'CD8+', 'T-reg', 'Naive Treg', 'Mem Treg', 'T-helper', 'Naive Th', 'Mem Th']
 
     df = pd.DataFrame(columns=['Cells', 'Ligand', 'Time Point', 'Concentration', 'Activity Type', 'Replicate', 'Activity'])
@@ -248,7 +248,6 @@ def get_Mut_EC50s():
         receptors = np.array([IL2Ra, IL2Rb, gc]).astype(np.float)
 
         for _, ligand_name in enumerate(ligand_order):
-
             # append dataframe with experimental and predicted activity
             df = organize_expr_pred(df, cell_name, ligand_name, receptors, ckineConc, tpsSc, unkVec_2_15)
 
@@ -259,7 +258,6 @@ def get_Mut_EC50s():
     pred_data = np.zeros((12, 4, unkVec_2_15.shape[1]))
     for i, cell_name in enumerate(cell_order):
         for j, ligand_name in enumerate(ligand_order):
-
             for k, conc in enumerate(df.Concentration.unique()):
                 for l, tp in enumerate(tpsSc):
                     pred_data[k, l] = df.loc[(df["Cells"] == cell_name) & (df["Ligand"] == ligand_name) & (

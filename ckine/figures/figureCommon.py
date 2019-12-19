@@ -455,7 +455,7 @@ def catplot_comparison(ax, df, legend=False):
     handles, _ = ax.get_legend_handles_labels()
     circle = Line2D([], [], color='black', marker='o', linestyle='None', markersize=6, label='Experimental')
     triangle = Line2D([], [], color='black', marker='^', linestyle='None', markersize=6, label='Predicted')
-    handles = handles[0:6]
+    handles = handles[0:3]
     handles.append(circle)
     handles.append(triangle)
     ax.legend(handles=handles, bbox_to_anchor=(1.02, 1))

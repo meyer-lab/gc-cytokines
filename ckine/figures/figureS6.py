@@ -22,7 +22,7 @@ mutaffdict = getMutAff()
 def makeFigure():
     """Get a list of the axis objects and create a figure"""
     # Get list of axis objects
-    ax, f = getSetup((18, 12), (6, 8))
+    ax, f = getSetup((18, 12), (3, 8))
 
     for ii, item in enumerate(ax):
         if ii < 26:
