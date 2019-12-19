@@ -329,8 +329,8 @@ def getMutAff():
         'IL2-060 monomeric': [0.35, 4.29],  # change
         'Cterm IL-2 monomeric WT': [0.35, 4.29],
         'Cterm IL-2 monomeric V91K': [0.47, 9.56],
-        'IL2-109 monomeric': [0.35, 4.29],  # change
-        'IL2-110 monomeric': [0.35, 4.29],  # change
+        'IL2-109 monomeric': [0.64, 7.32],  # change
+        'IL2-110 monomeric': [10.76, 7.32],  # change
         'Cterm N88D monomeric': [1.29, 24.9]
     }
 
@@ -455,7 +455,7 @@ def catplot_comparison(ax, df, legend=False):
     handles, _ = ax.get_legend_handles_labels()
     circle = Line2D([], [], color='black', marker='o', linestyle='None', markersize=6, label='Experimental')
     triangle = Line2D([], [], color='black', marker='^', linestyle='None', markersize=6, label='Predicted')
-    handles = handles[0:3]
+    handles = handles[0:5]
     handles.append(circle)
     handles.append(triangle)
     ax.legend(handles=handles, bbox_to_anchor=(1.02, 1))

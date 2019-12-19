@@ -218,8 +218,7 @@ def get_Mut_EC50s():
     mutData = import_pMuteins()
     x0 = [1, 2., 1000.]
     concentrations = mutData.Concentration.unique()
-    ligand_order = ['Cterm IL-2 monomeric WT', 'Cterm IL-2 monomeric V91K', 'Cterm N88D monomeric']
-    #ligand_order = ['IL2-060 monomeric', 'Cterm IL-2 monomeric WT', 'Cterm IL-2 monomeric V91K', 'IL2-109 monomeric', 'IL2-110 monomeric', 'Cterm N88D monomeric']
+    ligand_order = ['Cterm IL-2 monomeric WT', 'Cterm IL-2 monomeric V91K', 'IL2-109 monomeric', 'IL2-110 monomeric', 'Cterm N88D monomeric']
     celltypes = mutData.Cells.unique()
     times = mutData.Time.unique()
     EC50df = pd.DataFrame(columns=['Time Point', 'IL', 'Cell Type', 'Data Type', 'EC-50'])
