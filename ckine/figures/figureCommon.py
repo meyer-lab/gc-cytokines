@@ -358,7 +358,6 @@ def calc_dose_response_mutein(unkVec, mutdict, tps, muteinC, mutein_name, cell_r
         yOut = runCkineUmut(tps, unkVec, mutdict, mutein_name)
         active_ckine = np.zeros(yOut.shape[0])
         # calculate for each time point
-        activity2 = np.dot(yOut, getTotalActiveSpecies().astype(np.float))
         for ii in range(yOut.shape[0]):
             active_ckine[ii] = getTotalActiveCytokine(0, yOut[ii, :])
         total_activity[i, :] = np.reshape(active_ckine, (-1, 4))  # save the activity from this concentration for all 4 tps
