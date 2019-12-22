@@ -15,7 +15,7 @@ from matplotlib.patches import Patch
 from scipy.optimize import least_squares
 from ..tensor import find_R2X
 from ..imports import import_pstat
-from ..model import runCkineUP, getTotalActiveSpecies, receptor_expression, getTotalActiveCytokine, runCkineU, runCkineUmut
+from ..model import getTotalActiveSpecies, receptor_expression, getTotalActiveCytokine, runCkineUmut
 
 
 path_here = os.path.dirname(os.path.dirname(__file__))

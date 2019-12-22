@@ -225,8 +225,8 @@ def get_Mut_EC50s():
     cell_groups = [['T-reg', 'Mem Treg', 'Naive Treg'], ['T-helper', 'Mem Th', 'Naive Th'], ['NK'], ['CD8+']]
 
     # experimental
-    for ii, IL in enumerate(ligand_order):
-        for jj, cell in enumerate(celltypes):
+    for _, IL in enumerate(ligand_order):
+        for _, cell in enumerate(celltypes):
             for kk, time in enumerate(times):
                 doseData = np.array(mutData.loc[(mutData["Cells"] == cell) & (mutData["Ligand"] == IL) & (mutData["Time"] == time)]["RFU"])
                 EC50 = nllsq_EC50(x0, np.log10(concentrations.astype(np.float) * 10**4), doseData) - 4
@@ -255,8 +255,8 @@ def get_Mut_EC50s():
 
     # scale
     pred_data = np.zeros((12, 4, unkVec_2_15.shape[1]))
-    for i, cell_name in enumerate(cell_order):
-        for j, ligand_name in enumerate(ligand_order):
+    for _, cell_name in enumerate(cell_order):
+        for _, ligand_name in enumerate(ligand_order):
             for k, conc in enumerate(df.Concentration.unique()):
                 for l, tp in enumerate(tpsSc):
                     pred_data[k, l] = df.loc[(df["Cells"] == cell_name) & (df["Ligand"] == ligand_name) & (

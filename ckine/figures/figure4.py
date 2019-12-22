@@ -6,7 +6,6 @@ import string
 import numpy as np
 import pandas as pd
 import seaborn as sns
-from scipy.optimize import least_squares
 from scipy.stats import pearsonr
 from .figureCommon import subplotLabel, getSetup, global_legend, calc_dose_response, catplot_comparison, nllsq_EC50
 from .figureS5 import plot_exp_v_pred
