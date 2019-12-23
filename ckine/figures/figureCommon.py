@@ -326,12 +326,12 @@ def getMutAff():
     """Returns adjusted binding rates for all muteins in dictionary"""
 
     mutaff = {
-        'IL2-060 monomeric': [0.35, 4.29],  # change
-        'Cterm IL-2 monomeric WT': [0.35, 4.29],
-        'Cterm IL-2 monomeric V91K': [0.47, 9.56],
-        'IL2-109 monomeric': [0.64, 7.32],  # change
-        'IL2-110 monomeric': [10.76, 7.32],  # change
-        'Cterm N88D monomeric': [1.29, 24.9]
+        'IL2-060 monomeric': [0.19, 7.32],
+        'Cterm IL-2 monomeric WT': [0.54, 4.29],
+        'Cterm IL-2 monomeric V91K': [0.69, 9.56],
+        'IL2-109 monomeric': [0.71, 7.32],
+        'IL2-110 monomeric': [9.48, 7.32],
+        'Cterm N88D monomeric': [1.01, 24.9]
     }
 
     return mutaff
@@ -454,7 +454,7 @@ def catplot_comparison(ax, df, legend=False):
     handles, _ = ax.get_legend_handles_labels()
     circle = Line2D([], [], color='black', marker='o', linestyle='None', markersize=6, label='Experimental')
     triangle = Line2D([], [], color='black', marker='^', linestyle='None', markersize=6, label='Predicted')
-    handles = handles[0:5]
+    handles = handles[0:6]
     handles.append(circle)
     handles.append(triangle)
     ax.legend(handles=handles, bbox_to_anchor=(1.02, 1))

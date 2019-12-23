@@ -22,7 +22,7 @@ mutaffdict = getMutAff()
 def makeFigure():
     """Get a list of the axis objects and create a figure"""
     # Get list of axis objects
-    ax, f = getSetup((18, 12), (5, 8))
+    ax, f = getSetup((18, 12), (6, 8))
 
     for ii, item in enumerate(ax):
         if ii < 26:
@@ -34,7 +34,7 @@ def makeFigure():
     muteinC = dataMean.Concentration.unique()
     dataMean["Concentration"] = np.log10(dataMean["Concentration"].astype(np.float))  # logscale for plotting
 
-    ligand_order = ['Cterm IL-2 monomeric WT', 'Cterm IL-2 monomeric V91K', 'IL2-109 monomeric', 'IL2-110 monomeric', 'Cterm N88D monomeric']  # 'IL2-060 monomeric' add?
+    ligand_order = ['IL2-060 monomeric', 'Cterm IL-2 monomeric WT', 'Cterm IL-2 monomeric V91K', 'IL2-109 monomeric', 'IL2-110 monomeric', 'Cterm N88D monomeric']  # 'IL2-060 monomeric' add?
     cell_order = ['NK', 'CD8+', 'T-reg', 'Naive Treg', 'Mem Treg', 'T-helper', 'Naive Th', 'Mem Th']
 
     df = pd.DataFrame(columns=['Cells', 'Ligand', 'Time Point', 'Concentration', 'Activity Type', 'Replicate', 'Activity'])  # make empty dataframe for all cell types
