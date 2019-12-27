@@ -68,7 +68,7 @@ def plot_geweke_2_15(ax, traf):
                        position=(0, 0.075))
     ax.get_legend().set_visible(False)  # remove legend created by sns
     ax.axhline(1., c='r')  # line to denote acceptable threshold of standard deviations
-    ax.set(ylim=(-0.1, 1.25), ylabel=r"max |z-score|")
+    ax.set(ylim=(-0.1, 10), ylabel=r"max |z-score|")
 
 
 def plot_geweke_4_7(ax, traf=True):
