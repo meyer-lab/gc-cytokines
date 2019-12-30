@@ -18,7 +18,7 @@ def load_data(filename):
 
 def sampling(M):
     """ This is the sampling that actually runs the model. """
-    return pm.sample(chains=2, model=M, tune=1000)
+    return pm.sample(init="advi+adapt_diag", chains=2, model=M)
 
 
 def commonTraf(trafficking=True):
