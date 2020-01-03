@@ -280,7 +280,7 @@ def getparamsdict(rxntfr):
 
     kfbnd = 0.60
     rd['IL2'], rd['IL15'], rd['IL7'], rd['IL9'], rd['IL4'], rd['IL21'], rd['kfwd'] = tuple(rxntfr[0:7])
-    rd['surface.k1rev'] = kfbnd * 0.21  # 7
+    rd['surface.k1rev'] = kfbnd * 10.0  # 7
     rd['surface.k2rev'] = kfbnd * 144.0
     rd['surface.k4rev'], rd['surface.k5rev'] = rxntfr[7], rxntfr[8]  # 9 #10
     rd['surface.k10rev'] = 12.0 * rd['surface.k5rev'] / 1.5
