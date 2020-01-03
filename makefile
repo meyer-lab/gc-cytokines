@@ -7,7 +7,7 @@ flist = 1 2 3 4 5 6 S1 S2 S4 S5
 
 .PHONY: clean test all testcover autopep spell
 
-all: ckine/ckine.so Manuscript/Manuscript.pdf Manuscript/Manuscript.docx Manuscript/CoverLetter.docx pylint.log
+all: ckine/ckine.so Manuscript/Manuscript.pdf Manuscript/Manuscript.docx Manuscript/CoverLetter.docx
 
 venv: venv/bin/activate
 
