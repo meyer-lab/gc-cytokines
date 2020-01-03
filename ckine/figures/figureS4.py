@@ -28,7 +28,7 @@ def makeFigure():
     out = perform_tucker(values, rank_list)
     RtwoX = find_R2X_tucker(values, out)
     logging.info(RtwoX)
-    assert RtwoX > 0.95
+    assert RtwoX > 0.9
     logging.info(out[0].shape)
 
     plot_core(ax[3], out[0][0, :, :])
