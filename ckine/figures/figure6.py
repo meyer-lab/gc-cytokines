@@ -227,10 +227,10 @@ def get_Mut_EC50s():
     # experimental
     for _, IL in enumerate(ligand_order):
         for _, cell in enumerate(celltypes):
-            for kk, time in enumerate(times):
-                doseData = np.array(mutData.loc[(mutData["Cells"] == cell) & (mutData["Ligand"] == IL) & (mutData["Time"] == time)]["RFU"])
+            for kk, timeEC in enumerate(times):
+                doseData = np.array(mutData.loc[(mutData["Cells"] == cell) & (mutData["Ligand"] == IL) & (mutData["Time"] == timeEC)]["RFU"])
                 EC50 = nllsq_EC50(x0, np.log10(concentrations.astype(np.float) * 10**4), doseData) - 4
-                EC50df.loc[len(EC50df.index)] = pd.Series({'Time Point': time, 'IL': IL, 'Cell Type': cell, 'Data Type': 'Experimental', 'EC-50': EC50})
+                EC50df.loc[len(EC50df.index)] = pd.Series({'Time Point': timeEC, 'IL': IL, 'Cell Type': cell, 'Data Type': 'Experimental', 'EC-50': EC50})
 
     # predicted
 
@@ -251,7 +251,7 @@ def get_Mut_EC50s():
             df = organize_expr_pred(df, cell_name, ligand_name, receptors, ckineConc, tpsSc, unkVec_2_15)
 
     # determine scaling constants
-    scales = mutein_scaling(df, unkVec_2_15)
+    Scales = mutein_scaling(df, unkVec_2_15)
 
     # scale
     pred_data = np.zeros((12, 4, unkVec_2_15.shape[1]))
@@ -264,7 +264,7 @@ def get_Mut_EC50s():
 
             for n, cell_names in enumerate(cell_groups):
                 if cell_name in cell_names:
-                    pred_data[:, :] = scales[n, 1, 0] * pred_data[:, :] / (pred_data[:, :] + scales[n, 0, 0])
+                    pred_data[:, :] = Scales[n, 1, 0] * pred_data[:, :] / (pred_data[:, :] + Scales[n, 0, 0])
 
             for kk, time in enumerate(tpsSc):
                 doseData = (pred_data[:, kk]).flatten()
