@@ -4,7 +4,6 @@ Analyze tensor from make_tensor.
 import numpy as np
 import tensorly as tl
 from tensorly.decomposition import non_negative_parafac, non_negative_tucker
-from tensorly.decomposition.candecomp_parafac import normalize_factors
 from tensorly.metrics.regression import variance as tl_var
 
 backend = 'numpy'  # Tensorly backend choice
