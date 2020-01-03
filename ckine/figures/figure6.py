@@ -251,7 +251,7 @@ def get_Mut_EC50s():
             df = organize_expr_pred(df, cell_name, ligand_name, receptors, ckineConc, tpsSc, unkVec_2_15)
 
     # determine scaling constants
-    scales = mutein_scaling(df, unkVec_2_15)
+    scalesIn = mutein_scaling(df, unkVec_2_15)
 
     # scale
     pred_data = np.zeros((12, 4, unkVec_2_15.shape[1]))
@@ -264,7 +264,7 @@ def get_Mut_EC50s():
 
             for n, cell_names in enumerate(cell_groups):
                 if cell_name in cell_names:
-                    pred_data[:, :] = scales[n, 1, 0] * pred_data[:, :] / (pred_data[:, :] + scales[n, 0, 0])
+                    pred_data[:, :] = scalesIn[n, 1, 0] * pred_data[:, :] / (pred_data[:, :] + scalesIn[n, 0, 0])
 
             for kk, time in enumerate(tpsSc):
                 doseData = (pred_data[:, kk]).flatten()
