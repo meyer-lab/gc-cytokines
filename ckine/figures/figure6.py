@@ -227,10 +227,10 @@ def get_Mut_EC50s():
     # experimental
     for _, IL in enumerate(ligand_order):
         for _, cell in enumerate(celltypes):
-            for kk, time in enumerate(times):
-                doseData = np.array(mutData.loc[(mutData["Cells"] == cell) & (mutData["Ligand"] == IL) & (mutData["Time"] == time)]["RFU"])
+            for kk, timex in enumerate(times):
+                doseData = np.array(mutData.loc[(mutData["Cells"] == cell) & (mutData["Ligand"] == IL) & (mutData["Time"] == timex)]["RFU"])
                 EC50 = nllsq_EC50(x0, np.log10(concentrations.astype(np.float) * 10**4), doseData) - 4
-                EC50df.loc[len(EC50df.index)] = pd.Series({'Time Point': time, 'IL': IL, 'Cell Type': cell, 'Data Type': 'Experimental', 'EC-50': EC50})
+                EC50df.loc[len(EC50df.index)] = pd.Series({'Time Point': timex, 'IL': IL, 'Cell Type': cell, 'Data Type': 'Experimental', 'EC-50': EC50})
 
     # predicted
 
