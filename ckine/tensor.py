@@ -41,7 +41,7 @@ def perform_tucker(tensor, rank_list):
 
 def find_R2X_tucker(values, out):
     '''Compute R2X for the tucker decomposition.'''
-    return R2X(tl.tucker_to_tensor(out[0], out[1]), values)
+    return R2X(tl.tucker_to_tensor(out), values)
 
 
 def find_R2X(values, factors):
