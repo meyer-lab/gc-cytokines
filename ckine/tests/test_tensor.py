@@ -18,8 +18,10 @@ class TestModel(unittest.TestCase):
             factors = perform_decomposition(tensor, i)
             R2X = find_R2X(tensor, factors)
             arr.append(R2X)
+
         for j in range(len(arr) - 1):
             self.assertTrue(arr[j] < arr[j + 1])
+
         # confirm R2X is >= 0 and <=1
         self.assertGreaterEqual(tl.min(arr), 0)
         self.assertLessEqual(tl.max(arr), 1)
