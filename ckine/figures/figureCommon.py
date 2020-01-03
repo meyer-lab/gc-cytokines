@@ -325,7 +325,7 @@ def import_pMuteins():
 def getMutAff():
     """Returns adjusted binding rates for all muteins in dictionary"""
 
-    mutaff = {
+    mutaffret = {
         'IL2-060 monomeric': [0.19, 7.32],
         'Cterm IL-2 monomeric WT': [0.54, 4.29],
         'Cterm IL-2 monomeric V91K': [0.69, 9.56],
@@ -334,7 +334,7 @@ def getMutAff():
         'Cterm N88D monomeric': [1.01, 24.9]
     }
 
-    return mutaff
+    return mutaffret
 
 
 mutaff = getMutAff()
