@@ -46,4 +46,4 @@ def find_R2X_tucker(values, out):
 
 def find_R2X(values, factors):
     '''Compute R2X from parafac. Note that the inputs values and factors are in numpy.'''
-    return R2X(tl.kruskal_to_tensor((np.ones(len(factors)), factors)), values)
+    return R2X(tl.kruskal_to_tensor((np.ones(factors[0].shape[1]), factors)), values)
