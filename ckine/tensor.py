@@ -6,8 +6,7 @@ import tensorly as tl
 from tensorly.decomposition import parafac, non_negative_tucker
 from tensorly.metrics.regression import variance as tl_var
 
-backend = 'numpy'  # Tensorly backend choice
-tl.set_backend(backend)  # Set the backend within every file that imports from Tensor_analysis.py
+tl.set_backend('numpy')  # Set the backend
 
 
 def z_score_values(A, cell_dim):
@@ -28,7 +27,7 @@ def R2X(reconstructed, original):
 
 def perform_decomposition(tensor, r, weightFactor=2):
     ''' Perform PARAFAC decomposition. '''
-    weights, factors = parafac(tensor, r, tol=1.0E-9, n_iter_max=1000, orthogonalise=10, normalize_factors=True, non_negative=True)
+    weights, factors = parafac(tensor, r, tol=1.0E-8, n_iter_max=1000, orthogonalise=10, normalize_factors=True, non_negative=True)
     factors[weightFactor] *= weights[np.newaxis, :]  # Put weighting in designated factor
     return factors
 
@@ -36,7 +35,7 @@ def perform_decomposition(tensor, r, weightFactor=2):
 def perform_tucker(tensor, rank_list):
     ''' Perform Tucker decomposition. '''
     # index 0 is for core tensor, index 1 is for factors; out is a list of core and factors
-    return non_negative_tucker(tensor, rank_list, tol=1.0E-9, n_iter_max=1000)
+    return non_negative_tucker(tensor, rank_list, tol=1.0E-8, n_iter_max=1000)
 
 
 def find_R2X_tucker(values, out):
