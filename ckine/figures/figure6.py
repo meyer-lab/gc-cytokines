@@ -266,9 +266,9 @@ def get_Mut_EC50s():
                 if cell_name in cell_names:
                     pred_data[:, :] = scalesIn[n, 1, 0] * pred_data[:, :] / (pred_data[:, :] + scalesIn[n, 0, 0])
 
-            for kk, time in enumerate(tpsSc):
+            for kk, timeEC in enumerate(tpsSc):
                 doseData = (pred_data[:, kk]).flatten()
                 EC50 = nllsq_EC50(x0, np.log10(concentrations.astype(np.float) * 10**4), doseData) - 4
-                EC50df.loc[len(EC50df.index)] = pd.Series({'Time Point': time, 'IL': ligand_name, 'Cell Type': cell_name, 'Data Type': 'Predicted', 'EC-50': EC50})
+                EC50df.loc[len(EC50df.index)] = pd.Series({'Time Point': timeEC, 'IL': ligand_name, 'Cell Type': cell_name, 'Data Type': 'Predicted', 'EC-50': EC50})
 
     return EC50df

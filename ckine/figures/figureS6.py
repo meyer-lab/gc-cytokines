@@ -13,7 +13,7 @@ dataMean = import_pMuteins()
 dataMean.reset_index(inplace=True)
 data, _, _ = import_Rexpr()
 data.reset_index(inplace=True)
-unkVec_2_15, _ = import_samples_2_15(N=20)
+unkVec_2_15, _ = import_samples_2_15(N=25)
 _, _, _, _, pstat_df = import_pstat()
 dataMean = dataMean.append(pstat_df, ignore_index=True, sort=True)
 
