@@ -61,12 +61,12 @@ def nRxn():
     return __nRxn
 
 
-def runCkineU(tps, rxntfr, preT=0.0, prestim=None):
+def runCkineU(tps, rxntfr, preT=0.0, prestim=None, mut_name=None):
     """ Standard version of solver that returns species abundances given times and unknown rates. """
-    return runCkineUP(tps, np.atleast_2d(rxntfr.copy()), preT, prestim)
+    return runCkineUP(tps, np.atleast_2d(rxntfr.copy()), preT, prestim, mut_name=mut_name)
 
 
-def runCkineUP(tps, rxntfr, preT=0.0, prestim=None, actV=None):
+def runCkineUP(tps, rxntfr, preT=0.0, prestim=None, actV=None, mut_name=None):
     """ Version of runCkine that runs in parallel. If actV is set we'll return sensitivities. """
     tps = np.array(tps)
     assert np.all(np.any(rxntfr > 0.0, axis=1)), "Make sure at least one element is >0 for all rows."
@@ -79,6 +79,8 @@ def runCkineUP(tps, rxntfr, preT=0.0, prestim=None, actV=None):
         assert (rxntfr[:, 19] < 1.0).all()  # Check that sortF won't throw
 
         rxntfr = getRateVec(rxntfr)
+        if mut_name:
+            rxntfr = mut_adjust(rxntfr, mutaff, mut_name)
     else:
         assert rxntfr.size % __rxParams == 0
         assert rxntfr.shape[1] == __rxParams
@@ -264,3 +266,31 @@ def getRateVec(rxntfr):
         FullRateVec = np.array(list(ratesParamsDict.values()), dtype=np.float)
 
     return FullRateVec
+
+
+mutaff = {
+    'IL2-060 monomeric': [0.19, 7.32],
+    'Cterm IL-2 monomeric WT': [0.54, 4.29],
+    'Cterm IL-2 monomeric V91K': [0.69, 9.56],
+    'IL2-109 monomeric': [0.71, 7.32],
+    'IL2-110 monomeric': [9.48, 7.32],
+    'Cterm N88D monomeric': [1.01, 24.9]
+}
+
+
+def mut_adjust(rxntfr, mutdict, mut_name):
+    """Adjust alpha beta and gamma affinities for muteins prior to run through model according to BLI data"""
+    # Adjust a affinities
+    input_params = mutdict.get(mut_name)
+
+    # change for unkVec instead of dict
+    rxntfr[:, 7] = input_params[0] * 0.6
+    rxntfr[:, 27] = rxntfr[:, 7] * 5.0
+
+    # Adjust b/g affinities
+    for jj in range(0, rxntfr.shape[0]):
+        bg_adjust = input_params[1] / rxntfr[jj, 10]
+        for ii in [8, 9, 10, 11, 12, 28, 29, 30, 31, 32]:
+            rxntfr[jj, ii] = rxntfr[jj, ii] * bg_adjust
+
+    return rxntfr

@@ -6,9 +6,8 @@ import string
 import numpy as np
 import pandas as pd
 import seaborn as sns
-from scipy.optimize import least_squares
 from scipy.stats import pearsonr
-from .figureCommon import subplotLabel, getSetup, global_legend, calc_dose_response
+from .figureCommon import subplotLabel, getSetup, global_legend, calc_dose_response, catplot_comparison, nllsq_EC50
 from .figureS5 import plot_exp_v_pred
 from ..imports import import_pstat, import_Rexpr, import_samples_2_15
 
@@ -88,28 +87,6 @@ def compare_experimental_data(ax, df):
     ax.set_aspect('equal', 'box')
 
 
-def catplot_comparison(ax, df):
-    """ Construct EC50 catplots for each time point for IL2 and IL15. """
-    # set a manual color palette
-    col_list = ["violet", "goldenrod"]
-    col_list_palette = sns.xkcd_palette(col_list)
-    sns.set_palette(col_list_palette)
-    # plot predicted EC50
-    sns.catplot(x="Cell Type", y="EC-50", hue="IL",
-                data=df.loc[(df['Time Point'] == 60.) & (df["Data Type"] == 'Predicted')],
-                legend=False, legend_out=False, ax=ax, marker='^')
-
-    # plot experimental EC50
-    sns.catplot(x="Cell Type", y="EC-50", hue="IL",
-                data=df.loc[(df['Time Point'] == 60.) & (df["Data Type"] == 'Experimental')],
-                legend=False, legend_out=False, ax=ax, marker='o')
-
-    ax.set_xticklabels(ax.get_xticklabels(), rotation=40, fontsize=6.8, rotation_mode="anchor", ha="right")
-    ax.set_xlabel("")  # remove "Cell Type" from xlabel
-    ax.set_ylabel(r"EC-50 (log$_{10}$[nM])")
-    ax.get_legend().remove()
-
-
 def plot_corrcoef(ax, tps):
     """ Plot correlation coefficients between predicted and experimental data for all cell types. """
     corr_coefs = np.zeros(2 * len(cell_names_receptor))
@@ -139,23 +116,3 @@ def calculate_predicted_EC50(x0, receptors, tps, cell_index):
         EC50_2[i] = nllsq_EC50(x0, np.log10(ckineConc.astype(np.float) * 10**4), IL2_activity[cell_index, :, 0, i])
         EC50_15[i] = nllsq_EC50(x0, np.log10(ckineConc.astype(np.float) * 10**4), IL15_activity[cell_index, :, 0, i])
     return EC50_2, EC50_15
-
-
-def nllsq_EC50(x0, xdata, ydata):
-    """ Performs nonlinear least squares on activity measurements to determine parameters of Hill equation and outputs EC50. """
-    lsq_res = least_squares(residuals, x0, args=(xdata, ydata), bounds=([0., 0., 0.], [10., 10., 10**5.]), jac='3-point')
-    return lsq_res.x[0]
-
-
-def hill_equation(x, x0, solution=0):
-    """ Calculates EC50 from Hill Equation. """
-    k = x0[0]
-    n = x0[1]
-    A = x0[2]
-    xk = np.power(x / k, n)
-    return (A * xk / (1.0 + xk)) - solution
-
-
-def residuals(x0, x, y):
-    """ Residual function for Hill Equation. """
-    return hill_equation(x, x0) - y

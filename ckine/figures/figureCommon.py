@@ -1,8 +1,11 @@
 """
 This file contains functions that are used in multiple figures.
 """
+import os
+from os.path import join
 import seaborn as sns
 import numpy as np
+import pandas as pds
 import matplotlib
 import matplotlib.cm as cm
 import svgutils.transform as st
@@ -12,7 +15,10 @@ from matplotlib.patches import Patch
 from scipy.optimize import least_squares
 from ..tensor import find_R2X
 from ..imports import import_pstat
-from ..model import runCkineUP, getTotalActiveSpecies, receptor_expression
+from ..model import runCkineUP, getTotalActiveSpecies, receptor_expression, getTotalActiveCytokine, runCkineU
+
+
+path_here = os.path.dirname(os.path.dirname(__file__))
 
 
 matplotlib.rcParams['legend.labelspacing'] = 0.2
@@ -303,3 +309,158 @@ def optimize_scale(model_act2, model_act15, exp_act2, exp_act15):
     # find result of minimization where both params are >= 0
     res = least_squares(calc_res, guess, bounds=(0.0, np.inf))
     return res.x
+
+
+def import_pMuteins():
+    """ Loads CSV file containing pSTAT5 levels from Visterra data for muteins. """
+    path = os.path.dirname(os.path.dirname(__file__))
+    data = pds.read_csv(join(path, "data/Monomeric_mutein_pSTAT_data.csv"), encoding="latin1")
+    data["RFU"] = data["RFU"] - data.groupby(["Cells", "Ligand"])["RFU"].transform("min")
+    for conc in data.Concentration.unique():
+        data = data.replace({"Concentration": conc}, np.round(conc, decimals=9))
+
+    return data
+
+
+dataMean = import_pMuteins()
+dataMean.reset_index(inplace=True)
+_, _, _, _, pstat_df = import_pstat()
+dataMean = dataMean.append(pstat_df, ignore_index=True, sort=True)
+
+
+def calc_dose_response_mutein(unkVec, tps, muteinC, mutein_name, cell_receptors):
+    """ Calculates activity for a given cell type at various mutein concentrations and timepoints. """
+
+    total_activity = np.zeros((len(muteinC), len(tps)))
+    unkVec[22] = cell_receptors[0]
+    unkVec[23] = cell_receptors[1]
+    unkVec[24] = cell_receptors[2]
+
+    # loop for each mutein concentration
+    for i, conc in enumerate(muteinC):
+        unkVec[0] = conc
+        yOut = runCkineU(tps, unkVec, preT=0.0, prestim=None, mut_name=mutein_name)
+        active_ckine = np.zeros(yOut.shape[0])
+        # calculate for each time point
+        for ii in range(yOut.shape[0]):
+            active_ckine[ii] = getTotalActiveCytokine(0, yOut[ii, :])
+        total_activity[i, :] = np.reshape(active_ckine, (-1, 4))  # save the activity from this concentration for all 4 tps
+
+    return total_activity
+
+
+def organize_expr_pred(df, cell_name, ligand_name, receptors, muteinC, tps, unkVec):
+    """ Appends input dataframe with experimental and predicted activity for a given cell type and mutein. """
+    num = len(tps) * len(muteinC)
+
+    # organize experimental pstat data
+    exp_data = np.zeros((12, 4))
+    mutein_conc = exp_data.copy()
+    for i, conc in enumerate(dataMean.Concentration.unique()):
+        exp_data[i, :] = np.array(dataMean.loc[(dataMean["Cells"] == cell_name) & (dataMean["Ligand"] == ligand_name) & (dataMean["Concentration"] == conc), "RFU"])
+        mutein_conc[i, :] = conc
+
+    df_exp = pds.DataFrame(
+        {
+            'Cells': np.tile(
+                np.array(cell_name), num), 'Ligand': np.tile(
+                    np.array(ligand_name), num), 'Time Point': np.tile(
+                        tps, 12), 'Concentration': mutein_conc.reshape(
+                            num,), 'Activity Type': np.tile(
+                                np.array('experimental'), num), 'Replicate': np.zeros(
+                                    (num)), 'Activity': exp_data.reshape(
+                                        num,)})
+    df = df.append(df_exp, ignore_index=True)
+
+    # calculate predicted dose response
+    pred_data = np.zeros((12, 4, unkVec.shape[1]))
+    for j in range(unkVec.shape[1]):
+        cell_receptors = receptor_expression(receptors, unkVec[17, j], unkVec[20, j], unkVec[19, j], unkVec[21, j])
+        pred_data[:, :, j] = calc_dose_response_mutein(unkVec[:, j], tps, muteinC, ligand_name, cell_receptors)
+        df_pred = pds.DataFrame({'Cells': np.tile(np.array(cell_name), num), 'Ligand': np.tile(np.array(ligand_name), num), 'Time Point': np.tile(tps, 12), 'Concentration': mutein_conc.reshape(
+            num,), 'Activity Type': np.tile(np.array('predicted'), num), 'Replicate': np.tile(np.array(j + 1), num), 'Activity': pred_data[:, :, j].reshape(num,)})
+        df = df.append(df_pred, ignore_index=True)
+
+    return df
+
+
+def mutein_scaling(df, unkVec):
+    """ Determines scaling parameters for specified cell groups for across all muteins. """
+
+    cell_groups = [['T-reg', 'Mem Treg', 'Naive Treg'], ['T-helper', 'Mem Th', 'Naive Th'], ['NK'], ['CD8+']]
+
+    scales = np.zeros((4, 2, unkVec.shape[1]))
+    for i, cells in enumerate(cell_groups):
+        for j in range(unkVec.shape[1]):
+            subset_df = df[df['Cells'].isin(cells)]
+            scales[i, :, j] = optimize_scale_mut(np.array(subset_df.loc[(subset_df["Activity Type"] == 'predicted') & (subset_df["Replicate"] == (j + 1)), "Activity"]),
+                                                 np.array(subset_df.loc[(subset_df["Activity Type"] == 'experimental'), "Activity"]))
+
+    return scales
+
+
+def optimize_scale_mut(model_act, exp_act):
+    """ Formulates the optimal scale to minimize the residual between model activity predictions and experimental activity measurments for a given cell type. """
+
+    # scaling factors are sigmoidal and linear, respectively
+    guess = np.array([100.0, np.mean(exp_act) / np.mean(model_act)])
+
+    def calc_res(sc):
+        """ Calculate the residuals. This is the function we minimize. """
+        scaled_act = sc[1] * model_act / (model_act + sc[0])
+        err = exp_act - scaled_act
+        return err.flatten()
+
+    # find result of minimization where both params are >= 0
+    res = least_squares(calc_res, guess, bounds=(0.0, np.inf))
+    return res.x
+
+
+def catplot_comparison(ax, df, legend=False):
+    """ Construct EC50 catplots for each time point for Different ligands. """
+    # set a manual color palette
+    col_list = ["violet", "goldenrod"]
+    col_list_palette = sns.xkcd_palette(col_list)
+    sns.set_palette(col_list_palette)
+    # plot predicted EC50
+    sns.catplot(x="Cell Type", y="EC-50", hue="IL",
+                data=df.loc[(df['Time Point'] == 60.) & (df["Data Type"] == 'Predicted')],
+                legend=legend, legend_out=legend, ax=ax, marker='^')
+
+    # plot experimental EC50
+    sns.catplot(x="Cell Type", y="EC-50", hue="IL",
+                data=df.loc[(df['Time Point'] == 60.) & (df["Data Type"] == 'Experimental')],
+                legend=False, legend_out=False, ax=ax, marker='o')
+
+    ax.set_xticklabels(ax.get_xticklabels(), rotation=40, fontsize=6.8, rotation_mode="anchor", ha="right")
+    ax.set_xlabel("")  # remove "Cell Type" from xlabel
+    ax.set_ylabel(r"EC-50 (log$_{10}$[nM])")
+    handles, _ = ax.get_legend_handles_labels()
+    circle = Line2D([], [], color='black', marker='o', linestyle='None', markersize=6, label='Experimental')
+    triangle = Line2D([], [], color='black', marker='^', linestyle='None', markersize=6, label='Predicted')
+    handles = handles[0:6]
+    handles.append(circle)
+    handles.append(triangle)
+    ax.legend(handles=handles, bbox_to_anchor=(1.02, 1))
+    if not legend:
+        ax.get_legend().remove()
+
+
+def nllsq_EC50(x0, xdata, ydata):
+    """ Performs nonlinear least squares on activity measurements to determine parameters of Hill equation and outputs EC50. """
+    lsq_res = least_squares(residuals, x0, args=(xdata, ydata), bounds=([0., 0., 0.], [10., 10., 10**5.]), jac='3-point')
+    return lsq_res.x[0]
+
+
+def hill_equation(x, x0, solution=0):
+    """ Calculates EC50 from Hill Equation. """
+    k = x0[0]
+    n = x0[1]
+    A = x0[2]
+    xk = np.power(x / k, n)
+    return (A * xk / (1.0 + xk)) - solution
+
+
+def residuals(x0, x, y):
+    """ Residual function for Hill Equation. """
+    return hill_equation(x, x0) - y
