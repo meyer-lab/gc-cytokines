@@ -15,7 +15,7 @@ from matplotlib.patches import Patch
 from scipy.optimize import least_squares
 from ..tensor import find_R2X
 from ..imports import import_pstat
-from ..model import runCkineUP, getTotalActiveSpecies, receptor_expression, getTotalActiveCytokine, runCkineUmut
+from ..model import runCkineUP, getTotalActiveSpecies, receptor_expression, getTotalActiveCytokine, runCkineU
 
 
 path_here = os.path.dirname(os.path.dirname(__file__))
@@ -322,29 +322,13 @@ def import_pMuteins():
     return data
 
 
-def getMutAff():
-    """Returns adjusted binding rates for all muteins in dictionary"""
-
-    mutaffret = {
-        'IL2-060 monomeric': [0.19, 7.32],
-        'Cterm IL-2 monomeric WT': [0.54, 4.29],
-        'Cterm IL-2 monomeric V91K': [0.69, 9.56],
-        'IL2-109 monomeric': [0.71, 7.32],
-        'IL2-110 monomeric': [9.48, 7.32],
-        'Cterm N88D monomeric': [1.01, 24.9]
-    }
-
-    return mutaffret
-
-
-mutaff = getMutAff()
 dataMean = import_pMuteins()
 dataMean.reset_index(inplace=True)
 _, _, _, _, pstat_df = import_pstat()
 dataMean = dataMean.append(pstat_df, ignore_index=True, sort=True)
 
 
-def calc_dose_response_mutein(unkVec, mutdict, tps, muteinC, mutein_name, cell_receptors):
+def calc_dose_response_mutein(unkVec, tps, muteinC, mutein_name, cell_receptors):
     """ Calculates activity for a given cell type at various mutein concentrations and timepoints. """
 
     total_activity = np.zeros((len(muteinC), len(tps)))
@@ -355,7 +339,7 @@ def calc_dose_response_mutein(unkVec, mutdict, tps, muteinC, mutein_name, cell_r
     # loop for each mutein concentration
     for i, conc in enumerate(muteinC):
         unkVec[0] = conc
-        yOut = runCkineUmut(tps, unkVec, mutdict, mutein_name)
+        yOut = runCkineU(tps, unkVec, preT=0.0, prestim=None, mut_name=mutein_name)
         active_ckine = np.zeros(yOut.shape[0])
         # calculate for each time point
         for ii in range(yOut.shape[0]):
@@ -392,7 +376,7 @@ def organize_expr_pred(df, cell_name, ligand_name, receptors, muteinC, tps, unkV
     pred_data = np.zeros((12, 4, unkVec.shape[1]))
     for j in range(unkVec.shape[1]):
         cell_receptors = receptor_expression(receptors, unkVec[17, j], unkVec[20, j], unkVec[19, j], unkVec[21, j])
-        pred_data[:, :, j] = calc_dose_response_mutein(unkVec[:, j], mutaff, tps, muteinC, ligand_name, cell_receptors)
+        pred_data[:, :, j] = calc_dose_response_mutein(unkVec[:, j], tps, muteinC, ligand_name, cell_receptors)
         df_pred = pds.DataFrame({'Cells': np.tile(np.array(cell_name), num), 'Ligand': np.tile(np.array(ligand_name), num), 'Time Point': np.tile(tps, 12), 'Concentration': mutein_conc.reshape(
             num,), 'Activity Type': np.tile(np.array('predicted'), num), 'Replicate': np.tile(np.array(j + 1), num), 'Activity': pred_data[:, :, j].reshape(num,)})
         df = df.append(df_pred, ignore_index=True)
