@@ -2,15 +2,17 @@
 This creates Figure 6.
 """
 import string
+import logging
 import numpy as np
 import pandas as pd
 import seaborn as sns
 import theano.tensor as T
 import theano
-from .figureCommon import subplotLabel, getSetup, global_legend, calc_dose_response, import_pMuteins, catplot_comparison, nllsq_EC50, organize_expr_pred, mutein_scaling
+from .figureCommon import subplotLabel, getSetup, global_legend, calc_dose_response, import_pMuteins, catplot_comparison, nllsq_EC50, organize_expr_pred, mutein_scaling, plot_cells
 from ..imports import import_pstat, import_samples_2_15, import_Rexpr
 from ..model import getTotalActiveSpecies, receptor_expression, getRateVec, getparamsdict
 from ..differencing_op import runCkineDoseOp
+from ..tensor import perform_decomposition, find_R2X, z_score_values
 
 unkVec_2_15, scales = import_samples_2_15(N=1)
 data, receptor_data, cell_names_receptor = import_Rexpr()
@@ -23,12 +25,13 @@ CondIL[0, 0] = ckineC
 Op = runCkineDoseOp(tt=np.array(time), condense=getTotalActiveSpecies().astype(np.float64), conditions=CondIL)
 unkVec = unkVec[6::].flatten()
 unkVecT = T.set_subtensor(T.zeros(54)[0:], np.transpose(unkVec))
+mutData = import_pMuteins()
 
 
 def makeFigure():
     """Get a list of the axis objects and create a figure"""
     # Get list of axis objects
-    ax, f = getSetup((7.5, 6), (3, 4), multz={2: 1, 4: 3, 8: 3})
+    ax, f = getSetup((7.5, 8), (5, 4), multz={2: 1, 4: 3, 8: 3, 12: 1, 14: 1, 16: 1, 18: 1})
 
     for ii, item in enumerate(ax):
         subplotLabel(item, string.ascii_uppercase[ii])
@@ -64,6 +67,7 @@ def makeFigure():
     catplot_comparison(ax[2], mutEC50df, legend=True)
     Specificity(ax=ax[3])
     Spec_Aff(ax[4], 40, unkVecT, scalesT)
+    Mut_Fact(ax[5:9])
 
     return f
 
@@ -215,7 +219,6 @@ def Spec_Aff(ax, npoints, unkVecAff, scalesAff):
 
 def get_Mut_EC50s():
     """Creates df with mutein EC50s included"""
-    mutData = import_pMuteins()
     x0 = [1, 2., 1000.]
     concentrations = mutData.Concentration.unique()
     ligand_order = ['IL2-060 monomeric', 'Cterm IL-2 monomeric WT', 'Cterm IL-2 monomeric V91K', 'IL2-109 monomeric', 'IL2-110 monomeric', 'Cterm N88D monomeric']
@@ -272,3 +275,44 @@ def get_Mut_EC50s():
                 EC50df.loc[len(EC50df.index)] = pd.Series({'Time Point': timeEC, 'IL': ligand_name, 'Cell Type': cell_name, 'Data Type': 'Predicted', 'EC-50': EC50})
 
     return EC50df
+
+
+def Mut_Fact(ax):
+    """Plots Non-Negative CP Factorization of Muteins into 4 ax subplots"""
+    mutDataF = mutData
+    mutDataF.reset_index(inplace=True)
+    mutTensor = np.reshape(mutDataF["RFU"].values, (8, 6, 4, 12))  # cells, muteins, times, and concs.
+
+    concs = mutDataF['Concentration'].unique()
+    ts = mutDataF['Time'].unique()
+    cells = mutDataF['Cells'].unique()
+    ligs = mutDataF['Ligand'].unique()
+
+    dataTensor = z_score_values(mutTensor, 0)
+    parafac = perform_decomposition(dataTensor, 2, weightFactor=3)
+    logging.info(find_R2X(dataTensor, parafac))
+
+    # Cells
+    plot_cells(ax[0], parafac[0], 1, 2, cells)
+    ax[0].legend(bbox_to_anchor=(1.02, 1))
+
+    # Ligands
+    plot_cells(ax[1], parafac[1], 1, 2, ligs)
+    ax[1].set_title("Ligands")
+    ax[1].set_ylim(bottom=0)
+    ax[1].set_xlim(left=0)
+    ax[1].legend(bbox_to_anchor=(1.02, 1))
+
+    # Timepoints
+    tComp = np.r_[np.zeros((1, 2)), parafac[2]]
+    ts = np.append(np.array(0.0), ts)
+    ax[2].set_xlabel("Time (min)")
+    ax[2].set_ylabel("Component")
+    ax[2].plot(ts, tComp)
+    ax[2].legend(["Component 1", "Component 2"])
+
+    # Concentration
+    ax[3].semilogx(concs, parafac[3])
+    ax[3].set_xlabel("Concentration (nM)")
+    ax[3].set_ylabel("Component")
+    ax[3].legend(["Component 1", "Component 2"])
