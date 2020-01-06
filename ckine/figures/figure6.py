@@ -305,7 +305,13 @@ def Mut_Fact(ax):
     # Timepoints
     tComp = np.r_[np.zeros((1, 2)), parafac[2]]
     ts = np.append(np.array(0.0), ts)
+    ax[2].set_xlabel("Time (min)")
+    ax[2].set_ylabel("Component")
     ax[2].plot(ts, tComp)
+    ax[2].legend(["Component 1", "Component 2"])
 
     # Concentration
     ax[3].semilogx(concs, parafac[3])
+    ax[3].set_xlabel("Concentration (nM)")
+    ax[3].set_ylabel("Component")
+    ax[3].legend(["Component 1", "Component 2"])
