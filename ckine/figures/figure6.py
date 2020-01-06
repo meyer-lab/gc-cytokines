@@ -2,12 +2,12 @@
 This creates Figure 6.
 """
 import string
+import logging
 import numpy as np
 import pandas as pd
 import seaborn as sns
 import theano.tensor as T
 import theano
-import logging
 from .figureCommon import subplotLabel, getSetup, global_legend, calc_dose_response, import_pMuteins, catplot_comparison, nllsq_EC50, organize_expr_pred, mutein_scaling, plot_cells
 from ..imports import import_pstat, import_samples_2_15, import_Rexpr
 from ..model import getTotalActiveSpecies, receptor_expression, getRateVec, getparamsdict
