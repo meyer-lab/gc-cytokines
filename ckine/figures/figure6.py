@@ -298,6 +298,7 @@ def Mut_Fact(ax):
 
     # Ligands
     plot_cells(ax[1], parafac[1], 1, 2, ligs)
+    ax[1].set_title("Ligands")
     ax[1].set_ylim(bottom=0)
     ax[1].set_xlim(left=0)
     ax[1].legend(bbox_to_anchor=(1.02, 1))
