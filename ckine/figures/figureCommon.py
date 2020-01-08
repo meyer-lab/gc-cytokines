@@ -316,9 +316,20 @@ def import_pMuteins():
     path = os.path.dirname(os.path.dirname(__file__))
     data = pds.read_csv(join(path, "data/Monomeric_mutein_pSTAT_data.csv"), encoding="latin1")
     data["RFU"] = data["RFU"] - data.groupby(["Cells", "Ligand"])["RFU"].transform("min")
+
     for conc in data.Concentration.unique():
         data = data.replace({"Concentration": conc}, np.round(conc, decimals=9))
-
+        
+    namedict =  {
+            'IL2-060 monomeric': 'WT N-term',
+            'Cterm IL-2 monomeric WT': 'WT C-term',
+            'Cterm IL-2 monomeric V91K': 'V91K C-term',
+            'IL2-109 monomeric': 'R38Q N-term',
+            'IL2-110 monomeric': 'F42Q N-Term',
+            'Cterm N88D monomeric': 'N88D C-term'
+    }
+    data = data.replace({'Ligand': namedict})
+        
     return data
 
 

@@ -26,6 +26,7 @@ Op = runCkineDoseOp(tt=np.array(time), condense=getTotalActiveSpecies().astype(n
 unkVec = unkVec[6::].flatten()
 unkVecT = T.set_subtensor(T.zeros(54)[0:], np.transpose(unkVec))
 mutData = import_pMuteins()
+print(mutData)
 
 
 def makeFigure():
@@ -221,7 +222,7 @@ def get_Mut_EC50s():
     """Creates df with mutein EC50s included"""
     x0 = [1, 2., 1000.]
     concentrations = mutData.Concentration.unique()
-    ligand_order = ['IL2-060 monomeric', 'Cterm IL-2 monomeric WT', 'Cterm IL-2 monomeric V91K', 'IL2-109 monomeric', 'IL2-110 monomeric', 'Cterm N88D monomeric']
+    ligand_order = ['WT N-term', 'WT C-term', 'V91K C-term', 'R38Q N-term', 'F42Q N-Term', 'N88D C-term']
     celltypes = mutData.Cells.unique()
     times = mutData.Time.unique()
     EC50df = pd.DataFrame(columns=['Time Point', 'IL', 'Cell Type', 'Data Type', 'EC-50'])
