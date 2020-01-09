@@ -131,6 +131,18 @@ def plot_cells(ax, factors, component_x, component_y, cell_names, legend=True):
         ax.legend()
 
 
+def plot_ligand_comp(ax, factors, component_x, component_y, ligand_names):
+    """This function plots the combination decomposition based on ligand type."""
+
+    for ii, _ in enumerate(factors[:, component_x - 1]):
+        ax.scatter(factors[ii, component_x - 1], factors[ii, component_y - 1], label=ligand_names[ii])
+
+    ax.set_title('Ligands')
+    ax.set_xlabel('Component ' + str(component_x))
+    ax.set_ylabel('Component ' + str(component_y))
+    ax.set_xlim(left=-0.03)
+
+
 def overlayCartoon(figFile, cartoonFile, x, y, scalee=1, scale_x=1, scale_y=1):
     """ Add cartoon to a figure file. """
 
@@ -320,17 +332,17 @@ def import_pMuteins():
 
     for conc in data.Concentration.unique():
         data = data.replace({"Concentration": conc}, np.round(conc, decimals=9))
-        
-    namedict =  {
-            'IL2-060 monomeric': 'WT N-term',
-            'Cterm IL-2 monomeric WT': 'WT C-term',
-            'Cterm IL-2 monomeric V91K': 'V91K C-term',
-            'IL2-109 monomeric': 'R38Q N-term',
-            'IL2-110 monomeric': 'F42Q N-Term',
-            'Cterm N88D monomeric': 'N88D C-term'
+
+    namedict = {
+        'IL2-060 monomeric': 'WT N-term',
+        'Cterm IL-2 monomeric WT': 'WT C-term',
+        'Cterm IL-2 monomeric V91K': 'V91K C-term',
+        'IL2-109 monomeric': 'R38Q N-term',
+        'IL2-110 monomeric': 'F42Q N-Term',
+        'Cterm N88D monomeric': 'N88D C-term'
     }
     data = data.replace({'Ligand': namedict})
-        
+
     return data
 
 

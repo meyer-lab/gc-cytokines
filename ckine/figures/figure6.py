@@ -8,7 +8,7 @@ import pandas as pd
 import seaborn as sns
 import theano.tensor as T
 import theano
-from .figureCommon import subplotLabel, getSetup, global_legend, calc_dose_response, import_pMuteins, catplot_comparison, nllsq_EC50, organize_expr_pred, mutein_scaling, plot_cells, plot_ligands
+from .figureCommon import subplotLabel, getSetup, global_legend, calc_dose_response, import_pMuteins, catplot_comparison, nllsq_EC50, organize_expr_pred, mutein_scaling, plot_cells, plot_ligand_comp
 from ..imports import import_pstat, import_samples_2_15, import_Rexpr
 from ..model import getTotalActiveSpecies, receptor_expression, getRateVec, getparamsdict, getMutAffDict
 from ..differencing_op import runCkineDoseOp
@@ -78,17 +78,18 @@ def affComp(ax):
     affdict = getMutAffDict()
     ligList = ['WT N-term', 'WT C-term', 'V91K C-term', 'R38Q N-term', 'F42Q N-Term', 'N88D C-term', 'WT IL2']
 
-    for i in range (0, len(ligList)-1):
+    for i in range(0, len(ligList) - 1):
         RaAff = affdict[ligList[i]][0]
         GcBAff = affdict[ligList[i]][1]
         ax.scatter(RaAff, GcBAff, label=ligList[i])
 
-    RaAffsWT= unkVec_2_15[7] / 0.6
+    RaAffsWT = unkVec_2_15[7] / 0.6
     GcBAffsWT = unkVec_2_15[10] / 0.6
     ax.scatter(RaAffsWT, GcBAffsWT, label="WT IL-2")
     ax.set_xlabel("CD25 KD (nM)")
     ax.set_ylabel("CD122/132 KD (nM)")
     ax.legend()
+
 
 def calc_plot_specificity(ax, cell_compare, df_specificity, df_activity, ligands, concs):
     """ Calculates and plots specificity for both cytokines and experimental/predicted activity for T-regs. """
@@ -162,7 +163,7 @@ def Specificity(ax):
     dfTh.drop(dfTh.index[-5:], inplace=True)
 
     df = pd.concat([dfNK, dfTh])
-    
+
     sns.set_palette("bright")
     sns.catplot(data=df, x='rate', y='value', kind="bar", hue='cell', ax=ax, legend=False)
     ax.legend()
@@ -318,11 +319,11 @@ def Mut_Fact(ax):
     ax[1].legend(bbox_to_anchor=(1.02, 1))
 
     # Ligands
-    plot_ligands(ax[2], parafac[1], 1, 2, ligs)
+    plot_ligand_comp(ax[2], parafac[1], 1, 2, ligs)
     ax[2].set_title("Ligands")
     ax[2].set_ylim(bottom=0)
     ax[2].set_xlim(left=0)
-    plot_ligands(ax[3], parafac[1], 3, 4, ligs)
+    plot_ligand_comp(ax[3], parafac[1], 3, 4, ligs)
     ax[3].set_title("Ligands")
     ax[3].set_ylim(bottom=0)
     ax[3].set_xlim(left=0)
@@ -341,15 +342,3 @@ def Mut_Fact(ax):
     ax[5].set_xlabel("Concentration (nM)")
     ax[5].set_ylabel("Component")
     ax[5].legend(["Component 1", "Component 2", "Component 3", "Component 4"])
-
-
-def plot_ligands(ax, factors, component_x, component_y, ligand_names):
-    """This function plots the combination decomposition based on ligand type."""
-
-    for ii, _ in enumerate(factors[:, component_x - 1]):
-        ax.scatter(factors[ii, component_x - 1], factors[ii, component_y - 1], label=ligand_names[ii])
-
-    ax.set_title('Ligands')
-    ax.set_xlabel('Component ' + str(component_x))
-    ax.set_ylabel('Component ' + str(component_y))
-    ax.set_xlim(left=-0.03)
