@@ -67,7 +67,7 @@ def makeFigure():
     global_legend(ax[2])
     Specificity(ax=ax[3])
     Spec_Aff(ax[4], 40, unkVecT, scalesT)
-    catplot_comparison(ax[5], mutEC50df, legend=True)
+    catplot_comparison(ax[5], mutEC50df, legend=False, Mut=True)
     Mut_Fact(ax[6:12])
 
     return f
@@ -77,18 +77,20 @@ def affComp(ax):
     """Compare 2Ra and 2BGc dissociation constants of wild type and mutant IL-2s"""
     affdict = getMutAffDict()
     ligList = ['WT N-term', 'WT C-term', 'V91K C-term', 'R38Q N-term', 'F42Q N-Term', 'N88D C-term', 'WT IL2']
+    RaAff, GcBAff = np.zeros([len(ligList)]), np.zeros([len(ligList)])
 
     for i in range(0, len(ligList) - 1):
-        RaAff = affdict[ligList[i]][0]
-        GcBAff = affdict[ligList[i]][1]
-        ax.scatter(RaAff, GcBAff, label=ligList[i])
+        RaAff[i] = affdict[ligList[i]][0]
+        GcBAff[i] = affdict[ligList[i]][1]
+ 
+    RaAff[len(ligList) - 1] = unkVec[1] / 0.6
+    GcBAff[len(ligList) - 1] = unkVec[4] / 0.6
 
-    RaAffsWT = unkVec_2_15[7] / 0.6
-    GcBAffsWT = unkVec_2_15[10] / 0.6
-    ax.scatter(RaAffsWT, GcBAffsWT, label="WT IL-2")
+    KDdf = pd.DataFrame({'RaAff':RaAff, 'GcBAff':GcBAff, 'Ligand':ligList})
+    sns.scatterplot(x='RaAff', y='GcBAff', data=KDdf, hue="Ligand", palette='bright', ax=ax)
     ax.set_xlabel("CD25 KD (nM)")
     ax.set_ylabel("CD122/132 KD (nM)")
-    ax.legend()
+    ax.legend(bbox_to_anchor=(1.02, 1))
 
 
 def calc_plot_specificity(ax, cell_compare, df_specificity, df_activity, ligands, concs):
@@ -107,7 +109,7 @@ def calc_plot_specificity(ax, cell_compare, df_specificity, df_activity, ligands
     sns.set_palette(sns.xkcd_palette(["violet", "goldenrod"]))
     sns.scatterplot(x="Concentration", y="Specificity", hue="Ligand", data=df_specificity.loc[(df_specificity["Cells"] ==
                                                                                                cell_compare) & (df_specificity["Data Type"] == 'Experimental')], ax=ax, marker='o', legend=False)
-    sns.scatterplot(x="Concentration", y="Specificity", hue="Ligand", data=df_specificity.loc[(df_specificity["Cells"] == cell_compare) &
+    sns.lineplot(x="Concentration", y="Specificity", hue="Ligand", data=df_specificity.loc[(df_specificity["Cells"] == cell_compare) &
                                                                                               (df_specificity["Data Type"] == 'Predicted')], ax=ax, marker='^', legend=False)
     ax.set(xlabel="(log$_{10}$[nM])", ylabel="log$_{10}$[Specificity]", title=('T-reg vs. ' + cell_compare))
 
@@ -163,10 +165,13 @@ def Specificity(ax):
     dfTh.drop(dfTh.index[-5:], inplace=True)
 
     df = pd.concat([dfNK, dfTh])
+    
+    colors = ["rich blue", "sun yellow"]
+    sns.set_palette(sns.xkcd_palette(colors))
 
-    sns.set_palette("bright")
     sns.catplot(data=df, x='rate', y='value', kind="bar", hue='cell', ax=ax, legend=False)
-    ax.legend()
+    ax.set_xlabel("")
+    ax.legend(bbox_to_anchor=(1.02, 1))
     ax.set_yscale("symlog", linthreshy=0.01)
     ax.set_xticklabels(ax.get_xticklabels(), rotation=25, rotation_mode="anchor", ha="right")
 
@@ -217,7 +222,7 @@ def OPgenSpec(unk, scalesIn, k1Aff=1.0, k5Aff=1.0):
 def Spec_Aff(ax, npoints, unkVecAff, scalesAff):
     "Plots specificity for a cell type over a range of IL2RBG and IL2Ra affinities"
     affRange = np.logspace(2, -1, npoints)
-    RaAff = np.array([1, 10])
+    RaAff = np.array([1, 2])
     specHolderNK = np.zeros([len(RaAff), npoints])
     specHolderTh = np.zeros([len(RaAff), npoints])
     for i, k1Aff in enumerate(RaAff):
@@ -305,7 +310,7 @@ def Mut_Fact(ax):
     mutTensor = np.reshape(mutDataF["RFU"].values, (8, 6, 4, 12))  # cells, muteins, times, and concs.
 
     concs = mutDataF['Concentration'].unique()
-    ts = mutDataF['Time'].unique()
+    ts = mutDataF['Time'].unique() / 60
     cells = mutDataF['Cells'].unique()
     ligs = mutDataF['Ligand'].unique()
 
@@ -332,7 +337,7 @@ def Mut_Fact(ax):
     # Timepoints
     tComp = np.r_[np.zeros((1, 4)), parafac[2]]
     ts = np.append(np.array(0.0), ts)
-    ax[4].set_xlabel("Time (min)")
+    ax[4].set_xlabel("Time (hrs)")
     ax[4].set_ylabel("Component")
     ax[4].plot(ts, tComp)
     ax[4].legend(["Component 1", "Component 2", "Component 3", "Component 4"])
@@ -341,4 +346,3 @@ def Mut_Fact(ax):
     ax[5].semilogx(concs, parafac[3])
     ax[5].set_xlabel("Concentration (nM)")
     ax[5].set_ylabel("Component")
-    ax[5].legend(["Component 1", "Component 2", "Component 3", "Component 4"])
