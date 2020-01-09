@@ -8,9 +8,9 @@ import pandas as pd
 import seaborn as sns
 import theano.tensor as T
 import theano
-from .figureCommon import subplotLabel, getSetup, global_legend, calc_dose_response, import_pMuteins, catplot_comparison, nllsq_EC50, organize_expr_pred, mutein_scaling, plot_cells
+from .figureCommon import subplotLabel, getSetup, global_legend, calc_dose_response, import_pMuteins, catplot_comparison, nllsq_EC50, organize_expr_pred, mutein_scaling, plot_cells, plot_ligand_comp
 from ..imports import import_pstat, import_samples_2_15, import_Rexpr
-from ..model import getTotalActiveSpecies, receptor_expression, getRateVec, getparamsdict
+from ..model import getTotalActiveSpecies, receptor_expression, getRateVec, getparamsdict, getMutAffDict
 from ..differencing_op import runCkineDoseOp
 from ..tensor import perform_decomposition, find_R2X, z_score_values
 
@@ -31,7 +31,7 @@ mutData = import_pMuteins()
 def makeFigure():
     """Get a list of the axis objects and create a figure"""
     # Get list of axis objects
-    ax, f = getSetup((7.5, 8), (5, 4), multz={2: 1, 4: 3, 8: 3, 12: 1, 14: 1, 16: 1, 18: 1})
+    ax, f = getSetup((7.5, 8), (4, 4), multz={0: 1, 4: 1, 6: 1, 8: 1})
 
     for ii, item in enumerate(ax):
         subplotLabel(item, string.ascii_uppercase[ii])
@@ -60,16 +60,35 @@ def makeFigure():
                        (df_act.Cells == 'Mem Th') | (df_act.Cells == 'Naive CD8+') | (df_act.Cells == 'Mem CD8+')].index, inplace=True)
     ckineConc_ = np.delete(ckineConc, 11, 0)  # delete smallest concentration since zero/negative activity
 
-    calc_plot_specificity(ax[0], 'NK', df_spec, df_act, ckines, ckineConc_)
-    calc_plot_specificity(ax[1], 'T-helper', df_spec, df_act, ckines, ckineConc_)
     mutEC50df = get_Mut_EC50s()
-    global_legend(ax[1])
-    catplot_comparison(ax[2], mutEC50df, legend=True)
+    affComp(ax[0])
+    calc_plot_specificity(ax[1], 'NK', df_spec, df_act, ckines, ckineConc_)
+    calc_plot_specificity(ax[2], 'T-helper', df_spec, df_act, ckines, ckineConc_)
+    global_legend(ax[2])
     Specificity(ax=ax[3])
     Spec_Aff(ax[4], 40, unkVecT, scalesT)
-    Mut_Fact(ax[5:9])
+    catplot_comparison(ax[5], mutEC50df, legend=True)
+    Mut_Fact(ax[6:12])
 
     return f
+
+
+def affComp(ax):
+    """Compare 2Ra and 2BGc dissociation constants of wild type and mutant IL-2s"""
+    affdict = getMutAffDict()
+    ligList = ['WT N-term', 'WT C-term', 'V91K C-term', 'R38Q N-term', 'F42Q N-Term', 'N88D C-term', 'WT IL2']
+
+    for i in range(0, len(ligList) - 1):
+        RaAff = affdict[ligList[i]][0]
+        GcBAff = affdict[ligList[i]][1]
+        ax.scatter(RaAff, GcBAff, label=ligList[i])
+
+    RaAffsWT = unkVec_2_15[7] / 0.6
+    GcBAffsWT = unkVec_2_15[10] / 0.6
+    ax.scatter(RaAffsWT, GcBAffsWT, label="WT IL-2")
+    ax.set_xlabel("CD25 KD (nM)")
+    ax.set_ylabel("CD122/132 KD (nM)")
+    ax.legend()
 
 
 def calc_plot_specificity(ax, cell_compare, df_specificity, df_activity, ligands, concs):
@@ -145,7 +164,9 @@ def Specificity(ax):
 
     df = pd.concat([dfNK, dfTh])
 
-    sns.catplot(data=df, x='rate', y='value', kind="bar", hue='cell', ax=ax)
+    sns.set_palette("bright")
+    sns.catplot(data=df, x='rate', y='value', kind="bar", hue='cell', ax=ax, legend=False)
+    ax.legend()
     ax.set_yscale("symlog", linthreshy=0.01)
     ax.set_xticklabels(ax.get_xticklabels(), rotation=25, rotation_mode="anchor", ha="right")
 
@@ -221,7 +242,7 @@ def get_Mut_EC50s():
     """Creates df with mutein EC50s included"""
     x0 = [1, 2., 1000.]
     concentrations = mutData.Concentration.unique()
-    ligand_order = ['IL2-060 monomeric', 'Cterm IL-2 monomeric WT', 'Cterm IL-2 monomeric V91K', 'IL2-109 monomeric', 'IL2-110 monomeric', 'Cterm N88D monomeric']
+    ligand_order = ['WT N-term', 'WT C-term', 'V91K C-term', 'R38Q N-term', 'F42Q N-Term', 'N88D C-term']
     celltypes = mutData.Cells.unique()
     times = mutData.Time.unique()
     EC50df = pd.DataFrame(columns=['Time Point', 'IL', 'Cell Type', 'Data Type', 'EC-50'])
@@ -289,30 +310,35 @@ def Mut_Fact(ax):
     ligs = mutDataF['Ligand'].unique()
 
     dataTensor = z_score_values(mutTensor, 0)
-    parafac = perform_decomposition(dataTensor, 2, weightFactor=3)
+    parafac = perform_decomposition(dataTensor, 4, weightFactor=3)
     logging.info(find_R2X(dataTensor, parafac))
 
     # Cells
-    plot_cells(ax[0], parafac[0], 1, 2, cells)
-    ax[0].legend(bbox_to_anchor=(1.02, 1))
-
-    # Ligands
-    plot_cells(ax[1], parafac[1], 1, 2, ligs)
-    ax[1].set_title("Ligands")
-    ax[1].set_ylim(bottom=0)
-    ax[1].set_xlim(left=0)
+    plot_cells(ax[0], parafac[0], 1, 2, cells, legend=False)
+    plot_cells(ax[1], parafac[0], 3, 4, cells)
     ax[1].legend(bbox_to_anchor=(1.02, 1))
 
+    # Ligands
+    plot_ligand_comp(ax[2], parafac[1], 1, 2, ligs)
+    ax[2].set_title("Ligands")
+    ax[2].set_ylim(bottom=0)
+    ax[2].set_xlim(left=0)
+    plot_ligand_comp(ax[3], parafac[1], 3, 4, ligs)
+    ax[3].set_title("Ligands")
+    ax[3].set_ylim(bottom=0)
+    ax[3].set_xlim(left=0)
+    #ax[3].legend(bbox_to_anchor=(1.02, 1))
+
     # Timepoints
-    tComp = np.r_[np.zeros((1, 2)), parafac[2]]
+    tComp = np.r_[np.zeros((1, 4)), parafac[2]]
     ts = np.append(np.array(0.0), ts)
-    ax[2].set_xlabel("Time (min)")
-    ax[2].set_ylabel("Component")
-    ax[2].plot(ts, tComp)
-    ax[2].legend(["Component 1", "Component 2"])
+    ax[4].set_xlabel("Time (min)")
+    ax[4].set_ylabel("Component")
+    ax[4].plot(ts, tComp)
+    ax[4].legend(["Component 1", "Component 2", "Component 3", "Component 4"])
 
     # Concentration
-    ax[3].semilogx(concs, parafac[3])
-    ax[3].set_xlabel("Concentration (nM)")
-    ax[3].set_ylabel("Component")
-    ax[3].legend(["Component 1", "Component 2"])
+    ax[5].semilogx(concs, parafac[3])
+    ax[5].set_xlabel("Concentration (nM)")
+    ax[5].set_ylabel("Component")
+    ax[5].legend(["Component 1", "Component 2", "Component 3", "Component 4"])

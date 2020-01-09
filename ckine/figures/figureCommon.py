@@ -115,7 +115,7 @@ def plot_conf_int(ax, x_axis, y_axis, color, label=None):
         ax.legend()
 
 
-def plot_cells(ax, factors, component_x, component_y, cell_names):
+def plot_cells(ax, factors, component_x, component_y, cell_names, legend=True):
     """This function plots the combination decomposition based on cell type."""
     colors = cm.rainbow(np.linspace(0, 1, len(cell_names)))
     markersCells = ['^', '*', 'D', 's', 'X', 'o', '4', 'H', 'P', '*', 'D', 's', 'X']
@@ -127,7 +127,20 @@ def plot_cells(ax, factors, component_x, component_y, cell_names):
     ax.set_xlabel('Component ' + str(component_x))
     ax.set_ylabel('Component ' + str(component_y))
     ax.set_xlim(left=-0.03)
-    ax.legend()
+    if legend:
+        ax.legend()
+
+
+def plot_ligand_comp(ax, factors, component_x, component_y, ligand_names):
+    """This function plots the combination decomposition based on ligand type."""
+
+    for ii, _ in enumerate(factors[:, component_x - 1]):
+        ax.scatter(factors[ii, component_x - 1], factors[ii, component_y - 1], label=ligand_names[ii])
+
+    ax.set_title('Ligands')
+    ax.set_xlabel('Component ' + str(component_x))
+    ax.set_ylabel('Component ' + str(component_y))
+    ax.set_xlim(left=-0.03)
 
 
 def overlayCartoon(figFile, cartoonFile, x, y, scalee=1, scale_x=1, scale_y=1):
@@ -316,8 +329,19 @@ def import_pMuteins():
     path = os.path.dirname(os.path.dirname(__file__))
     data = pds.read_csv(join(path, "data/Monomeric_mutein_pSTAT_data.csv"), encoding="latin1")
     data["RFU"] = data["RFU"] - data.groupby(["Cells", "Ligand"])["RFU"].transform("min")
+
     for conc in data.Concentration.unique():
         data = data.replace({"Concentration": conc}, np.round(conc, decimals=9))
+
+    namedict = {
+        'IL2-060 monomeric': 'WT N-term',
+        'Cterm IL-2 monomeric WT': 'WT C-term',
+        'Cterm IL-2 monomeric V91K': 'V91K C-term',
+        'IL2-109 monomeric': 'R38Q N-term',
+        'IL2-110 monomeric': 'F42Q N-Term',
+        'Cterm N88D monomeric': 'N88D C-term'
+    }
+    data = data.replace({'Ligand': namedict})
 
     return data
 
@@ -422,6 +446,7 @@ def catplot_comparison(ax, df, legend=False):
     col_list = ["violet", "goldenrod"]
     col_list_palette = sns.xkcd_palette(col_list)
     sns.set_palette(col_list_palette)
+
     # plot predicted EC50
     sns.catplot(x="Cell Type", y="EC-50", hue="IL",
                 data=df.loc[(df['Time Point'] == 60.) & (df["Data Type"] == 'Predicted')],

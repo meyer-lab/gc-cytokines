@@ -269,13 +269,18 @@ def getRateVec(rxntfr):
 
 
 mutaff = {
-    'IL2-060 monomeric': [0.19, 7.32],
-    'Cterm IL-2 monomeric WT': [0.54, 4.29],
-    'Cterm IL-2 monomeric V91K': [0.69, 9.56],
-    'IL2-109 monomeric': [0.71, 7.32],
-    'IL2-110 monomeric': [9.48, 7.32],
-    'Cterm N88D monomeric': [1.01, 24.9]
+    'WT N-term': [0.19, 5.296],
+    'WT C-term': [0.54, 3.043],
+    'V91K C-term': [0.69, 7.5586],
+    'R38Q N-term': [0.71, 3.9949],
+    'F42Q N-Term': [9.48, 2.815],
+    'N88D C-term': [1.01, 24.0166]
 }
+
+
+def getMutAffDict():
+    """Returns a dictionary containing mutant dissociation constants for 2Ra and BGc"""
+    return mutaff
 
 
 def mut_adjust(rxntfr, mutdict, mut_name):
@@ -289,7 +294,7 @@ def mut_adjust(rxntfr, mutdict, mut_name):
 
     # Adjust b/g affinities
     for jj in range(0, rxntfr.shape[0]):
-        bg_adjust = input_params[1] / rxntfr[jj, 10]
+        bg_adjust = (input_params[1] * 0.6) / rxntfr[jj, 10]
         for ii in [8, 9, 10, 11, 12, 28, 29, 30, 31, 32]:
             rxntfr[jj, ii] = rxntfr[jj, ii] * bg_adjust
 
