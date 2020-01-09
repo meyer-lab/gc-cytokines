@@ -141,7 +141,7 @@ def plot_ligand_comp(ax, factors, component_x, component_y, ligand_names):
         
 
     CompDF = pds.DataFrame({'Comp1':Comp1, 'Comp2':Comp2, 'Ligand':ligand_names})
-    sns.scatterplot(x='Comp1', y='Comp2', data=CompDF, hue="Ligand", palette='bright', legend=False, ax=ax)
+    sns.scatterplot(x='Comp1', y='Comp2', data=CompDF, hue="Ligand", palette=sns.color_palette("husl", 6), legend=False, ax=ax)
     ax.set_title('Ligands')
     ax.set_xlabel('Component ' + str(component_x))
     ax.set_ylabel('Component ' + str(component_y))
@@ -210,6 +210,7 @@ def plot_timepoints(ax, ts, factors):
     ax.set_xlabel('Time (hrs)')
     ax.set_ylabel('Component')
     ax.set_title('Time')
+    ax.set_xticks(np.array([0, 1, 2, 4]))
     ax.legend()
 
 
@@ -454,7 +455,7 @@ def catplot_comparison(ax, df, legend=False, Mut=False):
     col_list_palette = sns.xkcd_palette(col_list)
     sns.set_palette(col_list_palette)
     if Mut:
-        sns.set_palette("bright")
+        sns.set_palette(sns.color_palette("husl", 6))
 
     # plot predicted EC50
     sns.catplot(x="Cell Type", y="EC-50", hue="IL",

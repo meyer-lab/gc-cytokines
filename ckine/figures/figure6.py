@@ -87,7 +87,7 @@ def affComp(ax):
     GcBAff[len(ligList) - 1] = unkVec[4] / 0.6
 
     KDdf = pd.DataFrame({'RaAff':RaAff, 'GcBAff':GcBAff, 'Ligand':ligList})
-    sns.scatterplot(x='RaAff', y='GcBAff', data=KDdf, hue="Ligand", palette='bright', ax=ax)
+    sns.scatterplot(x='RaAff', y='GcBAff', data=KDdf, hue="Ligand", palette=sns.color_palette("husl", 7), ax=ax)
     ax.set_xlabel("CD25 KD (nM)")
     ax.set_ylabel("CD122/132 KD (nM)")
     ax.legend(bbox_to_anchor=(1.02, 1))
@@ -231,11 +231,11 @@ def Spec_Aff(ax, npoints, unkVecAff, scalesAff):
             specHolderNK[i, j] = SNKfun.eval()
             specHolderTh[i, j] = SThfun.eval()
         if i == 0:
-            ax.plot(1 / affRange, specHolderNK[i, :], label="TReg/NK pSTAT5 w/ " + str(1 / RaAff[i]) + " IL2Ra Affinity", color="slateblue")
-            ax.plot(1 / affRange, specHolderTh[i, :], label="TReg/Th pSTAT5 w/ " + str(1 / RaAff[i]) + " IL2Ra Affinity", color="orange")
+            ax.plot(1 / affRange, specHolderNK[i, :], label="TReg/NK pSTAT5 w/ " + str(1 / RaAff[i]) + " IL2Ra Affinity", color="xkcd:rich blue")
+            ax.plot(1 / affRange, specHolderTh[i, :], label="TReg/Th pSTAT5 w/ " + str(1 / RaAff[i]) + " IL2Ra Affinity", color="xkcd:sun yellow")
         else:
-            ax.plot(1 / affRange, specHolderNK[i, :], label="TReg/NK pSTAT5 w/ " + str(1 / RaAff[i]) + " IL2Ra Affinity", linestyle='dotted', color="slateblue")
-            ax.plot(1 / affRange, specHolderTh[i, :], label="TReg/Th pSTAT5 w/ " + str(1 / RaAff[i]) + " IL2Ra Affinity", linestyle='dotted', color="orange")
+            ax.plot(1 / affRange, specHolderNK[i, :], label="TReg/NK pSTAT5 w/ " + str(1 / RaAff[i]) + " IL2Ra Affinity", linestyle='dotted', color="xkcd:rich blue")
+            ax.plot(1 / affRange, specHolderTh[i, :], label="TReg/Th pSTAT5 w/ " + str(1 / RaAff[i]) + " IL2Ra Affinity", linestyle='dotted', color="xkcd:sun yellow")
 
     ax.set_xscale('log')
     ax.set_xlabel('Relative CD122/CD132 Affinity')
@@ -306,6 +306,7 @@ def get_Mut_EC50s():
 def Mut_Fact(ax):
     """Plots Non-Negative CP Factorization of Muteins into 4 ax subplots"""
     mutDataF = mutData
+    print(mutDataF)
     mutDataF.reset_index(inplace=True)
     mutTensor = np.reshape(mutDataF["RFU"].values, (8, 6, 4, 12))  # cells, muteins, times, and concs.
 
@@ -340,6 +341,7 @@ def Mut_Fact(ax):
     ax[4].set_xlabel("Time (hrs)")
     ax[4].set_ylabel("Component")
     ax[4].plot(ts, tComp)
+    ax[4].set_xticks(np.array([0, 1, 2, 4]))
     ax[4].legend(["Component 1", "Component 2", "Component 3", "Component 4"])
 
     # Concentration
