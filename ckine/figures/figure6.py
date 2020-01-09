@@ -82,11 +82,11 @@ def affComp(ax):
     for i in range(0, len(ligList) - 1):
         RaAff[i] = affdict[ligList[i]][0]
         GcBAff[i] = affdict[ligList[i]][1]
- 
+
     RaAff[len(ligList) - 1] = unkVec[1] / 0.6
     GcBAff[len(ligList) - 1] = unkVec[4] / 0.6
 
-    KDdf = pd.DataFrame({'RaAff':RaAff, 'GcBAff':GcBAff, 'Ligand':ligList})
+    KDdf = pd.DataFrame({'RaAff': RaAff, 'GcBAff': GcBAff, 'Ligand': ligList})
     sns.scatterplot(x='RaAff', y='GcBAff', data=KDdf, hue="Ligand", palette=sns.color_palette("husl", 7), ax=ax)
     ax.set_xlabel("CD25 KD (nM)")
     ax.set_ylabel("CD122/132 KD (nM)")
@@ -110,7 +110,7 @@ def calc_plot_specificity(ax, cell_compare, df_specificity, df_activity, ligands
     sns.scatterplot(x="Concentration", y="Specificity", hue="Ligand", data=df_specificity.loc[(df_specificity["Cells"] ==
                                                                                                cell_compare) & (df_specificity["Data Type"] == 'Experimental')], ax=ax, marker='o', legend=False)
     sns.lineplot(x="Concentration", y="Specificity", hue="Ligand", data=df_specificity.loc[(df_specificity["Cells"] == cell_compare) &
-                                                                                              (df_specificity["Data Type"] == 'Predicted')], ax=ax, marker='^', legend=False)
+                                                                                           (df_specificity["Data Type"] == 'Predicted')], ax=ax, marker='^', legend=False)
     ax.set(xlabel="(log$_{10}$[nM])", ylabel="log$_{10}$[Specificity]", title=('T-reg vs. ' + cell_compare))
 
 
@@ -165,7 +165,7 @@ def Specificity(ax):
     dfTh.drop(dfTh.index[-5:], inplace=True)
 
     df = pd.concat([dfNK, dfTh])
-    
+
     colors = ["rich blue", "sun yellow"]
     sns.set_palette(sns.xkcd_palette(colors))
 
@@ -305,8 +305,7 @@ def get_Mut_EC50s():
 
 def Mut_Fact(ax):
     """Plots Non-Negative CP Factorization of Muteins into 4 ax subplots"""
-    mutDataF = mutData
-    print(mutDataF)
+    mutDataF = mutData.sort_values(by=['Cells', 'Ligand', 'Time', 'Concentration'])
     mutDataF.reset_index(inplace=True)
     mutTensor = np.reshape(mutDataF["RFU"].values, (8, 6, 4, 12))  # cells, muteins, times, and concs.
 

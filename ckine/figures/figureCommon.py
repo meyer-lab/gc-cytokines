@@ -138,9 +138,8 @@ def plot_ligand_comp(ax, factors, component_x, component_y, ligand_names):
     for ii, _ in enumerate(factors[:, component_x - 1]):
         Comp1[ii] = factors[ii, component_x - 1]
         Comp2[ii] = factors[ii, component_y - 1]
-        
 
-    CompDF = pds.DataFrame({'Comp1':Comp1, 'Comp2':Comp2, 'Ligand':ligand_names})
+    CompDF = pds.DataFrame({'Comp1': Comp1, 'Comp2': Comp2, 'Ligand': ligand_names})
     sns.scatterplot(x='Comp1', y='Comp2', data=CompDF, hue="Ligand", palette=sns.color_palette("husl", 6), legend=False, ax=ax)
     ax.set_title('Ligands')
     ax.set_xlabel('Component ' + str(component_x))
