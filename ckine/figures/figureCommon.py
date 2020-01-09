@@ -478,7 +478,8 @@ def catplot_comparison(ax, df, legend=False, Mut=False):
     handles = handles[0:6]
     handles.append(circle)
     handles.append(triangle)
-    ax.legend(handles=handles, bbox_to_anchor=(1.02, 1))
+    if Mut:
+        ax.legend(handles=handles, bbox_to_anchor=(1.02, 1))
 
 
 def nllsq_EC50(x0, xdata, ydata):
