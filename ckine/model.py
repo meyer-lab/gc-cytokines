@@ -279,6 +279,7 @@ mutaff = {
 
 
 def getMutAffDict():
+    """Returns a dictionary containing mutant dissociation constants for 2Ra and BGc"""
     return mutaff
 
 

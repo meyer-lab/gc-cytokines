@@ -440,7 +440,7 @@ def optimize_scale_mut(model_act, exp_act):
     return res.x
 
 
-def catplot_comparison(ax, df, legend=False, Mut=False):
+def catplot_comparison(ax, df, legend=False):
     """ Construct EC50 catplots for each time point for Different ligands. """
     # set a manual color palette
     col_list = ["violet", "goldenrod"]
