@@ -115,7 +115,7 @@ def plot_conf_int(ax, x_axis, y_axis, color, label=None):
         ax.legend()
 
 
-def plot_cells(ax, factors, component_x, component_y, cell_names):
+def plot_cells(ax, factors, component_x, component_y, cell_names, legend=True):
     """This function plots the combination decomposition based on cell type."""
     colors = cm.rainbow(np.linspace(0, 1, len(cell_names)))
     markersCells = ['^', '*', 'D', 's', 'X', 'o', '4', 'H', 'P', '*', 'D', 's', 'X']
@@ -127,7 +127,8 @@ def plot_cells(ax, factors, component_x, component_y, cell_names):
     ax.set_xlabel('Component ' + str(component_x))
     ax.set_ylabel('Component ' + str(component_y))
     ax.set_xlim(left=-0.03)
-    ax.legend()
+    if legend:
+        ax.legend()
 
 
 def overlayCartoon(figFile, cartoonFile, x, y, scalee=1, scale_x=1, scale_y=1):
@@ -427,12 +428,13 @@ def optimize_scale_mut(model_act, exp_act):
     return res.x
 
 
-def catplot_comparison(ax, df, legend=False):
+def catplot_comparison(ax, df, legend=False, Mut=False):
     """ Construct EC50 catplots for each time point for Different ligands. """
     # set a manual color palette
     col_list = ["violet", "goldenrod"]
     col_list_palette = sns.xkcd_palette(col_list)
     sns.set_palette(col_list_palette)
+
     # plot predicted EC50
     sns.catplot(x="Cell Type", y="EC-50", hue="IL",
                 data=df.loc[(df['Time Point'] == 60.) & (df["Data Type"] == 'Predicted')],

@@ -278,6 +278,10 @@ mutaff = {
 }
 
 
+def getMutAffDict():
+    return mutaff
+
+
 def mut_adjust(rxntfr, mutdict, mut_name):
     """Adjust alpha beta and gamma affinities for muteins prior to run through model according to BLI data"""
     # Adjust a affinities
@@ -289,7 +293,7 @@ def mut_adjust(rxntfr, mutdict, mut_name):
 
     # Adjust b/g affinities
     for jj in range(0, rxntfr.shape[0]):
-        bg_adjust = input_params[1] / rxntfr[jj, 10]
+        bg_adjust = (input_params[1] * 0.6) / rxntfr[jj, 10]
         for ii in [8, 9, 10, 11, 12, 28, 29, 30, 31, 32]:
             rxntfr[jj, ii] = rxntfr[jj, ii] * bg_adjust
 
