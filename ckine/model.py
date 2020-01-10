@@ -221,28 +221,28 @@ def getparamsdict(rxntfr):
 
     kfbnd = 0.60
     rd['IL2'], rd['IL15'], rd['IL7'], rd['IL9'], rd['IL4'], rd['IL21'], rd['kfwd'] = tuple(rxntfr[0:7])
-    rd['surface.k1rev'] = kfbnd * 10.0  # 7
-    rd['surface.k2rev'] = kfbnd * 144.0
-    rd['surface.k4rev'], rd['surface.k5rev'] = rxntfr[7], rxntfr[8]  # 9 #10
-    rd['surface.k10rev'] = 12.0 * rd['surface.k5rev'] / 1.5
-    rd['surface.k11rev'] = 63.0 * rd['surface.k5rev'] / 1.5
-    rd['surface.k13rev'] = kfbnd * 0.065
-    rd['surface.k14rev'] = kfbnd * 438.0
-    rd['surface.k16rev'] = rxntfr[9]
-    rd['surface.k17rev'] = rxntfr[10]  # 16
-    rd['surface.k22rev'] = rxntfr[11]
-    rd['surface.k23rev'] = rxntfr[12]
-    rd['surface.k25rev'] = kfbnd * 59.0
-    rd['surface.k27rev'] = rxntfr[13]
-    rd['surface.k29rev'] = kfbnd * 0.1
-    rd['surface.k31rev'] = rxntfr[14]
-    rd['surface.k32rev'] = kfbnd * 1.0
-    rd['surface.k33rev'] = rxntfr[15]
-    rd['surface.k34rev'] = kfbnd * 0.07
-    rd['surface.k35rev'] = rxntfr[16]
+    rd['surf.k1rev'] = kfbnd * 10.0  # 7
+    rd['surf.k2rev'] = kfbnd * 144.0
+    rd['surf.k4rev'], rd['surf.k5rev'] = rxntfr[7], rxntfr[8]  # 9 #10
+    rd['surf.k10rev'] = 12.0 * rd['surf.k5rev'] / 1.5
+    rd['surf.k11rev'] = 63.0 * rd['surf.k5rev'] / 1.5
+    rd['surf.k13rev'] = kfbnd * 0.065
+    rd['surf.k14rev'] = kfbnd * 438.0
+    rd['surf.k16rev'] = rxntfr[9]
+    rd['surf.k17rev'] = rxntfr[10]  # 16
+    rd['surf.k22rev'] = rxntfr[11]
+    rd['surf.k23rev'] = rxntfr[12]
+    rd['surf.k25rev'] = kfbnd * 59.0
+    rd['surf.k27rev'] = rxntfr[13]
+    rd['surf.k29rev'] = kfbnd * 0.1
+    rd['surf.k31rev'] = rxntfr[14]
+    rd['surf.k32rev'] = kfbnd * 1.0
+    rd['surf.k33rev'] = rxntfr[15]
+    rd['surf.k34rev'] = kfbnd * 0.07
+    rd['surf.k35rev'] = rxntfr[16]
 
     for ii in ('1', '2', '4', '5', '10', '11', '13', '14', '16', '17', '22', '23', '25', '27', '29', '31', '32', '33', '34', '35'):
-        rd['endosome.k' + ii + 'rev'] = rd['surface.k' + ii + 'rev'] * 5.0
+        rd['endo.k' + ii + 'rev'] = rd['surf.k' + ii + 'rev'] * 5.0
 
     rd['endo'], rd['activeEndo'], rd['sortF'], rd['kRec'], rd['kDeg'] = tuple(rxntfr[17:22])
     rd['Rexpr_2Ra'], rd['Rexpr_2Rb'], rd['Rexpr_gc'], rd['Rexpr_15Ra'], rd['Rexpr_7R'], rd['Rexpr_9R'], rd['Rexpr_4Ra'], rd['Rexpr_21Ra'] = tuple(rxntfr[22:30])

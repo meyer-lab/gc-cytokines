@@ -126,21 +126,26 @@ def plot_cells(ax, factors, component_x, component_y, cell_names, legend=True):
     ax.set_title('Cells')
     ax.set_xlabel('Component ' + str(component_x))
     ax.set_ylabel('Component ' + str(component_y))
-    ax.set_xlim(left=-0.03)
+    ax.set_xlim(0, 1)
+    ax.set_ylim(0, 1)
     if legend:
         ax.legend()
 
 
 def plot_ligand_comp(ax, factors, component_x, component_y, ligand_names):
     """This function plots the combination decomposition based on ligand type."""
-
+    Comp1, Comp2 = np.zeros([len(ligand_names)]), np.zeros([len(ligand_names)])
     for ii, _ in enumerate(factors[:, component_x - 1]):
-        ax.scatter(factors[ii, component_x - 1], factors[ii, component_y - 1], label=ligand_names[ii])
+        Comp1[ii] = factors[ii, component_x - 1]
+        Comp2[ii] = factors[ii, component_y - 1]
 
+    CompDF = pds.DataFrame({'Comp1': Comp1, 'Comp2': Comp2, 'Ligand': ligand_names})
+    sns.scatterplot(x='Comp1', y='Comp2', data=CompDF, hue="Ligand", palette=sns.color_palette("husl", 6), legend=False, ax=ax)
     ax.set_title('Ligands')
     ax.set_xlabel('Component ' + str(component_x))
     ax.set_ylabel('Component ' + str(component_y))
-    ax.set_xlim(left=-0.03)
+    ax.set_xlim(0, 1)
+    ax.set_ylim(0, 1)
 
 
 def overlayCartoon(figFile, cartoonFile, x, y, scalee=1, scale_x=1, scale_y=1):
@@ -196,13 +201,15 @@ def plot_ligands(ax, factors, ligand_names, cutoff=0.0):
 
 def plot_timepoints(ax, ts, factors):
     """Function to put all timepoint plots in one figure."""
+    ts = ts / 60
     colors = sns.color_palette()
     for ii in range(factors.shape[1]):
         ax.plot(ts, factors[:, ii], c=colors[ii], label='Component ' + str(ii + 1))
 
-    ax.set_xlabel('Time (min)')
+    ax.set_xlabel('Time (hrs)')
     ax.set_ylabel('Component')
     ax.set_title('Time')
+    ax.set_xticks(np.array([0, 1, 2, 4]))
     ax.legend()
 
 
@@ -440,12 +447,14 @@ def optimize_scale_mut(model_act, exp_act):
     return res.x
 
 
-def catplot_comparison(ax, df, legend=False):
+def catplot_comparison(ax, df, legend=False, Mut=False):
     """ Construct EC50 catplots for each time point for Different ligands. """
     # set a manual color palette
     col_list = ["violet", "goldenrod"]
     col_list_palette = sns.xkcd_palette(col_list)
     sns.set_palette(col_list_palette)
+    if Mut:
+        sns.set_palette(sns.color_palette("husl", 6))
 
     # plot predicted EC50
     sns.catplot(x="Cell Type", y="EC-50", hue="IL",
@@ -460,15 +469,17 @@ def catplot_comparison(ax, df, legend=False):
     ax.set_xticklabels(ax.get_xticklabels(), rotation=40, fontsize=6.8, rotation_mode="anchor", ha="right")
     ax.set_xlabel("")  # remove "Cell Type" from xlabel
     ax.set_ylabel(r"EC-50 (log$_{10}$[nM])")
-    handles, _ = ax.get_legend_handles_labels()
+    handles = []
+    if legend:
+        handles, _ = ax.get_legend_handles_labels()
+        handles = handles[0:6]
     circle = Line2D([], [], color='black', marker='o', linestyle='None', markersize=6, label='Experimental')
     triangle = Line2D([], [], color='black', marker='^', linestyle='None', markersize=6, label='Predicted')
     handles = handles[0:6]
     handles.append(circle)
     handles.append(triangle)
-    ax.legend(handles=handles, bbox_to_anchor=(1.02, 1))
-    if not legend:
-        ax.get_legend().remove()
+    if Mut:
+        ax.legend(handles=handles, bbox_to_anchor=(1.02, 1))
 
 
 def nllsq_EC50(x0, xdata, ydata):
