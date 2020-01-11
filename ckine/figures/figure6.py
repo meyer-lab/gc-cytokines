@@ -152,6 +152,7 @@ def Specificity(ax):
     STh_partials = SThgradfunc(unkVec.flatten()) / SThfunc(unkVec.flatten())
 
     names = list(getparamsdict(np.zeros(60)).keys())[6::]
+
     dfNK = pd.DataFrame(data={'rate': names, 'value': SNK_partials})
     dfNK['cell'] = 'NK'
     dfTh = pd.DataFrame(data={'rate': names, 'value': STh_partials})
@@ -178,7 +179,10 @@ def Specificity(ax):
     ax.set_xlabel("")
     ax.legend()
     ax.set_yscale("symlog", linthreshy=0.01)
-    ax.set_xticklabels(ax.get_xticklabels(), rotation=25, rotation_mode="anchor", ha="right")
+    labels = df.rate.unique()
+    for ii, _ in enumerate(labels):
+        labels[ii] = labels[ii].split(".")[-1]
+    ax.set_xticklabels(labels, rotation=25, rotation_mode="anchor", ha="right")
 
 
 def OPgen(unkVecOP, CellTypes, OpC, scalesTh, RaAffM, RbAffM):
