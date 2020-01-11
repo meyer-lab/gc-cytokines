@@ -8,6 +8,7 @@ import pandas as pd
 import seaborn as sns
 import theano.tensor as T
 import theano
+from matplotlib.lines import Line2D
 from .figureCommon import subplotLabel, getSetup, global_legend, calc_dose_response, import_pMuteins, catplot_comparison, nllsq_EC50, organize_expr_pred, mutein_scaling, plot_cells, plot_ligand_comp
 from ..imports import import_pstat, import_samples_2_15, import_Rexpr
 from ..model import getTotalActiveSpecies, receptor_expression, getRateVec, getparamsdict, getMutAffDict
@@ -32,6 +33,10 @@ def makeFigure():
     """Get a list of the axis objects and create a figure"""
     # Get list of axis objects
     ax, f = getSetup((7.5, 8), (4, 4), multz={0: 1, 4: 1, 6: 1, 8: 1})
+    # ax[10].axis("off")
+    # ax[11].axis("off")
+    f.delaxes(ax[10])
+    f.delaxes(ax[11])
 
     for ii, item in enumerate(ax):
         subplotLabel(item, string.ascii_uppercase[ii])
@@ -64,11 +69,11 @@ def makeFigure():
     affComp(ax[0])
     calc_plot_specificity(ax[1], 'NK', df_spec, df_act, ckines, ckineConc_)
     calc_plot_specificity(ax[2], 'T-helper', df_spec, df_act, ckines, ckineConc_)
-    global_legend(ax[2])
+    global_legend(ax[2], Spec=True)
     Specificity(ax=ax[3])
     Spec_Aff(ax[4], 40, unkVecT, scalesT)
     catplot_comparison(ax[5], mutEC50df, legend=False, Mut=True)
-    Mut_Fact(ax[6:12])
+    Mut_Fact(ax[6:10])
 
     return f
 
@@ -90,7 +95,7 @@ def affComp(ax):
     sns.scatterplot(x='RaAff', y='GcBAff', data=KDdf, hue="Ligand", palette=sns.color_palette("husl", 7), ax=ax)
     ax.set_xlabel("CD25 KD (nM)")
     ax.set_ylabel("CD122/132 KD (nM)")
-    ax.legend(bbox_to_anchor=(1.02, 1))
+    ax.legend()
 
 
 def calc_plot_specificity(ax, cell_compare, df_specificity, df_activity, ligands, concs):
@@ -110,7 +115,7 @@ def calc_plot_specificity(ax, cell_compare, df_specificity, df_activity, ligands
     sns.scatterplot(x="Concentration", y="Specificity", hue="Ligand", data=df_specificity.loc[(df_specificity["Cells"] ==
                                                                                                cell_compare) & (df_specificity["Data Type"] == 'Experimental')], ax=ax, marker='o', legend=False)
     sns.lineplot(x="Concentration", y="Specificity", hue="Ligand", data=df_specificity.loc[(df_specificity["Cells"] == cell_compare) &
-                                                                                           (df_specificity["Data Type"] == 'Predicted')], ax=ax, marker='^', legend=False)
+                                                                                           (df_specificity["Data Type"] == 'Predicted')], ax=ax, legend=False)
     ax.set(xlabel="(log$_{10}$[nM])", ylabel="log$_{10}$[Specificity]", title=('T-reg vs. ' + cell_compare))
 
 
@@ -147,6 +152,7 @@ def Specificity(ax):
     STh_partials = SThgradfunc(unkVec.flatten()) / SThfunc(unkVec.flatten())
 
     names = list(getparamsdict(np.zeros(60)).keys())[6::]
+
     dfNK = pd.DataFrame(data={'rate': names, 'value': SNK_partials})
     dfNK['cell'] = 'NK'
     dfTh = pd.DataFrame(data={'rate': names, 'value': STh_partials})
@@ -171,9 +177,12 @@ def Specificity(ax):
 
     sns.catplot(data=df, x='rate', y='value', kind="bar", hue='cell', ax=ax, legend=False)
     ax.set_xlabel("")
-    ax.legend(bbox_to_anchor=(1.02, 1))
+    ax.legend()
     ax.set_yscale("symlog", linthreshy=0.01)
-    ax.set_xticklabels(ax.get_xticklabels(), rotation=25, rotation_mode="anchor", ha="right")
+    labels = df.rate.unique()
+    for ii, _ in enumerate(labels):
+        labels[ii] = labels[ii].split(".")[-1]
+    ax.set_xticklabels(labels, rotation=25, rotation_mode="anchor", ha="right")
 
 
 def OPgen(unkVecOP, CellTypes, OpC, scalesTh, RaAffM, RbAffM):
@@ -240,7 +249,12 @@ def Spec_Aff(ax, npoints, unkVecAff, scalesAff):
     ax.set_xscale('log')
     ax.set_xlabel('Relative CD122/CD132 Affinity')
     ax.set_ylabel('Specificity')
-    ax.legend()
+    handles = []
+    line = Line2D([], [], color='black', marker='_', linestyle='None', markersize=6, label='WT IL2Ra Affinity')
+    point = Line2D([], [], color='black', marker='.', linestyle='None', markersize=6, label='0.5 IL2Ra Affinity')
+    handles.append(line)
+    handles.append(point)
+    ax.legend(handles=handles)
 
 
 def get_Mut_EC50s():
@@ -315,35 +329,30 @@ def Mut_Fact(ax):
     ligs = mutDataF['Ligand'].unique()
 
     dataTensor = z_score_values(mutTensor, 0)
-    parafac = perform_decomposition(dataTensor, 4, weightFactor=3)
+    parafac = perform_decomposition(dataTensor, 2, weightFactor=3)
     logging.info(find_R2X(dataTensor, parafac))
 
+    # Ligands
+    plot_ligand_comp(ax[0], parafac[1], 1, 2, ligs)
+    ax[0].set_title("Ligands")
+    ax[0].set_ylim(bottom=0)
+    ax[0].set_xlim(left=0)
+
     # Cells
-    plot_cells(ax[0], parafac[0], 1, 2, cells, legend=False)
-    plot_cells(ax[1], parafac[0], 3, 4, cells)
+    plot_cells(ax[1], parafac[0], 1, 2, cells)
     ax[1].legend(bbox_to_anchor=(1.02, 1))
 
-    # Ligands
-    plot_ligand_comp(ax[2], parafac[1], 1, 2, ligs)
-    ax[2].set_title("Ligands")
-    ax[2].set_ylim(bottom=0)
-    ax[2].set_xlim(left=0)
-    plot_ligand_comp(ax[3], parafac[1], 3, 4, ligs)
-    ax[3].set_title("Ligands")
-    ax[3].set_ylim(bottom=0)
-    ax[3].set_xlim(left=0)
-    #ax[3].legend(bbox_to_anchor=(1.02, 1))
-
     # Timepoints
-    tComp = np.r_[np.zeros((1, 4)), parafac[2]]
+    tComp = np.r_[np.zeros((1, 2)), parafac[2]]
     ts = np.append(np.array(0.0), ts)
-    ax[4].set_xlabel("Time (hrs)")
-    ax[4].set_ylabel("Component")
-    ax[4].plot(ts, tComp)
-    ax[4].set_xticks(np.array([0, 1, 2, 4]))
-    ax[4].legend(["Component 1", "Component 2", "Component 3", "Component 4"])
+    ax[2].set_xlabel("Time (hrs)")
+    ax[2].set_ylabel("Component")
+    ax[2].plot(ts, tComp)
+    ax[2].set_xticks(np.array([0, 1, 2, 4]))
+    ax[2].legend(["Component 1", "Component 2"])
 
     # Concentration
-    ax[5].semilogx(concs, parafac[3])
-    ax[5].set_xlabel("Concentration (nM)")
-    ax[5].set_ylabel("Component")
+    ax[3].semilogx(concs, parafac[3])
+    ax[3].set_xlabel("Concentration (nM)")
+    ax[3].set_ylabel("Component")
+    ax[3].set_xticks(np.array([10e-4, 10e-2, 10e0, 10e2]))

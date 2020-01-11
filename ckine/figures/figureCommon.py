@@ -194,6 +194,7 @@ def plot_ligands(ax, factors, ligand_names, cutoff=0.0):
     ax.set_ylabel('Component')
     ax.set_xscale('log')
     ax.set_title('Ligands')
+    ax.set_xticks(np.array([10e-4, 10e-2, 10e0, 10e2]))
 
     # Place legend
     ax.legend(loc=6)
@@ -234,13 +235,18 @@ def plot_scaled_pstat(ax, cytokC, pstat):
     ax.scatter(cytokC, pstat[3, :], c="darkred", s=2)  # 4 hr
 
 
-def global_legend(ax):
+def global_legend(ax, Spec=False):
     """ Create legend for colors and markers in subplots A-C. """
     purple = Patch(color='darkorchid', label='IL-2')
     yellow = Patch(color='goldenrod', label='IL-15')
-    circle = Line2D([], [], color='black', marker='o', linestyle='None', markersize=6, label='Experimental')
-    triangle = Line2D([], [], color='black', marker='^', linestyle='None', markersize=6, label='Predicted')
-    ax.legend(handles=[purple, yellow, circle, triangle], bbox_to_anchor=(1.02, 1), loc="upper left")
+    if not Spec:
+        circle = Line2D([], [], color='black', marker='o', linestyle='None', markersize=6, label='Experimental')
+        triangle = Line2D([], [], color='black', marker='^', linestyle='None', markersize=6, label='Predicted')
+        ax.legend(handles=[purple, yellow, circle, triangle], bbox_to_anchor=(1.02, 1), loc="upper left")
+    if Spec:
+        circle = Line2D([], [], color='black', marker='o', linestyle='None', markersize=6, label='Experimental')
+        line = Line2D([], [], color='black', marker='_', linestyle='None', markersize=6, label='Predicted')
+        ax.legend(handles=[purple, yellow, circle, line], bbox_to_anchor=(1.02, 1), loc="upper left")
 
 
 def calc_dose_response(cell_names, unkVec, scales, receptor_data, tps, cytokC, expr_act2, expr_act15):
@@ -447,7 +453,7 @@ def optimize_scale_mut(model_act, exp_act):
     return res.x
 
 
-def catplot_comparison(ax, df, legend=False, Mut=False):
+def catplot_comparison(ax, df, legend=False, Mut=True):
     """ Construct EC50 catplots for each time point for Different ligands. """
     # set a manual color palette
     col_list = ["violet", "goldenrod"]
@@ -478,8 +484,7 @@ def catplot_comparison(ax, df, legend=False, Mut=False):
     handles = handles[0:6]
     handles.append(circle)
     handles.append(triangle)
-    if Mut:
-        ax.legend(handles=handles, bbox_to_anchor=(1.02, 1))
+    ax.legend(handles=handles)
 
 
 def nllsq_EC50(x0, xdata, ydata):
