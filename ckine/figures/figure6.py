@@ -32,14 +32,17 @@ mutData = import_pMuteins()
 def makeFigure():
     """Get a list of the axis objects and create a figure"""
     # Get list of axis objects
-    ax, f = getSetup((7.5, 8), (4, 4), multz={0: 1, 4: 1, 6: 1, 8: 1})
-    # ax[10].axis("off")
-    # ax[11].axis("off")
-    f.delaxes(ax[10])
+    ax, f = getSetup((7.5, 8), (4, 4), multz={4: 1, 6: 1, 8: 1})
+
+    ax[1].axis('off')
     f.delaxes(ax[11])
+    f.delaxes(ax[12])
 
     for ii, item in enumerate(ax):
-        subplotLabel(item, string.ascii_uppercase[ii])
+        if ii < 1:
+            subplotLabel(item, string.ascii_uppercase[ii])
+        elif ii > 1:
+            subplotLabel(item, string.ascii_uppercase[ii - 1])
 
     ckines = ['IL-2', 'IL-15']
     tps = np.array([0.5, 1.0, 2.0, 4.0]) * 60.0
@@ -67,13 +70,17 @@ def makeFigure():
 
     mutEC50df = get_Mut_EC50s()
     affComp(ax[0])
-    calc_plot_specificity(ax[1], 'NK', df_spec, df_act, ckines, ckineConc_)
-    calc_plot_specificity(ax[2], 'T-helper', df_spec, df_act, ckines, ckineConc_)
-    global_legend(ax[2], Spec=True)
-    Specificity(ax=ax[3])
-    Spec_Aff(ax[4], 40, unkVecT, scalesT)
-    catplot_comparison(ax[5], mutEC50df, legend=False, Mut=True)
-    Mut_Fact(ax[6:10])
+    calc_plot_specificity(ax[2], 'NK', df_spec, df_act, ckines, ckineConc_)
+    calc_plot_specificity(ax[3], 'T-helper', df_spec, df_act, ckines, ckineConc_)
+    global_legend(ax[3], Spec=True)
+    Specificity(ax=ax[4])
+    Spec_Aff(ax[5], 40, unkVecT, scalesT)
+    catplot_comparison(ax[6], mutEC50df, legend=False, Mut=True)
+    Mut_Fact(ax[7:11])
+    legend = ax[7].get_legend()
+    labels = (x.get_text() for x in legend.get_texts())
+    ax[1].legend(legend.legendHandles, labels, loc='center left', prop={"size": 9})
+    ax[7].get_legend().remove()
 
     return f
 
@@ -92,10 +99,10 @@ def affComp(ax):
     GcBAff[len(ligList) - 1] = unkVec[4] / 0.6
 
     KDdf = pd.DataFrame({'RaAff': RaAff, 'GcBAff': GcBAff, 'Ligand': ligList})
-    sns.scatterplot(x='RaAff', y='GcBAff', data=KDdf, hue="Ligand", palette=sns.color_palette("husl", 7), ax=ax)
+    KDdf = KDdf.sort_values(by=["Ligand"])
+    sns.scatterplot(x='RaAff', y='GcBAff', data=KDdf, hue="Ligand", palette=sns.color_palette("husl", 8)[0:5] + sns.color_palette("husl", 8)[6:8], ax=ax, legend=False)
     ax.set_xlabel("CD25 KD (nM)")
     ax.set_ylabel("CD122/132 KD (nM)")
-    ax.legend()
 
 
 def calc_plot_specificity(ax, cell_compare, df_specificity, df_activity, ligands, concs):
@@ -321,12 +328,17 @@ def Mut_Fact(ax):
     """Plots Non-Negative CP Factorization of Muteins into 4 ax subplots"""
     mutDataF = mutData.sort_values(by=['Cells', 'Ligand', 'Time', 'Concentration'])
     mutDataF.reset_index(inplace=True)
-    mutTensor = np.reshape(mutDataF["RFU"].values, (8, 6, 4, 12))  # cells, muteins, times, and concs.
+    _, _, _, _, WTdf = import_pstat()
+    combdf = pd.concat([mutDataF, WTdf], sort=True, ignore_index=True)
+    combdf = combdf.replace(["IL2", "IL15"], ["WT IL2", "WT IL15"])
+    combdf = combdf.sort_values(by=['Cells', 'Ligand', 'Time', 'Concentration'])
+    mutFactdf = combdf[(combdf.Cells != "Naive CD8+") & (combdf.Cells != "Mem CD8+")]
+    mutTensor = np.reshape(mutFactdf["RFU"].values, (8, 8, 4, 12))  # cells, muteins/WT, times, and concs.
 
-    concs = mutDataF['Concentration'].unique()
-    ts = mutDataF['Time'].unique() / 60
-    cells = mutDataF['Cells'].unique()
-    ligs = mutDataF['Ligand'].unique()
+    concs = mutFactdf['Concentration'].unique()
+    ts = mutFactdf['Time'].unique() / 60
+    cells = mutFactdf['Cells'].unique()
+    ligs = mutFactdf['Ligand'].unique()
 
     dataTensor = z_score_values(mutTensor, 0)
     parafac = perform_decomposition(dataTensor, 2, weightFactor=3)
