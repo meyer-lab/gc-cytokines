@@ -268,7 +268,7 @@ def get_Mut_EC50s():
     """Creates df with mutein EC50s included"""
     x0 = [1, 2., 1000.]
     concentrations = mutData.Concentration.unique()
-    ligand_order = ['WT N-term', 'WT C-term', 'V91K C-term', 'R38Q N-term', 'F42Q N-Term', 'N88D C-term']
+    ligand_order = ['F42Q N-Term', 'N88D C-term', 'R38Q N-term', 'V91K C-term', 'WT C-term', 'WT N-term']
     celltypes = mutData.Cells.unique()
     times = mutData.Time.unique()
     EC50df = pd.DataFrame(columns=['Time Point', 'IL', 'Cell Type', 'Data Type', 'EC-50'])

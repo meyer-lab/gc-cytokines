@@ -460,7 +460,7 @@ def catplot_comparison(ax, df, legend=False, Mut=True):
     col_list_palette = sns.xkcd_palette(col_list)
     sns.set_palette(col_list_palette)
     if Mut:
-        sns.set_palette(sns.color_palette("husl", 6))
+        sns.set_palette(sns.color_palette("husl", 8)[0:5] + [sns.color_palette("husl", 8)[7]])
 
     # plot predicted EC50
     sns.catplot(x="Cell Type", y="EC-50", hue="IL",
