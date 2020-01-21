@@ -459,8 +459,8 @@ def catplot_comparison(ax, df, legend=False, Mut=True):
     col_list = ["violet", "goldenrod"]
     col_list_palette = sns.xkcd_palette(col_list)
     sns.set_palette(col_list_palette)
-    #with pds.option_context('display.max_rows', None, 'display.max_columns', None):  # more options can be specified also
-        #print(df)
+    # with pds.option_context('display.max_rows', None, 'display.max_columns', None):  # more options can be specified also
+    # print(df)
     if Mut:
         sns.set_palette(sns.color_palette("husl", 8)[0:5] + [sns.color_palette("husl", 8)[7]])
         df = df.sort_values(by=['Data Type', 'Cell Type', 'IL', 'Time Point'])
