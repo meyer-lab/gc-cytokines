@@ -1,7 +1,7 @@
 SHELL := /bin/bash
 fdir = ./Manuscript/Figures
 tdir = ./common/templates
-pan_common = -F pandoc-crossref -F pandoc-citeproc --fail-if-warnings --filter=$(tdir)/figure-filter.py -f markdown ./Manuscript/Text/*.md
+pan_common = -F pandoc-crossref -F pandoc-citeproc --filter=$(tdir)/figure-filter.py -f markdown ./Manuscript/Text/*.md
 
 flist = 1 2 3 4 5 6 S1 S2 S4 S5 S6
 
@@ -30,7 +30,7 @@ graph_all.svg: ckine/data/graph_all.gv
 	dot $< -Tsvg -o $@
 
 Manuscript/Manuscript.pdf: Manuscript/Text/*.md $(patsubst %, $(fdir)/figure%.pdf, $(flist)) Manuscript/gatingFigure.pdf
-	pandoc -s $(pan_common) --template=$(tdir)/default.latex --pdf-engine=xelatex -o $@
+	pandoc -s $(pan_common) --fail-if-warnings --template=$(tdir)/default.latex --pdf-engine=xelatex -o $@
 
 ckine/ckine.so: gcSolver/model.cpp gcSolver/model.hpp gcSolver/reaction.hpp gcSolver/makefile
 	cd ./gcSolver && make ckine.so
