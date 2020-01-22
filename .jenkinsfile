@@ -29,7 +29,7 @@ pipeline {
         }
         stage('Build') {
           steps {
-            sh 'make -j 6'
+            sh 'make -j 3'
             archiveArtifacts artifacts: 'Manuscript/Figures/*.pdf, Manuscript/Manuscript.pdf', onlyIfSuccessful: true
           }
         }
