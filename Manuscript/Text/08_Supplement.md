@@ -58,4 +58,15 @@ $\mathrm{^{†}}$*Panel 0:* Antibodies for IL-2, IL-15, and IL-7 receptor analys
 
 ![**Full panel of predicted versus actual immune cell type responses.** Dots represent experimental measurements and shaded regions represent 10-90% confidence interval for model predictions. Time of pSTAT5 activity measurement is denoted by color. All cell populations were stimulated with either IL-2 (A-J) or IL-15 (K-T).](./Manuscript/Figures/figureS5.svg){#fig:supp5}
 
+|    Ligand      	|    Fc Conjugation  	|    Specificity Mutation           	|    Other Mutations         	| 
+|--------------------------	|--------------	|--------------------------	|--------------------------	|----------	|
+|    F42Q N-Term        	|    N-Terminus   	|    F42Q	|   V69A/Q74P/C125S    	|
+|    N88D C-term        	|    C-Terminus   	|    N88D	|   C125A    	|
+|    R38Q N-term        	|    N-Terminus   	|    R38Q	|   V69A/Q74P/C125S   	|
+|    V91K C-term        	|    C-Terminus   	|    V91K	|   C125A   	|
+|    IL2 C-term        	|    C-Terminus   	|    Wild-type	|   C125A    	|
+|    IL2 N-term        	|    C-Terminus   	|    Wild-type	|   V69A/Q74P/C125S     	|
+
+: IL-2 Muteins and their respective Fc Conjugations
+
 ![**Full panel of predicted versus actual immune cell type responses to IL-2 muteins.** Dots represent experimental measurements and shaded regions represent 10-90% confidence interval for model predictions. Time of pSTAT5 activity measurement is denoted by color. Cell populations were stimulated with IL-2 muteins of varying CD25 and CD122/132 binding affinities.](./Manuscript/Figures/figureS7.svg){#fig:supp7}
