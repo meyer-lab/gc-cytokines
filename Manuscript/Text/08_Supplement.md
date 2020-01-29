@@ -48,6 +48,17 @@ $\mathrm{^{*}}$CST: Cell Signaling Technology
 
 $\mathrm{^{†}}$*Panel 0:* Antibodies for IL-2, IL-15, and IL-7 receptor analysis; *Panel 1:* Antibodies to gate Naïve and Memory T-regulatory and T-helper cells; *Panel 2:* Antibodies to gate NK and CD56bright NK cells; *Panel 3:* Antibodies to gate Naïve and Memory Cytotoxic T cells; *Panel 4:* Antibodies to gate Naïve and Memory T-regulatory, T helper, and Cytotoxic cells, and NK cells for CD127 (IL-7) Quantitation; *Panel 5:* Antibodies to gate Memory and Naïve T-regulatory cells, Memory and Naïve T-helper cells; *Panel 6:* Antibodies to gate NK cells, CD56bright NK cells, and Cytotoxic T cells
 
+!|    Ligand      	|    Fc Conjugation  	|    Specificity Mutation           	|    Other Mutations         	| 
+|--------------------------	|--------------	|--------------------------	|--------------------------	|----------	|
+|    F42Q N-Term        	|    N-Terminus   	|    F42Q	|   V69A/Q74P/C125S    	|
+|    N88D C-term        	|    C-Terminus   	|    N88D	|   C125A    	|
+|    R38Q N-term        	|    N-Terminus   	|    R38Q	|   V69A/Q74P/C125S   	|
+|    V91K C-term        	|    C-Terminus   	|    V91K	|   C125A   	|
+|    IL2 C-term        	|    C-Terminus   	|    Wild-type	|   C125A    	|
+|    IL2 N-term        	|    C-Terminus   	|    Wild-type	|   V69A/Q74P/C125S     	|
+
+: Modified IL-2 ligands and their respective mutations, and Fc conjugations
+
 ![**Model without trafficking fails to capture IL-2/-15 dose response.** A) Model without trafficking fit to IL-2 and IL-15 pSTAT5 dose response data [@ring_mechanistic_2012]. This model was not fit to the surface IL-2Rβ measurements since no receptors were allowed to internalize from the cell surface ([@Fig:modelConstruct]B-D). B) Posterior distributions of analogous reverse reaction rates for IL-2 and IL-15 in no-trafficking model. C) Posterior distributions for receptor surface abundance in no-trafficking model. D) Posterior distribution for the pSTAT5 activity scaling constant in no-trafficking model. ](./Manuscript/Figures/figureS1.svg){#fig:supp1}
 
 ![**Geweke criterion scores for model fitting with and without trafficking.** Geweke criterion z-scores in all subplots were calculated using 20 intervals in the first 10% and last 50% of MCMC chain. The interval with the highest absolute z-score was plotted  for each parameter. Scores of |z| < 1 imply fitting convergence. A-B) IL-2/-15 with and without trafficking. C) IL-4/-7 with trafficking ([@Fig:supp1]). ](./Manuscript/Figures/figureS2.svg){#fig:supp2}
@@ -57,16 +68,5 @@ $\mathrm{^{†}}$*Panel 0:* Antibodies for IL-2, IL-15, and IL-7 receptor analys
 ![**Tucker factorization of predicted immune cell type responses.** A) Timepoint decomposition plot showing factorization component values against time after decomposing the tensor’s first dimension into 2 components. B) Decomposition plot along the second (cell) dimension after decomposing it to 2 components showing the ten cell type values along each component. C) Ligand decomposition plot along the tensor’s third dimension after decomposing it into 3 components. D–E) Slices of the Tucker core tensor corresponding to time component 1 (D) and 2 (E).](./Manuscript/Figures/figureS4.svg){#fig:supp4}
 
 ![**Full panel of predicted versus actual immune cell type responses.** Dots represent experimental measurements and shaded regions represent 10-90% confidence interval for model predictions. Time of pSTAT5 activity measurement is denoted by color. All cell populations were stimulated with either IL-2 (A-J) or IL-15 (K-T).](./Manuscript/Figures/figureS5.svg){#fig:supp5}
-
-|    Ligand      	|    Fc Conjugation  	|    Specificity Mutation           	|    Other Mutations         	| 
-|--------------------------	|--------------	|--------------------------	|--------------------------	|----------	|
-|    F42Q N-Term        	|    N-Terminus   	|    F42Q	|   V69A/Q74P/C125S    	|
-|    N88D C-term        	|    C-Terminus   	|    N88D	|   C125A    	|
-|    R38Q N-term        	|    N-Terminus   	|    R38Q	|   V69A/Q74P/C125S   	|
-|    V91K C-term        	|    C-Terminus   	|    V91K	|   C125A   	|
-|    IL2 C-term        	|    C-Terminus   	|    Wild-type	|   C125A    	|
-|    IL2 N-term        	|    C-Terminus   	|    Wild-type	|   V69A/Q74P/C125S     	|
-
-: IL-2 Muteins and their respective Fc Conjugations
 
 ![**Full panel of predicted versus actual immune cell type responses to IL-2 muteins.** Dots represent experimental measurements and shaded regions represent 10-90% confidence interval for model predictions. Time of pSTAT5 activity measurement is denoted by color. Cell populations were stimulated with IL-2 muteins of varying CD25 and CD122/132 binding affinities.](./Manuscript/Figures/figureS7.svg){#fig:supp7}
