@@ -48,7 +48,11 @@ $\mathrm{^{*}}$CST: Cell Signaling Technology
 
 $\mathrm{^{†}}$*Panel 0:* Antibodies for IL-2, IL-15, and IL-7 receptor analysis; *Panel 1:* Antibodies to gate Naïve and Memory T-regulatory and T-helper cells; *Panel 2:* Antibodies to gate NK and CD56bright NK cells; *Panel 3:* Antibodies to gate Naïve and Memory Cytotoxic T cells; *Panel 4:* Antibodies to gate Naïve and Memory T-regulatory, T helper, and Cytotoxic cells, and NK cells for CD127 (IL-7) Quantitation; *Panel 5:* Antibodies to gate Memory and Naïve T-regulatory cells, Memory and Naïve T-helper cells; *Panel 6:* Antibodies to gate NK cells, CD56bright NK cells, and Cytotoxic T cells
 
-!|    Ligand      	|    Fc Conjugation  	|    Specificity Mutation           	|    Other Mutations         	| 
+\pagebreak
+
+### IL-2 variants' mutations and conjugations
+
+|    Ligand      	|    Fc Conjugation  	|    Specificity Mutation           	|    Other Mutations         	| 
 |--------------------------	|--------------	|--------------------------	|--------------------------	|----------	|
 |    F42Q N-Term        	|    N-Terminus   	|    F42Q	|   V69A/Q74P/C125S    	|
 |    N88D C-term        	|    C-Terminus   	|    N88D	|   C125A    	|
