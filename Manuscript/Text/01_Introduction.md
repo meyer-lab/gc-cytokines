@@ -35,7 +35,7 @@ csl: ./common/templates/nature.csl
 
 - A dynamical model of the γ-chain cytokines accurately models responses to IL-2, IL-15, IL-4, and IL-7.
 - Receptor trafficking is necessary for capturing ligand response. 
-- Tensor factorization maps responses across cell populations, receptors, cytokines, and dynamics.
+- Tensor factorization maps responses across cell populations, receptors, cytokines, and dynamics to visualize cytokine specificity.
 - An activation model coupled with tensor factorization creates design specifications for engineering cell-specific responses.
 
 # Introduction
