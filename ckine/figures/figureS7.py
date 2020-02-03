@@ -72,7 +72,7 @@ def plot_expr_predM(ax, df, scales, cell_order, ligand_order, tps, muteinC):
 
             # plot experimental data
             sns.scatterplot(x="Concentration", y="RFU", hue="Time", data=dataMean.loc[(dataMean["Cells"] == cell_name)
-                                                                                          & (dataMean["Ligand"] == ligand_name)], ax=ax[axis], s=10, palette=cm.rainbow, legend=False)
+                                                                                      & (dataMean["Ligand"] == ligand_name)], ax=ax[axis], s=10, palette=cm.rainbow, legend=False)
 
             # scale and plot model predictions
             for k, conc in enumerate(df.Concentration.unique()):
