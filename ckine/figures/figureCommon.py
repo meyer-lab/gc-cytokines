@@ -252,7 +252,7 @@ def global_legend(ax, Spec=False, Mut=False):
         if not Spec:
             circle = Line2D([], [], color='black', marker='o', linestyle='None', markersize=6, label='Experimental')
             triangle = Line2D([], [], color='black', marker='^', linestyle='None', markersize=6, label='Predicted')
-            ax.legend(handles=[purple, yellow, circle, triangle], loc="upper left")
+            ax.legend(handles=[purple, yellow, circle, triangle], loc="upper right")
         if Spec:
             circle = Line2D([], [], color='black', marker='o', linestyle='None', markersize=6, label='Experimental')
             line = Line2D([], [], color='black', marker='_', linestyle='None', markersize=6, label='Predicted')

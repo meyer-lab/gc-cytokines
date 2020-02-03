@@ -49,30 +49,32 @@
 ### IL-2 variants' mutations and conjugations
 
 |    Ligand      	|    Fc Conjugation  	|    Specificity Mutation           	|    Other Mutations         	| 
-|--------------------------	|--------------	|--------------------------	|--------------------------	|----------	|
+|--------------------------	|--------------	|--------------------------	|--------------------------	|
 |    F42Q N-Term        	|    N-Terminus   	|    F42Q	|   V69A/Q74P/C125S    	|
 |    N88D C-term        	|    C-Terminus   	|    N88D	|   C125A    	|
 |    R38Q N-term        	|    N-Terminus   	|    R38Q	|   V69A/Q74P/C125S   	|
 |    V91K C-term        	|    C-Terminus   	|    V91K	|   C125A   	|
-|    IL2 C-term        	|    C-Terminus   	|    Wild-type	|   C125A    	|
-|    IL2 N-term        	|    C-Terminus   	|    Wild-type	|   V69A/Q74P/C125S     	|
+|    WT C-term        	|    C-Terminus   	|    Wild-type	|   C125A    	|
+|    WT N-term        	|    C-Terminus   	|    Wild-type	|   V69A/Q74P/C125S     	|
 
-: Modified IL-2 ligands and their respective mutations, and Fc conjugations
+: **Modified IL-2 ligands and their respective mutations, and Fc conjugations.**
 
 \cleardoublepage
 
-### IL-2 variants' mutations and conjugations
+### IL-2 variants' IL-2Rβ/γ~c~ affinities
 
-|    Ligand      	|    IL-2Rβ/γ~c~ Dissociation Constant (nM)  	|
-|--------------------------	|--------------	|--------------------------	|--------------------------	|----------	|
-|    F42Q N-Term        	|    N-Terminus   	|
-|    N88D C-term        	|    C-Terminus   	|
-|    R38Q N-term        	|    N-Terminus   	|
-|    V91K C-term        	|    C-Terminus   	|
-|    IL2 C-term        	|    C-Terminus   	|
-|    IL2 N-term        	|    C-Terminus   	|
+Data Table SD1: **IL-2Rβ/γ~c~ binding affinities of mutant and modified cytokines.**
 
-: Modified IL-2 ligands and their respective mutations, and Fc conjugations
+|    Ligand      	|    IL-2Rβ/γ~c~ Dissociation Constant (nM)	|
+|--------------------------	|--------------	|
+|    F42Q N-Term        	|     2.815	|
+|    N88D C-term        	|     24.016	|
+|    R38Q N-term        	|     3.994	|
+|    V91K C-term        	|    7.558	|
+|    WT C-term          	|    3.043	|
+|    WT N-term          	|    5.296 	|
+
+
 
 \cleardoublepage
 
