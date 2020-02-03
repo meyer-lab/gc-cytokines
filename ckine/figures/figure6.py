@@ -11,7 +11,7 @@ import theano
 from matplotlib.lines import Line2D
 from .figureCommon import subplotLabel, getSetup, global_legend, calc_dose_response, import_pMuteins, catplot_comparison, nllsq_EC50, organize_expr_pred, mutein_scaling, plot_cells, plot_ligand_comp
 from ..imports import import_pstat, import_samples_2_15, import_Rexpr
-from ..model import getTotalActiveSpecies, receptor_expression, getRateVec, getparamsdict, getMutAffDict
+from ..model import getTotalActiveSpecies, receptor_expression, getRateVec, getparamsdict
 from ..differencing_op import runCkineDoseOp
 from ..tensor import perform_decomposition, find_R2X, z_score_values
 
