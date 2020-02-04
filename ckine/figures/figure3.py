@@ -78,7 +78,7 @@ def makeFigure():
 
 def catplot_receptors(ax, datas):
     """Plot Bar graph for Receptor Expression Data. """
-    sns.stripplot(x="Cell Type", y="Count", hue="Receptor", data=datas, ci=68, ax=ax, kind="point", join=False, scale=0.5, dodge=True, estimator=sp.stats.gmean)
+    sns.pointplot(x="Cell Type", y="Count", hue="Receptor", data=datas, ci=68, ax=ax, kind="point", join=False, scale=0.5, dodge=True, estimator=sp.stats.gmean)
     ax.set_ylabel("Surface Receptor (#/cell)")
     ax.set_xticklabels(ax.get_xticklabels(),
                        rotation=25, rotation_mode="anchor", ha="right",
