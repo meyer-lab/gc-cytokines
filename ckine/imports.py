@@ -56,9 +56,8 @@ def import_muteins():
 def import_samples_2_15(Traf=True, ret_trace=False, N=None, tensor=False):
     """ This function imports the csv results of IL2-15 fitting into a numpy array called unkVec. """
     if tensor:
-        np.random.seed(79)
+        np.random.seed(30)
     bmodel = build_model_2_15(traf=Traf)
-    n_params = nParams()
 
     if Traf:
         trace = pm.backends.text.load(join(path_here, "ckine/data/fits/IL2_model_results"), bmodel.M)
@@ -72,7 +71,7 @@ def import_samples_2_15(Traf=True, ret_trace=False, N=None, tensor=False):
     scales = trace.get_values("scales")
     num = scales.size
 
-    unkVec = np.zeros((n_params, num))
+    unkVec = np.zeros((nParams(), num))
     unkVec[6, :] = np.squeeze(trace.get_values("kfwd"))
     unkVec[7:13, :] = np.squeeze(trace.get_values("rxn")).T
     unkVec[13:17, :] = 1.0
@@ -101,7 +100,6 @@ def import_samples_2_15(Traf=True, ret_trace=False, N=None, tensor=False):
 def import_samples_4_7(ret_trace=False, N=None):
     """ This function imports the csv results of IL4-7 fitting into a numpy array called unkVec. """
     bmodel = build_model_4_7()
-    n_params = nParams()
 
     trace = pm.backends.text.load(join(path_here, "ckine/data/fits/IL4-7_model_results"), bmodel.M)
 
@@ -117,7 +115,7 @@ def import_samples_4_7(ret_trace=False, N=None):
     scales = trace.get_values("scales")
     num = scales.shape[0]
 
-    unkVec = np.zeros((n_params, num))
+    unkVec = np.zeros((nParams(), num))
     unkVec[6, :] = np.squeeze(trace.get_values("kfwd"))
     unkVec[7:17, :] = 1.0
     unkVec[13, :] = np.squeeze(trace.get_values("k27rev"))
