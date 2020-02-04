@@ -63,18 +63,7 @@
 
 ### IL-2 variants' IL-2Rβ/γ~c~ affinities
 
-Data Table SD1: **IL-2Rβ/γ~c~ binding affinities of mutant and modified cytokines.**
-
-|    Ligand      	|    IL-2Rβ/γ~c~ Dissociation Constant (nM)	|
-|--------------------------	|--------------	|
-|    F42Q N-Term        	|     2.815	|
-|    N88D C-term        	|     24.016	|
-|    R38Q N-term        	|     3.994	|
-|    V91K C-term        	|    7.558	|
-|    WT C-term          	|    3.043	|
-|    WT N-term          	|    5.296 	|
-
-
+Data Table SD1: **IL-2Rβ/γ~c~ binding affinities of mutant and modified cytokines.** Data from the BLI studies for each IL-2 mutein.
 
 \cleardoublepage
 
