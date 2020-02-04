@@ -49,15 +49,21 @@
 ### IL-2 variants' mutations and conjugations
 
 |    Ligand      	|    Fc Conjugation  	|    Specificity Mutation           	|    Other Mutations         	| 
-|--------------------------	|--------------	|--------------------------	|--------------------------	|----------	|
+|--------------------------	|--------------	|--------------------------	|--------------------------	|
 |    F42Q N-Term        	|    N-Terminus   	|    F42Q	|   V69A/Q74P/C125S    	|
 |    N88D C-term        	|    C-Terminus   	|    N88D	|   C125A    	|
 |    R38Q N-term        	|    N-Terminus   	|    R38Q	|   V69A/Q74P/C125S   	|
 |    V91K C-term        	|    C-Terminus   	|    V91K	|   C125A   	|
-|    IL2 C-term        	|    C-Terminus   	|    Wild-type	|   C125A    	|
-|    IL2 N-term        	|    C-Terminus   	|    Wild-type	|   V69A/Q74P/C125S     	|
+|    WT C-term        	|    C-Terminus   	|    Wild-type	|   C125A    	|
+|    WT N-term        	|    C-Terminus   	|    Wild-type	|   V69A/Q74P/C125S     	|
 
-: Modified IL-2 ligands and their respective mutations, and Fc conjugations
+: **Modified IL-2 ligands and their respective mutations, and Fc conjugations.**
+
+\cleardoublepage
+
+### IL-2 variants' IL-2Rβ/γ~c~ affinities
+
+Data Table SD1: **IL-2Rβ/γ~c~ binding affinities of mutant and modified cytokines.** Data from the BLI studies for each IL-2 mutein.
 
 \cleardoublepage
 

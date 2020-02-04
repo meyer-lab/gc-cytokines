@@ -32,16 +32,14 @@ mutData = import_pMuteins()
 def makeFigure():
     """Get a list of the axis objects and create a figure"""
     # Get list of axis objects
-    ax, f = getSetup((7.5, 8), (4, 4), multz={4: 1, 6: 1, 8: 1})
+    ax, f = getSetup((7.5, 6), (3, 4), multz={4: 1})
 
-    ax[1].axis('off')
-    f.delaxes(ax[11])
-    f.delaxes(ax[12])
+    ax[3].axis('off')
 
     for ii, item in enumerate(ax):
-        if ii < 1:
+        if ii < 3:
             subplotLabel(item, string.ascii_uppercase[ii])
-        elif ii > 1:
+        elif ii > 3:
             subplotLabel(item, string.ascii_uppercase[ii - 1])
 
     ckines = ['IL-2', 'IL-15']
@@ -70,16 +68,16 @@ def makeFigure():
 
     mutEC50df = get_Mut_EC50s()
     affComp(ax[0])
-    calc_plot_specificity(ax[2], 'NK', df_spec, df_act, ckines, ckineConc_)
-    calc_plot_specificity(ax[3], 'T-helper', df_spec, df_act, ckines, ckineConc_)
-    global_legend(ax[3], Spec=True)
+    calc_plot_specificity(ax[1], 'NK', df_spec, df_act, ckines, ckineConc_)
+    calc_plot_specificity(ax[2], 'T-helper', df_spec, df_act, ckines, ckineConc_)
+    global_legend(ax[2], Spec=True, Mut=True)
     Specificity(ax=ax[4])
     Spec_Aff(ax[5], 40, unkVecT, scalesT)
     catplot_comparison(ax[6], mutEC50df, legend=False, Mut=True)
     Mut_Fact(ax[7:11])
     legend = ax[7].get_legend()
     labels = (x.get_text() for x in legend.get_texts())
-    ax[1].legend(legend.legendHandles, labels, loc='center left', prop={"size": 9})
+    ax[3].legend(legend.legendHandles, labels, loc='center left', prop={"size": 9})
     ax[7].get_legend().remove()
 
     return f
@@ -352,7 +350,7 @@ def Mut_Fact(ax):
 
     # Cells
     plot_cells(ax[1], parafac[0], 1, 2, cells)
-    ax[1].legend(bbox_to_anchor=(1.02, 1))
+    ax[1].legend()
 
     # Timepoints
     tComp = np.r_[np.zeros((1, 2)), parafac[2]]

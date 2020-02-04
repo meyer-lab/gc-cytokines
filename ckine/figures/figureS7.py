@@ -71,13 +71,8 @@ def plot_expr_predM(ax, df, scales, cell_order, ligand_order, tps, muteinC):
             axis = j * 8 + i
 
             # plot experimental data
-            if axis == 47:
-                sns.scatterplot(x="Concentration", y="RFU", hue="Time", data=dataMean.loc[(dataMean["Cells"] == cell_name)
-                                                                                          & (dataMean["Ligand"] == ligand_name)], ax=ax[axis], s=10, palette=cm.rainbow, legend='full')
-                ax[axis].legend(loc='lower right', title="time (hours)")
-            else:
-                sns.scatterplot(x="Concentration", y="RFU", hue="Time", data=dataMean.loc[(dataMean["Cells"] == cell_name)
-                                                                                          & (dataMean["Ligand"] == ligand_name)], ax=ax[axis], s=10, palette=cm.rainbow, legend=False)
+            sns.scatterplot(x="Concentration", y="RFU", hue="Time", data=dataMean.loc[(dataMean["Cells"] == cell_name)
+                                                                                      & (dataMean["Ligand"] == ligand_name)], ax=ax[axis], s=10, palette=cm.rainbow, legend=False)
 
             # scale and plot model predictions
             for k, conc in enumerate(df.Concentration.unique()):
@@ -90,14 +85,21 @@ def plot_expr_predM(ax, df, scales, cell_order, ligand_order, tps, muteinC):
                 if cell_name in cell_names:
                     for o in range(unkVec_2_15.shape[1]):
                         pred_data[:, :, o] = scales[n, 1, o] * pred_data[:, :, o] / (pred_data[:, :, o] + scales[n, 0, o])
-                    plot_dose_responseM(ax[axis], pred_data, tps, muteinC)
+                    if axis == 47:
+                        plot_dose_responseM(ax[axis], pred_data, tps, muteinC, legend=True)
+                    else:
+                        plot_dose_responseM(ax[axis], pred_data, tps, muteinC)
                     ax[axis].set(ylim=(0, ylims[n]))
             ax[axis].set(xlabel=("[" + ligand_name + "] (log$_{10}$[nM])"), ylabel="Activity", title=cell_name)
 
 
-def plot_dose_responseM(ax, mutein_activity, tps, muteinC):
+def plot_dose_responseM(ax, mutein_activity, tps, muteinC, legend=False):
     """ Plots predicted activity for multiple timepoints and mutein concentrations. """
     colors = cm.rainbow(np.linspace(0, 1, tps.size))
 
     for tt in range(tps.size):
-        plot_conf_int(ax, np.log10(muteinC.astype(np.float)), mutein_activity[:, tt, :], colors[tt])
+        if not legend:
+            plot_conf_int(ax, np.log10(muteinC.astype(np.float)), mutein_activity[:, tt, :], colors[tt])
+        else:
+            plot_conf_int(ax, np.log10(muteinC.astype(np.float)), mutein_activity[:, tt, :], colors[tt], (tps[tt] / 60.0).astype(str))
+            ax.legend(title="time (hours)")
