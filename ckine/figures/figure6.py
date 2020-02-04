@@ -11,7 +11,7 @@ import theano
 from matplotlib.lines import Line2D
 from .figureCommon import subplotLabel, getSetup, global_legend, calc_dose_response, import_pMuteins, catplot_comparison, nllsq_EC50, organize_expr_pred, mutein_scaling, plot_cells, plot_ligand_comp
 from ..imports import import_pstat, import_samples_2_15, import_Rexpr
-from ..model import getTotalActiveSpecies, receptor_expression, getRateVec, getparamsdict
+from ..model import getTotalActiveSpecies, receptor_expression, getRateVec, getparamsdict, getMutAffDict
 from ..differencing_op import runCkineDoseOp
 from ..tensor import perform_decomposition, find_R2X, z_score_values
 
@@ -32,14 +32,14 @@ mutData = import_pMuteins()
 def makeFigure():
     """Get a list of the axis objects and create a figure"""
     # Get list of axis objects
-    ax, f = getSetup((7.5, 6), (3, 4), multz={2: 1, 4: 1})
+    ax, f = getSetup((7.5, 6), (3, 4), multz={4: 1})
 
-    ax[2].axis('off')
+    ax[3].axis('off')
 
     for ii, item in enumerate(ax):
-        if ii < 2:
+        if ii < 3:
             subplotLabel(item, string.ascii_uppercase[ii])
-        elif ii > 2:
+        elif ii > 3:
             subplotLabel(item, string.ascii_uppercase[ii - 1])
 
     ckines = ['IL-2', 'IL-15']
@@ -67,19 +67,40 @@ def makeFigure():
     ckineConc_ = np.delete(ckineConc, 11, 0)  # delete smallest concentration since zero/negative activity
 
     mutEC50df = get_Mut_EC50s()
-    calc_plot_specificity(ax[0], 'NK', df_spec, df_act, ckines, ckineConc_)
-    calc_plot_specificity(ax[1], 'T-helper', df_spec, df_act, ckines, ckineConc_)
-    global_legend(ax[1], Spec=True, Mut=True)
-    Specificity(ax=ax[3])
-    Spec_Aff(ax[4], 40, unkVecT, scalesT)
-    catplot_comparison(ax[5], mutEC50df, legend=False, Mut=True)
-    Mut_Fact(ax[6:10])
-    legend = ax[6].get_legend()
+    affComp(ax[0])
+    calc_plot_specificity(ax[1], 'NK', df_spec, df_act, ckines, ckineConc_)
+    calc_plot_specificity(ax[2], 'T-helper', df_spec, df_act, ckines, ckineConc_)
+    global_legend(ax[2], Spec=True, Mut=True)
+    Specificity(ax=ax[4])
+    Spec_Aff(ax[5], 40, unkVecT, scalesT)
+    catplot_comparison(ax[6], mutEC50df, legend=False, Mut=True)
+    Mut_Fact(ax[7:11])
+    legend = ax[7].get_legend()
     labels = (x.get_text() for x in legend.get_texts())
-    ax[2].legend(legend.legendHandles, labels, loc='center left', prop={"size": 9})
-    ax[6].get_legend().remove()
+    ax[3].legend(legend.legendHandles, labels, loc='center left', prop={"size": 9})
+    ax[7].get_legend().remove()
 
     return f
+
+
+def affComp(ax):
+    """Compare 2Ra and 2BGc dissociation constants of wild type and mutant IL-2s"""
+    affdict = getMutAffDict()
+    ligList = ['WT N-term', 'WT C-term', 'V91K C-term', 'R38Q N-term', 'F42Q N-Term', 'N88D C-term', 'WT IL2']
+    RaAff, GcBAff = np.zeros([len(ligList)]), np.zeros([len(ligList)])
+
+    for i in range(0, len(ligList) - 1):
+        RaAff[i] = affdict[ligList[i]][0]
+        GcBAff[i] = affdict[ligList[i]][1]
+
+    RaAff[len(ligList) - 1] = unkVec[1] / 0.6
+    GcBAff[len(ligList) - 1] = unkVec[4] / 0.6
+
+    KDdf = pd.DataFrame({'RaAff': RaAff, 'GcBAff': GcBAff, 'Ligand': ligList})
+    KDdf = KDdf.sort_values(by=["Ligand"])
+    sns.scatterplot(x='RaAff', y='GcBAff', data=KDdf, hue="Ligand", palette=sns.color_palette("husl", 8)[0:5] + sns.color_palette("husl", 8)[6:8], ax=ax, legend=False)
+    ax.set_xlabel("CD25 KD (nM)")
+    ax.set_ylabel("CD122/132 KD (nM)")
 
 
 def calc_plot_specificity(ax, cell_compare, df_specificity, df_activity, ligands, concs):
