@@ -235,18 +235,28 @@ def plot_scaled_pstat(ax, cytokC, pstat):
     ax.scatter(cytokC, pstat[3, :], c="darkred", s=2)  # 4 hr
 
 
-def global_legend(ax, Spec=False):
+def global_legend(ax, Spec=False, Mut=False):
     """ Create legend for colors and markers in subplots A-C. """
     purple = Patch(color='darkorchid', label='IL-2')
     yellow = Patch(color='goldenrod', label='IL-15')
-    if not Spec:
-        circle = Line2D([], [], color='black', marker='o', linestyle='None', markersize=6, label='Experimental')
-        triangle = Line2D([], [], color='black', marker='^', linestyle='None', markersize=6, label='Predicted')
-        ax.legend(handles=[purple, yellow, circle, triangle], bbox_to_anchor=(1.02, 1), loc="upper left")
-    if Spec:
-        circle = Line2D([], [], color='black', marker='o', linestyle='None', markersize=6, label='Experimental')
-        line = Line2D([], [], color='black', marker='_', linestyle='None', markersize=6, label='Predicted')
-        ax.legend(handles=[purple, yellow, circle, line], bbox_to_anchor=(1.02, 1), loc="upper left")
+    if not Mut:
+        if not Spec:
+            circle = Line2D([], [], color='black', marker='o', linestyle='None', markersize=6, label='Experimental')
+            triangle = Line2D([], [], color='black', marker='^', linestyle='None', markersize=6, label='Predicted')
+            ax.legend(handles=[purple, yellow, circle, triangle], bbox_to_anchor=(1.02, 1), loc="upper left")
+        if Spec:
+            circle = Line2D([], [], color='black', marker='o', linestyle='None', markersize=6, label='Experimental')
+            line = Line2D([], [], color='black', marker='_', linestyle='None', markersize=6, label='Predicted')
+            ax.legend(handles=[purple, yellow, circle, line], bbox_to_anchor=(1.02, 1), loc="upper left")
+    if Mut:
+        if not Spec:
+            circle = Line2D([], [], color='black', marker='o', linestyle='None', markersize=6, label='Experimental')
+            triangle = Line2D([], [], color='black', marker='^', linestyle='None', markersize=6, label='Predicted')
+            ax.legend(handles=[purple, yellow, circle, triangle], loc="upper right")
+        if Spec:
+            circle = Line2D([], [], color='black', marker='o', linestyle='None', markersize=6, label='Experimental')
+            line = Line2D([], [], color='black', marker='_', linestyle='None', markersize=6, label='Predicted')
+            ax.legend(handles=[purple, yellow, circle, line], loc="upper right")
 
 
 def calc_dose_response(cell_names, unkVec, scales, receptor_data, tps, cytokC, expr_act2, expr_act15):

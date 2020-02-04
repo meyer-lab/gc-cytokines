@@ -68,7 +68,7 @@ def makeFigure():
     data = {'Time Point': np.tile(np.array(tps), len(cell_names_pstat) * 4), 'IL': IL, 'Cell Type': cell_types.reshape(160,), 'Data Type': data_types.reshape(160,), 'EC-50': EC50}
     df = pd.DataFrame(data)
 
-    catplot_comparison(ax[1], df)  # compare experiments to model predictions
+    catplot_comparison(ax[1], df, legend=False, Mut=False)  # compare experiments to model predictions
     plot_corrcoef(ax[2], tps)  # find correlation coefficients
     global_legend(ax[2])  # add legend subplots A-C
 
