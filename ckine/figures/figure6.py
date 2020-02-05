@@ -99,8 +99,8 @@ def affComp(ax):
     KDdf = pd.DataFrame({'RaAff': RaAff, 'GcBAff': GcBAff, 'Ligand': ligList})
     KDdf = KDdf.sort_values(by=["Ligand"])
     sns.scatterplot(x='RaAff', y='GcBAff', data=KDdf, hue="Ligand", palette=sns.color_palette("husl", 8)[0:5] + sns.color_palette("husl", 8)[6:8], ax=ax, legend=False)
-    ax.set_xlabel("CD25 KD (nM)")
-    ax.set_ylabel("CD122/132 KD (nM)")
+    ax.set_xlabel("IL-2Rα KD (nM)")
+    ax.set_ylabel("IL-2Rβ/γc KD (nM)")
 
 
 def calc_plot_specificity(ax, cell_compare, df_specificity, df_activity, ligands, concs):
@@ -121,7 +121,7 @@ def calc_plot_specificity(ax, cell_compare, df_specificity, df_activity, ligands
                                                                                                cell_compare) & (df_specificity["Data Type"] == 'Experimental')], ax=ax, marker='o', legend=False)
     sns.lineplot(x="Concentration", y="Specificity", hue="Ligand", data=df_specificity.loc[(df_specificity["Cells"] == cell_compare) &
                                                                                            (df_specificity["Data Type"] == 'Predicted')], ax=ax, legend=False)
-    ax.set(xlabel="(log$_{10}$[nM])", ylabel="log$_{10}$[Specificity]", title=('T-reg vs. ' + cell_compare))
+    ax.set(xlabel="Concentration (nM)", ylabel="log$_{10}$[Specificity]", title=('T-reg vs. ' + cell_compare))
 
 
 def specificity(df_specificity, df_activity, cell_type1, cell_type2, ligand, tp, concentration):
@@ -181,6 +181,7 @@ def Specificity(ax):
     sns.set_palette(sns.xkcd_palette(colors))
 
     sns.catplot(data=df, x='rate', y='value', kind="bar", hue='cell', ax=ax, legend=False)
+    ax.set_ylabel("Value")
     ax.set_xlabel("")
     ax.legend()
     ax.set_yscale("symlog", linthreshy=0.01)
@@ -252,7 +253,7 @@ def Spec_Aff(ax, npoints, unkVecAff, scalesAff):
             ax.plot(1 / affRange, specHolderTh[i, :], label="TReg/Th pSTAT5 w/ " + str(1 / RaAff[i]) + " IL2Ra Affinity", linestyle='dotted', color="xkcd:sun yellow")
 
     ax.set_xscale('log')
-    ax.set_xlabel('Relative CD122/CD132 Affinity')
+    ax.set_xlabel('Relative IL-2Rβ/γc Affinity')
     ax.set_ylabel('Specificity')
     handles = []
     line = Line2D([], [], color='black', marker='_', linestyle='None', markersize=6, label='WT IL2Ra Affinity')

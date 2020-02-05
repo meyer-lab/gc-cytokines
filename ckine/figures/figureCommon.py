@@ -22,7 +22,7 @@ path_here = os.path.dirname(os.path.dirname(__file__))
 
 
 matplotlib.rcParams['legend.labelspacing'] = 0.2
-matplotlib.rcParams['legend.fontsize'] = 8
+matplotlib.rcParams['legend.fontsize'] = 5
 matplotlib.rcParams['xtick.major.pad'] = 1.0
 matplotlib.rcParams['ytick.major.pad'] = 1.0
 matplotlib.rcParams['xtick.minor.pad'] = 0.9
