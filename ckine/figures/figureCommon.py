@@ -474,14 +474,14 @@ def catplot_comparison(ax, df, legend=False, Mut=True):
         df = df.sort_values(by=['Data Type', 'Cell Type', 'IL', 'Time Point'])
 
     # plot predicted EC50
-    sns.catplot(x="Cell Type", y="EC-50", hue="IL",
-                data=df.loc[(df['Time Point'] == 60.) & (df["Data Type"] == 'Predicted')],
-                legend=legend, legend_out=legend, ax=ax, marker='^')
+    sns.pointplot(x="Cell Type", y="EC-50", hue="IL",
+                  data=df.loc[(df['Time Point'] == 60.) & (df["Data Type"] == 'Predicted')],
+                  legend=legend, legend_out=legend, ax=ax, marker='^')
 
     # plot experimental EC50
-    sns.catplot(x="Cell Type", y="EC-50", hue="IL",
-                data=df.loc[(df['Time Point'] == 60.) & (df["Data Type"] == 'Experimental')],
-                legend=False, legend_out=False, ax=ax, marker='o')
+    sns.pointplot(x="Cell Type", y="EC-50", hue="IL",
+                  data=df.loc[(df['Time Point'] == 60.) & (df["Data Type"] == 'Experimental')],
+                  legend=False, legend_out=False, ax=ax, marker='o')
 
     ax.set_xticklabels(ax.get_xticklabels(), rotation=40, fontsize=6.8, rotation_mode="anchor", ha="right")
     ax.set_xlabel("")  # remove "Cell Type" from xlabel
