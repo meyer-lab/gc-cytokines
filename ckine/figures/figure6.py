@@ -120,7 +120,7 @@ def calc_plot_specificity(ax, cell_compare, df_specificity, df_activity, ligands
     sns.scatterplot(x="Concentration", y="Specificity", hue="Ligand", data=df_specificity.loc[(df_specificity["Cells"] ==
                                                                                                cell_compare) & (df_specificity["Data Type"] == 'Experimental')], ax=ax, marker='o', legend=False)
     sns.pointplot(x="Concentration", y="Specificity", hue="Ligand", data=df_specificity.loc[(df_specificity["Cells"] == cell_compare) &
-                                                                                            (df_specificity["Data Type"] == 'Predicted')], ax=ax, legend=False)
+                                                                                            (df_specificity["Data Type"] == 'Predicted')], ax=ax, legend=False, join=False, scale=0.5)
     ax.set(xlabel="(log$_{10}$[nM])", ylabel="log$_{10}$[Specificity]", title=('T-reg vs. ' + cell_compare))
 
 
