@@ -119,7 +119,7 @@ def calc_plot_specificity(ax, cell_compare, df_specificity, df_activity, ligands
     sns.set_palette(sns.xkcd_palette(["violet", "goldenrod"]))
     sns.scatterplot(x="Concentration", y="Specificity", hue="Ligand", data=df_specificity.loc[(df_specificity["Cells"] ==
                                                                                                cell_compare) & (df_specificity["Data Type"] == 'Experimental')], ax=ax, marker='o', legend=False)
-    sns.lineplot(x="Concentration", y="Specificity", hue="Ligand", data=df_specificity.loc[(df_specificity["Cells"] == cell_compare) &
+    sns.pointplot(x="Concentration", y="Specificity", hue="Ligand", data=df_specificity.loc[(df_specificity["Cells"] == cell_compare) &
                                                                                            (df_specificity["Data Type"] == 'Predicted')], ax=ax, legend=False)
     ax.set(xlabel="(log$_{10}$[nM])", ylabel="log$_{10}$[Specificity]", title=('T-reg vs. ' + cell_compare))
 
@@ -180,7 +180,7 @@ def Specificity(ax):
     colors = ["rich blue", "sun yellow"]
     sns.set_palette(sns.xkcd_palette(colors))
 
-    sns.barplot(data=df, x='rate', y='value', hue='cell', ax=ax, legend=False)
+    sns.barplot(data=df, x='rate', y='value', hue='cell', ax=ax)
     ax.set_xlabel("")
     ax.legend()
     ax.set_yscale("symlog", linthreshy=0.01)
