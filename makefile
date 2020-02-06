@@ -7,7 +7,7 @@ flist = 1 2 3 4 5 6 S1 S2 S4 S5 S7
 
 .PHONY: clean test all testcover autopep spell
 
-all: ckine/ckine.so Manuscript/Manuscript.pdf Manuscript/Manuscript.docx Manuscript/CoverLetter.docx
+all: ckine/ckine.so Manuscript/Manuscript.pdf Manuscript/Manuscript.docx
 
 venv: venv/bin/activate
 
@@ -40,9 +40,6 @@ Manuscript/Manuscript.docx: Manuscript/Text/*.md $(patsubst %, $(fdir)/figure%.e
 	cp -R $(fdir) ./
 	pandoc -s $(pan_common) -o $@
 	rm -r ./Figures
-
-Manuscript/CoverLetter.docx: Manuscript/CoverLetter.md
-	pandoc -f markdown $< -o $@
 
 Manuscript/CoverLetter.pdf: Manuscript/CoverLetter.md
 	pandoc --pdf-engine=xelatex --template=/Users/asm/.pandoc/letter-templ.tex $< -o $@
