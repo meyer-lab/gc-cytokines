@@ -32,14 +32,14 @@ mutData = import_pMuteins()
 def makeFigure():
     """Get a list of the axis objects and create a figure"""
     # Get list of axis objects
-    ax, f = getSetup((7.5, 6), (3, 4), multz={4: 1})
+    ax, f = getSetup((7.5, 6), (3, 4), multz={1: 1})
 
-    ax[3].axis('off')
+    ax[2].axis('off')
 
     for ii, item in enumerate(ax):
-        if ii < 3:
+        if ii < 2:
             subplotLabel(item, string.ascii_uppercase[ii])
-        elif ii > 3:
+        elif ii > 2:
             subplotLabel(item, string.ascii_uppercase[ii - 1])
 
     ckines = ['IL-2', 'IL-15']
@@ -68,17 +68,17 @@ def makeFigure():
 
     mutEC50df = get_Mut_EC50s()
     affComp(ax[0])
-    calc_plot_specificity(ax[1], 'NK', df_spec, df_act, ckines, ckineConc_)
-    calc_plot_specificity(ax[2], 'T-helper', df_spec, df_act, ckines, ckineConc_)
-    global_legend(ax[2], Spec=True, Mut=True)
-    Specificity(ax=ax[4])
-    Spec_Aff(ax[5], 40, unkVecT, scalesT)
-    catplot_comparison(ax[6], mutEC50df, legend=False, Mut=True)
-    Mut_Fact(ax[7:11])
-    legend = ax[7].get_legend()
+    calc_plot_specificity(ax[7], 'NK', df_spec, df_act, ckines, ckineConc_)
+    calc_plot_specificity(ax[8], 'T-helper', df_spec, df_act, ckines, ckineConc_)
+    global_legend(ax[8], Spec=True, Mut=True)
+    Specificity(ax=ax[9])
+    Spec_Aff(ax[10], 40, unkVecT, scalesT)
+    catplot_comparison(ax[1], mutEC50df, legend=False, Mut=True)
+    Mut_Fact(ax[3:7])
+    legend = ax[3].get_legend()
     labels = (x.get_text() for x in legend.get_texts())
-    ax[3].legend(legend.legendHandles, labels, loc='center left', prop={"size": 9})
-    ax[7].get_legend().remove()
+    ax[2].legend(legend.legendHandles, labels, loc='center left', prop={"size": 9})
+    ax[3].get_legend().remove()
 
     return f
 
@@ -188,7 +188,7 @@ def Specificity(ax):
     labels = df.rate.unique()
     for ii, _ in enumerate(labels):
         labels[ii] = labels[ii].split(".")[-1]
-    ax.set_xticklabels(labels, rotation=25, rotation_mode="anchor", ha="right")
+    ax.set_xticklabels(labels, rotation=60, rotation_mode="anchor", ha="right", fontdict={'fontsize': 6})
 
 
 def OPgen(unkVecOP, CellTypes, OpC, scalesTh, RaAffM, RbAffM):
