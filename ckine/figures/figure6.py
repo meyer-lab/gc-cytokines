@@ -32,14 +32,14 @@ mutData = import_pMuteins()
 def makeFigure():
     """Get a list of the axis objects and create a figure"""
     # Get list of axis objects
-    ax, f = getSetup((7.5, 6), (3, 4), multz={1: 1})
+    ax, f = getSetup((7.5, 6), (3, 4), multz={2: 1})
 
-    ax[2].axis('off')
+    ax[1].axis('off')
 
     for ii, item in enumerate(ax):
-        if ii < 2:
+        if ii < 1:
             subplotLabel(item, string.ascii_uppercase[ii])
-        elif ii > 2:
+        elif ii > 1:
             subplotLabel(item, string.ascii_uppercase[ii - 1])
 
     ckines = ['IL-2', 'IL-15']
@@ -70,14 +70,14 @@ def makeFigure():
     affComp(ax[0])
     calc_plot_specificity(ax[7], 'NK', df_spec, df_act, ckines, ckineConc_)
     calc_plot_specificity(ax[8], 'T-helper', df_spec, df_act, ckines, ckineConc_)
-    global_legend(ax[8], Spec=True, Mut=True)
+    global_legend(ax[7], Spec=True, Mut=True)
     Specificity(ax=ax[9])
     Spec_Aff(ax[10], 40, unkVecT, scalesT)
-    catplot_comparison(ax[1], mutEC50df, legend=False, Mut=True)
+    catplot_comparison(ax[2], mutEC50df, legend=False, Mut=False)
     Mut_Fact(ax[3:7])
     legend = ax[3].get_legend()
     labels = (x.get_text() for x in legend.get_texts())
-    ax[2].legend(legend.legendHandles, labels, loc='center left', prop={"size": 9})
+    ax[1].legend(legend.legendHandles, labels, loc='center left', prop={"size": 9})
     ax[3].get_legend().remove()
 
     return f

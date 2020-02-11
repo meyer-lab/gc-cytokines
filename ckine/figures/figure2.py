@@ -93,8 +93,8 @@ def pstat_plot(ax, unkVec, scales):
     IL7_output = output[K: (K * 2)].T
 
     # plot confidence intervals based on model predictions
-    plot_conf_int(ax, np.log10(cytokC_common), IL4_output * 100.0, "powderblue")
-    plot_conf_int(ax, np.log10(cytokC_common), IL7_output * 100.0, "b")
+    plot_conf_int(ax, np.log10(cytokC_common), IL4_output * 100.0, "powderblue", "IL-4 stim.")
+    plot_conf_int(ax, np.log10(cytokC_common), IL7_output * 100.0, "b", "IL-7 stim.")
 
     # overlay experimental data
     ax.scatter(np.log10(cytokC_4), (dataIL4[:, 1] / IL4_data_max) * 100.0, color="powderblue", marker="^", edgecolors="k", zorder=100)
@@ -225,8 +225,8 @@ def plot_pretreat(ax, unkVec, scales, title):
     IL4_stim = output[0:K].T
     IL7_stim = output[K: (K * 2)].T
 
-    plot_conf_int(ax, np.log10(pre_conc), IL4_stim * 100.0, "powderblue", "IL-4 stim.")
-    plot_conf_int(ax, np.log10(pre_conc), IL7_stim * 100.0, "b", "IL-7 stim.")
+    plot_conf_int(ax, np.log10(pre_conc), IL4_stim * 100.0, "powderblue")
+    plot_conf_int(ax, np.log10(pre_conc), IL7_stim * 100.0, "b")
     ax.set(title=title, ylabel="Inhibition (% of no pretreat)", xlabel=r"Pretreatment Conc. (log$_{10}$[nM])")
 
     # add experimental data to plots
