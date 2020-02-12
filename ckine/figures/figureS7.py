@@ -1,5 +1,5 @@
 """
-This creates Figure S6.
+This creates Figure S7.
 """
 import string
 import numpy as np
@@ -85,7 +85,7 @@ def plot_expr_predM(ax, df, scales, cell_order, ligand_order, tps, muteinC):
                 if cell_name in cell_names:
                     for o in range(unkVec_2_15.shape[1]):
                         pred_data[:, :, o] = scales[n, 1, o] * pred_data[:, :, o] / (pred_data[:, :, o] + scales[n, 0, o])
-                    if axis == 47:
+                    if axis == 0:
                         plot_dose_responseM(ax[axis], pred_data, tps, muteinC, legend=True)
                     else:
                         plot_dose_responseM(ax[axis], pred_data, tps, muteinC)
