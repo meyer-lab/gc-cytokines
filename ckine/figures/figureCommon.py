@@ -9,7 +9,6 @@ import pandas as pds
 import matplotlib
 import matplotlib.cm as cm
 import svgutils.transform as st
-from pandas.plotting import parallel_coordinates
 from matplotlib import gridspec, pyplot as plt
 from matplotlib.lines import Line2D
 from matplotlib.patches import Patch
