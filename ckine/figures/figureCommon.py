@@ -520,8 +520,6 @@ def Par_Plot_comparison(ax, df):
     pds.plotting.parallel_coordinates(expEC50s, 'IL', ax=ax, color=sns.color_palette("husl", 8))
     pds.plotting.parallel_coordinates(predEC50s, 'IL', ax=ax, linestyle=':', color=sns.color_palette("husl", 8))
     ax.set_xticklabels(ax.get_xticklabels(), rotation=40, fontsize=6.8, rotation_mode="anchor", ha="right")
-    print(predEC50s)
-    print(expEC50s)
 
     handles = []
     ax.set_ylabel(r"EC-50 (log$_{10}$[nM])")
