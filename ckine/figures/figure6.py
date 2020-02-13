@@ -9,7 +9,7 @@ import seaborn as sns
 import theano.tensor as T
 import theano
 from matplotlib.lines import Line2D
-from .figureCommon import subplotLabel, getSetup, global_legend, calc_dose_response, import_pMuteins, catplot_comparison, nllsq_EC50, organize_expr_pred, mutein_scaling, plot_cells, plot_ligand_comp
+from .figureCommon import subplotLabel, getSetup, global_legend, calc_dose_response, import_pMuteins, nllsq_EC50, organize_expr_pred, mutein_scaling, plot_cells, plot_ligand_comp, Par_Plot_comparison
 from ..imports import import_pstat, import_samples_2_15, import_Rexpr
 from ..model import getTotalActiveSpecies, receptor_expression, getRateVec, getparamsdict, getMutAffDict
 from ..differencing_op import runCkineDoseOp
@@ -73,7 +73,7 @@ def makeFigure():
     global_legend(ax[7], Spec=True, Mut=True)
     Specificity(ax=ax[9])
     Spec_Aff(ax[10], 40, unkVecT, scalesT)
-    catplot_comparison(ax[2], mutEC50df, legend=False, Mut=False)
+    Par_Plot_comparison(ax[2], mutEC50df)
     Mut_Fact(ax[3:7])
     legend = ax[3].get_legend()
     labels = (x.get_text() for x in legend.get_texts())

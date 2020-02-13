@@ -33,7 +33,7 @@ n_pred_comps = 3  # Placed here to be also used by Figure 5
 def makeFigure():
     """Get a list of the axis objects and create a figure"""
     # Get list of axis objects
-    ax, f = getSetup((7.5, 6), (3, 4), multz={0: 1, 5: 1})
+    ax, f = getSetup((7.5, 6), (3, 4), multz={4: 1, 10: 1})
 
     factors_activ = factors_activity[n_pred_comps - 1]
 

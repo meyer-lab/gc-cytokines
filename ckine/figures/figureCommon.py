@@ -9,6 +9,7 @@ import pandas as pds
 import matplotlib
 import matplotlib.cm as cm
 import svgutils.transform as st
+from pandas.plotting import parallel_coordinates
 from matplotlib import gridspec, pyplot as plt
 from matplotlib.lines import Line2D
 from matplotlib.patches import Patch
@@ -497,6 +498,36 @@ def catplot_comparison(ax, df, legend=False, Mut=True):
     triangle = Line2D([], [], color='black', marker='^', linestyle='None', markersize=6, label='Predicted')
     handles.append(circle)
     handles.append(triangle)
+    ax.legend(handles=handles)
+
+
+def Par_Plot_comparison(ax, df):
+    """ Construct EC50 parallel coordinate plots for Different ligands. """
+    # set a manual color palette
+    df = df.rename(columns={'Time Point': 'Time Point', 'IL': 'IL', 'Cell Type': 'CellType', 'Data Type': 'Data Type', 'EC-50': 'EC-50'})
+    sns.set_palette(sns.color_palette("husl", 8)[0:5] + [sns.color_palette("husl", 8)[7]])
+    df = df.sort_values(by=['Data Type', 'CellType', 'IL', 'Time Point'])
+
+    expEC50s, predEC50s = pds.DataFrame(columns=['IL', 'NK', 'CD8+', 'T-reg', 'Naive Treg', 'Mem Treg', 'T-helper', 'Naive Th', 'Mem Th']
+                                        ), pds.DataFrame(columns=['IL', 'NK', 'CD8+', 'T-reg', 'Naive Treg', 'Mem Treg', 'T-helper', 'Naive Th', 'Mem Th'])
+
+    for j, ligand in enumerate(df.IL.unique()):
+        expEC50s.loc[j, ['IL']], predEC50s.loc[j, ['IL']] = ligand, ligand
+        for cellname in df.CellType.unique():
+            exp50 = df["EC-50"].loc[(df['Time Point'] == 60.) & (df['IL'] == ligand) & (df['CellType'] == cellname) & (df['Data Type'] == 'Experimental')]
+            expEC50s.loc[j, [str(cellname)]] = exp50.to_numpy()
+            pred50 = df["EC-50"].loc[(df['Time Point'] == 60.) & (df['IL'] == ligand) & (df['CellType'] == cellname) & (df['Data Type'] == 'Predicted')]
+            predEC50s.loc[j, [str(cellname)]] = pred50.to_numpy()
+
+    pds.plotting.parallel_coordinates(expEC50s, 'IL', ax=ax, color=sns.color_palette("husl", 8)[0:5] + [sns.color_palette("husl", 8)[7]])
+    pds.plotting.parallel_coordinates(predEC50s, 'IL', ax=ax, linestyle=':', color=sns.color_palette("husl", 8)[0:5] + [sns.color_palette("husl", 8)[7]])
+
+    handles = []
+    ax.set_ylabel(r"EC-50 (log$_{10}$[nM])")
+    dotted = Line2D([], [], color='black', marker='.', linestyle='None', markersize=6, label='Predicted')
+    line = Line2D([], [], color='black', marker='_', linestyle='None', markersize=6, label='Experimental')
+    handles.append(line)
+    handles.append(dotted)
     ax.legend(handles=handles)
 
 
