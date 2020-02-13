@@ -83,7 +83,7 @@ def calculate_predicted_EC50(x0, receptors, tps, cell_index):
 
 
 def WT_EC50s():
-    # main routine for EC-50 analysis
+    """Returns dataframe of the Wild Type EC50s"""
     df = pd.DataFrame(columns=['Time Point', 'Cell Type', 'IL', 'Data Type', 'EC50'])
 
     x0 = [1, 2., 1000.]
