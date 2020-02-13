@@ -33,27 +33,31 @@ n_pred_comps = 3  # Placed here to be also used by Figure 5
 def makeFigure():
     """Get a list of the axis objects and create a figure"""
     # Get list of axis objects
-    ax, f = getSetup((7.5, 6), (3, 4), multz={0: 1, 2: 1})
+    ax, f = getSetup((7.5, 6), (3, 4), multz={0: 1, 4: 1})
 
     factors_activ = factors_activity[n_pred_comps - 1]
 
     # Start plotting
-    PCA_receptor(ax[2:5], cell_names, numpy_data)
+    PCA_receptor(ax[1:3], cell_names, numpy_data)
     catplot_receptors(ax[0], data)
 
     # Blank out for the cartoon
-    ax[1].axis('off')  # legend
     ax[3].axis('off')
+    ax[4].axis('off')
 
     plot_R2X(ax[5], values, factors_activity)
 
     # Add subplot labels
-
-    for ii, item in enumerate(ax):
-        if ii < 3:
-            subplotLabel(item, string.ascii_uppercase[ii])
-        elif ii > 3:
-            subplotLabel(item, string.ascii_uppercase[ii - 1])
+    axLabel = ax.copy()
+    del axLabel[4]
+    for ii, item in enumerate(axLabel):
+        if ii == 3:
+            h = 2.45  # for multz of 3 panels
+        elif ii == 0:
+            h = 2.75  # for multz of 2 panels
+        else:
+            h = 1  # default h is 1
+        subplotLabel(item, string.ascii_uppercase[ii], hstretch=h)  # Add subplot labels
 
     plot_timepoints(ax[6], tensor_time, tl.to_numpy(factors_activ[0]))
 
@@ -62,7 +66,7 @@ def makeFigure():
 
     legend = ax[7].get_legend()
     labels = (x.get_text() for x in legend.get_texts())
-    ax[3].legend(legend.legendHandles, labels, loc='center left', prop={"size": 8.5})
+    ax[4].legend(legend.legendHandles, labels, loc='center', prop={"size": 9})
 
     ax[7].get_legend().remove()
     ax[8].get_legend().remove()
@@ -99,15 +103,15 @@ def PCA_receptor(ax, cell_name, datas):
 
     for kk in range(loadings.shape[1]):
         if kk == 3:
-            ax[2].scatter(0, 0, s=16, label='IL-15Ra')
-        ax[2].scatter(loadings[0, kk], loadings[1, kk], s=16)
+            ax[1].scatter(0, 0, s=16, label='IL-15Ra')
+        ax[1].scatter(loadings[0, kk], loadings[1, kk], s=16)
 
     ax[0].set_title('Scores')
     set_bounds(ax[0])
     ax[0].set_xlabel('PC1 (' + str(round(expVar[0] * 100)) + '%)')
     ax[0].set_ylabel('PC2 (' + str(round(expVar[1] * 100)) + '%)')
 
-    ax[2].set_title('Loadings')
+    ax[1].set_title('Loadings')
     set_bounds(ax[1])
-    ax[2].set_xlabel('PC1 (' + str(round(expVar[0] * 100)) + '%)')
-    ax[2].set_ylabel('PC2 (' + str(round(expVar[1] * 100)) + '%)')
+    ax[1].set_xlabel('PC1 (' + str(round(expVar[0] * 100)) + '%)')
+    ax[1].set_ylabel('PC2 (' + str(round(expVar[1] * 100)) + '%)')

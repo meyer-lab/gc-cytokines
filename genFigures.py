@@ -34,6 +34,6 @@ if __name__ == '__main__':
     if sys.argv[1] == '3':
         # Overlay Figure 3 cartoon
         overlayCartoon(fdir + 'figure3.svg',
-                       './ckine/data/tensor3D.svg', 270, 10, scalee=0.92)
+                       './ckine/data/tensor3D.svg', 16, 160, scalee=1.0)
 
     logging.info('%s is done after %s seconds.', nameOut, time.time() - start)
