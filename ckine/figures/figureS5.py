@@ -44,7 +44,7 @@ def plot_exp_v_pred(ax, cell_subset=None):
 
     for m, name in enumerate(cell_names_pstat):
         if name in cell_subset or cell_subset == []:  # if a subset is provided only plot the listed names
-            if axis == shift - 1:  # only plot the legend for the last entry
+            if axis == 0:
                 plot_dose_response(ax[axis], ax[axis + shift], IL2_activity[m, :, :, :], IL15_activity[m, :, :, :], name, tps, ckineConc, legend=True)
             else:
                 plot_dose_response(ax[axis], ax[axis + shift], IL2_activity[m, :, :, :], IL15_activity[m, :, :, :], name, tps, ckineConc)
@@ -59,12 +59,13 @@ def plot_dose_response(ax2, ax15, IL2_activity, IL15_activity, cell_type, tps, c
 
     # plot the values with each time as a separate color
     for tt in range(tps.size):
-        plot_conf_int(ax2, np.log10(cytokC.astype(np.float)), IL2_activity[:, :, tt], colors[tt])  # never a legend for IL-2
         if legend:
-            plot_conf_int(ax15, np.log10(cytokC.astype(np.float)), IL15_activity[:, :, tt], colors[tt], (tps[tt] / 60.0).astype(str))
-            ax15.legend(title="time (hours)")
+            plot_conf_int(ax2, np.log10(cytokC.astype(np.float)), IL2_activity[:, :, tt], colors[tt], (tps[tt] / 60.0).astype(str))
+            ax2.legend(title="time (hours)")
         else:
-            plot_conf_int(ax15, np.log10(cytokC.astype(np.float)), IL15_activity[:, :, tt], colors[tt])
+            plot_conf_int(ax2, np.log10(cytokC.astype(np.float)), IL2_activity[:, :, tt], colors[tt])
+
+        plot_conf_int(ax15, np.log10(cytokC.astype(np.float)), IL15_activity[:, :, tt], colors[tt])
 
     # plots for input cell type
     ax2.set(xlabel=r"[IL-2] (log$_{10}$[nM])", ylabel="Activity", title=cell_type)

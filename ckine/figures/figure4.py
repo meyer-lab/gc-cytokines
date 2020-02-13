@@ -29,48 +29,12 @@ def makeFigure():
     for ii, item in enumerate(ax):
         subplotLabel(item, string.ascii_uppercase[ii])
 
-    compare_experimental_data(ax[0], pstat_df)  # compare experiment 1 to 2
-
-    # main routine for EC-50 analysis
-    df = pd.DataFrame(columns=['Time Point', 'Cell Type', 'IL', 'Data Type', 'EC50'])
-
-    x0 = [1, 2., 1000.]
     tps = np.array([0.5, 1., 2., 4.]) * 60.
-    data_types = []
-    cell_types = []
-    EC50s_2 = np.zeros(len(cell_names_pstat) * len(tps) * 2)
-    EC50s_15 = np.zeros(len(cell_names_pstat) * len(tps) * 2)
-
-    for i, name in enumerate(cell_names_pstat):
-        assert cell_names_pstat[i] == cell_names_receptor[i]
-        celltype_data_2 = IL2_data_avg[(i * 4):((i + 1) * 4)]
-        celltype_data_15 = IL15_data_avg[(i * 4):((i + 1) * 4)]
-        data_types.append(np.tile(np.array('Predicted'), len(tps)))
-        # predicted EC50
-        EC50_2, EC50_15 = calculate_predicted_EC50(x0, receptor_data, tps, i)
-        for j, item in enumerate(EC50_2):
-            EC50s_2[(2 * len(tps) * i) + j] = item
-            EC50s_15[(2 * len(tps) * i) + j] = EC50_15[j]
-        # experimental EC50
-        for k, _ in enumerate(tps):
-            timepoint_data_2 = celltype_data_2[k]
-            timepoint_data_15 = celltype_data_15[k]
-            EC50s_2[len(tps) + (2 * len(tps) * i) + k] = nllsq_EC50(x0, np.log10(ckineConc.astype(np.float) * 10**4), timepoint_data_2)
-            EC50s_15[len(tps) + (2 * len(tps) * i) + k] = nllsq_EC50(x0, np.log10(ckineConc.astype(np.float) * 10**4), timepoint_data_15)
-        data_types.append(np.tile(np.array('Experimental'), len(tps)))
-        cell_types.append(np.tile(np.array(name), len(tps) * 2))  # for both experimental and predicted
-
-    EC50 = np.concatenate((EC50s_2, EC50s_15), axis=None)
-    EC50 = EC50 - 4  # account for 10^4 multiplication
-    data_types = np.tile(np.array(data_types).reshape(80,), 2)  # for IL2 and IL15
-    cell_types = np.tile(np.array(cell_types).reshape(80,), 2)
-    IL = np.concatenate((np.tile(np.array('IL-2'), len(cell_names_pstat) * len(tps) * 2), np.tile(np.array('IL-15'), len(cell_names_pstat) * len(tps) * 2)), axis=None)
-    data = {'Time Point': np.tile(np.array(tps), len(cell_names_pstat) * 4), 'IL': IL, 'Cell Type': cell_types.reshape(160,), 'Data Type': data_types.reshape(160,), 'EC-50': EC50}
-    df = pd.DataFrame(data)
-
+    compare_experimental_data(ax[0], pstat_df)  # compare experiment 1 to 2
+    df = WT_EC50s()
     catplot_comparison(ax[1], df, legend=False, Mut=False)  # compare experiments to model predictions
     plot_corrcoef(ax[2], tps)  # find correlation coefficients
-    global_legend(ax[2])  # add legend subplots A-C
+    global_legend(ax[0], Mut=True, exppred=False)  # add legend subplots A-C
 
     plot_exp_v_pred(ax[3:9], cell_subset=["NK", "CD8+", "T-reg"])  # NK, CD8+, and Treg subplots taken from fig S5
 
@@ -116,3 +80,43 @@ def calculate_predicted_EC50(x0, receptors, tps, cell_index):
         EC50_2[i] = nllsq_EC50(x0, np.log10(ckineConc.astype(np.float) * 10**4), IL2_activity[cell_index, :, 0, i])
         EC50_15[i] = nllsq_EC50(x0, np.log10(ckineConc.astype(np.float) * 10**4), IL15_activity[cell_index, :, 0, i])
     return EC50_2, EC50_15
+
+
+def WT_EC50s():
+    """Returns dataframe of the Wild Type EC50s"""
+    df = pd.DataFrame(columns=['Time Point', 'Cell Type', 'IL', 'Data Type', 'EC50'])
+
+    x0 = [1, 2., 1000.]
+    tps = np.array([0.5, 1., 2., 4.]) * 60.
+    data_types = []
+    cell_types = []
+    EC50s_2 = np.zeros(len(cell_names_pstat) * len(tps) * 2)
+    EC50s_15 = np.zeros(len(cell_names_pstat) * len(tps) * 2)
+
+    for i, name in enumerate(cell_names_pstat):
+        assert cell_names_pstat[i] == cell_names_receptor[i]
+        celltype_data_2 = IL2_data_avg[(i * 4):((i + 1) * 4)]
+        celltype_data_15 = IL15_data_avg[(i * 4):((i + 1) * 4)]
+        data_types.append(np.tile(np.array('Predicted'), len(tps)))
+        # predicted EC50
+        EC50_2, EC50_15 = calculate_predicted_EC50(x0, receptor_data, tps, i)
+        for j, item in enumerate(EC50_2):
+            EC50s_2[(2 * len(tps) * i) + j] = item
+            EC50s_15[(2 * len(tps) * i) + j] = EC50_15[j]
+        # experimental EC50
+        for k, _ in enumerate(tps):
+            timepoint_data_2 = celltype_data_2[k]
+            timepoint_data_15 = celltype_data_15[k]
+            EC50s_2[len(tps) + (2 * len(tps) * i) + k] = nllsq_EC50(x0, np.log10(ckineConc.astype(np.float) * 10**4), timepoint_data_2)
+            EC50s_15[len(tps) + (2 * len(tps) * i) + k] = nllsq_EC50(x0, np.log10(ckineConc.astype(np.float) * 10**4), timepoint_data_15)
+        data_types.append(np.tile(np.array('Experimental'), len(tps)))
+        cell_types.append(np.tile(np.array(name), len(tps) * 2))  # for both experimental and predicted
+
+    EC50 = np.concatenate((EC50s_2, EC50s_15), axis=None)
+    EC50 = EC50 - 4  # account for 10^4 multiplication
+    data_types = np.tile(np.array(data_types).reshape(80,), 2)  # for IL2 and IL15
+    cell_types = np.tile(np.array(cell_types).reshape(80,), 2)
+    IL = np.concatenate((np.tile(np.array('IL-2'), len(cell_names_pstat) * len(tps) * 2), np.tile(np.array('IL-15'), len(cell_names_pstat) * len(tps) * 2)), axis=None)
+    data = {'Time Point': np.tile(np.array(tps), len(cell_names_pstat) * 4), 'IL': IL, 'Cell Type': cell_types.reshape(160,), 'Data Type': data_types.reshape(160,), 'EC-50': EC50}
+    df = pd.DataFrame(data)
+    return df

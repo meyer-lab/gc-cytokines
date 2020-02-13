@@ -66,7 +66,7 @@ def makeFigure():
 
     legend = ax[7].get_legend()
     labels = (x.get_text() for x in legend.get_texts())
-    ax[4].legend(legend.legendHandles, labels, loc='lower right', prop={"size": 7.5})
+    ax[4].legend(legend.legendHandles, labels, loc='center', prop={"size": 9})
 
     ax[7].get_legend().remove()
     ax[8].get_legend().remove()

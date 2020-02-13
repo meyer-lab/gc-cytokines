@@ -129,7 +129,7 @@ def plot_cells(ax, factors, component_x, component_y, cell_names, legend=True):
     ax.set_xlim(0, 1)
     ax.set_ylim(0, 1)
     if legend:
-        ax.legend()
+        ax.legend(prop={"size": 6})
 
 
 def plot_ligand_comp(ax, factors, component_x, component_y, ligand_names):
@@ -235,28 +235,31 @@ def plot_scaled_pstat(ax, cytokC, pstat):
     ax.scatter(cytokC, pstat[3, :], c="darkred", s=2)  # 4 hr
 
 
-def global_legend(ax, Spec=False, Mut=False):
+def global_legend(ax, Spec=False, Mut=False, exppred=True):
     """ Create legend for colors and markers in subplots A-C. """
     purple = Patch(color='darkorchid', label='IL-2')
     yellow = Patch(color='goldenrod', label='IL-15')
-    if not Mut:
-        if not Spec:
-            circle = Line2D([], [], color='black', marker='o', linestyle='None', markersize=6, label='Experimental')
-            triangle = Line2D([], [], color='black', marker='^', linestyle='None', markersize=6, label='Predicted')
-            ax.legend(handles=[purple, yellow, circle, triangle], bbox_to_anchor=(1.02, 1), loc="upper left")
-        if Spec:
-            circle = Line2D([], [], color='black', marker='o', linestyle='None', markersize=6, label='Experimental')
-            line = Line2D([], [], color='black', marker='_', linestyle='None', markersize=6, label='Predicted')
-            ax.legend(handles=[purple, yellow, circle, line], bbox_to_anchor=(1.02, 1), loc="upper left")
-    if Mut:
-        if not Spec:
-            circle = Line2D([], [], color='black', marker='o', linestyle='None', markersize=6, label='Experimental')
-            triangle = Line2D([], [], color='black', marker='^', linestyle='None', markersize=6, label='Predicted')
-            ax.legend(handles=[purple, yellow, circle, triangle], loc="upper right")
-        if Spec:
-            circle = Line2D([], [], color='black', marker='o', linestyle='None', markersize=6, label='Experimental')
-            line = Line2D([], [], color='black', marker='_', linestyle='None', markersize=6, label='Predicted')
-            ax.legend(handles=[purple, yellow, circle, line], loc="upper right")
+    if not exppred:
+        ax.legend(handles=[purple, yellow], loc="upper left")
+    else:
+        if not Mut:
+            if not Spec:
+                circle = Line2D([], [], color='black', marker='o', linestyle='None', markersize=6, label='Experimental')
+                triangle = Line2D([], [], color='black', marker='^', linestyle='None', markersize=6, label='Predicted')
+                ax.legend(handles=[purple, yellow, circle, triangle], bbox_to_anchor=(1.02, 1), loc="upper left")
+            if Spec:
+                circle = Line2D([], [], color='black', marker='o', linestyle='None', markersize=6, label='Experimental')
+                line = Line2D([], [], color='black', marker='_', linestyle='None', markersize=6, label='Predicted')
+                ax.legend(handles=[purple, yellow, circle, line], bbox_to_anchor=(1.02, 1), loc="upper left")
+        if Mut:
+            if not Spec:
+                circle = Line2D([], [], color='black', marker='o', linestyle='None', markersize=6, label='Experimental')
+                triangle = Line2D([], [], color='black', marker='^', linestyle='None', markersize=6, label='Predicted')
+                ax.legend(handles=[purple, yellow, circle, triangle], loc="upper left")
+            if Spec:
+                circle = Line2D([], [], color='black', marker='o', linestyle='None', markersize=6, label='Experimental')
+                line = Line2D([], [], color='black', marker='_', linestyle='None', markersize=6, label='Predicted')
+                ax.legend(handles=[purple, yellow, circle, line], loc="upper left")
 
 
 def calc_dose_response(cell_names, unkVec, scales, receptor_data, tps, cytokC, expr_act2, expr_act15):
@@ -476,12 +479,12 @@ def catplot_comparison(ax, df, legend=False, Mut=True):
     # plot predicted EC50
     sns.catplot(x="Cell Type", y="EC-50", hue="IL",
                 data=df.loc[(df['Time Point'] == 60.) & (df["Data Type"] == 'Predicted')],
-                legend=legend, legend_out=legend, ax=ax, marker='^')
+                legend=legend, legend_out=legend, ax=ax, marker='^', s=3.5)
 
     # plot experimental EC50
     sns.catplot(x="Cell Type", y="EC-50", hue="IL",
                 data=df.loc[(df['Time Point'] == 60.) & (df["Data Type"] == 'Experimental')],
-                legend=False, legend_out=False, ax=ax, marker='o')
+                legend=False, legend_out=False, ax=ax, marker='o', s=3.5)
 
     ax.set_xticklabels(ax.get_xticklabels(), rotation=40, fontsize=6.8, rotation_mode="anchor", ha="right")
     ax.set_xlabel("")  # remove "Cell Type" from xlabel
@@ -492,9 +495,40 @@ def catplot_comparison(ax, df, legend=False, Mut=True):
         handles = handles[0:6]
     circle = Line2D([], [], color='black', marker='o', linestyle='None', markersize=6, label='Experimental')
     triangle = Line2D([], [], color='black', marker='^', linestyle='None', markersize=6, label='Predicted')
-    handles = handles[0:6]
     handles.append(circle)
     handles.append(triangle)
+    ax.legend(handles=handles)
+
+
+def Par_Plot_comparison(ax, df):
+    """ Construct EC50 parallel coordinate plots for Different ligands. """
+    # set a manual color palette
+    df = df.replace(['IL-2', 'IL-15'], ['WT IL2', 'WT IL15'])
+    df = df.sort_values(by=['Data Type', 'CellType', 'IL', 'Time Point'])
+
+    expEC50s, predEC50s = pds.DataFrame(columns=['IL', 'NK', 'CD8+', 'T-reg', 'Naive Treg', 'Mem Treg', 'T-helper', 'Naive Th', 'Mem Th']
+                                        ), pds.DataFrame(columns=['IL', 'NK', 'CD8+', 'T-reg', 'Naive Treg', 'Mem Treg', 'T-helper', 'Naive Th', 'Mem Th'])
+
+    for j, ligand in enumerate(df.IL.unique()):
+        expEC50s.loc[j, ['IL']], predEC50s.loc[j, ['IL']] = ligand, ligand
+        for cellname in df.CellType.unique():
+            exp50 = df["EC-50"].loc[(df['Time Point'] == 60.) & (df['IL'] == ligand) & (df['CellType'] == cellname) & (df['Data Type'] == 'Experimental')]
+            expEC50s.loc[j, [str(cellname)]] = exp50.to_numpy()
+            pred50 = df["EC-50"].loc[(df['Time Point'] == 60.) & (df['IL'] == ligand) & (df['CellType'] == cellname) & (df['Data Type'] == 'Predicted')]
+            predEC50s.loc[j, [str(cellname)]] = pred50.to_numpy()
+
+    pds.plotting.parallel_coordinates(expEC50s, 'IL', ax=ax, color=sns.color_palette("husl", 8))
+    pds.plotting.parallel_coordinates(predEC50s, 'IL', ax=ax, linestyle=':', color=sns.color_palette("husl", 8))
+    ax.set_xticklabels(ax.get_xticklabels(), rotation=40, fontsize=6.8, rotation_mode="anchor", ha="right")
+    print(predEC50s)
+    print(expEC50s)
+
+    handles = []
+    ax.set_ylabel(r"EC-50 (log$_{10}$[nM])")
+    dotted = Line2D([], [], color='black', marker='.', linestyle='None', markersize=6, label='Predicted')
+    line = Line2D([], [], color='black', marker='_', linestyle='None', markersize=6, label='Experimental')
+    handles.append(line)
+    handles.append(dotted)
     ax.legend(handles=handles)
 
 
