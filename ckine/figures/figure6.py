@@ -10,6 +10,7 @@ import theano.tensor as T
 import theano
 from matplotlib.lines import Line2D
 from .figureCommon import subplotLabel, getSetup, global_legend, calc_dose_response, import_pMuteins, nllsq_EC50, organize_expr_pred, mutein_scaling, plot_cells, plot_ligand_comp, Par_Plot_comparison
+from .figure4 import WT_EC50s
 from ..imports import import_pstat, import_samples_2_15, import_Rexpr
 from ..model import getTotalActiveSpecies, receptor_expression, getRateVec, getparamsdict, getMutAffDict
 from ..differencing_op import runCkineDoseOp
@@ -67,6 +68,11 @@ def makeFigure():
     ckineConc_ = np.delete(ckineConc, 11, 0)  # delete smallest concentration since zero/negative activity
 
     mutEC50df = get_Mut_EC50s()
+    WT_EC50df = WT_EC50s()
+    mutEC50df = mutEC50df.rename(columns={'Time Point': 'Time Point', 'IL': 'IL', 'Cell Type': 'CellType', 'Data Type': 'Data Type', 'EC-50': 'EC-50'})
+    WT_EC50df = WT_EC50df.rename(columns={'Time Point': 'Time Point', 'IL': 'IL', 'Cell Type': 'CellType', 'Data Type': 'Data Type', 'EC-50': 'EC-50'})
+    WT_EC50df = WT_EC50df[(WT_EC50df.CellType != 'Mem CD8+') & (WT_EC50df.CellType != 'Naive CD8+')]
+    mutEC50df = pd.concat([mutEC50df, WT_EC50df])
     affComp(ax[0])
     calc_plot_specificity(ax[7], 'NK', df_spec, df_act, ckines, ckineConc_)
     calc_plot_specificity(ax[8], 'T-helper', df_spec, df_act, ckines, ckineConc_)
@@ -99,8 +105,10 @@ def affComp(ax):
     KDdf = pd.DataFrame({'RaAff': RaAff, 'GcBAff': GcBAff, 'Ligand': ligList})
     KDdf = KDdf.sort_values(by=["Ligand"])
     sns.scatterplot(x='RaAff', y='GcBAff', data=KDdf, hue="Ligand", palette=sns.color_palette("husl", 8)[0:5] + sns.color_palette("husl", 8)[6:8], ax=ax, legend=False)
-    ax.set_xlabel("IL-2Rα KD (nM)")
-    ax.set_ylabel("IL-2Rβ/γc KD (nM)")
+    ax.set_xlabel("IL-2Rα KD (log$_{10}$[nM])")
+    ax.set_ylabel("IL-2Rβ/γc KD (log$_{10}$[nM])")
+    ax.set_xscale('log')
+    ax.set_yscale('log')
 
 
 def calc_plot_specificity(ax, cell_compare, df_specificity, df_activity, ligands, concs):

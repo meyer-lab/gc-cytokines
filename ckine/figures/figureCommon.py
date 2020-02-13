@@ -503,8 +503,7 @@ def catplot_comparison(ax, df, legend=False, Mut=True):
 def Par_Plot_comparison(ax, df):
     """ Construct EC50 parallel coordinate plots for Different ligands. """
     # set a manual color palette
-    df = df.rename(columns={'Time Point': 'Time Point', 'IL': 'IL', 'Cell Type': 'CellType', 'Data Type': 'Data Type', 'EC-50': 'EC-50'})
-    sns.set_palette(sns.color_palette("husl", 8)[0:5] + [sns.color_palette("husl", 8)[7]])
+    df = df.replace(['IL-2', 'IL-15'], ['WT IL2', 'WT IL15'])
     df = df.sort_values(by=['Data Type', 'CellType', 'IL', 'Time Point'])
 
     expEC50s, predEC50s = pds.DataFrame(columns=['IL', 'NK', 'CD8+', 'T-reg', 'Naive Treg', 'Mem Treg', 'T-helper', 'Naive Th', 'Mem Th']
@@ -518,9 +517,11 @@ def Par_Plot_comparison(ax, df):
             pred50 = df["EC-50"].loc[(df['Time Point'] == 60.) & (df['IL'] == ligand) & (df['CellType'] == cellname) & (df['Data Type'] == 'Predicted')]
             predEC50s.loc[j, [str(cellname)]] = pred50.to_numpy()
 
-    pds.plotting.parallel_coordinates(expEC50s, 'IL', ax=ax, color=sns.color_palette("husl", 8)[0:5] + [sns.color_palette("husl", 8)[7]])
-    pds.plotting.parallel_coordinates(predEC50s, 'IL', ax=ax, linestyle=':', color=sns.color_palette("husl", 8)[0:5] + [sns.color_palette("husl", 8)[7]])
+    pds.plotting.parallel_coordinates(expEC50s, 'IL', ax=ax, color=sns.color_palette("husl", 8))
+    pds.plotting.parallel_coordinates(predEC50s, 'IL', ax=ax, linestyle=':', color=sns.color_palette("husl", 8))
     ax.set_xticklabels(ax.get_xticklabels(), rotation=40, fontsize=6.8, rotation_mode="anchor", ha="right")
+    print(predEC50s)
+    print(expEC50s)
 
     handles = []
     ax.set_ylabel(r"EC-50 (log$_{10}$[nM])")

@@ -33,26 +33,26 @@ n_pred_comps = 3  # Placed here to be also used by Figure 5
 def makeFigure():
     """Get a list of the axis objects and create a figure"""
     # Get list of axis objects
-    ax, f = getSetup((7.5, 6), (3, 4), multz={4: 1, 10: 1})
+    ax, f = getSetup((7.5, 6), (3, 4), multz={0: 1, 2: 1})
 
     factors_activ = factors_activity[n_pred_comps - 1]
 
     # Start plotting
-    PCA_receptor(ax[1:4], cell_names, numpy_data)
+    PCA_receptor(ax[2:5], cell_names, numpy_data)
     catplot_receptors(ax[0], data)
 
     # Blank out for the cartoon
-    ax[2].axis('off')  # legend
-    ax[4].axis('off')
+    ax[1].axis('off')  # legend
+    ax[3].axis('off')
 
     plot_R2X(ax[5], values, factors_activity)
 
     # Add subplot labels
 
     for ii, item in enumerate(ax):
-        if ii < 2:
+        if ii < 3:
             subplotLabel(item, string.ascii_uppercase[ii])
-        elif ii > 2:
+        elif ii > 3:
             subplotLabel(item, string.ascii_uppercase[ii - 1])
 
     plot_timepoints(ax[6], tensor_time, tl.to_numpy(factors_activ[0]))
@@ -62,7 +62,7 @@ def makeFigure():
 
     legend = ax[7].get_legend()
     labels = (x.get_text() for x in legend.get_texts())
-    ax[2].legend(legend.legendHandles, labels, loc='center left', prop={"size": 8.5})
+    ax[3].legend(legend.legendHandles, labels, loc='center left', prop={"size": 8.5})
 
     ax[7].get_legend().remove()
     ax[8].get_legend().remove()
