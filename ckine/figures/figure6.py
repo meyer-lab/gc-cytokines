@@ -33,14 +33,14 @@ mutData = import_pMuteins()
 def makeFigure():
     """Get a list of the axis objects and create a figure"""
     # Get list of axis objects
-    ax, f = getSetup((7.5, 6), (3, 4), multz={2: 1})
+    ax, f = getSetup((7.5, 6), (3, 4), multz={6: 1})
 
-    ax[1].axis('off')
+    ax[5].axis('off')
 
     for ii, item in enumerate(ax):
-        if ii < 1:
+        if ii < 5:
             subplotLabel(item, string.ascii_uppercase[ii])
-        elif ii > 1:
+        elif ii > 5:
             subplotLabel(item, string.ascii_uppercase[ii - 1])
 
     ckines = ['IL-2', 'IL-15']
@@ -73,18 +73,18 @@ def makeFigure():
     WT_EC50df = WT_EC50df.rename(columns={'Time Point': 'Time Point', 'IL': 'IL', 'Cell Type': 'CellType', 'Data Type': 'Data Type', 'EC-50': 'EC-50'})
     WT_EC50df = WT_EC50df[(WT_EC50df.CellType != 'Mem CD8+') & (WT_EC50df.CellType != 'Naive CD8+')]
     mutEC50df = pd.concat([mutEC50df, WT_EC50df])
-    affComp(ax[0])
-    calc_plot_specificity(ax[7], 'NK', df_spec, df_act, ckines, ckineConc_)
-    calc_plot_specificity(ax[8], 'T-helper', df_spec, df_act, ckines, ckineConc_)
-    global_legend(ax[7], Spec=True, Mut=True)
-    Specificity(ax=ax[9])
-    Spec_Aff(ax[10], 40, unkVecT, scalesT)
-    Par_Plot_comparison(ax[2], mutEC50df)
-    Mut_Fact(ax[3:7])
-    legend = ax[3].get_legend()
+    affComp(ax[4])
+    calc_plot_specificity(ax[0], 'NK', df_spec, df_act, ckines, ckineConc_)
+    calc_plot_specificity(ax[1], 'T-helper', df_spec, df_act, ckines, ckineConc_)
+    global_legend(ax[0], Spec=True, Mut=True)
+    Specificity(ax=ax[2])
+    Spec_Aff(ax[3], 40, unkVecT, scalesT)
+    Par_Plot_comparison(ax[6], mutEC50df)
+    Mut_Fact(ax[7:11])
+    legend = ax[7].get_legend()
     labels = (x.get_text() for x in legend.get_texts())
-    ax[1].legend(legend.legendHandles, labels, loc='center left', prop={"size": 9})
-    ax[3].get_legend().remove()
+    ax[5].legend(legend.legendHandles, labels, loc='center left', prop={"size": 9})
+    ax[7].get_legend().remove()
 
     return f
 
@@ -359,7 +359,7 @@ def Mut_Fact(ax):
 
     # Cells
     plot_cells(ax[1], parafac[0], 1, 2, cells)
-    ax[1].legend()
+    ax[1].legend(prop={"size": 6})
 
     # Timepoints
     tComp = np.r_[np.zeros((1, 2)), parafac[2]]
