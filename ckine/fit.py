@@ -18,7 +18,13 @@ def load_data(filename):
 
 def sampling(M):
     """ This is the sampling that actually runs the model. """
-    return pm.sample(init="adapt_diag", chains=2, model=M, target_accept=0.90, step_scale=0.01)
+    cb = [
+        pm.callbacks.CheckParametersConvergence(tolerance=1e-6, diff="absolute"),
+        pm.callbacks.CheckParametersConvergence(tolerance=1e-6, diff="relative"),
+    ]
+
+    mean_field = pm.fit(90000, method='advi', model=M, callbacks=cb)
+    return mean_field.sample(500)
 
 
 def commonTraf(trafficking=True):
