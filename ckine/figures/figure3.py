@@ -9,7 +9,6 @@ from sklearn.decomposition import PCA
 import matplotlib.cm as cm
 import tensorly as tl
 import seaborn as sns
-from textwrap import wrap
 from matplotlib.lines import Line2D
 from .figureCommon import subplotLabel, getSetup, plot_cells, plot_ligands, plot_timepoints, plot_R2X, set_bounds
 from ..imports import import_Rexpr
