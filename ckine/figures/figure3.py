@@ -69,9 +69,7 @@ def makeFigure():
     ax[4].legend(legend.legendHandles, labels, loc='center', prop={"size": 9})
     ax[7].get_legend().remove()
     ax[8].get_legend().remove()
-    circle = Line2D([], [], color='black', marker='o', linestyle='None', markersize=6, label='Variance of Model')
-    circle2 = Line2D([], [], color='black', marker='o', linestyle='None', markersize=0, label='Output Explained')
-    ax[5].legend(handles=[circle, circle2], loc="lower right")
+    ax[5].set_ylabel('Variance of Model\nOutput Explained', fontsize=8, multialignment='center')
     plot_ligands(ax[9], tl.to_numpy(factors_activ[2]), ligand_names=['IL-2', 'IL-15', 'IL-7'], cutoff=5.0)
 
     return f
