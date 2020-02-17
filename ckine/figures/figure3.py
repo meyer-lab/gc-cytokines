@@ -63,14 +63,12 @@ def makeFigure():
 
     plot_cells(ax[7], tl.to_numpy(factors_activ[1]), 1, 2, cell_names)
     plot_cells(ax[8], tl.to_numpy(factors_activ[1]), 1, 3, cell_names)
-
     legend = ax[7].get_legend()
     labels = (x.get_text() for x in legend.get_texts())
     ax[4].legend(legend.legendHandles, labels, loc='center', prop={"size": 9})
-
     ax[7].get_legend().remove()
     ax[8].get_legend().remove()
-
+    ax[5].set_ylabel('Variance of Model\nOutput Explained', fontsize=8, multialignment='center')
     plot_ligands(ax[9], tl.to_numpy(factors_activ[2]), ligand_names=['IL-2', 'IL-15', 'IL-7'], cutoff=5.0)
 
     return f
