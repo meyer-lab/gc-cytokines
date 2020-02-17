@@ -2,7 +2,6 @@
 This creates Figure S2. Full panel of Geweke convergence tests.
 """
 import string
-import numpy as np
 import pandas as pd
 import seaborn as sns
 from arviz.stats.diagnostics import geweke
