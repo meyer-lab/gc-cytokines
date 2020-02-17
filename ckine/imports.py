@@ -1,5 +1,5 @@
 """File that deals with everything about importing and sampling."""
-import os
+import glob, os
 from os.path import join
 import numpy as np
 import scipy as sp
@@ -52,8 +52,9 @@ def import_muteins():
 
 def loadFiles(pathh):
     """ Load files as a dataframe. """
-    df = pds.read_csv(join(path_here, "ckine/data/fits/", pathh, "chain-0.csv"))
-    return df
+    all_files = glob.iglob(join(path_here, "ckine/data/fits/", pathh, "*.csv"))
+
+    return pds.concat((pds.read_csv(f) for f in all_files))
 
 
 def import_samples_2_15(Traf=True, ret_trace=False, N=None, tensor=False):
@@ -85,7 +86,7 @@ def import_samples_2_15(Traf=True, ret_trace=False, N=None, tensor=False):
         assert 0 < N < num, "The N specified is out of bounds."
 
         idx = np.random.randint(num, size=N)  # pick N numbers without replacement from 0 to num
-        unkVec, scales = unkVec[:, idx], scales[idx, :]
+        unkVec, scales = unkVec[:, idx], scales[idx]
 
     return unkVec, scales
 
