@@ -74,12 +74,12 @@ def import_samples_2_15(Traf=True, ret_trace=False, N=None, tensor=False):
     num = scales.size
 
     unkVec = np.zeros((nParams(), num))
-    unkVec[6:13, :] = trace[["kfwd__0", "rxn__0", "rxn__1", "rxn__2", "rxn__3", "rxn__4"]].values
+    unkVec[6:13, :] = trace[["kfwd__0", "rxn__0", "rxn__1", "rxn__2", "rxn__3", "rxn__4", "rxn__5"]].values.T
     unkVec[13:17, :] = 1.0
-    unkVec[22:26, :] = trace[["Rexpr_2Ra__0", "Rexpr_2Rb__0", "Rexpr_gc__0", "Rexpr_15Ra__0"]].values
+    unkVec[22:26, :] = trace[["Rexpr_2Ra__0", "Rexpr_2Rb__0", "Rexpr_gc__0", "Rexpr_15Ra__0"]].values.T
 
     if Traf:
-        unkVec[17:22, :] = trace[["endo__0", "activeEndo__0", "sortF__0", "kRec__0", "kDeg__0"]]
+        unkVec[17:22, :] = trace[["endo__0", "activeEndo__0", "sortF__0", "kRec__0", "kDeg__0"]].T
 
     if N is not None:
         assert 0 < N < num, "The N specified is out of bounds."
