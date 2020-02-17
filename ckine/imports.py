@@ -1,21 +1,18 @@
 """File that deals with everything about importing and sampling."""
-import os
-from os.path import join
-import pymc3 as pm
+from glob import iglob
+from os.path import join, dirname
 import numpy as np
-import scipy as sp
+from scipy.stats import gmean
 import pandas as pds
-from .fit import build_model as build_model_2_15
-from .fit_others import build_model as build_model_4_7
 from .model import nParams
 
-path_here = os.path.dirname(os.path.dirname(__file__))
+path_here = dirname(dirname(__file__))
 
 
 def import_Rexpr():
     """ Loads CSV file containing Rexpr levels from Visterra data. """
     data = pds.read_csv(join(path_here, "ckine/data/final_receptor_levels.csv"))  # Every row in the data represents a specific cell
-    df = data.groupby(["Cell Type", "Receptor"]).agg(sp.stats.gmean)  # Get the mean receptor count for each cell across trials in a new dataframe.
+    df = data.groupby(["Cell Type", "Receptor"]).agg(gmean)  # Get the mean receptor count for each cell across trials in a new dataframe.
     cell_names, receptor_names = df.index.unique().levels  # gc_idx=0|IL15Ra_idx=1|IL2Ra_idx=2|IL2Rb_idx=3
     cell_names = cell_names[[4, 0, 5, 1, 9, 7, 3, 8, 6, 2]]  # Reorder to match pstat import order
     receptor_names = receptor_names[[2, 3, 0, 1, 4]]  # Reorder so that IL2Ra_idx=0|IL2Rb_idx=1|gc_idx=2|IL15Ra_idx=3|IL7Ra_idx=4
@@ -53,77 +50,69 @@ def import_muteins():
     return dataMean, dataTensor
 
 
+def loadFiles(pathh):
+    """ Load files as a dataframe. """
+    all_files = iglob(join(path_here, "ckine/data/fits/", pathh, "*.csv"))
+
+    return pds.concat((pds.read_csv(f) for f in all_files))
+
+
 def import_samples_2_15(Traf=True, ret_trace=False, N=None, tensor=False):
     """ This function imports the csv results of IL2-15 fitting into a numpy array called unkVec. """
     if tensor:
         np.random.seed(79)
-    bmodel = build_model_2_15(traf=Traf)
-    n_params = nParams()
 
     if Traf:
-        trace = pm.backends.text.load(join(path_here, "ckine/data/fits/IL2_model_results"), bmodel.M)
+        trace = loadFiles("IL2_model_results")
     else:
-        trace = pm.backends.text.load(join(path_here, "ckine/data/fits/IL2_15_no_traf"), bmodel.M)
+        trace = loadFiles("IL2_15_no_traf")
 
     # option to return trace instead of numpy array
     if ret_trace:
         return trace
 
-    scales = trace.get_values("scales")
+    scales = trace["scales__0"].values
     num = scales.size
 
-    unkVec = np.zeros((n_params, num))
-    unkVec[6, :] = np.squeeze(trace.get_values("kfwd"))
-    unkVec[7:13, :] = np.squeeze(trace.get_values("rxn")).T
+    unkVec = np.zeros((nParams(), num))
+    unkVec[6:13, :] = trace[["kfwd__0", "rxn__0", "rxn__1", "rxn__2", "rxn__3", "rxn__4", "rxn__5"]].values.T
     unkVec[13:17, :] = 1.0
-
-    unkVec[22, :] = np.squeeze(trace.get_values("Rexpr_2Ra"))
-    unkVec[23, :] = np.squeeze(trace.get_values("Rexpr_2Rb"))
-    unkVec[24, :] = np.squeeze(trace.get_values("Rexpr_gc"))
-    unkVec[25, :] = np.squeeze(trace.get_values("Rexpr_15Ra"))
+    unkVec[22:26, :] = trace[["Rexpr_2Ra__0", "Rexpr_2Rb__0", "Rexpr_gc__0", "Rexpr_15Ra__0"]].values.T
 
     if Traf:
-        unkVec[17, :] = np.squeeze(trace.get_values("endo"))
-        unkVec[18, :] = np.squeeze(trace.get_values("activeEndo"))
-        unkVec[19, :] = np.squeeze(trace.get_values("sortF"))
-        unkVec[20, :] = np.squeeze(trace.get_values("kRec"))
-        unkVec[21, :] = np.squeeze(trace.get_values("kDeg"))
+        unkVec[17:22, :] = trace[["endo__0", "activeEndo__0", "sortF__0", "kRec__0", "kDeg__0"]].T
 
     if N is not None:
         assert 0 < N < num, "The N specified is out of bounds."
 
         idx = np.random.randint(num, size=N)  # pick N numbers without replacement from 0 to num
-        unkVec, scales = unkVec[:, idx], scales[idx, :]
+        unkVec, scales = unkVec[:, idx], scales[idx]
 
     return unkVec, scales
 
 
 def import_samples_4_7(ret_trace=False, N=None):
     """ This function imports the csv results of IL4-7 fitting into a numpy array called unkVec. """
-    bmodel = build_model_4_7()
-    n_params = nParams()
-
-    trace = pm.backends.text.load(join(path_here, "ckine/data/fits/IL4-7_model_results"), bmodel.M)
+    trace = loadFiles("IL4-7_model_results")
 
     # option to return trace instead of numpy array
     if ret_trace:
         return trace
 
-    endo = np.squeeze(trace.get_values("endo"))
-    activeEndo = np.squeeze(trace.get_values("activeEndo"))
-    sortF = np.squeeze(trace.get_values("sortF"))
-    kRec = np.squeeze(trace.get_values("kRec"))
-    kDeg = np.squeeze(trace.get_values("kDeg"))
-    scales = trace.get_values("scales")
+    endo = trace["endo__0"].values
+    sortF = trace["sortF__0"].values
+    kRec = trace["kRec__0"].values
+    kDeg = trace["kDeg__0"].values
+    scales = trace[["scales__0", "scales__1"]].values
     num = scales.shape[0]
 
-    unkVec = np.zeros((n_params, num))
-    unkVec[6, :] = np.squeeze(trace.get_values("kfwd"))
+    unkVec = np.zeros((nParams(), num))
+    unkVec[6, :] = trace["kfwd__0"].values
     unkVec[7:17, :] = 1.0
-    unkVec[13, :] = np.squeeze(trace.get_values("k27rev"))
-    unkVec[15, :] = np.squeeze(trace.get_values("k33rev"))
+    unkVec[13, :] = trace["k27rev__0"].values
+    unkVec[15, :] = trace["k33rev__0"].values
     unkVec[17, :] = endo
-    unkVec[18, :] = activeEndo
+    unkVec[18, :] = trace["activeEndo__0"].values
     unkVec[19, :] = sortF
     unkVec[20, :] = kRec
     unkVec[21, :] = kDeg
@@ -144,8 +133,7 @@ def import_samples_4_7(ret_trace=False, N=None):
 
 def import_pstat(combine_samples=True):
     """ Loads CSV file containing pSTAT5 levels from Visterra data. Incorporates only Replicate 1 since data missing in Replicate 2. """
-    path = os.path.dirname(os.path.dirname(__file__))
-    data = np.array(pds.read_csv(join(path, "ckine/data/pSTAT_data.csv"), encoding="latin1"))
+    data = np.array(pds.read_csv(join(path_here, "ckine/data/pSTAT_data.csv"), encoding="latin1"))
     ckineConc = data[4, 2:14]
     tps = np.array([0.5, 1.0, 2.0, 4.0]) * 60.0
     # 4 time points, 10 cell types, 12 concentrations, 2 replicates

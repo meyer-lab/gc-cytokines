@@ -7,7 +7,7 @@ flist = 1 2 3 4 5 6 S1 S2 S4 S5 S7
 
 .PHONY: clean test all testcover autopep spell
 
-all: ckine/ckine.so Manuscript/Manuscript.pdf Manuscript/Manuscript.docx
+all: ckine/ckine.so Manuscript/Manuscript.pdf Manuscript/Manuscript.docx pylint.log spell.txt
 
 venv: venv/bin/activate
 
@@ -18,7 +18,7 @@ venv/bin/activate: requirements.txt
 
 $(fdir)/figure%.svg: venv genFigures.py ckine/ckine.so graph_all.svg ckine/figures/figure%.py
 	mkdir -p ./Manuscript/Figures
-	. venv/bin/activate && THEANO_FLAGS='mode=FAST_COMPILE' ./genFigures.py $*
+	. venv/bin/activate && ./genFigures.py $*
 
 $(fdir)/figure%pdf: $(fdir)/figure%svg
 	rsvg-convert --keep-image-data -f pdf $< -o $@
@@ -53,8 +53,8 @@ clean:
 	rm -rf html ckine/*.dSYM doxy.log graph_all.svg valgrind.xml callgrind.out.* cprofile.svg venv
 	find -iname "*.pyc" -delete
 
-spell: Manuscript/Text/*.md
-	pandoc --lua-filter common/templates/spell.lua Manuscript/Text/*.md | sort | uniq -ic
+spell.txt: Manuscript/Text/*.md
+	pandoc --lua-filter common/templates/spell.lua Manuscript/Text/*.md | sort | uniq -ic > spell.txt
 
 test: venv ckine/ckine.so
 	. venv/bin/activate && pytest

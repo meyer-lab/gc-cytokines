@@ -82,7 +82,7 @@ class pstat:
 
         # put together into one vector & normalize by scale
         actVec = np.concatenate((actVec_IL2, actVec_IL2_IL2Raminus, actVec_IL15, actVec_IL15_IL2Raminus), axis=1)
-        actVec = actVec / (actVec + scale)
+        actVec = actVec / (actVec + scale[:, np.newaxis])
 
         return actVec / actVec.max(axis=1, keepdims=True)  # normalize by the max value of each row
 
