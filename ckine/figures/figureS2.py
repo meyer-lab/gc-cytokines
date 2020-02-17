@@ -62,7 +62,6 @@ def plot_geweke_2_15(ax, traf):
                        ha="right",
                        fontsize=8,
                        position=(0, 0.075))
-    ax.get_legend().set_visible(False)  # remove legend created by sns
     ax.axhline(1., c='r')  # line to denote acceptable threshold of standard deviations
     ax.set(ylim=(-0.1, 1.25), ylabel=r"z-score")
 
@@ -92,6 +91,5 @@ def plot_geweke_4_7(ax):
                        ha="right",
                        fontsize=8,
                        position=(0, 0.075))
-    ax.get_legend().set_visible(False)  # remove legend created by sns
     ax.axhline(1., c='r')  # line to denote acceptable threshold of standard deviations
     ax.set(ylim=(-0.1, 1.25), ylabel=r"z-score")
