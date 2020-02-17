@@ -382,7 +382,7 @@ def calc_dose_response_mutein(unkVec, tps, muteinC, mutein_name, cell_receptors)
     """ Calculates activity for a given cell type at various mutein concentrations and timepoints. """
     unkVec[22:25] = cell_receptors[0:3]
 
-    unkVec = np.repeat(unkVec, len(muteinC), axis=1)
+    unkVec = np.tile(unkVec, (1, len(muteinC)))
     unkVec[0, :] = muteinC
     yOut = runCkineUP(tps, unkVec, mut_name=mutein_name)
     active_ckine = np.dot(yOut, getTotalActiveSpecies().astype(np.float))
