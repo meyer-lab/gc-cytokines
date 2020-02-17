@@ -2,6 +2,7 @@
 This creates Figure S2. Full panel of Geweke convergence tests.
 """
 import string
+import numpy as np
 import pandas as pd
 import seaborn as sns
 from arviz.stats.diagnostics import geweke
@@ -54,7 +55,7 @@ def plot_geweke_2_15(ax, traf):
     else:
         ax.set_title(r'IL-2/-15 no trafficking model')
 
-    sns.stripplot(data=df, ax=ax)
+    sns.stripplot(data=df.abs(), ax=ax, color="k", size=3)
 
     ax.set_xticklabels(df.columns,  # use keys from dict as x-axis labels
                        rotation=25,
@@ -63,7 +64,7 @@ def plot_geweke_2_15(ax, traf):
                        fontsize=8,
                        position=(0, 0.075))
     ax.axhline(1., c='r')  # line to denote acceptable threshold of standard deviations
-    ax.set(ylim=(-0.1, 1.25), ylabel=r"z-score")
+    ax.set(ylim=(-0.05, 1.25), ylabel=r"|z-score|")
 
 
 def plot_geweke_4_7(ax):
@@ -83,7 +84,7 @@ def plot_geweke_4_7(ax):
     df[r'$k_{deg}$'] = geweke(trace["kDeg__0"])[:, 1]
     ax.set_title(r'IL-4/-7 trafficking model')
 
-    sns.stripplot(data=df, ax=ax)
+    sns.stripplot(data=df.abs(), ax=ax, color="k", size=3)
 
     ax.set_xticklabels(df.columns,  # use keys from dict as x-axis labels
                        rotation=25,
@@ -92,4 +93,4 @@ def plot_geweke_4_7(ax):
                        fontsize=8,
                        position=(0, 0.075))
     ax.axhline(1., c='r')  # line to denote acceptable threshold of standard deviations
-    ax.set(ylim=(-0.1, 1.25), ylabel=r"z-score")
+    ax.set(ylim=(-0.05, 1.25), ylabel=r"|z-score|")

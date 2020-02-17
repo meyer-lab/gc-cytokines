@@ -16,21 +16,11 @@ pipeline {
             cobertura coberturaReportFile: 'coverage.xml', failUnhealthy: false, failUnstable: false, maxNumberOfBuilds: 0, onlyStable: false, sourceEncoding: 'ASCII', zoomCoverageChart: false
           }
         }
-        stage('Spellcheck') {
-          steps {
-            sh 'make spell.txt'
-            archiveArtifacts artifacts: 'spell.txt', onlyIfSuccessful: true
-          }
-        }
-        stage('Lint') {
-          steps {
-            sh 'make pylint.log'
-            recordIssues qualityGates: [[threshold: 1, type: 'TOTAL_HIGH', unstable: true], [threshold: 1, type: 'TOTAL_NORMAL', unstable: true], [threshold: 30, type: 'TOTAL_LOW', unstable: true]], tools: [pyLint(pattern: 'pylint.log')]
-          }
-        }
         stage('Build') {
           steps {
-            sh 'make -j 4'
+            sh 'make -j 9'
+            archiveArtifacts artifacts: 'spell.txt', onlyIfSuccessful: true
+            recordIssues qualityGates: [[threshold: 1, type: 'TOTAL_HIGH', unstable: true], [threshold: 1, type: 'TOTAL_NORMAL', unstable: true], [threshold: 30, type: 'TOTAL_LOW', unstable: true]], tools: [pyLint(pattern: 'pylint.log')]
             archiveArtifacts artifacts: 'Manuscript/Figures/*.pdf, Manuscript/Manuscript.pdf', onlyIfSuccessful: true
           }
         }
