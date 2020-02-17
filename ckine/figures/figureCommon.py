@@ -527,11 +527,8 @@ def nllsq_EC50(x0, xdata, ydata):
 
 def hill_equation(x, x0, solution=0):
     """ Calculates EC50 from Hill Equation. """
-    k = x0[0]
-    n = x0[1]
-    A = x0[2]
-    xk = np.power(x / k, n)
-    return (A * xk / (1.0 + xk)) - solution
+    xk = np.power(x / x0[0], x0[1])
+    return (x0[2] * xk / (1.0 + xk)) - solution
 
 
 def residuals(x0, x, y):
