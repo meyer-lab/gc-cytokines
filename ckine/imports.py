@@ -76,8 +76,7 @@ def import_samples_2_15(Traf=True, ret_trace=False, N=None, tensor=False):
     num = scales.size
 
     unkVec = np.zeros((nParams(), num))
-    unkVec[6, :] = trace["kfwd__0"].values
-    unkVec[7:13, :] = trace[["rxn__0", "rxn__1", "rxn__2", "rxn__3", "rxn__4"]].values
+    unkVec[6:13, :] = trace[["kfwd__0", "rxn__0", "rxn__1", "rxn__2", "rxn__3", "rxn__4"]].values
     unkVec[13:17, :] = 1.0
     unkVec[22:26, :] = trace[["Rexpr_2Ra__0", "Rexpr_2Rb__0", "Rexpr_gc__0", "Rexpr_15Ra__0"]].values
 
@@ -105,14 +104,14 @@ def import_samples_4_7(ret_trace=False, N=None):
     sortF = trace["sortF__0"].values
     kRec = trace["kRec__0"].values
     kDeg = trace["kDeg__0"].values
-    scales = trace.get_values("scales")
+    scales = trace[["scales__0", "scales__1"]].values
     num = scales.shape[0]
 
     unkVec = np.zeros((nParams(), num))
-    unkVec[6, :] = np.squeeze(trace.get_values("kfwd"))
+    unkVec[6, :] = trace["kfwd__0"].values
     unkVec[7:17, :] = 1.0
-    unkVec[13, :] = np.squeeze(trace.get_values("k27rev"))
-    unkVec[15, :] = np.squeeze(trace.get_values("k33rev"))
+    unkVec[13, :] = trace["k27rev__0"].values
+    unkVec[15, :] = trace["k33rev__0"].values
     unkVec[17, :] = endo
     unkVec[18, :] = trace["activeEndo__0"].values
     unkVec[19, :] = sortF
