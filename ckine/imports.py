@@ -52,10 +52,8 @@ def import_muteins():
 
 def loadFiles(pathh):
     """ Load files as a dataframe. """
-    df = pds.read_csv(join(path_here, "ckine/data/fits/", pathh, "/chain-0.csv"))
+    df = pds.read_csv(join(path_here, "ckine/data/fits/", pathh, "chain-0.csv"))
     return df
-
-
 
 
 def import_samples_2_15(Traf=True, ret_trace=False, N=None, tensor=False):
