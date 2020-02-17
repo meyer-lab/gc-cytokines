@@ -18,7 +18,8 @@ pipeline {
         }
         stage('Spellcheck') {
           steps {
-            sh 'make spell'
+            sh 'make spell.txt'
+            archiveArtifacts artifacts: 'spell.txt', onlyIfSuccessful: true
           }
         }
         stage('Lint') {
