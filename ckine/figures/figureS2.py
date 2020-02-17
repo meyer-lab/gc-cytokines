@@ -2,8 +2,6 @@
 This creates Figure S2. Full panel of Geweke convergence tests.
 """
 import string
-import pymc3 as pm
-import numpy as np
 import pandas as pd
 import seaborn as sns
 from arviz.stats.diagnostics import geweke
@@ -66,10 +64,10 @@ def plot_geweke_2_15(ax, traf):
                        position=(0, 0.075))
     ax.get_legend().set_visible(False)  # remove legend created by sns
     ax.axhline(1., c='r')  # line to denote acceptable threshold of standard deviations
-    ax.set(ylim=(-0.1, 1.25), ylabel=r"max |z-score|")
+    ax.set(ylim=(-0.1, 1.25), ylabel=r"z-score")
 
 
-def plot_geweke_4_7(ax, traf=True):
+def plot_geweke_4_7(ax):
     """ Generating Geweke plots using the traces from IL-4 and IL-7 fitting to Gonnord data. """
     trace = import_samples_4_7(ret_trace=True)  # return the trace
 
@@ -79,16 +77,12 @@ def plot_geweke_4_7(ax, traf=True):
     df[r'$C_{5}$'] = geweke(trace["scales__0"])
     df[r'$C_{6}$'] = geweke(trace["scales__1"])
     df[r'$k_{fwd}$'] = geweke(trace["kfwd__0"])
-
-    if traf:  # add the trafficking parameters if necessary & set proper title
-        df[r'$k_{endo}$'] = geweke(trace["endo__0"])
-        df[r'$k_{endo,a}$'] = geweke(trace["activeEndo__0"])
-        df[r'$f_{sort}$'] = geweke(trace["sortF__0"])
-        df[r'$k_{rec}$'] = geweke(trace["kRec__0"])
-        df[r'$k_{deg}$'] = geweke(trace["kDeg__0"])
-        ax.set_title(r'IL-4/-7 trafficking model')
-    else:
-        ax.set_title(r'IL-4/-7 no trafficking model')
+    df[r'$k_{endo}$'] = geweke(trace["endo__0"])
+    df[r'$k_{endo,a}$'] = geweke(trace["activeEndo__0"])
+    df[r'$f_{sort}$'] = geweke(trace["sortF__0"])
+    df[r'$k_{rec}$'] = geweke(trace["kRec__0"])
+    df[r'$k_{deg}$'] = geweke(trace["kDeg__0"])
+    ax.set_title(r'IL-4/-7 trafficking model')
 
     sns.scatterplot(data=df, ax=ax)
 
@@ -100,4 +94,4 @@ def plot_geweke_4_7(ax, traf=True):
                        position=(0, 0.075))
     ax.get_legend().set_visible(False)  # remove legend created by sns
     ax.axhline(1., c='r')  # line to denote acceptable threshold of standard deviations
-    ax.set(ylim=(-0.1, 1.25), ylabel=r"max |z-score|")
+    ax.set(ylim=(-0.1, 1.25), ylabel=r"z-score")
