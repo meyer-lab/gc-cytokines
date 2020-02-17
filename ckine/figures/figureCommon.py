@@ -380,23 +380,14 @@ dataMean = dataMean.append(pstat_df, ignore_index=True, sort=True)
 
 def calc_dose_response_mutein(unkVec, tps, muteinC, mutein_name, cell_receptors):
     """ Calculates activity for a given cell type at various mutein concentrations and timepoints. """
+    unkVec[22:25] = cell_receptors[0:3]
 
-    total_activity = np.zeros((len(muteinC), len(tps)))
-    unkVec[22] = cell_receptors[0]
-    unkVec[23] = cell_receptors[1]
-    unkVec[24] = cell_receptors[2]
+    unkVec = np.repeat(unkVec, len(muteinC), axis=1)
+    unkVec[0, :] = muteinC
+    yOut = runCkineUP(tps, unkVec, mut_name=mutein_name)
+    active_ckine = np.dot(yOut, getTotalActiveSpecies().astype(np.float))
 
-    # loop for each mutein concentration
-    for i, conc in enumerate(muteinC):
-        unkVec[0] = conc
-        yOut = runCkineU(tps, unkVec, preT=0.0, prestim=None, mut_name=mutein_name)
-        active_ckine = np.zeros(yOut.shape[0])
-        # calculate for each time point
-        for ii in range(yOut.shape[0]):
-            active_ckine[ii] = getTotalActiveCytokine(0, yOut[ii, :])
-        total_activity[i, :] = np.reshape(active_ckine, (-1, 4))  # save the activity from this concentration for all 4 tps
-
-    return total_activity
+    return active_ckine.reshape(len(muteinC), len(tps))
 
 
 def organize_expr_pred(df, cell_name, ligand_name, receptors, muteinC, tps, unkVec):
