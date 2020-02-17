@@ -54,7 +54,7 @@ def plot_geweke_2_15(ax, traf):
     else:
         ax.set_title(r'IL-2/-15 no trafficking model')
 
-    sns.scatterplot(data=df, ax=ax)
+    sns.stripplot(data=df, ax=ax)
 
     ax.set_xticklabels(df.columns,  # use keys from dict as x-axis labels
                        rotation=25,
@@ -84,7 +84,7 @@ def plot_geweke_4_7(ax):
     df[r'$k_{deg}$'] = geweke(trace["kDeg__0"])[:, 1]
     ax.set_title(r'IL-4/-7 trafficking model')
 
-    sns.scatterplot(data=df, ax=ax)
+    sns.stripplot(data=df, ax=ax)
 
     ax.set_xticklabels(df.columns,  # use keys from dict as x-axis labels
                        rotation=25,
