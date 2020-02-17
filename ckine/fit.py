@@ -23,7 +23,7 @@ def sampling(M):
         pm.callbacks.CheckParametersConvergence(tolerance=1e-6, diff="relative"),
     ]
 
-    mean_field = pm.fit(90000, method='advi', model=M, callbacks=cb)
+    mean_field = pm.fit(180000, method='advi', model=M, callbacks=cb)
     return mean_field.sample(500)
 
 
