@@ -145,7 +145,7 @@ def violinPlots(ax, unkVec, scales, Traf=True):
     traf = np.concatenate((unkVec[:, 17:19], unkVec[:, 20:22]), axis=1)
     traf = pd.DataFrame(traf)
     Rexpr = pd.DataFrame(unkVec[:, 22:26])
-    scaless = scales[:, 0] / np.max(scales)
+    scaless = scales / np.max(scales)
     kfwd = unkVec[:, 6] / np.max(unkVec[:, 6])
     if Traf:  # include sortF
         misc = np.vstack((scaless, unkVec[:, 19], kfwd))
