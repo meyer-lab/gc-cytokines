@@ -1,8 +1,7 @@
 """
 This file contains functions that are used in multiple figures.
 """
-import os
-from os.path import join
+from os.path import join, dirname
 import seaborn as sns
 import numpy as np
 import pandas as pds
@@ -18,7 +17,7 @@ from ..imports import import_pstat
 from ..model import runCkineUP, getTotalActiveSpecies, receptor_expression
 
 
-path_here = os.path.dirname(os.path.dirname(__file__))
+path_here = dirname(dirname(__file__))
 
 
 matplotlib.rcParams['legend.labelspacing'] = 0.2
@@ -91,9 +90,9 @@ def plot_R2X(ax, tensor, factors_list):
     ax.set_xticklabels(np.arange(1, len(factors_list) + 1))
 
 
-def subplotLabel(ax, letter, hstretch=1, ystretch=1):
+def subplotLabel(ax, letter, hstretch=1):
     """ Label each subplot """
-    ax.text(-0.2 / hstretch, 1.2 / ystretch, letter, transform=ax.transAxes,
+    ax.text(-0.2 / hstretch, 1.2, letter, transform=ax.transAxes,
             fontsize=16, fontweight='bold', va='top')
 
 
@@ -352,8 +351,7 @@ def optimize_scale(model_act2, model_act15, exp_act2, exp_act15):
 
 def import_pMuteins():
     """ Loads CSV file containing pSTAT5 levels from Visterra data for muteins. """
-    path = os.path.dirname(os.path.dirname(__file__))
-    data = pds.read_csv(join(path, "data/Monomeric_mutein_pSTAT_data.csv"), encoding="latin1")
+    data = pds.read_csv(join(path_here, "data/Monomeric_mutein_pSTAT_data.csv"), encoding="latin1")
     data["RFU"] = data["RFU"] - data.groupby(["Cells", "Ligand"])["RFU"].transform("min")
 
     for conc in data.Concentration.unique():
