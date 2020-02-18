@@ -1,8 +1,7 @@
 """
 This file contains functions that are used in multiple figures.
 """
-import os
-from os.path import join
+from os.path import join, dirname
 import seaborn as sns
 import numpy as np
 import pandas as pds
@@ -15,10 +14,10 @@ from matplotlib.patches import Patch
 from scipy.optimize import least_squares
 from ..tensor import find_R2X
 from ..imports import import_pstat
-from ..model import runCkineUP, getTotalActiveSpecies, receptor_expression, getTotalActiveCytokine, runCkineU
+from ..model import runCkineUP, getTotalActiveSpecies, receptor_expression
 
 
-path_here = os.path.dirname(os.path.dirname(__file__))
+path_here = dirname(dirname(__file__))
 
 
 matplotlib.rcParams['legend.labelspacing'] = 0.2
@@ -91,9 +90,9 @@ def plot_R2X(ax, tensor, factors_list):
     ax.set_xticklabels(np.arange(1, len(factors_list) + 1))
 
 
-def subplotLabel(ax, letter, hstretch=1, ystretch=1):
+def subplotLabel(ax, letter, hstretch=1):
     """ Label each subplot """
-    ax.text(-0.2 / hstretch, 1.2 / ystretch, letter, transform=ax.transAxes,
+    ax.text(-0.2 / hstretch, 1.2, letter, transform=ax.transAxes,
             fontsize=16, fontweight='bold', va='top')
 
 
@@ -352,8 +351,7 @@ def optimize_scale(model_act2, model_act15, exp_act2, exp_act15):
 
 def import_pMuteins():
     """ Loads CSV file containing pSTAT5 levels from Visterra data for muteins. """
-    path = os.path.dirname(os.path.dirname(__file__))
-    data = pds.read_csv(join(path, "data/Monomeric_mutein_pSTAT_data.csv"), encoding="latin1")
+    data = pds.read_csv(join(path_here, "data/Monomeric_mutein_pSTAT_data.csv"), encoding="latin1")
     data["RFU"] = data["RFU"] - data.groupby(["Cells", "Ligand"])["RFU"].transform("min")
 
     for conc in data.Concentration.unique():
@@ -380,23 +378,14 @@ dataMean = dataMean.append(pstat_df, ignore_index=True, sort=True)
 
 def calc_dose_response_mutein(unkVec, tps, muteinC, mutein_name, cell_receptors):
     """ Calculates activity for a given cell type at various mutein concentrations and timepoints. """
+    unkVec[22:25] = cell_receptors[0:3]
 
-    total_activity = np.zeros((len(muteinC), len(tps)))
-    unkVec[22] = cell_receptors[0]
-    unkVec[23] = cell_receptors[1]
-    unkVec[24] = cell_receptors[2]
+    unkVec = np.repeat(np.atleast_2d(unkVec).T, len(muteinC), axis=1).T
+    unkVec[:, 0] = muteinC
+    yOut = runCkineUP(tps, unkVec, mut_name=mutein_name)
+    active_ckine = np.dot(yOut, getTotalActiveSpecies().astype(np.float))
 
-    # loop for each mutein concentration
-    for i, conc in enumerate(muteinC):
-        unkVec[0] = conc
-        yOut = runCkineU(tps, unkVec, preT=0.0, prestim=None, mut_name=mutein_name)
-        active_ckine = np.zeros(yOut.shape[0])
-        # calculate for each time point
-        for ii in range(yOut.shape[0]):
-            active_ckine[ii] = getTotalActiveCytokine(0, yOut[ii, :])
-        total_activity[i, :] = np.reshape(active_ckine, (-1, 4))  # save the activity from this concentration for all 4 tps
-
-    return total_activity
+    return active_ckine.reshape(len(muteinC), len(tps))
 
 
 def organize_expr_pred(df, cell_name, ligand_name, receptors, muteinC, tps, unkVec):
@@ -538,11 +527,8 @@ def nllsq_EC50(x0, xdata, ydata):
 
 def hill_equation(x, x0, solution=0):
     """ Calculates EC50 from Hill Equation. """
-    k = x0[0]
-    n = x0[1]
-    A = x0[2]
-    xk = np.power(x / k, n)
-    return (A * xk / (1.0 + xk)) - solution
+    xk = np.power(x / x0[0], x0[1])
+    return (x0[2] * xk / (1.0 + xk)) - solution
 
 
 def residuals(x0, x, y):
