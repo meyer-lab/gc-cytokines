@@ -33,22 +33,23 @@ mutData = import_pMuteins()
 def makeFigure():
     """Get a list of the axis objects and create a figure"""
     # Get list of axis objects
-    ax, f = getSetup((7.5, 6), (3, 4), multz={6: 1})
+    ax, f = getSetup((7.5, 2), (1, 4), multz={0:1, 2:1})
 
-    ax[5].axis('off')
-
+    #ax[5].axis('off')
+    """
     for ii, item in enumerate(ax):
         if ii < 5:
             subplotLabel(item, string.ascii_uppercase[ii])
         elif ii > 5:
             subplotLabel(item, string.ascii_uppercase[ii - 1])
+    """
 
     ckines = ['IL-2', 'IL-15']
     tps = np.array([0.5, 1.0, 2.0, 4.0]) * 60.0
 
     df_spec = pd.DataFrame(columns=['Cells', 'Ligand', 'Time', 'Concentration', 'Data Type', 'Specificity'])
     df_act = pd.DataFrame(columns=['Cells', 'Ligand', 'Time', 'Concentration', 'Activity Type', 'Activity'])
-
+    
     IL2_activity, IL15_activity, _ = calc_dose_response(cell_names_pstat, unkVec_2_15, scales, receptor_data, tps, ckineConc, IL2_data, IL15_data)
     for i, name in enumerate(cell_names_pstat):
         assert cell_names_pstat[i] == cell_names_receptor[i]
@@ -66,26 +67,30 @@ def makeFigure():
     df_act.drop(df_act[(df_act.Cells == 'Naive Treg') | (df_act.Cells == 'Mem Treg') | (df_act.Cells == 'Naive Th') |
                        (df_act.Cells == 'Mem Th') | (df_act.Cells == 'Naive CD8+') | (df_act.Cells == 'Mem CD8+')].index, inplace=True)
     ckineConc_ = np.delete(ckineConc, 11, 0)  # delete smallest concentration since zero/negative activity
-
+    """
     mutEC50df = get_Mut_EC50s()
     WT_EC50df = WT_EC50s()
     mutEC50df = mutEC50df.rename(columns={'Time Point': 'Time Point', 'IL': 'IL', 'Cell Type': 'CellType', 'Data Type': 'Data Type', 'EC-50': 'EC-50'})
     WT_EC50df = WT_EC50df.rename(columns={'Time Point': 'Time Point', 'IL': 'IL', 'Cell Type': 'CellType', 'Data Type': 'Data Type', 'EC-50': 'EC-50'})
     WT_EC50df = WT_EC50df[(WT_EC50df.CellType != 'Mem CD8+') & (WT_EC50df.CellType != 'Naive CD8+')]
     mutEC50df = pd.concat([mutEC50df, WT_EC50df])
+
     affComp(ax[4])
     calc_plot_specificity(ax[0], 'NK', df_spec, df_act, ckines, ckineConc_)
     calc_plot_specificity(ax[1], 'T-helper', df_spec, df_act, ckines, ckineConc_)
     global_legend(ax[0], Spec=True, Mut=True)
-    Specificity(ax=ax[2])
-    Spec_Aff(ax[3], 40, unkVecT, scalesT)
+    """
+    Specificity(ax=ax[0])
+    Spec_Aff(ax[1], 40, unkVecT, scalesT)
+    """
     Par_Plot_comparison(ax[6], mutEC50df)
+
     Mut_Fact(ax[7:11])
     legend = ax[7].get_legend()
     labels = (x.get_text() for x in legend.get_texts())
     ax[5].legend(legend.legendHandles, labels, loc='center left', prop={"size": 9})
     ax[7].get_legend().remove()
-
+    """
     return f
 
 
