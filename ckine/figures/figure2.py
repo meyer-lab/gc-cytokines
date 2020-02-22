@@ -298,7 +298,7 @@ def relativeGC(ax, unkVec2, unkVec4):
             "4·4Rα": kfwd_4[0:500] / k33rev[0:500],
         }
     )
-    
+
     sns.set_palette(sns.xkcd_palette(["violet", "violet", "violet", "goldenrod", "goldenrod", "goldenrod", "blue", "lightblue"]))
 
     a = sns.violinplot(data=np.log10(df), ax=ax, linewidth=0, scale="width")
