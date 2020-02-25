@@ -61,7 +61,7 @@ def plot_dose_response(ax2, ax15, IL2_activity, IL15_activity, cell_type, tps, c
     for tt in range(tps.size):
         if legend:
             plot_conf_int(ax2, np.log10(cytokC.astype(np.float)), IL2_activity[:, :, tt], colors[tt], (tps[tt] / 60.0).astype(str))
-            ax2.legend(title="time (hours)")
+            ax2.legend(title="time (hours)", prop={"size": 6}, title_fontsize=6, loc="upper left")
         else:
             plot_conf_int(ax2, np.log10(cytokC.astype(np.float)), IL2_activity[:, :, tt], colors[tt])
 
