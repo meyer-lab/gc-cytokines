@@ -10,7 +10,6 @@ import theano.tensor as T
 import theano
 from matplotlib.lines import Line2D
 from .figureCommon import subplotLabel, getSetup, global_legend, calc_dose_response, import_pMuteins, nllsq_EC50, organize_expr_pred, mutein_scaling, plot_cells, plot_ligand_comp, Par_Plot_comparison
-from .figure4 import WT_EC50s
 from ..imports import import_pstat, import_samples_2_15, import_Rexpr
 from ..model import getTotalActiveSpecies, receptor_expression, getRateVec, getparamsdict, getMutAffDict
 from ..differencing_op import runCkineDoseOp
@@ -68,11 +67,7 @@ def makeFigure():
     ckineConc_ = np.delete(ckineConc, 11, 0)  # delete smallest concentration since zero/negative activity
 
     mutEC50df = get_Mut_EC50s()
-    WT_EC50df = WT_EC50s()
     mutEC50df = mutEC50df.rename(columns={'Time Point': 'Time Point', 'IL': 'IL', 'Cell Type': 'CellType', 'Data Type': 'Data Type', 'EC-50': 'EC-50'})
-    WT_EC50df = WT_EC50df.rename(columns={'Time Point': 'Time Point', 'IL': 'IL', 'Cell Type': 'CellType', 'Data Type': 'Data Type', 'EC-50': 'EC-50'})
-    WT_EC50df = WT_EC50df[(WT_EC50df.CellType != 'Mem CD8+') & (WT_EC50df.CellType != 'Naive CD8+')]
-    mutEC50df = pd.concat([mutEC50df, WT_EC50df])
     affComp(ax[4])
     calc_plot_specificity(ax[0], 'NK', df_spec, df_act, ckines, ckineConc_)
     calc_plot_specificity(ax[1], 'T-helper', df_spec, df_act, ckines, ckineConc_)
@@ -92,19 +87,16 @@ def makeFigure():
 def affComp(ax):
     """Compare 2Ra and 2BGc dissociation constants of wild type and mutant IL-2s"""
     affdict = getMutAffDict()
-    ligList = ['WT N-term', 'WT C-term', 'V91K C-term', 'R38Q N-term', 'F42Q N-Term', 'N88D C-term', 'WT IL2']
+    ligList = ['WT N-term', 'WT C-term', 'V91K C-term', 'R38Q N-term', 'F42Q N-Term', 'N88D C-term']
     RaAff, GcBAff = np.zeros([len(ligList)]), np.zeros([len(ligList)])
 
-    for i in range(0, len(ligList) - 1):
+    for i in range(0, len(ligList)):
         RaAff[i] = affdict[ligList[i]][0]
         GcBAff[i] = affdict[ligList[i]][1]
 
-    RaAff[len(ligList) - 1] = unkVec[1] / 0.6
-    GcBAff[len(ligList) - 1] = unkVec[4] / 0.6
-
     KDdf = pd.DataFrame({'RaAff': RaAff, 'GcBAff': GcBAff, 'Ligand': ligList})
     KDdf = KDdf.sort_values(by=["Ligand"])
-    sns.scatterplot(x='RaAff', y='GcBAff', data=KDdf, hue="Ligand", palette=sns.color_palette("husl", 8)[0:5] + sns.color_palette("husl", 8)[6:8], ax=ax, legend=False)
+    sns.scatterplot(x='RaAff', y='GcBAff', data=KDdf, hue="Ligand", palette=sns.color_palette("husl", 6), ax=ax, legend=False)
     ax.set_xlabel("IL-2Rα KD (log$_{10}$[nM])")
     ax.set_ylabel("IL-2Rβ/γc KD (log$_{10}$[nM])")
     ax.set_xscale('log')
@@ -263,6 +255,7 @@ def Spec_Aff(ax, npoints, unkVecAff, scalesAff):
     ax.set_xscale('log')
     ax.set_xlabel('Relative IL-2Rβ/γc Affinity')
     ax.set_ylabel('Specificity')
+    ax.set_xlim((10e-3, 10e0))
     handles = []
     line = Line2D([], [], color='black', marker='_', linestyle='None', markersize=6, label='WT IL2Ra Affinity')
     point = Line2D([], [], color='black', marker='.', linestyle='None', markersize=6, label='0.5 IL2Ra Affinity')
@@ -334,18 +327,12 @@ def get_Mut_EC50s():
 def Mut_Fact(ax):
     """Plots Non-Negative CP Factorization of Muteins into 4 ax subplots"""
     mutDataF = mutData.sort_values(by=['Cells', 'Ligand', 'Time', 'Concentration'])
-    mutDataF.reset_index(inplace=True)
-    _, _, _, _, WTdf = import_pstat()
-    combdf = pd.concat([mutDataF, WTdf], sort=True, ignore_index=True)
-    combdf = combdf.replace(["IL2", "IL15"], ["WT IL2", "WT IL15"])
-    combdf = combdf.sort_values(by=['Cells', 'Ligand', 'Time', 'Concentration'])
-    mutFactdf = combdf[(combdf.Cells != "Naive CD8+") & (combdf.Cells != "Mem CD8+")]
-    mutTensor = np.reshape(mutFactdf["RFU"].values, (8, 8, 4, 12))  # cells, muteins/WT, times, and concs.
+    mutTensor = np.reshape(mutDataF["RFU"].values, (8, 6, 4, 12))  # cells, muteins/WT, times, and concs.
 
-    concs = mutFactdf['Concentration'].unique()
-    ts = mutFactdf['Time'].unique() / 60
-    cells = mutFactdf['Cells'].unique()
-    ligs = mutFactdf['Ligand'].unique()
+    concs = mutDataF['Concentration'].unique()
+    ts = mutDataF['Time'].unique() / 60
+    cells = mutDataF['Cells'].unique()
+    ligs = mutDataF['Ligand'].unique()
 
     dataTensor = z_score_values(mutTensor, 0)
     parafac = perform_decomposition(dataTensor, 2, weightFactor=3)
