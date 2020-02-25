@@ -54,7 +54,7 @@ clean:
 	find -iname "*.pyc" -delete
 
 spell.txt: Manuscript/Text/*.md
-	pandoc --lua-filter common/templates/spell.lua Manuscript/Text/*.md | sort | uniq -ic > spell.txt
+	pandoc --lua-filter common/templates/spell.lua Manuscript/Text/*.md | awk '{print tolower($0)}' | sort | uniq -ic > spell.txt
 
 test: venv ckine/ckine.so
 	. venv/bin/activate && pytest
