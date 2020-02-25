@@ -90,9 +90,9 @@ def affComp(ax):
     ligList = ['WT N-term', 'WT C-term', 'V91K C-term', 'R38Q N-term', 'F42Q N-Term', 'N88D C-term']
     RaAff, GcBAff = np.zeros([len(ligList)]), np.zeros([len(ligList)])
 
-    for i in range(0, len(ligList)):
-        RaAff[i] = affdict[ligList[i]][0]
-        GcBAff[i] = affdict[ligList[i]][1]
+    for i, ligand in enumerate(ligList):
+        RaAff[i] = affdict[ligand][0]
+        GcBAff[i] = affdict[ligand][1]
 
     KDdf = pd.DataFrame({'RaAff': RaAff, 'GcBAff': GcBAff, 'Ligand': ligList})
     KDdf = KDdf.sort_values(by=["Ligand"])
