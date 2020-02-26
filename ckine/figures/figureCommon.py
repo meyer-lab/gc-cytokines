@@ -139,7 +139,7 @@ def plot_ligand_comp(ax, factors, component_x, component_y, ligand_names):
         Comp2[ii] = factors[ii, component_y - 1]
 
     CompDF = pds.DataFrame({'Comp1': Comp1, 'Comp2': Comp2, 'Ligand': ligand_names})
-    sns.scatterplot(x='Comp1', y='Comp2', data=CompDF, hue="Ligand", palette=sns.color_palette("husl", 8), legend='full', ax=ax)
+    sns.scatterplot(x='Comp1', y='Comp2', data=CompDF, hue="Ligand", palette=sns.color_palette("husl", 6), legend='full', ax=ax)
     ax.set_title('Ligands')
     ax.set_xlabel('Component ' + str(component_x))
     ax.set_ylabel('Component ' + str(component_y))
@@ -492,7 +492,6 @@ def catplot_comparison(ax, df, legend=False, Mut=True):
 def Par_Plot_comparison(ax, df):
     """ Construct EC50 parallel coordinate plots for Different ligands. """
     # set a manual color palette
-    df = df.replace(['IL-2', 'IL-15'], ['WT IL2', 'WT IL15'])
     df = df.sort_values(by=['Data Type', 'CellType', 'IL', 'Time Point'])
 
     expEC50s, predEC50s = pds.DataFrame(columns=['IL', 'NK', 'CD8+', 'T-reg', 'Naive Treg', 'Mem Treg', 'T-helper', 'Naive Th', 'Mem Th']
@@ -507,7 +506,7 @@ def Par_Plot_comparison(ax, df):
             predEC50s.loc[j, [str(cellname)]] = pred50.to_numpy()
 
     pds.plotting.parallel_coordinates(expEC50s, 'IL', ax=ax, color=sns.color_palette("husl", 8))
-    pds.plotting.parallel_coordinates(predEC50s, 'IL', ax=ax, linestyle=':', color=sns.color_palette("husl", 8))
+    pds.plotting.parallel_coordinates(predEC50s, 'IL', ax=ax, linestyle=':', color=sns.color_palette("husl", 6))
     ax.set_xticklabels(ax.get_xticklabels(), rotation=40, fontsize=6.8, rotation_mode="anchor", ha="right")
 
     handles = []
