@@ -7,7 +7,7 @@ import string
 import numpy as np
 import seaborn as sns
 import pandas as pd
-from .figureCommon import subplotLabel, getSetup, traf_names, plot_conf_int
+from .figureCommon import subplotLabel, getSetup, traf_names, plot_conf_int, global_legend
 from ..plot_model_prediction import surf_IL2Rb, pstat, surf_gc
 from ..imports import import_samples_2_15
 
@@ -35,6 +35,10 @@ def makeFigure():
     gc_perc(ax[4], unkVec)
     violinPlots(ax[5:8], full_unkVec, full_scales)
     rateComp(ax[8], full_unkVec)
+    global_legend(ax[1], exppred=False)
+    legend = ax[1].get_legend()
+    labels = (x.get_text() for x in legend.get_texts())
+    ax[1].legend(legend.legendHandles, labels, loc='lower right')
 
     return f
 
