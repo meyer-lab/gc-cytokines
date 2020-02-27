@@ -397,9 +397,10 @@ def MuteinModelOverlay(ax, tpoint, cells):
 
 # scale and plot model predictions
             for k, conc in enumerate(df.Concentration.unique()):
-                for m in range(unkVec_2_15Over.shape[1]):
-                    pred_data[k, l, m] = df.loc[(df["Cells"] == celltype) & (df["Ligand"] == ligand) & (
-                        df["Activity Type"] == 'predicted') & (df["Concentration"] == conc) & (df["Time Point"] == tp) & (df["Replicate"] == (m + 1)), "Activity"]
+                for l, tp in enumerate(tps):
+                    for m in range(unkVec_2_15Over.shape[1]):
+                        pred_data[k, l, m] = df.loc[(df["Cells"] == celltype) & (df["Ligand"] == ligand) & (
+                            df["Activity Type"] == 'predicted') & (df["Concentration"] == conc) & (df["Time Point"] == tp) & (df["Replicate"] == (m + 1)), "Activity"]
 
             for n, cell_names in enumerate(cell_groups):
                 if celltype in cell_names:
