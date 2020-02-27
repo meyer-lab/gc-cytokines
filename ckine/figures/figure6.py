@@ -9,7 +9,7 @@ import seaborn as sns
 import theano.tensor as T
 import theano
 from matplotlib.lines import Line2D
-from .figureCommon import subplotLabel, getSetup, global_legend, calc_dose_response, import_pMuteins, nllsq_EC50, organize_expr_pred, mutein_scaling, plot_cells, plot_ligand_comp, Par_Plot_comparison, plot_conf_int
+from .figureCommon import subplotLabel, getSetup, global_legend, calc_dose_response, import_pMuteins, nllsq_EC50, organize_expr_pred, mutein_scaling, plot_cells, plot_ligand_comp, plot_conf_int
 from ..imports import import_pstat, import_samples_2_15, import_Rexpr
 from ..model import getTotalActiveSpecies, receptor_expression, getRateVec, getparamsdict, getMutAffDict
 from ..differencing_op import runCkineDoseOp
@@ -36,11 +36,8 @@ def makeFigure():
 
     # ax[5].axis('off')
 
-#     for ii, item in enumerate(ax):
-#         if ii < 5:
-#             subplotLabel(item, string.ascii_uppercase[ii])
-#         elif ii > 5:
-#             subplotLabel(item, string.ascii_uppercase[ii - 1])
+    for ii, item in enumerate(ax):
+        subplotLabel(item, string.ascii_uppercase[ii])
 
     ckines = ['IL-2', 'IL-15']
     tps = np.array([0.5, 1.0, 2.0, 4.0]) * 60.0
@@ -65,7 +62,7 @@ def makeFigure():
     df_act.drop(df_act[(df_act.Cells == 'Naive Treg') | (df_act.Cells == 'Mem Treg') | (df_act.Cells == 'Naive Th') |
                        (df_act.Cells == 'Mem Th') | (df_act.Cells == 'Naive CD8+') | (df_act.Cells == 'Mem CD8+')].index, inplace=True)
     ckineConc_ = np.delete(ckineConc, 11, 0)  # delete smallest concentration since zero/negative activity
-    
+
     mutEC50df = get_Mut_EC50s()
     mutEC50df = mutEC50df.rename(columns={'Time Point': 'Time Point', 'IL': 'IL', 'Cell Type': 'CellType', 'Data Type': 'Data Type', 'EC-50': 'EC-50'})
     affComp(ax[4])
@@ -74,15 +71,13 @@ def makeFigure():
     global_legend(ax[0], Spec=True, Mut=True)
     Specificity(ax=ax[2])
     Spec_Aff(ax[3], 40, unkVecT, scalesT)
-    #Par_Plot_comparison(ax[6], mutEC50df)
     Mut_Fact(ax[8:12])
     legend = ax[8].get_legend()
     labels = (x.get_text() for x in legend.get_texts())
-    #ax[5].legend(legend.legendHandles, labels, loc='center left', prop={"size": 9})
+    # ax[5].legend(legend.legendHandles, labels, loc='center left', prop={"size": 9}) #use this to place universal legend later
     ax[8].get_legend().remove()
     overlayT, overlaycells = 240., ['T-reg', 'NK', 'T-helper']
     MuteinModelOverlay(ax[5:8], overlayT, overlaycells)
-    
 
     return f
 
@@ -318,7 +313,7 @@ def get_Mut_EC50s():
             for n, cell_names in enumerate(cell_groups):
                 if cell_name in cell_names:
                     pred_data[:, :] = scalesIn[n, 1, 0] * pred_data[:, :] / (pred_data[:, :] + scalesIn[n, 0, 0])
-                
+
             for kk, timeEC in enumerate(tpsSc):
                 doseData = (pred_data[:, kk]).flatten()
                 EC50 = nllsq_EC50(x0, np.log10(concentrations.astype(np.float) * 10**4), doseData) - 4
@@ -369,13 +364,14 @@ def Mut_Fact(ax):
 
 def MuteinModelOverlay(ax, tpoint, cells):
     "Plots Mutein Experimental and model predictions overlaid for a given cell type/types"
+    bounds = np.array([35000, 2500, 14000])
     cell_groups = [['T-reg', 'Mem Treg', 'Naive Treg'], ['T-helper', 'Mem Th', 'Naive Th'], ['NK'], ['CD8+']]
     unkVec_2_15Over, _ = import_samples_2_15(N=25)
     tps = np.array([0.5, 1.0, 2.0, 4.0]) * 60.0
     muteinC = mutData.Concentration.unique()
     pred_data = np.zeros((12, 4, unkVec_2_15Over.shape[1]))
     mutData["Concentration"] = np.log10(mutData["Concentration"].astype(np.float))
-    ligand_order = ['WT N-term', 'WT C-term', 'V91K C-term', 'R38Q N-term', 'F42Q N-Term', 'N88D C-term']
+    ligand_order = ['F42Q N-Term', 'N88D C-term', 'R38Q N-term', 'V91K C-term', 'WT C-term', 'WT N-term']
     cell_order = ['NK', 'CD8+', 'T-reg', 'Naive Treg', 'Mem Treg', 'T-helper', 'Naive Th', 'Mem Th']
     df = pd.DataFrame(columns=['Cells', 'Ligand', 'Time Point', 'Concentration', 'Activity Type', 'Replicate', 'Activity'])
 
@@ -390,26 +386,26 @@ def MuteinModelOverlay(ax, tpoint, cells):
             # append dataframe with experimental and predicted activity
             df = organize_expr_pred(df, cell_name, ligand_name, receptors, muteinC, tps, unkVec_2_15Over)
 
-    # determine scaling constants
     scales = mutein_scaling(df, unkVec_2_15Over)
     colors = sns.color_palette("hls", 6)
 
     # Plot experimental Data
     for i, celltype in enumerate(cells):
         for j, ligand in enumerate(ligand_order):
-            sns.scatterplot(x="Concentration", y="RFU", data=mutData.loc[(mutData["Cells"] == celltype) & (mutData["Time"] == tpoint) & (mutData["Ligand"] == ligand)], ax=ax[i], s=10, color=colors[j], legend=False)
+            sns.scatterplot(x="Concentration", y="RFU", data=mutData.loc[(mutData["Cells"] == celltype) & (
+                mutData["Time"] == tpoint) & (mutData["Ligand"] == ligand)], ax=ax[i], s=10, color=colors[j], legend=False)
 
 # scale and plot model predictions
             for k, conc in enumerate(df.Concentration.unique()):
                 for l, tp in enumerate(tps):
                     for m in range(unkVec_2_15Over.shape[1]):
                         pred_data[k, l, m] = df.loc[(df["Cells"] == celltype) & (df["Ligand"] == ligand) & (
-                            df["Activity Type"] == 'predicted') & (df["Concentration"] == conc) & (df["Time Point"] == tpoint) & (df["Replicate"] == (m + 1)), "Activity"]
+                            df["Activity Type"] == 'predicted') & (df["Concentration"] == conc) & (df["Time Point"] == tp) & (df["Replicate"] == (m + 1)), "Activity"]
 
             for n, cell_names in enumerate(cell_groups):
-                if  celltype in cell_names:
-                    for o in range(unkVec_2_15.shape[1]):
+                if celltype in cell_names:
+                    for o in range(unkVec_2_15Over.shape[1]):
                         pred_data[:, :, o] = scales[n, 1, o] * pred_data[:, :, o] / (pred_data[:, :, o] + scales[n, 0, o])
 
-            ax[i].set(xlabel=("(log$_{10}$[nM])"), ylabel="Activity", title=celltype)
+            ax[i].set(xlabel=("(log$_{10}$[nM])"), ylabel="Activity", title=celltype, ylim=(0, bounds[i]))
             plot_conf_int(ax[i], np.log10(muteinC.astype(np.float)), pred_data[:, 3, :], colors[j])
