@@ -72,8 +72,8 @@ def makeFigure():
     Specificity(ax=ax[2])
     Spec_Aff(ax[3], 40, unkVecT, scalesT)
     Mut_Fact(ax[8:12])
-    legend = ax[8].get_legend()
-    labels = (x.get_text() for x in legend.get_texts())
+    #legend = ax[8].get_legend()
+    #labels = (x.get_text() for x in legend.get_texts())
     # ax[5].legend(legend.legendHandles, labels, loc='center left', prop={"size": 9}) #use this to place universal legend later
     ax[8].get_legend().remove()
     overlayT, overlaycells = 240., ['T-reg', 'NK', 'T-helper']
@@ -386,7 +386,7 @@ def MuteinModelOverlay(ax, tpoint, cells):
             # append dataframe with experimental and predicted activity
             df = organize_expr_pred(df, cell_name, ligand_name, receptors, muteinC, tps, unkVec_2_15Over)
 
-    scales = mutein_scaling(df, unkVec_2_15Over)
+    scales2 = mutein_scaling(df, unkVec_2_15Over)
     colors = sns.color_palette("hls", 6)
 
     # Plot experimental Data
@@ -397,15 +397,14 @@ def MuteinModelOverlay(ax, tpoint, cells):
 
 # scale and plot model predictions
             for k, conc in enumerate(df.Concentration.unique()):
-                for l, tp in enumerate(tps):
-                    for m in range(unkVec_2_15Over.shape[1]):
-                        pred_data[k, l, m] = df.loc[(df["Cells"] == celltype) & (df["Ligand"] == ligand) & (
-                            df["Activity Type"] == 'predicted') & (df["Concentration"] == conc) & (df["Time Point"] == tp) & (df["Replicate"] == (m + 1)), "Activity"]
+                for m in range(unkVec_2_15Over.shape[1]):
+                    pred_data[k, l, m] = df.loc[(df["Cells"] == celltype) & (df["Ligand"] == ligand) & (
+                        df["Activity Type"] == 'predicted') & (df["Concentration"] == conc) & (df["Time Point"] == tp) & (df["Replicate"] == (m + 1)), "Activity"]
 
             for n, cell_names in enumerate(cell_groups):
                 if celltype in cell_names:
                     for o in range(unkVec_2_15Over.shape[1]):
-                        pred_data[:, :, o] = scales[n, 1, o] * pred_data[:, :, o] / (pred_data[:, :, o] + scales[n, 0, o])
+                        pred_data[:, :, o] = scales2[n, 1, o] * pred_data[:, :, o] / (pred_data[:, :, o] + scales2[n, 0, o])
 
             ax[i].set(xlabel=("(log$_{10}$[nM])"), ylabel="Activity", title=celltype, ylim=(0, bounds[i]))
             plot_conf_int(ax[i], np.log10(muteinC.astype(np.float)), pred_data[:, 3, :], colors[j])
