@@ -407,5 +407,5 @@ def MuteinModelOverlay(ax, tpoint, cells):
                     for o in range(unkVec_2_15Over.shape[1]):
                         pred_data[:, :, o] = scales2[n, 1, o] * pred_data[:, :, o] / (pred_data[:, :, o] + scales2[n, 0, o])
 
-            ax[i].set(xlabel=("(log$_{10}$[nM])"), ylabel="Activity", title=celltype, ylim=(0, bounds[i]))
+            ax[i].set(xlabel=("Concentration (log$_{10}$[nM])"), ylabel="Activity", title=celltype, ylim=(0, bounds[i]))
             plot_conf_int(ax[i], np.log10(muteinC.astype(np.float)), pred_data[:, 3, :], colors[j])
