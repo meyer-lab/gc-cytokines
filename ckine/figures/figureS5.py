@@ -20,8 +20,10 @@ def makeFigure():
     for jj, axes in enumerate(ax):
         if jj < 10:
             axes.set_xlabel(r"[IL-2] Concentration (nM)", fontsize=6)
+            axes.xaxis.set_tick_params(labelsize=7)
         else:
             axes.set_xlabel(r"[IL-15] Concentration (nM)", fontsize=6)
+            axes.xaxis.set_tick_params(labelsize=7)
 
     return f
 
@@ -76,9 +78,10 @@ def plot_dose_response(ax2, ax15, IL2_activity, IL15_activity, cell_type, tps, c
     ax2.set(ylabel="Activity", title=cell_type)
     ax2.set_xlabel(r"[IL-2] Concentration (nM)", fontsize=8)
     ax15.set(ylabel="Activity", title=cell_type)
-    ax2.set_xlabel(r"[IL-15] Concentration (nM)", fontsize=8)
+    ax15.set_xlabel(r"[IL-15] Concentration (nM)", fontsize=8)
     ax2.set_xscale('log')
     ax15.set_xscale('log')
     ax2.set_xlim(10e-5, 10e1)
+    ax15.set_xlim(10e-5, 10e1)
     ax2.set_xticks(np.array([10e-5, 10e-3, 10e-1, 10e1]))
     ax15.set_xticks(np.array([10e-5, 10e-3, 10e-1, 10e1]))

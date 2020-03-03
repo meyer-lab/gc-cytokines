@@ -143,7 +143,7 @@ def pstat_act(ax, unkVec, scales):
     ax.set(ylabel='pSTAT5 (% of max)', xlabel='Ligand Concentration (nM)', title='YT-1 Cell Activity')
     ax.set_xscale('log')
     ax.set_xticks([10e-5, 10e-2, 10e1])
-    ax.xaxis.set_tick_params(labelsize=7.5)
+    ax.xaxis.set_tick_params(labelsize=7)
 
 
 def violinPlots(ax, unkVec, scales, Traf=True):

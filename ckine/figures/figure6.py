@@ -121,8 +121,8 @@ def calc_plot_specificity(ax, cell_compare, df_specificity, df_activity, ligands
                                                                                            (df_specificity["Data Type"] == 'Predicted')], ax=ax, legend=False)
     ax.set(xlabel="Ligand Concentration (nM)", ylabel="log$_{10}$[Specificity]", title=('T-reg vs. ' + cell_compare))
     ax.set_xscale('log')
-    ax.set_xticks(np.array([10e-5, 10e-3, 10e-1, 10e1]))
-    ax.set_xlim(10e-5, 10e1)
+    ax.set_xticks(np.array([10e-4, 10e-1, 10e1]))
+    ax.set_xlim(10e-4, 10e1)
 
 
 def specificity(df_specificity, df_activity, cell_type1, cell_type2, ligand, tp, concentration):
