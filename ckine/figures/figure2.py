@@ -239,7 +239,7 @@ def plot_pretreat(ax, unkVec, scales, title):
     ax.scatter(IL4_pretreat_conc, data[:, 7], color="b", zorder=104, marker="^", edgecolors="k")
     ax.scatter(IL4_pretreat_conc, data[:, 8], color="b", zorder=105, marker="^", edgecolors="k")
     ax.set_xscale('log')
-    ax.set_xticks([10e-5, 10e-4, 10e-3, 10e-2, 10e-1, 10e0])
+    ax.set_xticks([10e-5, 10e-2, 10e0])
 
 
 def surf_gc(ax, cytokC_pg, unkVec):

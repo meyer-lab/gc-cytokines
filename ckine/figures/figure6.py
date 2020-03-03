@@ -110,7 +110,7 @@ def calc_plot_specificity(ax, cell_compare, df_specificity, df_activity, ligands
             df_specificity = specificity(df_specificity, df_activity, 'T-reg', cell_compare, ckine, 60., conc)
 
     df_specificity["Concentration"] = df_specificity["Concentration"].astype(np.float)  # logscale for plotting
-    df_specificity["Specificity"] = df_specificity["Specificity"].astype(np.float)
+    df_specificity["Specificity"] = np.log10(df_specificity["Specificity"].astype(np.float))
     df_specificity.drop(df_specificity[(df_specificity["Concentration"] < 0.002)].index, inplace=True)  # drop second conc due to negative activity
 
     # plot all specificty values
@@ -122,6 +122,7 @@ def calc_plot_specificity(ax, cell_compare, df_specificity, df_activity, ligands
     ax.set(xlabel="Ligand Concentration (nM)", ylabel="log$_{10}$[Specificity]", title=('T-reg vs. ' + cell_compare))
     ax.set_xscale('log')
     ax.set_xticks(np.array([10e-5, 10e-3, 10e-1, 10e1]))
+    ax.set_xlim(10e-5, 10e1)
 
 
 def specificity(df_specificity, df_activity, cell_type1, cell_type2, ligand, tp, concentration):
@@ -391,10 +392,9 @@ def MuteinModelOverlay(ax, tpoint, cells):
     scales2 = mutein_scaling(df, unkVec_2_15Over)
     colors = sns.color_palette("hls", 6)
 
-
     for i, celltype in enumerate(cells):
         for j, ligand in enumerate(ligand_order):
-# scale and plot model predictions
+            # scale and plot model predictions
             for k, conc in enumerate(df.Concentration.unique()):
                 for l, tp in enumerate(tps):
                     for m in range(unkVec_2_15Over.shape[1]):
@@ -408,7 +408,7 @@ def MuteinModelOverlay(ax, tpoint, cells):
 
             ax[i].set(xlabel=("Ligand Concentration (nM)"), ylabel="Activity", title=celltype, ylim=(0, bounds[i]))
             plot_conf_int(ax[i], np.log10(muteinC.astype(np.float)), pred_data[:, 3, :], colors[j])
-    #plot experimental
+    # plot experimental
     for i, celltype in enumerate(cells):
         for j, ligand in enumerate(ligand_order):
             sns.scatterplot(x="Concentration", y="RFU", data=mutData.loc[(mutData["Cells"] == celltype) & (
