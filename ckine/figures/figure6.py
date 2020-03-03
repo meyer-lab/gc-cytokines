@@ -406,7 +406,6 @@ def MuteinModelOverlay(ax, tpoint, cells):
                     for o in range(unkVec_2_15Over.shape[1]):
                         pred_data[:, :, o] = scales2[n, 1, o] * pred_data[:, :, o] / (pred_data[:, :, o] + scales2[n, 0, o])
 
-            
             plot_conf_int(ax[i], muteinC.astype(np.float), pred_data[:, 3, :], colors[j])
     # plot experimental
     for i, celltype in enumerate(cells):
