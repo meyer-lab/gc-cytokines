@@ -127,20 +127,22 @@ def pstat_act(ax, unkVec, scales):
     IL15_minus = output[:, (PTS * 3):(PTS * 4)].T
 
     # plot confidence intervals based on model predictions
-    plot_conf_int(ax, np.log10(cytokC), IL2_minus, "darkorchid")
-    plot_conf_int(ax, np.log10(cytokC), IL15_minus, "goldenrod")
-    plot_conf_int(ax, np.log10(cytokC), IL2_plus, "darkorchid")
-    plot_conf_int(ax, np.log10(cytokC), IL15_plus, "goldenrod")
+    plot_conf_int(ax, cytokC, IL2_minus, "darkorchid")
+    plot_conf_int(ax, cytokC, IL15_minus, "goldenrod")
+    plot_conf_int(ax, cytokC, IL2_plus, "darkorchid")
+    plot_conf_int(ax, cytokC, IL15_plus, "goldenrod")
 
     # plot experimental data
+    cytokCplt = np.logspace(-3.3, 2.7, 8)
     path = os.path.dirname(os.path.abspath(__file__))
     data = pd.read_csv(join(path, "../data/IL2_IL15_extracted_data.csv")).values  # imports file into pandas array
-    ax.scatter(data[:, 0], data[:, 2], color='darkorchid', marker='^', edgecolors='k', zorder=100)  # IL2 in 2Ra-
-    ax.scatter(data[:, 0], data[:, 3], color='goldenrod', marker='^', edgecolors='k', zorder=101)  # IL15 in 2Ra-
-    ax.scatter(data[:, 0], data[:, 6], color='darkorchid', marker='o', edgecolors='k', zorder=102)  # IL2 in 2Ra+
-    ax.scatter(data[:, 0], data[:, 7], color='goldenrod', marker='o', edgecolors='k', zorder=103)  # IL15 in 2Ra+
-    ax.set(ylabel='pSTAT5 (% of max)', xlabel=r'Cytokine Conc. (log$_{10}$[nM])', title='YT-1 Cell Activity')
-    ax.set_xticks(np.arange(-3.3, 3.7, step=2))
+    ax.scatter(cytokCplt, data[:, 2], color='darkorchid', marker='^', edgecolors='k', zorder=100)  # IL2 in 2Ra-
+    ax.scatter(cytokCplt, data[:, 3], color='goldenrod', marker='^', edgecolors='k', zorder=101)  # IL15 in 2Ra-
+    ax.scatter(cytokCplt, data[:, 6], color='darkorchid', marker='o', edgecolors='k', zorder=102)  # IL2 in 2Ra+
+    ax.scatter(cytokCplt, data[:, 7], color='goldenrod', marker='o', edgecolors='k', zorder=103)  # IL15 in 2Ra+
+    ax.set(ylabel='pSTAT5 (% of max)', xlabel='Ligand Concentration (nM)', title='YT-1 Cell Activity')
+    ax.set_xscale('log')
+    ax.set_xticks([10e-5, 10e-2, 10e1])
 
 
 def violinPlots(ax, unkVec, scales, Traf=True):

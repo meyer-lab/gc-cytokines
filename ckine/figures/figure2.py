@@ -93,15 +93,17 @@ def pstat_plot(ax, unkVec, scales):
     IL7_output = output[K: (K * 2)].T
 
     # plot confidence intervals based on model predictions
-    plot_conf_int(ax, np.log10(cytokC_common), IL4_output * 100.0, "powderblue", "IL-4 stim.")
-    plot_conf_int(ax, np.log10(cytokC_common), IL7_output * 100.0, "b", "IL-7 stim.")
+    plot_conf_int(ax, cytokC_common, IL4_output * 100.0, "powderblue", "IL-4 stim.")
+    plot_conf_int(ax, cytokC_common, IL7_output * 100.0, "b", "IL-7 stim.")
 
     # overlay experimental data
-    ax.scatter(np.log10(cytokC_4), (dataIL4[:, 1] / IL4_data_max) * 100.0, color="powderblue", marker="^", edgecolors="k", zorder=100)
-    ax.scatter(np.log10(cytokC_4), (dataIL4[:, 2] / IL4_data_max) * 100.0, color="powderblue", marker="^", edgecolors="k", zorder=200)
-    ax.scatter(np.log10(cytokC_7), (dataIL7[:, 1] / IL7_data_max) * 100.0, color="b", marker="^", edgecolors="k", zorder=300)
-    ax.scatter(np.log10(cytokC_7), (dataIL7[:, 2] / IL7_data_max) * 100.0, color="b", marker="^", edgecolors="k", zorder=400)
-    ax.set(ylabel="pSTAT5/6 (% of max)", xlabel=r"Cytokine Conc. (log$_{10}$[nM])", title="Activity")
+    ax.scatter(cytokC_4, (dataIL4[:, 1] / IL4_data_max) * 100.0, color="powderblue", marker="^", edgecolors="k", zorder=100)
+    ax.scatter(cytokC_4, (dataIL4[:, 2] / IL4_data_max) * 100.0, color="powderblue", marker="^", edgecolors="k", zorder=200)
+    ax.scatter(cytokC_7, (dataIL7[:, 1] / IL7_data_max) * 100.0, color="b", marker="^", edgecolors="k", zorder=300)
+    ax.scatter(cytokC_7, (dataIL7[:, 2] / IL7_data_max) * 100.0, color="b", marker="^", edgecolors="k", zorder=400)
+    ax.set(ylabel="pSTAT5/6 (% of max)", xlabel='Ligand Concentration (nM)', title="Activity")
+    ax.set_xscale('log')
+    ax.set_xticks([10e-5, 10e-3, 10e-1, 10e1])
 
 
 def traf_violin(ax, unkVec):
@@ -225,17 +227,19 @@ def plot_pretreat(ax, unkVec, scales, title):
     IL4_stim = output[0:K].T
     IL7_stim = output[K: (K * 2)].T
 
-    plot_conf_int(ax, np.log10(pre_conc), IL4_stim * 100.0, "powderblue")
-    plot_conf_int(ax, np.log10(pre_conc), IL7_stim * 100.0, "b")
-    ax.set(title=title, ylabel="Inhibition (% of no pretreat)", xlabel=r"Pretreatment Conc. (log$_{10}$[nM])")
+    plot_conf_int(ax, pre_conc, IL4_stim * 100.0, "powderblue")
+    plot_conf_int(ax, pre_conc, IL7_stim * 100.0, "b")
+    ax.set(title=title, ylabel="Inhibition (% of no pretreat)", xlabel='Pretreatment Ligand Concentration (nM)')
 
     # add experimental data to plots
-    ax.scatter(np.log10(IL7_pretreat_conc), data[:, 1], color="powderblue", zorder=100, marker="^", edgecolors="k")
-    ax.scatter(np.log10(IL7_pretreat_conc), data[:, 2], color="powderblue", zorder=101, marker="^", edgecolors="k")
-    ax.scatter(np.log10(IL7_pretreat_conc), data[:, 3], color="powderblue", zorder=102, marker="^", edgecolors="k")
-    ax.scatter(np.log10(IL4_pretreat_conc), data[:, 6], color="b", zorder=103, marker="^", edgecolors="k")
-    ax.scatter(np.log10(IL4_pretreat_conc), data[:, 7], color="b", zorder=104, marker="^", edgecolors="k")
-    ax.scatter(np.log10(IL4_pretreat_conc), data[:, 8], color="b", zorder=105, marker="^", edgecolors="k")
+    ax.scatter(IL7_pretreat_conc, data[:, 1], color="powderblue", zorder=100, marker="^", edgecolors="k")
+    ax.scatter(IL7_pretreat_conc, data[:, 2], color="powderblue", zorder=101, marker="^", edgecolors="k")
+    ax.scatter(IL7_pretreat_conc, data[:, 3], color="powderblue", zorder=102, marker="^", edgecolors="k")
+    ax.scatter(IL4_pretreat_conc, data[:, 6], color="b", zorder=103, marker="^", edgecolors="k")
+    ax.scatter(IL4_pretreat_conc, data[:, 7], color="b", zorder=104, marker="^", edgecolors="k")
+    ax.scatter(IL4_pretreat_conc, data[:, 8], color="b", zorder=105, marker="^", edgecolors="k")
+    ax.set_xscale('log')
+    ax.set_xticks([10e-5, 10e-4, 10e-3, 10e-2, 10e-1, 10e0])
 
 
 def surf_gc(ax, cytokC_pg, unkVec):
