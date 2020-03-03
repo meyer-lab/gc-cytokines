@@ -373,7 +373,7 @@ def MuteinModelOverlay(ax, tpoint, cells):
     tps = np.array([0.5, 1.0, 2.0, 4.0]) * 60.0
     muteinC = mutData.Concentration.unique()
     pred_data = np.zeros((12, 4, unkVec_2_15Over.shape[1]))
-    mutData["Concentration"] = np.log10(mutData["Concentration"].astype(np.float))
+    mutData["Concentration"] = mutData["Concentration"].astype(np.float)
     ligand_order = ['F42Q N-Term', 'N88D C-term', 'R38Q N-term', 'V91K C-term', 'WT C-term', 'WT N-term']
     cell_order = ['NK', 'CD8+', 'T-reg', 'Naive Treg', 'Mem Treg', 'T-helper', 'Naive Th', 'Mem Th']
     df = pd.DataFrame(columns=['Cells', 'Ligand', 'Time Point', 'Concentration', 'Activity Type', 'Replicate', 'Activity'])
@@ -406,10 +406,14 @@ def MuteinModelOverlay(ax, tpoint, cells):
                     for o in range(unkVec_2_15Over.shape[1]):
                         pred_data[:, :, o] = scales2[n, 1, o] * pred_data[:, :, o] / (pred_data[:, :, o] + scales2[n, 0, o])
 
-            ax[i].set(xlabel=("Ligand Concentration (nM)"), ylabel="Activity", title=celltype, ylim=(0, bounds[i]))
-            plot_conf_int(ax[i], np.log10(muteinC.astype(np.float)), pred_data[:, 3, :], colors[j])
+            
+            plot_conf_int(ax[i], muteinC.astype(np.float), pred_data[:, 3, :], colors[j])
     # plot experimental
     for i, celltype in enumerate(cells):
         for j, ligand in enumerate(ligand_order):
             sns.scatterplot(x="Concentration", y="RFU", data=mutData.loc[(mutData["Cells"] == celltype) & (
                 mutData["Time"] == tpoint) & (mutData["Ligand"] == ligand)], ax=ax[i], s=10, color=colors[j], legend=False)
+            ax[i].set(xlabel=("Ligand Concentration (nM)"), ylabel="Activity", title=celltype, ylim=(0, bounds[i]))
+            ax[i].set_xscale('log')
+            ax[i].set_xlim(10e-5, 10e1)
+            ax[i].set_xticks([10e-5, 10e-3, 10e-1, 10e1])
