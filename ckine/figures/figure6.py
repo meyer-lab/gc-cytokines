@@ -109,9 +109,9 @@ def calc_plot_specificity(ax, cell_compare, df_specificity, df_activity, ligands
         for _, conc in enumerate(concs):
             df_specificity = specificity(df_specificity, df_activity, 'T-reg', cell_compare, ckine, 60., conc)
 
-    df_specificity["Concentration"] = np.log10(df_specificity["Concentration"].astype(np.float))  # logscale for plotting
+    df_specificity["Concentration"] = df_specificity["Concentration"].astype(np.float)  # logscale for plotting
     df_specificity["Specificity"] = np.log10(df_specificity["Specificity"].astype(np.float))
-    df_specificity.drop(df_specificity[(df_specificity["Concentration"] < -2.5)].index, inplace=True)  # drop second conc due to negative activity
+    df_specificity.drop(df_specificity[(df_specificity["Concentration"] < 0.002)].index, inplace=True)  # drop second conc due to negative activity
 
     # plot all specificty values
     sns.set_palette(sns.xkcd_palette(["violet", "goldenrod"]))
@@ -119,7 +119,10 @@ def calc_plot_specificity(ax, cell_compare, df_specificity, df_activity, ligands
                                                                                                cell_compare) & (df_specificity["Data Type"] == 'Experimental')], ax=ax, marker='o', legend=False)
     sns.lineplot(x="Concentration", y="Specificity", hue="Ligand", data=df_specificity.loc[(df_specificity["Cells"] == cell_compare) &
                                                                                            (df_specificity["Data Type"] == 'Predicted')], ax=ax, legend=False)
-    ax.set(xlabel="Concentration (nM)", ylabel="log$_{10}$[Specificity]", title=('T-reg vs. ' + cell_compare))
+    ax.set(xlabel="Ligand Concentration (nM)", ylabel="log$_{10}$[Specificity]", title=('T-reg vs. ' + cell_compare))
+    ax.set_xscale('log')
+    ax.set_xticks(np.array([10e-4, 10e-1, 10e1]))
+    ax.set_xlim(10e-4, 10e1)
 
 
 def specificity(df_specificity, df_activity, cell_type1, cell_type2, ligand, tp, concentration):
@@ -359,7 +362,7 @@ def Mut_Fact(ax):
     ax[3].semilogx(concs, parafac[3])
     ax[3].set_xlabel("Concentration (nM)")
     ax[3].set_ylabel("Component")
-    ax[3].set_xticks(np.array([10e-4, 10e-2, 10e0, 10e2]))
+    ax[3].set_xticks(np.array([10e-5, 10e-3, 10e-1, 10e1]))
 
 
 def MuteinModelOverlay(ax, tpoint, cells):
@@ -370,7 +373,7 @@ def MuteinModelOverlay(ax, tpoint, cells):
     tps = np.array([0.5, 1.0, 2.0, 4.0]) * 60.0
     muteinC = mutData.Concentration.unique()
     pred_data = np.zeros((12, 4, unkVec_2_15Over.shape[1]))
-    mutData["Concentration"] = np.log10(mutData["Concentration"].astype(np.float))
+    mutData["Concentration"] = mutData["Concentration"].astype(np.float)
     ligand_order = ['F42Q N-Term', 'N88D C-term', 'R38Q N-term', 'V91K C-term', 'WT C-term', 'WT N-term']
     cell_order = ['NK', 'CD8+', 'T-reg', 'Naive Treg', 'Mem Treg', 'T-helper', 'Naive Th', 'Mem Th']
     df = pd.DataFrame(columns=['Cells', 'Ligand', 'Time Point', 'Concentration', 'Activity Type', 'Replicate', 'Activity'])
@@ -389,13 +392,9 @@ def MuteinModelOverlay(ax, tpoint, cells):
     scales2 = mutein_scaling(df, unkVec_2_15Over)
     colors = sns.color_palette("hls", 6)
 
-    # Plot experimental Data
     for i, celltype in enumerate(cells):
         for j, ligand in enumerate(ligand_order):
-            sns.scatterplot(x="Concentration", y="RFU", data=mutData.loc[(mutData["Cells"] == celltype) & (
-                mutData["Time"] == tpoint) & (mutData["Ligand"] == ligand)], ax=ax[i], s=10, color=colors[j], legend=False)
-
-# scale and plot model predictions
+            # scale and plot model predictions
             for k, conc in enumerate(df.Concentration.unique()):
                 for l, tp in enumerate(tps):
                     for m in range(unkVec_2_15Over.shape[1]):
@@ -407,5 +406,13 @@ def MuteinModelOverlay(ax, tpoint, cells):
                     for o in range(unkVec_2_15Over.shape[1]):
                         pred_data[:, :, o] = scales2[n, 1, o] * pred_data[:, :, o] / (pred_data[:, :, o] + scales2[n, 0, o])
 
-            ax[i].set(xlabel=("Concentration (log$_{10}$[nM])"), ylabel="Activity", title=celltype, ylim=(0, bounds[i]))
-            plot_conf_int(ax[i], np.log10(muteinC.astype(np.float)), pred_data[:, 3, :], colors[j])
+            plot_conf_int(ax[i], muteinC.astype(np.float), pred_data[:, 3, :], colors[j])
+    # plot experimental
+    for i, celltype in enumerate(cells):
+        for j, ligand in enumerate(ligand_order):
+            sns.scatterplot(x="Concentration", y="RFU", data=mutData.loc[(mutData["Cells"] == celltype) & (
+                mutData["Time"] == tpoint) & (mutData["Ligand"] == ligand)], ax=ax[i], s=10, color=colors[j], legend=False)
+            ax[i].set(xlabel=("Ligand Concentration (nM)"), ylabel="Activity", title=celltype, ylim=(0, bounds[i]))
+            ax[i].set_xscale('log')
+            ax[i].set_xlim(10e-5, 10e1)
+            ax[i].set_xticks([10e-5, 10e-3, 10e-1, 10e1])

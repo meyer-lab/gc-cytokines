@@ -193,7 +193,7 @@ def plot_ligands(ax, factors, ligand_names, cutoff=0.0):
     ax.set_ylabel('Component')
     ax.set_xscale('log')
     ax.set_title('Ligands')
-    ax.set_xticks(np.array([10e-4, 10e-2, 10e0, 10e2]))
+    ax.set_xticks(np.array([10e-5, 10e-3, 10e-1, 10e1]))
 
     # Place legend
     ax.legend(loc=6)

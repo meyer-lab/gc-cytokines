@@ -31,7 +31,7 @@ def makeFigure():
 
     tps = np.array([0.5, 1.0, 2.0, 4.0]) * 60.0
     muteinC = dataMean.Concentration.unique()
-    dataMean["Concentration"] = np.log10(dataMean["Concentration"].astype(np.float))  # logscale for plotting
+    dataMean["Concentration"] = dataMean["Concentration"].astype(np.float)  # logscale for plotting
 
     ligand_order = ['WT N-term', 'WT C-term', 'V91K C-term', 'R38Q N-term', 'F42Q N-Term', 'N88D C-term']
     cell_order = ['NK', 'CD8+', 'T-reg', 'Naive Treg', 'Mem Treg', 'T-helper', 'Naive Th', 'Mem Th']
@@ -90,7 +90,7 @@ def plot_expr_predM(ax, df, scales, cell_order, ligand_order, tps, muteinC):
                     else:
                         plot_dose_responseM(ax[axis], pred_data, tps, muteinC)
                     ax[axis].set(ylim=(0, ylims[n]))
-            ax[axis].set(xlabel=("[" + ligand_name + "] (log$_{10}$[nM])"), ylabel="Activity", title=cell_name)
+            ax[axis].set(xlabel=("[" + ligand_name + "] Concentration (nM)"), ylabel="Activity", title=cell_name)
 
 
 def plot_dose_responseM(ax, mutein_activity, tps, muteinC, legend=False):
@@ -99,7 +99,9 @@ def plot_dose_responseM(ax, mutein_activity, tps, muteinC, legend=False):
 
     for tt in range(tps.size):
         if not legend:
-            plot_conf_int(ax, np.log10(muteinC.astype(np.float)), mutein_activity[:, tt, :], colors[tt])
+            plot_conf_int(ax, muteinC.astype(np.float), mutein_activity[:, tt, :], colors[tt])
         else:
-            plot_conf_int(ax, np.log10(muteinC.astype(np.float)), mutein_activity[:, tt, :], colors[tt], (tps[tt] / 60.0).astype(str))
+            plot_conf_int(ax, muteinC.astype(np.float), mutein_activity[:, tt, :], colors[tt], (tps[tt] / 60.0).astype(str))
             ax.legend(title="time (hours)")
+    ax.set_xscale('log')
+    ax.set_xticks(np.array([10e-5, 10e-3, 10e-1, 10e1]))
