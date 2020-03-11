@@ -16,17 +16,15 @@ from ..make_tensor import make_tensor, tensor_time
 
 cell_dim = 1  # For this figure, the cell dimension is along the second [python index 1].
 values, _, mat, _, _ = make_tensor()
-values[:, :, 24:36] /= 7.0  # IL-7 just seems to have larger values across the board, so shrink a bit
+values[:, :, 0:12] *= 15.0 # Increase variance with IL-2 so it shows up
 values = z_score_values(tl.tensor(values), cell_dim)
-logging.info("Done constructing tensor.")
 
-logging.info("Starting decomposition.")
 data, numpy_data, cell_names = import_Rexpr()
 factors_activity = []
 for jj in range(4):
     factors = perform_decomposition(values, jj + 1)
     factors_activity.append(factors)
-logging.info("Decomposition finished.")
+
 n_pred_comps = 3  # Placed here to be also used by Figure 5
 
 
