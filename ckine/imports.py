@@ -12,7 +12,10 @@ path_here = dirname(dirname(__file__))
 def import_Rexpr():
     """ Loads CSV file containing Rexpr levels from Visterra data. """
     data = pds.read_csv(join(path_here, "ckine/data/final_receptor_levels.csv"))  # Every row in the data represents a specific cell
-    df = data.groupby(["Cell Type", "Receptor"]).agg(gmean)  # Get the mean receptor count for each cell across trials in a new dataframe.
+
+    with np.errstate(divide='ignore'):
+        df = data.groupby(["Cell Type", "Receptor"]).agg(gmean)  # Get the mean receptor count for each cell across trials in a new dataframe.
+
     cell_names, receptor_names = df.index.unique().levels  # gc_idx=0|IL15Ra_idx=1|IL2Ra_idx=2|IL2Rb_idx=3
     cell_names = cell_names[[4, 0, 5, 1, 9, 7, 3, 8, 6, 2]]  # Reorder to match pstat import order
     receptor_names = receptor_names[[2, 3, 0, 1, 4]]  # Reorder so that IL2Ra_idx=0|IL2Rb_idx=1|gc_idx=2|IL15Ra_idx=3|IL7Ra_idx=4
