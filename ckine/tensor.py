@@ -20,6 +20,27 @@ def z_score_values(A, cell_dim):
     return A / sigma[tuple(convIDX)]
 
 
+def reorient_one(factors, component_index):
+    """Function that takes in the 4 factor matrices and decides if that column index should flip or not and then flips it."""
+    factors_idx = [factors[0][:,component_index], factors[1][:,component_index], factors[2][:,component_index]]
+    component_means = tl.tensor([tl.mean(factors_idx[0]**3), tl.mean(factors_idx[1]**3), tl.mean(factors_idx[2]**3)])
+    # If at least 2 are negative, then flip the negative component and keep others unchanged
+    if tl.sum(component_means < 0) >= 2 and tl.sum(component_means < 0) <= 3:
+        count = 1
+        for index, factor_idx in enumerate(factors_idx):
+            if component_means[index] < 0 and count < 3:
+                factors[index][:, component_index] = factor_idx * -1
+                count += 1
+    return factors
+
+
+def reorient_factors(factors):
+    """This function is to reorient the factors if at least one component in two factors matrices are negative."""
+    for jj in range(factors[0].shape[1]):
+        factors = reorient_one(factors, jj)
+    return factors
+
+
 def R2X(reconstructed, original):
     ''' Calculates R2X of two tensors. '''
     return 1.0 - tl_var(reconstructed - original) / tl_var(original)
@@ -27,8 +48,9 @@ def R2X(reconstructed, original):
 
 def perform_decomposition(tensor, r, weightFactor=2):
     ''' Perform PARAFAC decomposition. '''
-    weights, factors = parafac(tensor, r, tol=1.0E-9, n_iter_max=1000, normalize_factors=True, l2_reg=0.01, orthogonalise=True)
+    weights, factors = parafac(tensor, r, tol=1.0E-9, n_iter_max=1000, normalize_factors=True, l2_reg=0.02, orthogonalise=True)
     factors[weightFactor] *= weights[np.newaxis, :]  # Put weighting in designated factor
+    factors = reorient_factors(factors)
     return factors
 
 
