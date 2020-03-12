@@ -15,6 +15,7 @@ from ..make_tensor import make_tensor, tensor_time
 
 cell_dim = 1  # For this figure, the cell dimension is along the second [python index 1].
 values, _, mat, _, _ = make_tensor()
+values[:, :, 0:12] *= 15.0  # Increase variance with IL-2 so it shows up
 values = z_score_values(tl.tensor(values), cell_dim)
 
 data, numpy_data, cell_names = import_Rexpr()
