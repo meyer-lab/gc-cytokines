@@ -63,7 +63,7 @@ def loadFiles(pathh):
 def import_samples_2_15(Traf=True, ret_trace=False, N=None, tensor=False):
     """ This function imports the csv results of IL2-15 fitting into a numpy array called unkVec. """
     if tensor:
-        np.random.seed(1)
+        np.random.seed(79)
 
     if Traf:
         trace = loadFiles("IL2_model_results")
