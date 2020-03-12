@@ -21,9 +21,9 @@ def z_score_values(A, cell_dim):
 
 
 def reorient_one(factors, component_index):
-    """Function that takes in the 4 factor matrices and decides if that column index should flip or not and then flips it."""
-    factors_idx = [factors[0][:,component_index], factors[1][:,component_index], factors[2][:,component_index]]
-    component_means = tl.tensor([tl.mean(factors_idx[0]**3), tl.mean(factors_idx[1]**3), tl.mean(factors_idx[2]**3)])
+    """Function that takes in the factor matrices and decides if that column index should flip or not and then flips it."""
+    factors_idx = [xx[:, component_index] for xx in factors]
+    component_means = tl.tensor([tl.mean(xx**3) for xx in factors_idx])
     # If at least 2 are negative, then flip the negative component and keep others unchanged
     if tl.sum(component_means < 0) >= 2 and tl.sum(component_means < 0) <= 3:
         count = 1
