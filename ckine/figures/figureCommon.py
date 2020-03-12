@@ -179,7 +179,7 @@ def plot_ligands(ax, factors, ligand_names, cutoff=0.0):
             idx = range(jj * len(ILs), (jj + 1) * len(ILs))
 
             # If the component value never gets over cutoff, then don't plot the line
-            if np.max(factors[idx, ii]) > cutoff:
+            if np.linalg.norm(factors[idx, ii]) > cutoff:
                 if componentLabel:
                     ax.plot(ILs, factors[idx, ii], color=colors[ii], label='Cmp. ' + str(ii + 1))
                     componentLabel = False
