@@ -95,10 +95,12 @@ def affComp(ax):
     KDdf = pd.DataFrame({'RaAff': RaAff, 'GcBAff': GcBAff, 'Ligand': ligList})
     KDdf = KDdf.sort_values(by=["Ligand"])
     sns.scatterplot(x='RaAff', y='GcBAff', data=KDdf, hue="Ligand", palette=sns.color_palette("husl", 6), ax=ax, legend=False)
-    ax.set_xlabel("IL-2Rα KD (log$_{10}$[nM])")
-    ax.set_ylabel("IL-2Rβ/γc KD (log$_{10}$[nM])")
+    ax.set_xlabel("IL-2Rα $K_D$ (log$_{10}$[nM])")
+    ax.set_ylabel("IL-2Rβ/γc $K_D$ (log$_{10}$[nM])")
     ax.set_xscale('log')
     ax.set_yscale('log')
+    ax.set_xticks(np.array([10e-2, 10e-1, 10e0]))
+    ax.set_yticks(np.array([10e-1, 10e0, 10e1]))
 
 
 def calc_plot_specificity(ax, cell_compare, df_specificity, df_activity, ligands, concs):
@@ -119,7 +121,7 @@ def calc_plot_specificity(ax, cell_compare, df_specificity, df_activity, ligands
                                                                                                cell_compare) & (df_specificity["Data Type"] == 'Experimental')], ax=ax, marker='o', legend=False)
     sns.lineplot(x="Concentration", y="Specificity", hue="Ligand", data=df_specificity.loc[(df_specificity["Cells"] == cell_compare) &
                                                                                            (df_specificity["Data Type"] == 'Predicted')], ax=ax, legend=False)
-    ax.set(xlabel="Ligand Concentration (nM)", ylabel="log$_{10}$[Specificity]", title=('T-reg vs. ' + cell_compare))
+    ax.set(xlabel="Concentration (nM)", ylabel="log$_{10}$[Specificity]", title=('T-reg vs. ' + cell_compare))
     ax.set_xscale('log')
     ax.set_xticks(np.array([10e-4, 10e-1, 10e1]))
     ax.set_xlim(10e-4, 10e1)
@@ -182,7 +184,7 @@ def Specificity(ax):
     sns.set_palette(sns.xkcd_palette(colors))
 
     sns.catplot(data=df, x='rate', y='value', kind="bar", hue='cell', ax=ax, legend=False)
-    ax.set_ylabel("Value")
+    ax.set_ylabel(r"$\frac{d[Specificity]}{d[Param]}$")
     ax.set_xlabel("")
     ax.legend()
     ax.set_yscale("symlog", linthreshy=0.01)
@@ -247,19 +249,19 @@ def Spec_Aff(ax, npoints, unkVecAff, scalesAff):
             specHolderNK[i, j] = SNKfun.eval()
             specHolderTh[i, j] = SThfun.eval()
         if i == 0:
-            ax.plot(1 / affRange, specHolderNK[i, :], label="TReg/NK pSTAT5 w/ " + str(1 / RaAff[i]) + " IL2Ra Affinity", color="xkcd:rich blue")
-            ax.plot(1 / affRange, specHolderTh[i, :], label="TReg/Th pSTAT5 w/ " + str(1 / RaAff[i]) + " IL2Ra Affinity", color="xkcd:sun yellow")
+            ax.plot(1 / affRange, specHolderNK[i, :], label="TReg/NK pSTAT5 w/ " + str(1 / RaAff[i]) + " IL-2Rα $K_a$", color="xkcd:rich blue")
+            ax.plot(1 / affRange, specHolderTh[i, :], label="TReg/Th pSTAT5 w/ " + str(1 / RaAff[i]) + " IL-2Rα $K_a$", color="xkcd:sun yellow")
         else:
-            ax.plot(1 / affRange, specHolderNK[i, :], label="TReg/NK pSTAT5 w/ " + str(1 / RaAff[i]) + " IL2Ra Affinity", linestyle='dotted', color="xkcd:rich blue")
-            ax.plot(1 / affRange, specHolderTh[i, :], label="TReg/Th pSTAT5 w/ " + str(1 / RaAff[i]) + " IL2Ra Affinity", linestyle='dotted', color="xkcd:sun yellow")
+            ax.plot(1 / affRange, specHolderNK[i, :], label="TReg/NK pSTAT5 w/ " + str(1 / RaAff[i]) + " IL2Rα $K_a$", linestyle='dotted', color="xkcd:rich blue")
+            ax.plot(1 / affRange, specHolderTh[i, :], label="TReg/Th pSTAT5 w/ " + str(1 / RaAff[i]) + " IL2Rα $K_a$", linestyle='dotted', color="xkcd:sun yellow")
 
     ax.set_xscale('log')
-    ax.set_xlabel('Relative IL-2Rβ/γc Affinity')
+    ax.set_xlabel('Relative IL-2Rβ/γc $K_a$')
     ax.set_ylabel('Specificity')
     ax.set_xlim((10e-3, 10e0))
     handles = []
-    line = Line2D([], [], color='black', marker='_', linestyle='None', markersize=6, label='WT IL2Ra Affinity')
-    point = Line2D([], [], color='black', marker='.', linestyle='None', markersize=6, label='0.5 IL2Ra Affinity')
+    line = Line2D([], [], color='black', marker='_', linestyle='None', markersize=6, label='WT IL-2Rα $K_a$')
+    point = Line2D([], [], color='black', marker='.', linestyle='None', markersize=6, label='0.5 IL-2Rα $K_a$')
     handles.append(line)
     handles.append(point)
     ax.legend(handles=handles)
@@ -347,7 +349,10 @@ def Mut_Fact(ax):
 
     # Cells
     plot_cells(ax[1], parafac[0], 1, 2, cells)
-    ax[1].legend(prop={"size": 6})
+    #ax[1].legend(prop={"size": 6})
+    handles, labels = ax[1].get_legend_handles_labels()
+    order = [3, 0, 7, 5, 2, 6, 4, 1]
+    ax[1].legend([handles[idx] for idx in order], [labels[idx] for idx in order], prop={"size": 6})
 
     # Timepoints
     tComp = np.r_[np.zeros((1, 2)), parafac[2]]
@@ -412,7 +417,7 @@ def MuteinModelOverlay(ax, tpoint, cells):
         for j, ligand in enumerate(ligand_order):
             sns.scatterplot(x="Concentration", y="RFU", data=mutData.loc[(mutData["Cells"] == celltype) & (
                 mutData["Time"] == tpoint) & (mutData["Ligand"] == ligand)], ax=ax[i], s=10, color=colors[j], legend=False)
-            ax[i].set(xlabel=("Ligand Concentration (nM)"), ylabel="Activity", title=celltype, ylim=(0, bounds[i]))
+            ax[i].set(xlabel=("Concentration (nM)"), ylabel="Activity", title=celltype, ylim=(0, bounds[i]))
             ax[i].set_xscale('log')
             ax[i].set_xlim(10e-5, 10e1)
             ax[i].set_xticks([10e-5, 10e-3, 10e-1, 10e1])

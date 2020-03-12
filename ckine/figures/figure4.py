@@ -24,19 +24,11 @@ pstat_df = pd.DataFrame(data=pstat_data)
 def makeFigure():
     """Get a list of the axis objects and create a figure"""
     # Get list of axis objects
-    ax, f = getSetup((7, 6), (3, 3))
-
-    for ii, item in enumerate(ax):
-        subplotLabel(item, string.ascii_uppercase[ii])
+    ax, f = getSetup((8, 4), (2, 4))
 
     tps = np.array([0.5, 1., 2., 4.]) * 60.
-    compare_experimental_data(ax[0], pstat_df)  # compare experiment 1 to 2
-    df = WT_EC50s()
-    catplot_comparison(ax[1], df, legend=False, Mut=False)  # compare experiments to model predictions
-    plot_corrcoef(ax[2], tps)  # find correlation coefficients
-    global_legend(ax[0], Mut=True, exppred=False)  # add legend subplots A-C
 
-    plot_exp_v_pred(ax[3:9], cell_subset=["NK", "CD8+", "T-reg"])  # NK, CD8+, and Treg subplots taken from fig S5
+    plot_exp_v_pred(ax[0:8], cell_subset=["NK", "CD8+", "T-reg", "T-helper"])  # NK, CD8+, and Treg subplots taken from fig S5
 
     return f
 
