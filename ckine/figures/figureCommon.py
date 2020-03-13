@@ -116,8 +116,12 @@ def plot_conf_int(ax, x_axis, y_axis, color, label=None):
 
 def plot_cells(ax, factors, component_x, component_y, cell_names, legend=True):
     """This function plots the combination decomposition based on cell type."""
-    colors = cm.rainbow(np.linspace(0, 1, len(cell_names)))
-    markersCells = ['^', '*', 'D', 's', 'X', 'o', '4', 'H', 'P', '*', 'D', 's', 'X']
+    colors = cm.rainbow(np.linspace(0, 1, 10))
+    if len(cell_names) == 10:
+        markersCells = ['^', '*', 'D', 's', 'X', 'o', '4', 'H', 'P', '*', 'D', 's', 'X']
+    else:
+        markersCells = ['*', '*', '4', '^', 'P', 'o', 'H', 'X']
+        colors = [colors[1], colors[9], colors[6], colors[0], colors[8], colors[5], colors[7], colors[4]]
 
     for ii, _ in enumerate(factors[:, component_x - 1]):
         ax.scatter(factors[ii, component_x - 1], factors[ii, component_y - 1], c=[colors[ii]], marker=markersCells[ii], label=cell_names[ii])
