@@ -40,9 +40,7 @@ def perform_decomposition(tensor, r, weightFactor=2):
     ''' Perform PARAFAC decomposition. '''
     weights, factors = parafac(tensor, r, tol=1.0E-10, n_iter_max=2000, normalize_factors=True, l2_reg=0.01, orthogonalise=True)
     factors[weightFactor] *= weights[np.newaxis, :]  # Put weighting in designated factor
-    factors = reorient_factors(factors)
-    factors = reorient_factors(factors)
-    return factors
+    return reorient_factors(factors)
 
 
 def perform_tucker(tensor, rank_list):
