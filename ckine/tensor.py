@@ -22,14 +22,13 @@ def z_score_values(A, cell_dim):
 
 def reorient_one(factors, component_index):
     """Function that takes in the factor matrices and decides if that column index should flip or not and then flips it."""
-    factors_idx = [xx[:, component_index] for xx in factors]
-    component_means = tl.tensor([tl.mean(xx**3) for xx in factors_idx])
+    component_means = tl.tensor([tl.mean(xx[:, component_index]**3) for xx in factors])
     # If at least 2 are negative, then flip the negative component and keep others unchanged
-    if tl.sum(component_means < 0) >= 2 and tl.sum(component_means < 0) <= 3:
+    if tl.sum(component_means < 0) >= 2:
         count = 1
-        for index, factor_idx in enumerate(factors_idx):
+        for index, _ in enumerate(factors):
             if component_means[index] < 0 and count < 3:
-                factors[index][:, component_index] = factor_idx * -1
+                factors[index][:, component_index] *= -1.0
                 count += 1
     return factors
 
@@ -50,6 +49,7 @@ def perform_decomposition(tensor, r, weightFactor=2):
     ''' Perform PARAFAC decomposition. '''
     weights, factors = parafac(tensor, r, tol=1.0E-9, n_iter_max=1000, normalize_factors=True, l2_reg=0.01, orthogonalise=True)
     factors[weightFactor] *= weights[np.newaxis, :]  # Put weighting in designated factor
+    factors = reorient_factors(factors)
     factors = reorient_factors(factors)
     return factors
 
