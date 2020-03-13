@@ -184,7 +184,7 @@ def Specificity(ax):
     sns.set_palette(sns.xkcd_palette(colors))
 
     sns.catplot(data=df, x='rate', y='value', kind="bar", hue='cell', ax=ax, legend=False)
-    ax.set_ylabel(r"$\frac{d[Specificity]}{d[Param]}$")
+    ax.set_ylabel("d[Specificity] / d[Param]")
     ax.set_xlabel("")
     ax.legend()
     ax.set_yscale("symlog", linthreshy=0.01)
