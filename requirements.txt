@@ -6,7 +6,6 @@ numpy==1.18.1
 pytest==5.3.5
 hypothesis==5.6.0
 hypothesis-numpy==2.0.0
-tensorly==0.4.5
 Theano==1.0.4
 pymc3==3.8
 parameterized==0.7.1
@@ -16,3 +15,4 @@ svgutils==0.3.1
 gprof2dot==2019.11.30
 pylint==2.4.4
 arviz==0.7.0
+git+git://github.com/tensorly/tensorly.git@2a8b231e7dfda25a7332e27fac0e6892a5204224
