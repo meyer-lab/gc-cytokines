@@ -63,7 +63,7 @@ def plot_expr_predM(ax, df, scales, cell_order, ligand_order, tps, muteinC):
 
     for i, cell_name in enumerate(cell_order):
         for j, ligand_name in enumerate(ligand_order):
-            axis = i * 8 + j
+            axis = i * 6 + j
 
             # plot experimental data
             sns.scatterplot(x="Concentration", y="RFU", hue="Time", data=dataMean.loc[(dataMean["Cells"] == cell_name)
