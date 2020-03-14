@@ -14,7 +14,7 @@ from ..make_tensor import make_tensor, tensor_time
 
 cell_dim = 1  # For this figure, the cell dimension is along the second [python index 1].
 values, _, mat, _, _ = make_tensor()
-values[:, :, 24:36] /= 5.0  # Increase variance with IL-2 so it shows up
+values[:, :, 24:36] /= 20.0
 values = z_score_values(tl.tensor(values), cell_dim)
 
 data, numpy_data, cell_names = import_Rexpr()
@@ -52,7 +52,7 @@ def makeFigure():
 
     plot_cells(ax[7], tl.to_numpy(factors_activ[1]), 1, 2, cell_names)
     ax[7].set_xlim(left=-0.03)
-    ax[7].set_ylim(bottom=-0.25)
+    ax[7].set_ylim(bottom=-0.03)
     plot_cells(ax[8], tl.to_numpy(factors_activ[1]), 1, 3, cell_names)
     ax[8].set_xlim(left=-0.03)
     ax[8].set_ylim(bottom=-0.03)

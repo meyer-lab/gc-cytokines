@@ -22,7 +22,7 @@ Fitting was performed with the Python package PyMC3. All unknown rate parameters
 
 ### Tensor Generation and Factorization
 
-To perform factorization of model predictions, we generated a three-dimensional (timepoints $\times$ cell types $\times$ ligand) data tensor of predicted ligand-induced signaling. We simulated all 10 cell types stimulated with IL-2, -7, or -15. The receptor expression rates were set based on measured surface abundance ([@Fig:tfac]B). The ligand stimulation concentrations matched those from our experiments ([@Fig:supp5]D). Before decomposition, the tensor was variance scaled across each cell population. Tensor decomposition was performed using the Python package TensorLy [@TensorlyArxiv].
+To perform tensor factorization we generated a three- (timepoints $\times$ cell types $\times$ ligand) or four-dimensional (timepoints $\times$ cell types $\times$ concentration $\times$ mutein) data tensor of predicted or measured ligand-induced signaling. Before decomposition, the tensor was variance scaled across each cell population. Tensor decomposition was performed using the Python package TensorLy [@TensorlyArxiv]. Except where indicated otherwise, tensor decomposition was performed using non-negative canonical polyadic decomposition. Where indicated, non-negative Tucker decomposition was used.
 
 ## Experimental Methods
 
