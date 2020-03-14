@@ -22,7 +22,7 @@ Fitting was performed with the Python package PyMC3. All unknown rate parameters
 
 ### Tensor Generation and Factorization
 
-To perform tensor factorization we generated a three- (timepoints $\times$ cell types $\times$ ligand) or four-dimensional (timepoints $\times$ cell types $\times$ concentration $\times$ mutein) data tensor of predicted or measured ligand-induced signaling. Before decomposition, the tensor was variance scaled across each cell population. Tensor decomposition was performed using the Python package TensorLy [@TensorlyArxiv]. Except where indicated otherwise, tensor decomposition was performed using orthogonalized, non-negative canonical polyadic decomposition. Where indicated, non-negative Tucker decomposition was used.
+To perform tensor factorization we generated a three- (timepoints $\times$ cell types $\times$ ligand) or four-dimensional (timepoints $\times$ cell types $\times$ concentration $\times$ mutein) data tensor of predicted or measured ligand-induced signaling. Before decomposition, the tensor was variance scaled across each cell population. Tensor decomposition was performed using the Python package TensorLy [@TensorlyArxiv]. Except where indicated otherwise, tensor decomposition was performed using non-negative canonical polyadic decomposition. Where indicated, non-negative Tucker decomposition was used.
 
 ## Experimental Methods
 
