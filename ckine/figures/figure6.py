@@ -68,9 +68,9 @@ def makeFigure():
     Specificity(ax=ax[2])
     Spec_Aff(ax[3], 40, unkVecT, scalesT)
     Mut_Fact(ax[8:12])
-    #legend = ax[8].get_legend()
-    #labels = (x.get_text() for x in legend.get_texts())
-    # ax[5].legend(legend.legendHandles, labels, loc='center left', prop={"size": 9}) #use this to place universal legend later
+    legend = ax[8].get_legend()
+    labels = (x.get_text() for x in legend.get_texts())
+    ax[4].legend(legend.legendHandles, labels, loc='upper right', prop={"size": 6})  # use this to place universal legend later
     ax[8].get_legend().remove()
     overlayT, overlaycells = 240., ['T-reg', 'NK', 'T-helper']
     MuteinModelOverlay(ax[5:8], overlayT, overlaycells)
@@ -95,8 +95,8 @@ def affComp(ax):
     ax.set_ylabel("IL-2Rβ/γc $K_D$ (log$_{10}$[nM])")
     ax.set_xscale('log')
     ax.set_yscale('log')
-    ax.set_xticks(np.array([10e-2, 10e-1, 10e0]))
-    ax.set_yticks(np.array([10e-1, 10e0, 10e1]))
+    ax.set_xticks(np.array([10e-2, 10e-1, 10e0, 10e1]))
+    ax.set_yticks(np.array([10e-1, 10e0, 10e1, 10e2]))
 
 
 def calc_plot_specificity(ax, cell_compare, df_specificity, df_activity, ligands, concs):

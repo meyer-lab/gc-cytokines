@@ -91,7 +91,7 @@ def plot_R2X(ax, tensor, factors_list):
     ax.set_xticklabels(np.arange(1, len(factors_list) + 1))
 
 
-def subplotLabel(axs, hstretch=None):
+def subplotLabel(axs, hstretch=None, skips=None):
     """ Place subplot labels on figure. """
     if hstretch is None:
         hstretch = {}
@@ -101,6 +101,7 @@ def subplotLabel(axs, hstretch=None):
 
         if ii < 26:
             letter = ascii_uppercase[ii]
+
         else:
             letter = 'A' + ascii_uppercase[ii - 26]
 
