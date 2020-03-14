@@ -68,9 +68,9 @@ def makeFigure():
     Specificity(ax=ax[2])
     Spec_Aff(ax[3], 40, unkVecT, scalesT)
     Mut_Fact(ax[8:12])
-    #legend = ax[8].get_legend()
-    #labels = (x.get_text() for x in legend.get_texts())
-    # ax[5].legend(legend.legendHandles, labels, loc='center left', prop={"size": 9}) #use this to place universal legend later
+    legend = ax[8].get_legend()
+    labels = (x.get_text() for x in legend.get_texts())
+    ax[4].legend(legend.legendHandles, labels, loc='upper right', prop={"size": 5.5})  # use this to place universal legend later
     ax[8].get_legend().remove()
     overlayT, overlaycells = 240., ['T-reg', 'NK', 'T-helper']
     MuteinModelOverlay(ax[5:8], overlayT, overlaycells)
