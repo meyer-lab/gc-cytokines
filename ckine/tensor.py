@@ -20,17 +20,6 @@ def z_score_values(A, cell_dim):
     return A / sigma[tuple(convIDX)]
 
 
-def reorient_factors(factors):
-    """ Reorient the factors so that at most one is negative. """
-    for jj in range(factors[0].shape[1]):
-        for ii in range(len(factors) - 1):
-            if tl.mean(factors[ii][:, jj]**3) < 0.0:
-                factors[ii][:, jj] *= -1.0
-                factors[ii + 1][:, jj] *= -1.0
-
-    return factors
-
-
 def R2X(reconstructed, original):
     ''' Calculates R2X of two tensors. '''
     return 1.0 - tl_var(reconstructed - original) / tl_var(original)
@@ -38,15 +27,15 @@ def R2X(reconstructed, original):
 
 def perform_decomposition(tensor, r, weightFactor=2):
     ''' Perform PARAFAC decomposition. '''
-    weights, factors = non_negative_parafac(tensor, r, tol=1.0E-12, n_iter_max=2000, orthogonalise=True, normalize_factors=True)
+    weights, factors = non_negative_parafac(tensor, r, tol=1.0E-10, n_iter_max=2000, orthogonalise=True, normalize_factors=True)
     factors[weightFactor] *= weights[np.newaxis, :]  # Put weighting in designated factor
-    return reorient_factors(factors)
+    return factors
 
 
 def perform_tucker(tensor, rank_list):
     ''' Perform Tucker decomposition. '''
     # index 0 is for core tensor, index 1 is for factors; out is a list of core and factors
-    return non_negative_tucker(tensor, rank_list, tol=1.0E-9, n_iter_max=1000)
+    return non_negative_tucker(tensor, rank_list, tol=1.0E-10, n_iter_max=1000)
 
 
 def find_R2X_tucker(values, out):
