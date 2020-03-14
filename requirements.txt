@@ -15,4 +15,4 @@ svgutils==0.3.1
 gprof2dot==2019.11.30
 pylint==2.4.4
 arviz==0.7.0
-git+git://github.com/meyer-lab/tensorly.git@8063f0a00ab1a96e4b4f6f5e51e02b5829518587
+git+git://github.com/meyer-lab/tensorly.git@768a439173d4f4ce86eb5ce57d69977d5fce747b
