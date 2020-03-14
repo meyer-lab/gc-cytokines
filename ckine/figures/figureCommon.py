@@ -101,7 +101,6 @@ def subplotLabel(axs, hstretch=None):
 
         if ii < 26:
             letter = ascii_uppercase[ii]
-
         else:
             letter = 'A' + ascii_uppercase[ii - 26]
 

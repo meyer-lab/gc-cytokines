@@ -95,8 +95,8 @@ def affComp(ax):
     ax.set_ylabel("IL-2Rβ/γc $K_D$ (log$_{10}$[nM])")
     ax.set_xscale('log')
     ax.set_yscale('log')
-    ax.set_xticks(np.array([10e-2, 10e-1, 10e0, 10e1]))
-    ax.set_yticks(np.array([10e-1, 10e0, 10e1, 10e2]))
+    ax.set_xticks(np.array([10e-2, 10e-1, 10e0]))
+    ax.set_yticks(np.array([10e-1, 10e0, 10e1]))
 
 
 def calc_plot_specificity(ax, cell_compare, df_specificity, df_activity, ligands, concs):
