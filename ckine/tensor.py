@@ -3,7 +3,7 @@ Analyze tensor from make_tensor.
 """
 import numpy as np
 import tensorly as tl
-from tensorly.decomposition import parafac, non_negative_tucker
+from tensorly.decomposition import non_negative_parafac, non_negative_tucker
 from tensorly.metrics.regression import variance as tl_var
 
 tl.set_backend('numpy')  # Set the backend
@@ -38,7 +38,7 @@ def R2X(reconstructed, original):
 
 def perform_decomposition(tensor, r, weightFactor=2):
     ''' Perform PARAFAC decomposition. '''
-    weights, factors = parafac(tensor, r, tol=1.0E-10, n_iter_max=2000, normalize_factors=True, l2_reg=0.01, orthogonalise=True)
+    weights, factors = non_negative_parafac(tensor, r, tol=1.0E-10, n_iter_max=2000, normalize_factors=True, orthogonalise=True)
     factors[weightFactor] *= weights[np.newaxis, :]  # Put weighting in designated factor
     return reorient_factors(factors)
 
