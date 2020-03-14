@@ -18,7 +18,7 @@ def makeFigure():
     # Add subplot labels
     axLabel = ax.copy()
     del axLabel[leg_ind]
-    subplotLabel(axLabel)
+    subplotLabel(axLabel, hstretch={1: 2.35})
 
     unkVec, scales = import_samples_2_15(Traf=False, N=100)
     full_unkVec, full_scales = import_samples_2_15(Traf=False)

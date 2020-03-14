@@ -91,15 +91,20 @@ def plot_R2X(ax, tensor, factors_list):
     ax.set_xticklabels(np.arange(1, len(factors_list) + 1))
 
 
-def subplotLabel(axs):
+def subplotLabel(axs, hstretch=None):
     """ Place subplot labels on figure. """
+    if hstretch is None:
+        hstretch = {}
+
     for ii, ax in enumerate(axs):
+        hh = hstretch[ii] if ii in hstretch.keys() else 1.0
+
         if ii < 26:
             letter = ascii_uppercase[ii]
         else:
             letter = 'A' + ascii_uppercase[ii - 26]
 
-        ax.text(-0.2, 1.2, letter, transform=ax.transAxes, fontsize=16, fontweight="bold", va="top")
+        ax.text(-0.2 / hh, 1.2, letter, transform=ax.transAxes, fontsize=16, fontweight="bold", va="top")
 
 
 def traf_names():

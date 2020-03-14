@@ -1,7 +1,6 @@
 """
 This creates Figure S7.
 """
-import string
 import numpy as np
 import pandas as pd
 import seaborn as sns
