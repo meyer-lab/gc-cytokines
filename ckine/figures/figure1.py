@@ -3,7 +3,6 @@ This creates Figure 1.
 """
 from os.path import join
 import os
-import string
 import numpy as np
 import seaborn as sns
 import pandas as pd
@@ -19,14 +18,7 @@ def makeFigure():
 
     ax[0].axis('off')  # blank out first axis for cartoon
 
-    for ii, item in enumerate(ax):
-        if ii == 0:  # hstretch for 3 panels
-            h = 3.8
-        elif ii == 8:
-            h = 3.25  # hstretch for 2 panels
-        else:
-            h = 1  # standard hstretch
-        subplotLabel(item, string.ascii_uppercase[ii], hstretch=h)
+    subplotLabel(ax)
 
     unkVec, scales = import_samples_2_15(N=100)  # use these for simulations
     full_unkVec, full_scales = import_samples_2_15()  # use these for violin plots

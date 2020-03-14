@@ -1,6 +1,7 @@
 """
 This file contains functions that are used in multiple figures.
 """
+from string import ascii_uppercase
 from os.path import join, dirname
 import seaborn as sns
 import numpy as np
@@ -90,10 +91,15 @@ def plot_R2X(ax, tensor, factors_list):
     ax.set_xticklabels(np.arange(1, len(factors_list) + 1))
 
 
-def subplotLabel(ax, letter, hstretch=1):
-    """ Label each subplot """
-    ax.text(-0.2 / hstretch, 1.2, letter, transform=ax.transAxes,
-            fontsize=16, fontweight='bold', va='top')
+def subplotLabel(axs):
+    """ Place subplot labels on figure. """
+    for ii, ax in enumerate(axs):
+        if ii < 26:
+            letter = ascii_uppercase[ii]
+        else:
+            letter = 'A' + ascii_uppercase[ii - 26]
+
+        ax.text(-0.2, 1.2, letter, transform=ax.transAxes, fontsize=16, fontweight="bold", va="top")
 
 
 def traf_names():

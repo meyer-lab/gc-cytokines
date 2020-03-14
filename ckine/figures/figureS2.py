@@ -1,7 +1,6 @@
 """
 This creates Figure S2. Full panel of Geweke convergence tests.
 """
-import string
 import pandas as pd
 import seaborn as sns
 from arviz.stats.diagnostics import geweke
@@ -14,9 +13,7 @@ def makeFigure():
     # Get list of axis objects
     ax, f = getSetup((7, 6), (3, 1))
 
-    # Add subplot labels
-    for ii, item in enumerate(ax):
-        subplotLabel(item, string.ascii_uppercase[ii])
+    subplotLabel(ax)
 
     plot_geweke_2_15(ax[0], True)
     plot_geweke_2_15(ax[1], False)

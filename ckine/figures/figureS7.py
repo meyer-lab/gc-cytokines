@@ -23,11 +23,7 @@ def makeFigure():
     # Get list of axis objects
     ax, f = getSetup((18, 12), (6, 8))
 
-    for ii, item in enumerate(ax):
-        if ii < 26:
-            subplotLabel(item, string.ascii_uppercase[ii])
-        else:
-            subplotLabel(item, 'A' + string.ascii_uppercase[ii - 26])
+    subplotLabel(ax)
 
     tps = np.array([0.5, 1.0, 2.0, 4.0]) * 60.0
     muteinC = dataMean.Concentration.unique()
