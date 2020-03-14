@@ -63,7 +63,6 @@ def plot_expr_predM(ax, df, scales, cell_order, ligand_order, tps, muteinC):
 
     for i, cell_name in enumerate(cell_order):
         for j, ligand_name in enumerate(ligand_order):
-
             axis = i * 8 + j
 
             # plot experimental data
@@ -81,10 +80,8 @@ def plot_expr_predM(ax, df, scales, cell_order, ligand_order, tps, muteinC):
                 if cell_name in cell_names:
                     for o in range(unkVec_2_15.shape[1]):
                         pred_data[:, :, o] = scales[n, 1, o] * pred_data[:, :, o] / (pred_data[:, :, o] + scales[n, 0, o])
-                    if axis == 0:
-                        plot_dose_responseM(ax[axis], pred_data, tps, muteinC, legend=True)
-                    else:
-                        plot_dose_responseM(ax[axis], pred_data, tps, muteinC)
+
+                    plot_dose_responseM(ax[axis], pred_data, tps, muteinC, legend=(axis == 0))
                     ax[axis].set(ylim=(0, ylims[n]))
             ax[axis].set(xlabel=("[" + ligand_name + "] Concentration (nM)"), ylabel="Activity", title=cell_name)
 
