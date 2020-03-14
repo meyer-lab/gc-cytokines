@@ -1,7 +1,6 @@
 """
 This creates Figure 6.
 """
-import string
 import logging
 import numpy as np
 import pandas as pd
@@ -34,10 +33,7 @@ def makeFigure():
     # Get list of axis objects
     ax, f = getSetup((7.5, 6), (3, 4))
 
-    # ax[5].axis('off')
-
-    for ii, item in enumerate(ax):
-        subplotLabel(item, string.ascii_uppercase[ii])
+    subplotLabel(ax)
 
     ckines = ['IL-2', 'IL-15']
     tps = np.array([0.5, 1.0, 2.0, 4.0]) * 60.0

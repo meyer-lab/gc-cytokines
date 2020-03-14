@@ -3,7 +3,6 @@ This creates Figure 2.
 """
 from os.path import join
 import os
-import string
 import numpy as np
 import seaborn as sns
 import pandas as pd
@@ -20,8 +19,7 @@ def makeFigure():
     # Blank out for the cartoon
     ax[0].axis("off")
 
-    for ii, item in enumerate(ax):
-        subplotLabel(item, string.ascii_uppercase[ii])
+    subplotLabel(ax)
 
     full_unkVec_2_15, _ = import_samples_2_15()
     full_unkVec_4_7, full_scales_4_7 = import_samples_4_7()  # full version used for violin plots

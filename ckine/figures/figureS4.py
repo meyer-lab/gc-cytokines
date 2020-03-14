@@ -1,7 +1,6 @@
 """
 This creates Figure S4, which covers the Tucker factorization form.
 """
-import string
 import logging
 import numpy as np
 import seaborn as sns
@@ -21,8 +20,8 @@ def makeFigure():
     ax, f = getSetup((7.5, 4.5), (x, y))
 
     _, _, cell_names = import_Rexpr()
-    for ii, item in enumerate(ax[0:5]):
-        subplotLabel(item, string.ascii_uppercase[ii])  # Add subplot labels
+
+    subplotLabel(ax[0:5])
 
     rank_list = [2, 2, 3]
     out = perform_tucker(values, rank_list)

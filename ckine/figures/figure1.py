@@ -3,7 +3,6 @@ This creates Figure 1.
 """
 from os.path import join
 import os
-import string
 import numpy as np
 import seaborn as sns
 import pandas as pd
@@ -19,14 +18,7 @@ def makeFigure():
 
     ax[0].axis('off')  # blank out first axis for cartoon
 
-    for ii, item in enumerate(ax):
-        if ii == 0:  # hstretch for 3 panels
-            h = 3.8
-        elif ii == 8:
-            h = 3.25  # hstretch for 2 panels
-        else:
-            h = 1  # standard hstretch
-        subplotLabel(item, string.ascii_uppercase[ii], hstretch=h)
+    subplotLabel(ax, hstretch={0: 3.8, 8: 3.25})
 
     unkVec, scales = import_samples_2_15(N=100)  # use these for simulations
     full_unkVec, full_scales = import_samples_2_15()  # use these for violin plots
@@ -61,19 +53,18 @@ def IL2Rb_perc(ax, unkVec):
 
     y_max = 100.
     ts = np.array([0., 2., 5., 15., 30., 60., 90.])
-    size = len(ts)
-    results = np.zeros((size, unkVec.shape[1], 4, 2))  # 3rd dim is cell condition (IL2Ra+/- and cytokC), 4th dim is cytok species
+    results = np.zeros((ts.size, unkVec.shape[1], 4, 2))  # 3rd dim is cell condition (IL2Ra+/- and cytokC), 4th dim is cytok species
 
     output = surf.calc(unkVec, ts) * y_max  # run the simulation
     # split according to experimental conditions
-    results[:, :, 2, 0] = output[:, 0:(size)].T
-    results[:, :, 3, 0] = output[:, (size):(size * 2)].T
-    results[:, :, 0, 0] = output[:, (size * 2):(size * 3)].T
-    results[:, :, 1, 0] = output[:, (size * 3):(size * 4)].T
-    results[:, :, 2, 1] = output[:, (size * 4):(size * 5)].T
-    results[:, :, 3, 1] = output[:, (size * 5):(size * 6)].T
-    results[:, :, 0, 1] = output[:, (size * 6):(size * 7)].T
-    results[:, :, 1, 1] = output[:, (size * 7):(size * 8)].T
+    results[:, :, 2, 0] = output[:, 0:(ts.size)].T
+    results[:, :, 3, 0] = output[:, (ts.size):(ts.size * 2)].T
+    results[:, :, 0, 0] = output[:, (ts.size * 2):(ts.size * 3)].T
+    results[:, :, 1, 0] = output[:, (ts.size * 3):(ts.size * 4)].T
+    results[:, :, 2, 1] = output[:, (ts.size * 4):(ts.size * 5)].T
+    results[:, :, 3, 1] = output[:, (ts.size * 5):(ts.size * 6)].T
+    results[:, :, 0, 1] = output[:, (ts.size * 6):(ts.size * 7)].T
+    results[:, :, 1, 1] = output[:, (ts.size * 7):(ts.size * 8)].T
 
     for n in range(4):
         # plot results within confidence intervals

@@ -1,7 +1,6 @@
 """
 This creates Figure S7.
 """
-import string
 import numpy as np
 import pandas as pd
 import seaborn as sns
@@ -21,13 +20,9 @@ dataMean = dataMean.append(pstat_df, ignore_index=True, sort=True)
 def makeFigure():
     """Get a list of the axis objects and create a figure"""
     # Get list of axis objects
-    ax, f = getSetup((18, 12), (6, 8))
+    ax, f = getSetup((12, 18), (8, 6))
 
-    for ii, item in enumerate(ax):
-        if ii < 26:
-            subplotLabel(item, string.ascii_uppercase[ii])
-        else:
-            subplotLabel(item, 'A' + string.ascii_uppercase[ii - 26])
+    subplotLabel(ax)
 
     tps = np.array([0.5, 1.0, 2.0, 4.0]) * 60.0
     muteinC = dataMean.Concentration.unique()
@@ -67,8 +62,7 @@ def plot_expr_predM(ax, df, scales, cell_order, ligand_order, tps, muteinC):
 
     for i, cell_name in enumerate(cell_order):
         for j, ligand_name in enumerate(ligand_order):
-
-            axis = j * 8 + i
+            axis = i * 6 + j
 
             # plot experimental data
             sns.scatterplot(x="Concentration", y="RFU", hue="Time", data=dataMean.loc[(dataMean["Cells"] == cell_name)
@@ -85,12 +79,10 @@ def plot_expr_predM(ax, df, scales, cell_order, ligand_order, tps, muteinC):
                 if cell_name in cell_names:
                     for o in range(unkVec_2_15.shape[1]):
                         pred_data[:, :, o] = scales[n, 1, o] * pred_data[:, :, o] / (pred_data[:, :, o] + scales[n, 0, o])
-                    if axis == 0:
-                        plot_dose_responseM(ax[axis], pred_data, tps, muteinC, legend=True)
-                    else:
-                        plot_dose_responseM(ax[axis], pred_data, tps, muteinC)
+
+                    plot_dose_responseM(ax[axis], pred_data, tps, muteinC, legend=(axis == 0))
                     ax[axis].set(ylim=(0, ylims[n]))
-            ax[axis].set(xlabel=("[" + ligand_name + "] Concentration (nM)"), ylabel="Activity", title=cell_name)
+            ax[axis].set(xlabel=("[" + ligand_name + "] (nM)"), ylabel="Activity", title=cell_name)
 
 
 def plot_dose_responseM(ax, mutein_activity, tps, muteinC, legend=False):

@@ -1,7 +1,6 @@
 """
 This creates Figure S5. Full panel of measured vs simulated for IL-2 and IL-15.
 """
-import string
 import numpy as np
 import matplotlib.cm as cm
 from .figureCommon import subplotLabel, getSetup, plot_conf_int, plot_scaled_pstat, calc_dose_response
@@ -13,8 +12,7 @@ def makeFigure():
     # Get list of axis objects
     ax, f = getSetup((7, 6), (4, 5))
 
-    for ii, item in enumerate(ax):
-        subplotLabel(item, string.ascii_uppercase[ii])
+    subplotLabel(ax)
 
     plot_exp_v_pred(ax)
     for jj, axes in enumerate(ax):

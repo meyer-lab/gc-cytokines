@@ -1,7 +1,6 @@
 """
 This creates Figure 3.
 """
-import string
 import numpy as np
 import scipy as sp
 from sklearn.decomposition import PCA
@@ -47,14 +46,7 @@ def makeFigure():
     # Add subplot labels
     axLabel = ax.copy()
     del axLabel[4]
-    for ii, item in enumerate(axLabel):
-        if ii == 3:
-            h = 2.45  # for multz of 3 panels
-        elif ii == 0:
-            h = 2.75  # for multz of 2 panels
-        else:
-            h = 1  # default h is 1
-        subplotLabel(item, string.ascii_uppercase[ii], hstretch=h)  # Add subplot labels
+    subplotLabel(axLabel, hstretch={3: 2.45, 0: 2.75})
 
     plot_timepoints(ax[6], tensor_time, tl.to_numpy(factors_activ[0]))
 
