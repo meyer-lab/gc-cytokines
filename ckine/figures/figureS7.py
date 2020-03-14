@@ -83,7 +83,7 @@ def plot_expr_predM(ax, df, scales, cell_order, ligand_order, tps, muteinC):
 
                     plot_dose_responseM(ax[axis], pred_data, tps, muteinC, legend=(axis == 0))
                     ax[axis].set(ylim=(0, ylims[n]))
-            ax[axis].set(xlabel=("[" + ligand_name + "] Concentration (nM)"), ylabel="Activity", title=cell_name)
+            ax[axis].set(xlabel=("[" + ligand_name + "] (nM)"), ylabel="Activity", title=cell_name)
 
 
 def plot_dose_responseM(ax, mutein_activity, tps, muteinC, legend=False):
