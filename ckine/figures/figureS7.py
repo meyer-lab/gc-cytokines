@@ -21,7 +21,7 @@ dataMean = dataMean.append(pstat_df, ignore_index=True, sort=True)
 def makeFigure():
     """Get a list of the axis objects and create a figure"""
     # Get list of axis objects
-    ax, f = getSetup((18, 12), (6, 8))
+    ax, f = getSetup((12, 18), (8, 6))
 
     subplotLabel(ax)
 
@@ -64,7 +64,7 @@ def plot_expr_predM(ax, df, scales, cell_order, ligand_order, tps, muteinC):
     for i, cell_name in enumerate(cell_order):
         for j, ligand_name in enumerate(ligand_order):
 
-            axis = j * 8 + i
+            axis = i * 8 + j
 
             # plot experimental data
             sns.scatterplot(x="Concentration", y="RFU", hue="Time", data=dataMean.loc[(dataMean["Cells"] == cell_name)
