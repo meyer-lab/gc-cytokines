@@ -60,7 +60,7 @@ def makeFigure():
 
     plot_cells(ax[7], tl.to_numpy(factors_activ[1]), 1, 2, cell_names)
     ax[7].set_xlim(left=-0.03)
-    ax[7].set_ylim(bottom=-0.2)
+    ax[7].set_ylim(bottom=-0.25)
     plot_cells(ax[8], tl.to_numpy(factors_activ[1]), 1, 3, cell_names)
     ax[8].set_xlim(left=-0.03)
     ax[8].set_ylim(bottom=-0.03)
