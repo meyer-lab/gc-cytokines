@@ -27,7 +27,7 @@ def R2X(reconstructed, original):
 
 def perform_decomposition(tensor, r, weightFactor=2):
     ''' Perform PARAFAC decomposition. '''
-    weights, factors = non_negative_parafac(tensor, r, tol=1.0E-10, n_iter_max=6000, orthogonalise=True, normalize_factors=True)
+    weights, factors = non_negative_parafac(tensor, r, tol=1.0E-10, n_iter_max=6000, normalize_factors=True)
     factors[weightFactor] *= weights[np.newaxis, :]  # Put weighting in designated factor
     return factors
 
