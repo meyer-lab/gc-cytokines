@@ -18,7 +18,7 @@ def makeFigure():
 
     ax[0].axis('off')  # blank out first axis for cartoon
 
-    subplotLabel(ax)
+    subplotLabel(ax, hstretch={0: 3.8, 8: 3.25})
 
     unkVec, scales = import_samples_2_15(N=100)  # use these for simulations
     full_unkVec, full_scales = import_samples_2_15()  # use these for violin plots

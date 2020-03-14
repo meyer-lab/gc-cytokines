@@ -46,7 +46,7 @@ def makeFigure():
     # Add subplot labels
     axLabel = ax.copy()
     del axLabel[4]
-    subplotLabel(axLabel)
+    subplotLabel(axLabel, hstretch={3: 2.45, 0: 2.75})
 
     plot_timepoints(ax[6], tensor_time, tl.to_numpy(factors_activ[0]))
 
