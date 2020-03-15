@@ -70,7 +70,7 @@ def makeFigure():
     Mut_Fact(ax[8:12])
     legend = ax[8].get_legend()
     labels = (x.get_text() for x in legend.get_texts())
-    ax[4].legend(legend.legendHandles, labels, loc='upper right', prop={"size": 5.5})  # use this to place universal legend later
+    ax[4].legend(legend.legendHandles, labels, loc='upper right', prop={"size": 6})  # use this to place universal legend later
     ax[8].get_legend().remove()
     overlayT, overlaycells = 240., ['T-reg', 'NK', 'T-helper']
     MuteinModelOverlay(ax[5:8], overlayT, overlaycells)
@@ -90,7 +90,7 @@ def affComp(ax):
 
     KDdf = pd.DataFrame({'RaAff': RaAff, 'GcBAff': GcBAff, 'Ligand': ligList})
     KDdf = KDdf.sort_values(by=["Ligand"])
-    sns.scatterplot(x='RaAff', y='GcBAff', data=KDdf, hue="Ligand", palette=sns.color_palette("husl", 7), ax=ax, legend=False)
+    sns.scatterplot(x='RaAff', y='GcBAff', data=KDdf, hue="Ligand", palette=sns.color_palette("husl", 6), ax=ax, legend=False)
     ax.set_xlabel("IL-2Rα $K_D$ (log$_{10}$[nM])")
     ax.set_ylabel("IL-2Rβ/γc $K_D$ (log$_{10}$[nM])")
     ax.set_xscale('log')
