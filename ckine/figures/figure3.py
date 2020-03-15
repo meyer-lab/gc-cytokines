@@ -62,7 +62,7 @@ def makeFigure():
     ax[7].get_legend().remove()
     ax[8].get_legend().remove()
     ax[5].set_ylabel('Variance of Model\nOutput Explained', fontsize=8, multialignment='center')
-    plot_ligands(ax[9], tl.to_numpy(factors_activ[2]), ligand_names=['IL-2', 'IL-15', 'IL-7'], cutoff=5.0)
+    plot_ligands(ax[9], tl.to_numpy(factors_activ[2]), ligand_names=['IL-2', 'IL-15', 'IL-7'], cutoff=5.0, compLabel=False)
 
     return f
 
