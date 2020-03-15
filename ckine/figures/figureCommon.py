@@ -176,7 +176,7 @@ def overlayCartoon(figFile, cartoonFile, x, y, scalee=1, scale_x=1, scale_y=1):
     template.save(figFile)
 
 
-def plot_ligands(ax, factors, ligand_names, cutoff=0.0):
+def plot_ligands(ax, factors, ligand_names, cutoff=0.0, compLabel=True):
     """Function to put all ligand decomposition plots in one figure."""
     ILs, _, _, _, _ = import_pstat()  # Cytokine stimulation concentrations in nM
     n_ligands = len(ligand_names)
@@ -189,7 +189,10 @@ def plot_ligands(ax, factors, ligand_names, cutoff=0.0):
         legend_shape.append(Line2D([0], [0], color='k', marker=markers[ii], label=name, linestyle=''))  # Make ligand legend elements
 
     for ii in range(factors.shape[1]):
-        componentLabel = True
+        if compLabel:
+            componentLabel = True
+        else:
+            componentLabel = False
         for jj in range(n_ligands):
             idx = range(jj * len(ILs), (jj + 1) * len(ILs))
 
