@@ -189,7 +189,7 @@ def plot_ligands(ax, factors, ligand_names, cutoff=0.0, compLabel=True):
         legend_shape.append(Line2D([0], [0], color='k', marker=markers[ii], label=name, linestyle=''))  # Make ligand legend elements
 
     for ii in range(factors.shape[1]):
-        compLabel = bool(componentLabel)
+        componentLabel = bool(compLabel)
 
         for jj in range(n_ligands):
             idx = range(jj * len(ILs), (jj + 1) * len(ILs))
