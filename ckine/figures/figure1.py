@@ -57,14 +57,14 @@ def IL2Rb_perc(ax, unkVec):
 
     output = surf.calc(unkVec, ts) * y_max  # run the simulation
     # split according to experimental conditions
-    results[:, :, 2, 0] = output[:, 0 : (ts.size)].T
-    results[:, :, 3, 0] = output[:, (ts.size) : (ts.size * 2)].T
-    results[:, :, 0, 0] = output[:, (ts.size * 2) : (ts.size * 3)].T
-    results[:, :, 1, 0] = output[:, (ts.size * 3) : (ts.size * 4)].T
-    results[:, :, 2, 1] = output[:, (ts.size * 4) : (ts.size * 5)].T
-    results[:, :, 3, 1] = output[:, (ts.size * 5) : (ts.size * 6)].T
-    results[:, :, 0, 1] = output[:, (ts.size * 6) : (ts.size * 7)].T
-    results[:, :, 1, 1] = output[:, (ts.size * 7) : (ts.size * 8)].T
+    results[:, :, 2, 0] = output[:, 0: (ts.size)].T
+    results[:, :, 3, 0] = output[:, (ts.size): (ts.size * 2)].T
+    results[:, :, 0, 0] = output[:, (ts.size * 2): (ts.size * 3)].T
+    results[:, :, 1, 0] = output[:, (ts.size * 3): (ts.size * 4)].T
+    results[:, :, 2, 1] = output[:, (ts.size * 4): (ts.size * 5)].T
+    results[:, :, 3, 1] = output[:, (ts.size * 5): (ts.size * 6)].T
+    results[:, :, 0, 1] = output[:, (ts.size * 6): (ts.size * 7)].T
+    results[:, :, 1, 1] = output[:, (ts.size * 7): (ts.size * 8)].T
 
     for n in range(4):
         # plot results within confidence intervals
@@ -113,9 +113,9 @@ def pstat_act(ax, unkVec, scales):
     output = pstat5.calc(unkVec, scales, cytokC) * y_max  # calculate activity for all unkVecs and concs
     # split according to experimental condition
     IL2_plus = output[:, 0:PTS].T
-    IL2_minus = output[:, PTS : (PTS * 2)].T
-    IL15_plus = output[:, (PTS * 2) : (PTS * 3)].T
-    IL15_minus = output[:, (PTS * 3) : (PTS * 4)].T
+    IL2_minus = output[:, PTS: (PTS * 2)].T
+    IL15_plus = output[:, (PTS * 2): (PTS * 3)].T
+    IL15_minus = output[:, (PTS * 3): (PTS * 4)].T
 
     # plot confidence intervals based on model predictions
     plot_conf_int(ax, cytokC, IL2_minus, "darkorchid")
@@ -216,7 +216,7 @@ def rateComp(ax, unkVec, fsize=6.2):
 
     # add labels for IL2 and IL15
     df["cytokine"] = "IL-2"
-    df.loc[split : (split * 2), "cytokine"] = "IL-15"
+    df.loc[split: (split * 2), "cytokine"] = "IL-15"
 
     # melt into long form and take log value
     melted = pd.melt(df, id_vars="cytokine", var_name="Rate", value_name=r"$\mathrm{log_{10}(\frac{1}{min})}$")

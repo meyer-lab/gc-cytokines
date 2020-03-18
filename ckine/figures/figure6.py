@@ -51,7 +51,7 @@ def makeFigure():
                 "Time": np.tile(np.repeat(tps, len(ckineConc)), 2),
                 "Concentration": np.tile(ckineConc, len(tps) * 2),
                 "Activity Type": np.concatenate((np.tile("Experimental", len(tps) * len(ckineConc)), np.tile("Predicted", len(tps) * len(ckineConc)))),
-                "Activity": np.concatenate((IL2_data[(i * 4) : ((i + 1) * 4)].reshape(48), np.squeeze(IL2_activity[i, :, :, :]).T.reshape(48))),
+                "Activity": np.concatenate((IL2_data[(i * 4): ((i + 1) * 4)].reshape(48), np.squeeze(IL2_activity[i, :, :, :]).T.reshape(48))),
             }
         )
         df_add15 = pd.DataFrame(
@@ -61,7 +61,7 @@ def makeFigure():
                 "Time": np.tile(np.repeat(tps, len(ckineConc)), 2),
                 "Concentration": np.tile(ckineConc, len(tps) * 2),
                 "Activity Type": np.concatenate((np.tile("Experimental", len(tps) * len(ckineConc)), np.tile("Predicted", len(tps) * len(ckineConc)))),
-                "Activity": np.concatenate((IL15_data[(i * 4) : ((i + 1) * 4)].reshape(48), np.squeeze(IL15_activity[i, :, :, :]).T.reshape(48))),
+                "Activity": np.concatenate((IL15_data[(i * 4): ((i + 1) * 4)].reshape(48), np.squeeze(IL15_activity[i, :, :, :]).T.reshape(48))),
             }
         )
         df_act = df_act.append(df_add2, ignore_index=True)

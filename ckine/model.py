@@ -179,7 +179,7 @@ def getActiveCytokine(cytokineIDX, yVec):
 def getTotalActiveCytokine(cytokineIDX, yVec):
     """ Get amount of surface and endosomal active species. """
     assert yVec.ndim == 1
-    return getActiveCytokine(cytokineIDX, yVec[0:__halfL]) + __internalStrength * getActiveCytokine(cytokineIDX, yVec[__halfL : __halfL * 2])
+    return getActiveCytokine(cytokineIDX, yVec[0:__halfL]) + __internalStrength * getActiveCytokine(cytokineIDX, yVec[__halfL: __halfL * 2])
 
 
 def surfaceReceptors(y):
@@ -197,7 +197,7 @@ def surfaceReceptors(y):
 
 def totalReceptors(yVec):
     """This function takes in a vector y and returns the amounts of all 8 receptors in both cell compartments"""
-    return surfaceReceptors(yVec) + __internalStrength * surfaceReceptors(yVec[__halfL : __halfL * 2])
+    return surfaceReceptors(yVec) + __internalStrength * surfaceReceptors(yVec[__halfL: __halfL * 2])
 
 
 def receptor_expression(receptor_abundance, endo, kRec, sortF, kDeg):

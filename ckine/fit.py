@@ -106,8 +106,8 @@ class IL2_15_activity:  # pylint: disable=too-few-public-methods
         self.fit_data = np.concatenate((data[:, 6], data[:, 7], data[:, 2], data[:, 3])) / 100.0  # the IL15_IL2Ra- data is within the 4th column (index 3)
         self.cytokC = np.logspace(-3.3, 2.7, 8)  # 8 log-spaced values between our two endpoints
         self.cytokM = np.zeros((self.cytokC.size * 2, 6), dtype=np.float64)
-        self.cytokM[0 : self.cytokC.size, 0] = self.cytokC
-        self.cytokM[self.cytokC.size : :, 1] = self.cytokC
+        self.cytokM[0: self.cytokC.size, 0] = self.cytokC
+        self.cytokM[self.cytokC.size::, 1] = self.cytokC
 
     def calc(self, unkVec, scale):
         """ Simulate the STAT5 measurements and return residuals between model prediction and experimental data. """
