@@ -38,9 +38,9 @@ def makeFigure():
 
     n_comps = 2
     experimental_decomposition = experimental_factors[n_comps - 1]  # First dimension is cells. Second is time. Third is ligand.
-    plot_timepoints(ax[1], np.array([0.0, 0.5, 1., 2., 4.]) * 60., experimental_decomposition[1])  # Time is the second dimension in this case because reshaping only correctly did 11*4*24
+    plot_timepoints(ax[1], np.array([0.0, 0.5, 1.0, 2.0, 4.0]) * 60.0, experimental_decomposition[1])  # Time is the second dimension in this case because reshaping only correctly did 11*4*24
     plot_cells(ax[2], experimental_decomposition[0], 1, 2, cell_names)
-    plot_ligands(ax[3], experimental_decomposition[2], ligand_names=['IL-2', 'IL-15'])
+    plot_ligands(ax[3], experimental_decomposition[2], ligand_names=["IL-2", "IL-15"])
 
     # Predicted tensor
     predicted_cell_factors = predicted_factors[n_pred_comps - 1]
@@ -51,8 +51,8 @@ def makeFigure():
 
 def correlation_cells(experimental, predicted):
     """Function that takes in predicted and experimental components from cell decomposion and gives a bar graph of the Cosine Similarity."""
-    corr_df = pds.DataFrame(columns=['Experimental Cmp#', 'Predicted Cmp#', 'Cosine Similarity'])
+    corr_df = pds.DataFrame(columns=["Experimental Cmp#", "Predicted Cmp#", "Cosine Similarity"])
     for ii in range(experimental.shape[1]):
         for jj in range(predicted.shape[1]):
-            corr_df = corr_df.append({'Experimental Cmp#': ii + 1, 'Predicted Cmp#': jj + 1, 'Cosine Similarity': 1.0 - cosine(experimental[:, ii], predicted[:, jj])}, ignore_index=True)
+            corr_df = corr_df.append({"Experimental Cmp#": ii + 1, "Predicted Cmp#": jj + 1, "Cosine Similarity": 1.0 - cosine(experimental[:, ii], predicted[:, jj])}, ignore_index=True)
     print(corr_df)

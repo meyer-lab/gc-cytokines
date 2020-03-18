@@ -21,27 +21,22 @@ from ..model import runCkineUP, getTotalActiveSpecies, receptor_expression
 path_here = dirname(dirname(__file__))
 
 
-matplotlib.rcParams['legend.labelspacing'] = 0.2
-matplotlib.rcParams['legend.fontsize'] = 5
-matplotlib.rcParams['xtick.major.pad'] = 1.0
-matplotlib.rcParams['ytick.major.pad'] = 1.0
-matplotlib.rcParams['xtick.minor.pad'] = 0.9
-matplotlib.rcParams['ytick.minor.pad'] = 0.9
-matplotlib.rcParams['legend.handletextpad'] = 0.5
-matplotlib.rcParams['legend.handlelength'] = 0.5
-matplotlib.rcParams['legend.framealpha'] = 0.5
-matplotlib.rcParams['legend.markerscale'] = 0.7
-matplotlib.rcParams['legend.borderpad'] = 0.35
+matplotlib.rcParams["legend.labelspacing"] = 0.2
+matplotlib.rcParams["legend.fontsize"] = 5
+matplotlib.rcParams["xtick.major.pad"] = 1.0
+matplotlib.rcParams["ytick.major.pad"] = 1.0
+matplotlib.rcParams["xtick.minor.pad"] = 0.9
+matplotlib.rcParams["ytick.minor.pad"] = 0.9
+matplotlib.rcParams["legend.handletextpad"] = 0.5
+matplotlib.rcParams["legend.handlelength"] = 0.5
+matplotlib.rcParams["legend.framealpha"] = 0.5
+matplotlib.rcParams["legend.markerscale"] = 0.7
+matplotlib.rcParams["legend.borderpad"] = 0.35
 
 
 def getSetup(figsize, gridd, multz=None, empts=None):
     """ Establish figure set-up with subplots. """
-    sns.set(style="whitegrid",
-            font_scale=0.7,
-            color_codes=True,
-            palette="colorblind",
-            rc={'grid.linestyle': 'dotted',
-                'axes.linewidth': 0.6})
+    sns.set(style="whitegrid", font_scale=0.7, color_codes=True, palette="colorblind", rc={"grid.linestyle": "dotted", "axes.linewidth": 0.6})
 
     # create empty list if empts isn't specified
     if empts is None:
@@ -61,7 +56,7 @@ def getSetup(figsize, gridd, multz=None, empts=None):
         if x not in empts and x not in multz.keys():  # If this is just a normal subplot
             ax.append(f.add_subplot(gs1[x]))
         elif x in multz.keys():  # If this is a subplot that spans grid elements
-            ax.append(f.add_subplot(gs1[x:x + multz[x] + 1]))
+            ax.append(f.add_subplot(gs1[x: x + multz[x] + 1]))
             x += multz[x]
         x += 1
 
@@ -83,9 +78,9 @@ def plot_R2X(ax, tensor, factors_list):
     for _, factors in enumerate(factors_list):
         R2X_array.append(find_R2X(tensor, factors))
 
-    ax.plot(range(1, len(factors_list) + 1), R2X_array, 'ko', label='Overall R2X')
-    ax.set_ylabel('R2X')
-    ax.set_xlabel('Number of Components')
+    ax.plot(range(1, len(factors_list) + 1), R2X_array, "ko", label="Overall R2X")
+    ax.set_ylabel("R2X")
+    ax.set_xlabel("Number of Components")
     ax.set_ylim(0, 1.05)
     ax.set_xticks(np.arange(1, len(factors_list) + 1))
     ax.set_xticklabels(np.arange(1, len(factors_list) + 1))
@@ -102,24 +97,24 @@ def subplotLabel(axs, hstretch=None):
         if ii < 26:
             letter = ascii_uppercase[ii]
         else:
-            letter = 'A' + ascii_uppercase[ii - 26]
+            letter = "A" + ascii_uppercase[ii - 26]
 
         ax.text(-0.2 / hh, 1.2, letter, transform=ax.transAxes, fontsize=16, fontweight="bold", va="top")
 
 
 def traf_names():
     """ Returns a list of the trafficking parameters in order they appear within unkVec. """
-    return [r'$\mathrm{k_{endo}}$', r'$\mathrm{k_{endo,a}}$', r'$\mathrm{k_{rec}}$', r'$\mathrm{k_{deg}}$']
+    return [r"$\mathrm{k_{endo}}$", r"$\mathrm{k_{endo,a}}$", r"$\mathrm{k_{rec}}$", r"$\mathrm{k_{deg}}$"]
 
 
 def plot_conf_int(ax, x_axis, y_axis, color, label=None):
     """ Shades the 25-75 percentiles dark and the 10-90 percentiles light. The percentiles are found along axis=1. """
-    y_axis_top = np.percentile(y_axis, 90., axis=1)
-    y_axis_bot = np.percentile(y_axis, 10., axis=1)
+    y_axis_top = np.percentile(y_axis, 90.0, axis=1)
+    y_axis_bot = np.percentile(y_axis, 10.0, axis=1)
     ax.fill_between(x_axis, y_axis_top, y_axis_bot, color=color, alpha=0.4)
 
-    y_axis_top = np.percentile(y_axis, 75., axis=1)
-    y_axis_bot = np.percentile(y_axis, 25., axis=1)
+    y_axis_top = np.percentile(y_axis, 75.0, axis=1)
+    y_axis_bot = np.percentile(y_axis, 25.0, axis=1)
     ax.fill_between(x_axis, y_axis_top, y_axis_bot, color=color, alpha=0.7, label=label)
     if label is not None:
         ax.legend()
@@ -129,17 +124,17 @@ def plot_cells(ax, factors, component_x, component_y, cell_names, legend=True):
     """This function plots the combination decomposition based on cell type."""
     colors = cm.rainbow(np.linspace(0, 1, 10))
     if len(cell_names) == 10:
-        markersCells = ['^', '*', 'D', 's', 'X', 'o', '4', 'H', 'P', '*', 'D', 's', 'X']
+        markersCells = ["^", "*", "D", "s", "X", "o", "4", "H", "P", "*", "D", "s", "X"]
     else:
-        markersCells = ['*', '*', '4', '^', 'P', 'o', 'H', 'X']
+        markersCells = ["*", "*", "4", "^", "P", "o", "H", "X"]
         colors = [colors[1], colors[9], colors[6], colors[0], colors[8], colors[5], colors[7], colors[4]]
 
     for ii, _ in enumerate(factors[:, component_x - 1]):
         ax.scatter(factors[ii, component_x - 1], factors[ii, component_y - 1], c=[colors[ii]], marker=markersCells[ii], label=cell_names[ii])
 
-    ax.set_title('Cells')
-    ax.set_xlabel('Component ' + str(component_x))
-    ax.set_ylabel('Component ' + str(component_y))
+    ax.set_title("Cells")
+    ax.set_xlabel("Component " + str(component_x))
+    ax.set_ylabel("Component " + str(component_y))
     ax.set_xlim(0, 1)
     ax.set_ylim(0, 1)
     if legend:
@@ -153,11 +148,11 @@ def plot_ligand_comp(ax, factors, component_x, component_y, ligand_names):
         Comp1[ii] = factors[ii, component_x - 1]
         Comp2[ii] = factors[ii, component_y - 1]
 
-    CompDF = pds.DataFrame({'Comp1': Comp1, 'Comp2': Comp2, 'Ligand': ligand_names})
-    sns.scatterplot(x='Comp1', y='Comp2', data=CompDF, hue="Ligand", palette=sns.color_palette("husl", 6), legend='full', ax=ax)
-    ax.set_title('Ligands')
-    ax.set_xlabel('Component ' + str(component_x))
-    ax.set_ylabel('Component ' + str(component_y))
+    CompDF = pds.DataFrame({"Comp1": Comp1, "Comp2": Comp2, "Ligand": ligand_names})
+    sns.scatterplot(x="Comp1", y="Comp2", data=CompDF, hue="Ligand", palette=sns.color_palette("husl", 6), legend="full", ax=ax)
+    ax.set_title("Ligands")
+    ax.set_xlabel("Component " + str(component_x))
+    ax.set_ylabel("Component " + str(component_y))
     ax.set_xlim(0, 1)
     ax.set_ylim(0, 1)
 
@@ -183,10 +178,10 @@ def plot_ligands(ax, factors, ligand_names, cutoff=0.0, compLabel=True):
     ILs = np.flip(ILs)
     colors = sns.color_palette()
     legend_shape = []
-    markers = ['.', '^', 'd', '*']
+    markers = [".", "^", "d", "*"]
 
     for ii, name in enumerate(ligand_names):
-        legend_shape.append(Line2D([0], [0], color='k', marker=markers[ii], label=name, linestyle=''))  # Make ligand legend elements
+        legend_shape.append(Line2D([0], [0], color="k", marker=markers[ii], label=name, linestyle=""))  # Make ligand legend elements
 
     for ii in range(factors.shape[1]):
         componentLabel = bool(compLabel)
@@ -197,7 +192,7 @@ def plot_ligands(ax, factors, ligand_names, cutoff=0.0, compLabel=True):
             # If the component value never gets over cutoff, then don't plot the line
             if np.linalg.norm(factors[idx, ii]) > cutoff:
                 if componentLabel:
-                    ax.plot(ILs, factors[idx, ii], color=colors[ii], label='Cmp. ' + str(ii + 1))
+                    ax.plot(ILs, factors[idx, ii], color=colors[ii], label="Cmp. " + str(ii + 1))
                     componentLabel = False
                 else:
                     ax.plot(ILs, factors[idx, ii], color=colors[ii])
@@ -205,10 +200,10 @@ def plot_ligands(ax, factors, ligand_names, cutoff=0.0, compLabel=True):
 
     ax.add_artist(ax.legend(handles=legend_shape, loc=2))
 
-    ax.set_xlabel('Ligand Concentration (nM)')
-    ax.set_ylabel('Component')
-    ax.set_xscale('log')
-    ax.set_title('Ligands')
+    ax.set_xlabel("Ligand Concentration (nM)")
+    ax.set_ylabel("Component")
+    ax.set_xscale("log")
+    ax.set_title("Ligands")
     ax.set_xticks(np.array([10e-5, 10e-3, 10e-1, 10e1]))
 
     # Place legend
@@ -220,25 +215,25 @@ def plot_timepoints(ax, ts, factors):
     ts = ts / 60
     colors = sns.color_palette()
     for ii in range(factors.shape[1]):
-        ax.plot(ts, factors[:, ii], c=colors[ii], label='Component ' + str(ii + 1))
+        ax.plot(ts, factors[:, ii], c=colors[ii], label="Component " + str(ii + 1))
 
-    ax.set_xlabel('Time (hrs)')
-    ax.set_ylabel('Component')
-    ax.set_title('Time')
+    ax.set_xlabel("Time (hrs)")
+    ax.set_ylabel("Component")
+    ax.set_title("Time")
     ax.set_xticks(np.array([0, 1, 2, 4]))
     ax.legend()
 
 
 def legend_2_15(ax, location="center right"):
     """ Plots a legend for all the IL-2 and IL-15 related plots in its own subpanel. """
-    legend_elements = [Patch(facecolor='darkorchid', label='IL-2'),
-                       Patch(facecolor='goldenrod', label='IL-15'),
-                       Line2D([0], [0], marker='o', color='w', label='IL-2Rα+',
-                              markerfacecolor='k', markersize=16),
-                       Line2D([0], [0], marker='^', color='w', label='IL-2Rα-',
-                              markerfacecolor='k', markersize=16)]
-    ax.legend(handles=legend_elements, loc=location, prop={'size': 16})
-    ax.axis('off')  # remove the grid
+    legend_elements = [
+        Patch(facecolor="darkorchid", label="IL-2"),
+        Patch(facecolor="goldenrod", label="IL-15"),
+        Line2D([0], [0], marker="o", color="w", label="IL-2Rα+", markerfacecolor="k", markersize=16),
+        Line2D([0], [0], marker="^", color="w", label="IL-2Rα-", markerfacecolor="k", markersize=16),
+    ]
+    ax.legend(handles=legend_elements, loc=location, prop={"size": 16})
+    ax.axis("off")  # remove the grid
 
 
 def plot_scaled_pstat(ax, cytokC, pstat):
@@ -252,28 +247,28 @@ def plot_scaled_pstat(ax, cytokC, pstat):
 
 def global_legend(ax, Spec=False, Mut=False, exppred=True):
     """ Create legend for colors and markers in subplots A-C. """
-    purple = Patch(color='darkorchid', label='IL-2')
-    yellow = Patch(color='goldenrod', label='IL-15')
+    purple = Patch(color="darkorchid", label="IL-2")
+    yellow = Patch(color="goldenrod", label="IL-15")
     if not exppred:
         ax.legend(handles=[purple, yellow], loc="upper left")
     else:
         if not Mut:
             if not Spec:
-                circle = Line2D([], [], color='black', marker='o', linestyle='None', markersize=6, label='Experimental')
-                triangle = Line2D([], [], color='black', marker='^', linestyle='None', markersize=6, label='Predicted')
+                circle = Line2D([], [], color="black", marker="o", linestyle="None", markersize=6, label="Experimental")
+                triangle = Line2D([], [], color="black", marker="^", linestyle="None", markersize=6, label="Predicted")
                 ax.legend(handles=[purple, yellow, circle, triangle], bbox_to_anchor=(1.02, 1), loc="upper left")
             if Spec:
-                circle = Line2D([], [], color='black', marker='o', linestyle='None', markersize=6, label='Experimental')
-                line = Line2D([], [], color='black', marker='_', linestyle='None', markersize=6, label='Predicted')
+                circle = Line2D([], [], color="black", marker="o", linestyle="None", markersize=6, label="Experimental")
+                line = Line2D([], [], color="black", marker="_", linestyle="None", markersize=6, label="Predicted")
                 ax.legend(handles=[purple, yellow, circle, line], bbox_to_anchor=(1.02, 1), loc="upper left")
         if Mut:
             if not Spec:
-                circle = Line2D([], [], color='black', marker='o', linestyle='None', markersize=6, label='Experimental')
-                triangle = Line2D([], [], color='black', marker='^', linestyle='None', markersize=6, label='Predicted')
+                circle = Line2D([], [], color="black", marker="o", linestyle="None", markersize=6, label="Experimental")
+                triangle = Line2D([], [], color="black", marker="^", linestyle="None", markersize=6, label="Predicted")
                 ax.legend(handles=[purple, yellow, circle, triangle], loc="upper left")
             if Spec:
-                circle = Line2D([], [], color='black', marker='o', linestyle='None', markersize=6, label='Experimental')
-                line = Line2D([], [], color='black', marker='_', linestyle='None', markersize=6, label='Predicted')
+                circle = Line2D([], [], color="black", marker="o", linestyle="None", markersize=6, label="Experimental")
+                line = Line2D([], [], color="black", marker="_", linestyle="None", markersize=6, label="Predicted")
                 ax.legend(handles=[purple, yellow, circle, line], loc="upper left")
 
 
@@ -310,7 +305,7 @@ def calc_dose_response(cell_names, unkVec, scales, receptor_data, tps, cytokC, e
             total_activity15[i, j, :, :] = np.reshape(activity15, (-1, 4))  # save the activity from this concentration for all 4 tps
     scale = grouped_scaling(scales, cell_names, expr_act2, expr_act15, total_activity2, total_activity15)
 
-    cell_groups = [['T-reg', 'Mem Treg', 'Naive Treg'], ['T-helper', 'Mem Th', 'Naive Th'], ['NK'], ['CD8+', 'Naive CD8+', 'Mem CD8+']]
+    cell_groups = [["T-reg", "Mem Treg", "Naive Treg"], ["T-helper", "Mem Th", "Naive Th"], ["NK"], ["CD8+", "Naive CD8+", "Mem CD8+"]]
 
     for k, cells in enumerate(cell_groups):
         for l, cell in enumerate(cell_names):
@@ -325,7 +320,7 @@ def calc_dose_response(cell_names, unkVec, scales, receptor_data, tps, cytokC, e
 def grouped_scaling(scales, cell_names, expr_act2, expr_act15, pred_act2, pred_act15):
     """ Determines scaling parameters for specified cell groups. """
 
-    cell_groups = [['T-reg', 'Mem Treg', 'Naive Treg'], ['T-helper', 'Mem Th', 'Naive Th'], ['NK'], ['CD8+', 'Naive CD8+', 'Mem CD8+']]
+    cell_groups = [["T-reg", "Mem Treg", "Naive Treg"], ["T-helper", "Mem Th", "Naive Th"], ["NK"], ["CD8+", "Naive CD8+", "Mem CD8+"]]
 
     scale = np.zeros((4, 2, len(scales)))
     for i, cells in enumerate(cell_groups):
@@ -374,14 +369,14 @@ def import_pMuteins():
         data = data.replace({"Concentration": conc}, np.round(conc, decimals=9))
 
     namedict = {
-        'IL2-060 monomeric': 'WT N-term',
-        'Cterm IL-2 monomeric WT': 'WT C-term',
-        'Cterm IL-2 monomeric V91K': 'V91K C-term',
-        'IL2-109 monomeric': 'R38Q N-term',
-        'IL2-110 monomeric': 'F42Q N-Term',
-        'Cterm N88D monomeric': 'N88D C-term'
+        "IL2-060 monomeric": "WT N-term",
+        "Cterm IL-2 monomeric WT": "WT C-term",
+        "Cterm IL-2 monomeric V91K": "V91K C-term",
+        "IL2-109 monomeric": "R38Q N-term",
+        "IL2-110 monomeric": "F42Q N-Term",
+        "Cterm N88D monomeric": "N88D C-term",
     }
-    data = data.replace({'Ligand': namedict})
+    data = data.replace({"Ligand": namedict})
 
     return data
 
@@ -417,14 +412,15 @@ def organize_expr_pred(df, cell_name, ligand_name, receptors, muteinC, tps, unkV
 
     df_exp = pds.DataFrame(
         {
-            'Cells': np.tile(
-                np.array(cell_name), num), 'Ligand': np.tile(
-                    np.array(ligand_name), num), 'Time Point': np.tile(
-                        tps, 12), 'Concentration': mutein_conc.reshape(
-                            num,), 'Activity Type': np.tile(
-                                np.array('experimental'), num), 'Replicate': np.zeros(
-                                    (num)), 'Activity': exp_data.reshape(
-                                        num,)})
+            "Cells": np.tile(np.array(cell_name), num),
+            "Ligand": np.tile(np.array(ligand_name), num),
+            "Time Point": np.tile(tps, 12),
+            "Concentration": mutein_conc.reshape(num),
+            "Activity Type": np.tile(np.array("experimental"), num),
+            "Replicate": np.zeros((num)),
+            "Activity": exp_data.reshape(num),
+        }
+    )
     df = df.append(df_exp, ignore_index=True)
 
     # calculate predicted dose response
@@ -432,8 +428,17 @@ def organize_expr_pred(df, cell_name, ligand_name, receptors, muteinC, tps, unkV
     for j in range(unkVec.shape[1]):
         cell_receptors = receptor_expression(receptors, unkVec[17, j], unkVec[20, j], unkVec[19, j], unkVec[21, j])
         pred_data[:, :, j] = calc_dose_response_mutein(unkVec[:, j], tps, muteinC, ligand_name, cell_receptors)
-        df_pred = pds.DataFrame({'Cells': np.tile(np.array(cell_name), num), 'Ligand': np.tile(np.array(ligand_name), num), 'Time Point': np.tile(tps, 12), 'Concentration': mutein_conc.reshape(
-            num,), 'Activity Type': np.tile(np.array('predicted'), num), 'Replicate': np.tile(np.array(j + 1), num), 'Activity': pred_data[:, :, j].reshape(num,)})
+        df_pred = pds.DataFrame(
+            {
+                "Cells": np.tile(np.array(cell_name), num),
+                "Ligand": np.tile(np.array(ligand_name), num),
+                "Time Point": np.tile(tps, 12),
+                "Concentration": mutein_conc.reshape(num),
+                "Activity Type": np.tile(np.array("predicted"), num),
+                "Replicate": np.tile(np.array(j + 1), num),
+                "Activity": pred_data[:, :, j].reshape(num),
+            }
+        )
         df = df.append(df_pred, ignore_index=True)
 
     return df
@@ -442,14 +447,16 @@ def organize_expr_pred(df, cell_name, ligand_name, receptors, muteinC, tps, unkV
 def mutein_scaling(df, unkVec):
     """ Determines scaling parameters for specified cell groups for across all muteins. """
 
-    cell_groups = [['T-reg', 'Mem Treg', 'Naive Treg'], ['T-helper', 'Mem Th', 'Naive Th'], ['NK'], ['CD8+']]
+    cell_groups = [["T-reg", "Mem Treg", "Naive Treg"], ["T-helper", "Mem Th", "Naive Th"], ["NK"], ["CD8+"]]
 
     scales = np.zeros((4, 2, unkVec.shape[1]))
     for i, cells in enumerate(cell_groups):
         for j in range(unkVec.shape[1]):
-            subset_df = df[df['Cells'].isin(cells)]
-            scales[i, :, j] = optimize_scale_mut(np.array(subset_df.loc[(subset_df["Activity Type"] == 'predicted') & (subset_df["Replicate"] == (j + 1)), "Activity"]),
-                                                 np.array(subset_df.loc[(subset_df["Activity Type"] == 'experimental'), "Activity"]))
+            subset_df = df[df["Cells"].isin(cells)]
+            scales[i, :, j] = optimize_scale_mut(
+                np.array(subset_df.loc[(subset_df["Activity Type"] == "predicted") & (subset_df["Replicate"] == (j + 1)), "Activity"]),
+                np.array(subset_df.loc[(subset_df["Activity Type"] == "experimental"), "Activity"]),
+            )
 
     return scales
 
@@ -479,17 +486,13 @@ def catplot_comparison(ax, df, legend=False, Mut=True):
     sns.set_palette(col_list_palette)
     if Mut:
         sns.set_palette(sns.color_palette("husl", 8)[0:5] + [sns.color_palette("husl", 8)[7]])
-        df = df.sort_values(by=['Data Type', 'Cell Type', 'IL', 'Time Point'])
+        df = df.sort_values(by=["Data Type", "Cell Type", "IL", "Time Point"])
 
     # plot predicted EC50
-    sns.catplot(x="Cell Type", y="EC-50", hue="IL",
-                data=df.loc[(df['Time Point'] == 60.) & (df["Data Type"] == 'Predicted')],
-                legend=legend, legend_out=legend, ax=ax, marker='^', s=3.5)
+    sns.catplot(x="Cell Type", y="EC-50", hue="IL", data=df.loc[(df["Time Point"] == 60.0) & (df["Data Type"] == "Predicted")], legend=legend, legend_out=legend, ax=ax, marker="^", s=3.5)
 
     # plot experimental EC50
-    sns.catplot(x="Cell Type", y="EC-50", hue="IL",
-                data=df.loc[(df['Time Point'] == 60.) & (df["Data Type"] == 'Experimental')],
-                legend=False, legend_out=False, ax=ax, marker='o', s=3.5)
+    sns.catplot(x="Cell Type", y="EC-50", hue="IL", data=df.loc[(df["Time Point"] == 60.0) & (df["Data Type"] == "Experimental")], legend=False, legend_out=False, ax=ax, marker="o", s=3.5)
 
     ax.set_xticklabels(ax.get_xticklabels(), rotation=40, fontsize=6.8, rotation_mode="anchor", ha="right")
     ax.set_xlabel("")  # remove "Cell Type" from xlabel
@@ -498,8 +501,8 @@ def catplot_comparison(ax, df, legend=False, Mut=True):
     if legend:
         handles, _ = ax.get_legend_handles_labels()
         handles = handles[0:6]
-    circle = Line2D([], [], color='black', marker='o', linestyle='None', markersize=6, label='Experimental')
-    triangle = Line2D([], [], color='black', marker='^', linestyle='None', markersize=6, label='Predicted')
+    circle = Line2D([], [], color="black", marker="o", linestyle="None", markersize=6, label="Experimental")
+    triangle = Line2D([], [], color="black", marker="^", linestyle="None", markersize=6, label="Predicted")
     handles.append(circle)
     handles.append(triangle)
     ax.legend(handles=handles)
@@ -507,7 +510,7 @@ def catplot_comparison(ax, df, legend=False, Mut=True):
 
 def nllsq_EC50(x0, xdata, ydata):
     """ Performs nonlinear least squares on activity measurements to determine parameters of Hill equation and outputs EC50. """
-    lsq_res = least_squares(residuals, x0, args=(xdata, ydata), bounds=([0., 0., 0.], [10., 10., 10**5.]), jac='3-point')
+    lsq_res = least_squares(residuals, x0, args=(xdata, ydata), bounds=([0.0, 0.0, 0.0], [10.0, 10.0, 10 ** 5.0]), jac="3-point")
     return lsq_res.x[0]
 
 
