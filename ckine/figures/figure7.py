@@ -30,8 +30,7 @@ def makeFigure():
     ax, f = getSetup((9, 5), (2, 3))
     _, receptor_dataC, cell_names_receptorC = import_Rexpr()
 
-
-    #for ii, item in enumerate(ax):
+    # for ii, item in enumerate(ax):
     #        subplotLabel(item, string.ascii_uppercase[ii])
 
     Spec_Aff(ax[0:6], scalesT)
@@ -77,14 +76,14 @@ def OPgenSpec(unk, scalesIn, Op, k1Aff=1.0, k5Aff=1.0):
             OPgen(unk, "CD8+", Op, scalesIn, k1Aff, k5Aff))
 
     S_ThAve = (OPgen(unk, "T-reg", Op, scalesIn, k1Aff, k5Aff) /
-            OPgen(unk, "T-helper", Op, scalesIn, k1Aff, k5Aff, 1.0))
+               OPgen(unk, "T-helper", Op, scalesIn, k1Aff, k5Aff, 1.0))
 
     S_ThHigh = (OPgen(unk, "T-reg", Op, scalesIn, k1Aff, k5Aff) /
-            OPgen(unk, "T-helper", Op, scalesIn, k1Aff, k5Aff, 2.0))
-    
+                OPgen(unk, "T-helper", Op, scalesIn, k1Aff, k5Aff, 2.0))
+
     S_ThLow = (OPgen(unk, "T-reg", Op, scalesIn, k1Aff, k5Aff) /
-            OPgen(unk, "T-helper", Op, scalesIn, k1Aff, k5Aff, 0.5))
-    
+               OPgen(unk, "T-helper", Op, scalesIn, k1Aff, k5Aff, 0.5))
+
     S_NK = (OPgen(unk, "T-reg", Op, scalesIn, k1Aff, k5Aff) /
             OPgen(unk, "NK", Op, scalesIn, k1Aff, k5Aff))
 
@@ -123,17 +122,16 @@ def Spec_Aff(ax, scalesAff):
                 specHolderThHigh[ii, jj] = SThfunHigh.eval()
                 specHolderThLow[ii, jj] = SThfunLow.eval()
                 specHolderNK[ii, jj] = SNKfun.eval()
-                
 
-    # 2 hours 
+    # 2 hours
         ax[0].plot(1 / affRange, specHolderThLow[0, :], label="Low CD25 T-helpers", color="limegreen", linestyle=linemarker)
         ax[0].plot(1 / affRange, specHolderThAve[0, :], label="Average CD25 T-helpers", color="xkcd:rich blue", linestyle=linemarker)
         ax[0].plot(1 / affRange, specHolderThHigh[0, :], label="High CD25 T-helpers", color="xkcd:sun yellow", linestyle=linemarker)
 
         num = 0
         ax[num].get_xaxis().set_major_formatter(matplotlib.ticker.ScalarFormatter())
-        ax[num].legend(prop={'size': 7}, loc = 'upper left')
-        ax[num].set_xlim(left = 10e-3, right = 10e-1)
+        ax[num].legend(prop={'size': 7}, loc='upper left')
+        ax[num].set_xlim(left=10e-3, right=10e-1)
         ax[num].set_xscale("log")
         ax[num].set_xlabel('Relative IL-2Rβ/γc Affinity')
         ax[num].set_ylabel("Activation Specificity")
@@ -141,11 +139,10 @@ def Spec_Aff(ax, scalesAff):
         #ax[num].set_xticks(np.array([10e-5, 10e-3, 10e-1, 10e1]))
         ax[num].set_title("T-reg/T-helper pSTAT5 - 2 Hours")
 
-
         ax[1].plot(1 / affRange, specHolderCD[0, :], color="darkorange", linestyle=linemarker)
         num = 1
         ax[num].get_xaxis().set_major_formatter(matplotlib.ticker.ScalarFormatter())
-        ax[num].set_xlim(left = 10e-3, right = 10e-1)
+        ax[num].set_xlim(left=10e-3, right=10e-1)
         ax[num].set_ylim((0, 250))
         ax[num].set_xscale("log")
         ax[num].set_xlabel('Relative IL-2Rβ/γc Affinity')
@@ -156,7 +153,7 @@ def Spec_Aff(ax, scalesAff):
         ax[2].plot(1 / affRange, specHolderNK[0, :], color="orangered", linestyle=linemarker)
         num = 2
         ax[num].get_xaxis().set_major_formatter(matplotlib.ticker.ScalarFormatter())
-        ax[num].set_xlim(left = 10e-3, right = 10e-1)
+        ax[num].set_xlim(left=10e-3, right=10e-1)
         ax[num].set_ylim((0, 250))
         ax[num].set_xscale("log")
         ax[num].set_xlabel('Relative IL-2Rβ/γc Affinity')
@@ -164,15 +161,15 @@ def Spec_Aff(ax, scalesAff):
         #ax[num].set_xticks(np.array([10e-5, 10e-3, 10e-1, 10e1]))
         ax[num].set_title("T-reg/NK pSTAT5 - 2 Hours")
 
-    #12 hours
+    # 12 hours
         ax[3].plot(1 / affRange, specHolderThLow[0, :], label="Low CD25 T-helpers", color="limegreen", linestyle=linemarker)
         ax[3].plot(1 / affRange, specHolderThAve[1, :], label="Average CD25 T-helpers", color="xkcd:rich blue", linestyle=linemarker)
         ax[3].plot(1 / affRange, specHolderThHigh[1, :], label="High CD25 T-helpers", color="xkcd:sun yellow", linestyle=linemarker)
 
         num = 3
         ax[num].get_xaxis().set_major_formatter(matplotlib.ticker.ScalarFormatter())
-        ax[num].legend(prop={'size': 7}, loc = 'upper left')
-        ax[num].set_xlim(left = 10e-3, right = 10e-1)
+        ax[num].legend(prop={'size': 7}, loc='upper left')
+        ax[num].set_xlim(left=10e-3, right=10e-1)
         ax[num].set_xscale("log")
         ax[num].set_xlabel('Relative IL-2Rβ/γc Affinity')
         ax[num].set_ylabel("Activation Specificity")
@@ -183,7 +180,7 @@ def Spec_Aff(ax, scalesAff):
         ax[4].plot(1 / affRange, specHolderCD[1, :], color="darkorange", linestyle=linemarker)
         num = 4
         ax[num].get_xaxis().set_major_formatter(matplotlib.ticker.ScalarFormatter())
-        ax[num].set_xlim(left = 10e-3, right = 10e-1)
+        ax[num].set_xlim(left=10e-3, right=10e-1)
         ax[num].set_xscale("log")
         ax[num].set_ylim((0, 250))
         ax[num].set_xlabel('Relative IL-2Rβ/γc Affinity')
@@ -191,11 +188,10 @@ def Spec_Aff(ax, scalesAff):
         #ax[num].set_xticks(np.array([10e-5, 10e-3, 10e-1, 10e1]))
         ax[num].set_title("T-reg/CD8+ pSTAT5 - 12 Hours")
 
-
         ax[5].plot(1 / affRange, specHolderNK[1, :], color="orangered", linestyle=linemarker)
         num = 5
         ax[num].get_xaxis().set_major_formatter(matplotlib.ticker.ScalarFormatter())
-        ax[num].set_xlim(left = 10e-3, right = 10e-1)
+        ax[num].set_xlim(left=10e-3, right=10e-1)
         ax[num].set_ylim((0, 250))
         ax[num].set_xscale("log")
         ax[num].set_xlabel('Relative IL-2Rβ/γc Affinity')
@@ -205,26 +201,26 @@ def Spec_Aff(ax, scalesAff):
 
     line = Line2D([], [], color='black', marker='_', linestyle='None', markersize=6, label='WT CD25 Affinity')
     point = Line2D([], [], color='black', marker='.', linestyle='None', markersize=6, label='0.5 CD25 Affinity')
-    
+
     handles, _ = ax[0].get_legend_handles_labels()
     handles.append(line)
     handles.append(point)
-    ax[0].legend(prop={'size': 7}, loc = 'upper left', handles=handles[-5::])
-    
-    ax[3].legend(prop={'size': 7}, loc = 'upper left', handles=handles[-5::])
+    ax[0].legend(prop={'size': 7}, loc='upper left', handles=handles[-5::])
+
+    ax[3].legend(prop={'size': 7}, loc='upper left', handles=handles[-5::])
 
     handles = []
     line = Line2D([], [], color='darkorange', marker='_', linestyle='None', markersize=6, label='WT CD25 Affinity')
     point = Line2D([], [], color='darkorange', marker='.', linestyle='None', markersize=6, label='0.5 CD25 Affinity')
     handles.append(line)
     handles.append(point)
-    ax[1].legend(prop={'size': 7}, loc = 'upper left', handles=handles)
-    ax[4].legend(prop={'size': 7}, loc = 'upper left', handles=handles)
+    ax[1].legend(prop={'size': 7}, loc='upper left', handles=handles)
+    ax[4].legend(prop={'size': 7}, loc='upper left', handles=handles)
 
     handles = []
     line = Line2D([], [], color='orangered', marker='_', linestyle='None', markersize=6, label='WT CD25 Affinity')
     point = Line2D([], [], color='orangered', marker='.', linestyle='None', markersize=6, label='0.5 CD25 Affinity')
     handles.append(line)
     handles.append(point)
-    ax[2].legend(prop={'size': 7}, loc = 'upper right', handles=handles)
-    ax[5].legend(prop={'size': 7}, loc = 'upper right', handles=handles)
+    ax[2].legend(prop={'size': 7}, loc='upper right', handles=handles)
+    ax[5].legend(prop={'size': 7}, loc='upper right', handles=handles)
