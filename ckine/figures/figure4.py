@@ -58,14 +58,14 @@ def plot_corrcoef(ax, tps):
     pred_data2, pred_data15, _ = calc_dose_response(cell_names_receptor, unkVec_2_15, scales, receptor_data, tps, ckineConc, IL2_data_avg, IL15_data_avg)
 
     for l, _ in enumerate(cell_names_receptor):
-        corr_coef2 = pearsonr(IL2_data_avg[(l * 4) : ((l + 1) * 4)].flatten(), np.squeeze(pred_data2[l, :, :, :]).T.flatten())
-        corr_coef15 = pearsonr(IL15_data_avg[(l * 4) : ((l + 1) * 4)].flatten(), np.squeeze(pred_data15[l, :, :, :]).T.flatten())
+        corr_coef2 = pearsonr(IL2_data_avg[(l * 4): ((l + 1) * 4)].flatten(), np.squeeze(pred_data2[l, :, :, :]).T.flatten())
+        corr_coef15 = pearsonr(IL15_data_avg[(l * 4): ((l + 1) * 4)].flatten(), np.squeeze(pred_data15[l, :, :, :]).T.flatten())
         corr_coefs[l] = corr_coef2[0]
         corr_coefs[len(cell_names_receptor) + l] = corr_coef15[0]
 
     x_pos = np.arange(len(cell_names_receptor))
-    ax.bar(x_pos - 0.15, corr_coefs[0 : len(cell_names_receptor)], width=0.3, color="darkorchid", label="IL2", tick_label=cell_names_receptor)
-    ax.bar(x_pos + 0.15, corr_coefs[len(cell_names_receptor) : (2 * len(cell_names_receptor))], width=0.3, color="goldenrod", label="IL15", tick_label=cell_names_receptor)
+    ax.bar(x_pos - 0.15, corr_coefs[0: len(cell_names_receptor)], width=0.3, color="darkorchid", label="IL2", tick_label=cell_names_receptor)
+    ax.bar(x_pos + 0.15, corr_coefs[len(cell_names_receptor): (2 * len(cell_names_receptor))], width=0.3, color="goldenrod", label="IL15", tick_label=cell_names_receptor)
     ax.set(ylabel=("Correlation"), ylim=(0.0, 1.0))
     ax.set_xticklabels(ax.get_xticklabels(), rotation=40, fontsize=6.8, rotation_mode="anchor", ha="right")
 
@@ -95,8 +95,8 @@ def WT_EC50s():
 
     for i, name in enumerate(cell_names_pstat):
         assert cell_names_pstat[i] == cell_names_receptor[i]
-        celltype_data_2 = IL2_data_avg[(i * 4) : ((i + 1) * 4)]
-        celltype_data_15 = IL15_data_avg[(i * 4) : ((i + 1) * 4)]
+        celltype_data_2 = IL2_data_avg[(i * 4): ((i + 1) * 4)]
+        celltype_data_15 = IL15_data_avg[(i * 4): ((i + 1) * 4)]
         data_types.append(np.tile(np.array("Predicted"), len(tps)))
         # predicted EC50
         EC50_2, EC50_15 = calculate_predicted_EC50(x0, receptor_data, tps, i)

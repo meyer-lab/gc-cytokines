@@ -25,8 +25,8 @@ class IL4_7_activity:  # pylint: disable=too-few-public-methods
         self.cytokC_7 = np.array([1.0, 10.0, 100.0, 1000.0, 10000.0, 100000.0]) / 17400.0  # 17.4 kDa according to prospec bio
 
         self.cytokM = np.zeros((self.cytokC_4.size * 2, 6), dtype=np.float64)
-        self.cytokM[0 : self.cytokC_4.size, 4] = self.cytokC_4
-        self.cytokM[self.cytokC_4.size : :, 2] = self.cytokC_7
+        self.cytokM[0: self.cytokC_4.size, 4] = self.cytokC_4
+        self.cytokM[self.cytokC_4.size::, 2] = self.cytokC_7
 
         IL4_data_max = np.amax(np.concatenate((dataIL4[:, 1], dataIL4[:, 2])))
         IL7_data_max = np.amax(np.concatenate((dataIL7[:, 1], dataIL7[:, 2])))
@@ -41,8 +41,8 @@ class IL4_7_activity:  # pylint: disable=too-few-public-methods
         # Run the experiment
         outt = Op(unkVec)
 
-        actVecIL4 = outt[0 : self.cytokC_4.size]
-        actVecIL7 = outt[self.cytokC_4.size : self.cytokC_4.size * 2]
+        actVecIL4 = outt[0: self.cytokC_4.size]
+        actVecIL7 = outt[self.cytokC_4.size: self.cytokC_4.size * 2]
 
         # incorporate IC50 scale
         actVecIL4 = actVecIL4 / (actVecIL4 + scales[0])

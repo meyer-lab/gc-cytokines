@@ -56,7 +56,7 @@ def getSetup(figsize, gridd, multz=None, empts=None):
         if x not in empts and x not in multz.keys():  # If this is just a normal subplot
             ax.append(f.add_subplot(gs1[x]))
         elif x in multz.keys():  # If this is a subplot that spans grid elements
-            ax.append(f.add_subplot(gs1[x : x + multz[x] + 1]))
+            ax.append(f.add_subplot(gs1[x: x + multz[x] + 1]))
             x += multz[x]
         x += 1
 
@@ -332,8 +332,8 @@ def grouped_scaling(scales, cell_names, expr_act2, expr_act15, pred_act2, pred_a
             num = 0
             for k, cell in enumerate(cell_names):
                 if cell in cells:
-                    expr_act_2[num, :, j, :] = expr_act2[(k * 4) : ((k + 1) * 4)].T
-                    expr_act_15[num, :, j, :] = expr_act15[(k * 4) : ((k + 1) * 4)].T
+                    expr_act_2[num, :, j, :] = expr_act2[(k * 4): ((k + 1) * 4)].T
+                    expr_act_15[num, :, j, :] = expr_act15[(k * 4): ((k + 1) * 4)].T
                     pred_act_2[num, :, j, :] = pred_act2[k, :, j, :]
                     pred_act_15[num, :, j, :] = pred_act15[k, :, j, :]
                     num = num + 1
