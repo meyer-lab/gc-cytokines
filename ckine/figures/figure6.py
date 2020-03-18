@@ -191,7 +191,7 @@ def Specificity(ax):
 
 
 def OPgen(unkVecOP, CellTypes, OpC, scalesTh, RaAffM, RbAffM):
-    "Generates the UnkVec with cell specific receptor abundances and expression rates"
+    """ Generates the UnkVec with cell specific receptor abundances and expression rates. """
     _, receptor_dataC, cell_names_receptorC = import_Rexpr()
     cell_names_receptorC = cell_names_receptorC.tolist()
 
@@ -345,7 +345,7 @@ def Mut_Fact(ax):
 
     # Cells
     plot_cells(ax[1], parafac[0], 1, 2, cells)
-    #ax[1].legend(prop={"size": 6})
+    # ax[1].legend(prop={"size": 6})
     handles, labels = ax[1].get_legend_handles_labels()
     order = [3, 0, 7, 5, 2, 6, 4, 1]
     ax[1].legend([handles[idx] for idx in order], [labels[idx] for idx in order], prop={"size": 5.5})
