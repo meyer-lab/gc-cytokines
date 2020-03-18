@@ -79,7 +79,7 @@ def makeFigure():
 
 
 def affComp(ax):
-    """Compare 2Ra and 2BGc dissociation constants of wild type and mutant IL - 2s"""
+    """Compare 2Ra and 2BGc dissociation constants of wild type and mutant IL-2s"""
     affdict = getMutAffDict()
     ligList = ['WT N-term', 'WT C-term', 'V91K C-term', 'R38Q N-term', 'F42Q N-Term', 'N88D C-term']
     RaAff, GcBAff = np.zeros([len(ligList)]), np.zeros([len(ligList)])
@@ -100,7 +100,7 @@ def affComp(ax):
 
 
 def calc_plot_specificity(ax, cell_compare, df_specificity, df_activity, ligands, concs):
-    """ Calculates and plots specificity for both cytokines and experimental / predicted activity for T - regs. """
+    """ Calculates and plots specificity for both cytokines and experimental / predicted activity for T-regs. """
 
     # calculate specificity and append to dataframe
     for _, ckine in enumerate(ligands):
@@ -191,7 +191,7 @@ def Specificity(ax):
 
 
 def OPgen(unkVecOP, CellTypes, OpC, scalesTh, RaAffM, RbAffM):
-    "Generates the UnkVec with cell specific receptor abundances and expression rates"
+    """ Generates the UnkVec with cell specific receptor abundances and expression rates. """
     _, receptor_dataC, cell_names_receptorC = import_Rexpr()
     cell_names_receptorC = cell_names_receptorC.tolist()
 
