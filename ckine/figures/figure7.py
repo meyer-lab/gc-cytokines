@@ -21,7 +21,6 @@ def makeFigure():
     """ Get a list of the axis objects and create a figure. """
     # Get list of axis objects
     ax, f = getSetup((9, 5), (2, 3))
-    _, receptor_dataC, cell_names_receptorC = import_Rexpr()
 
     Spec_Aff(ax[0:6], scalesT)
 
