@@ -1,5 +1,5 @@
 """
-This creates Figure 6.
+This creates Figure 7. Just internal.
 """
 import string
 import logging
