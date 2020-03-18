@@ -1,7 +1,6 @@
 """
 This creates Figure S5. Full panel of measured vs simulated for IL-2 and IL-15.
 """
-import string
 import numpy as np
 import matplotlib.cm as cm
 from .figureCommon import subplotLabel, getSetup, plot_conf_int, plot_scaled_pstat, calc_dose_response
@@ -13,10 +12,16 @@ def makeFigure():
     # Get list of axis objects
     ax, f = getSetup((7, 6), (4, 5))
 
-    for ii, item in enumerate(ax):
-        subplotLabel(item, string.ascii_uppercase[ii])
+    subplotLabel(ax)
 
     plot_exp_v_pred(ax)
+    for jj, axes in enumerate(ax):
+        if jj < 10:
+            axes.set_xlabel(r"[IL-2] Concentration (nM)", fontsize=6)
+            axes.xaxis.set_tick_params(labelsize=7)
+        else:
+            axes.set_xlabel(r"[IL-15] Concentration (nM)", fontsize=6)
+            axes.xaxis.set_tick_params(labelsize=7)
 
     return f
 
@@ -48,8 +53,8 @@ def plot_exp_v_pred(ax, cell_subset=None):
                 plot_dose_response(ax[axis], ax[axis + shift], IL2_activity[m, :, :, :], IL15_activity[m, :, :, :], name, tps, ckineConc, legend=True)
             else:
                 plot_dose_response(ax[axis], ax[axis + shift], IL2_activity[m, :, :, :], IL15_activity[m, :, :, :], name, tps, ckineConc)
-            plot_scaled_pstat(ax[axis], np.log10(ckineConc.astype(np.float)), IL2_data[(m * 4): ((m + 1) * 4)])
-            plot_scaled_pstat(ax[axis + shift], np.log10(ckineConc.astype(np.float)), IL15_data[(m * 4): ((m + 1) * 4)])
+            plot_scaled_pstat(ax[axis], ckineConc.astype(np.float), IL2_data[(m * 4): ((m + 1) * 4)])
+            plot_scaled_pstat(ax[axis + shift], ckineConc.astype(np.float), IL15_data[(m * 4): ((m + 1) * 4)])
             axis = axis + 1
 
 
@@ -60,13 +65,21 @@ def plot_dose_response(ax2, ax15, IL2_activity, IL15_activity, cell_type, tps, c
     # plot the values with each time as a separate color
     for tt in range(tps.size):
         if legend:
-            plot_conf_int(ax2, np.log10(cytokC.astype(np.float)), IL2_activity[:, :, tt], colors[tt], (tps[tt] / 60.0).astype(str))
-            ax2.legend(title="time (hours)")
+            plot_conf_int(ax2, cytokC.astype(np.float), IL2_activity[:, :, tt], colors[tt], (tps[tt] / 60.0).astype(str))
+            ax2.legend(title="time (hours)", prop={"size": 6}, title_fontsize=6, loc="upper left")
         else:
-            plot_conf_int(ax2, np.log10(cytokC.astype(np.float)), IL2_activity[:, :, tt], colors[tt])
+            plot_conf_int(ax2, cytokC.astype(np.float), IL2_activity[:, :, tt], colors[tt])
 
-        plot_conf_int(ax15, np.log10(cytokC.astype(np.float)), IL15_activity[:, :, tt], colors[tt])
+        plot_conf_int(ax15, cytokC.astype(np.float), IL15_activity[:, :, tt], colors[tt])
 
     # plots for input cell type
-    ax2.set(xlabel=r"[IL-2] (log$_{10}$[nM])", ylabel="Activity", title=cell_type)
-    ax15.set(xlabel=r"[IL-15] (log$_{10}$[nM])", ylabel="Activity", title=cell_type)
+    ax2.set(ylabel="Activity", title=cell_type)
+    ax2.set_xlabel(r"[IL-2] Concentration (nM)", fontsize=8)
+    ax15.set(ylabel="Activity", title=cell_type)
+    ax15.set_xlabel(r"[IL-15] Concentration (nM)", fontsize=8)
+    ax2.set_xscale('log')
+    ax15.set_xscale('log')
+    ax2.set_xlim(10e-5, 10e1)
+    ax15.set_xlim(10e-5, 10e1)
+    ax2.set_xticks(np.array([10e-5, 10e-3, 10e-1, 10e1]))
+    ax15.set_xticks(np.array([10e-5, 10e-3, 10e-1, 10e1]))

@@ -1,7 +1,6 @@
 """
 This creates Figure 5. CP decomposition of measured pSTAT data.
 """
-import string
 import numpy as np
 import pandas as pds
 from scipy.spatial.distance import cosine
@@ -18,9 +17,7 @@ def makeFigure():
     # Get list of axis objects
     ax, f = getSetup((7.5, 2), (1, 4))
 
-    # Add subplot labels
-    for ii, item in enumerate(ax):
-        subplotLabel(item, string.ascii_uppercase[ii])
+    subplotLabel(ax)
 
     _, cell_names, IL2_data, IL15_data, _ = import_pstat()
 

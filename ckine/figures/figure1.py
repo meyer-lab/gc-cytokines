@@ -3,11 +3,10 @@ This creates Figure 1.
 """
 from os.path import join
 import os
-import string
 import numpy as np
 import seaborn as sns
 import pandas as pd
-from .figureCommon import subplotLabel, getSetup, traf_names, plot_conf_int
+from .figureCommon import subplotLabel, getSetup, traf_names, plot_conf_int, global_legend
 from ..plot_model_prediction import surf_IL2Rb, pstat, surf_gc
 from ..imports import import_samples_2_15
 
@@ -19,14 +18,7 @@ def makeFigure():
 
     ax[0].axis('off')  # blank out first axis for cartoon
 
-    for ii, item in enumerate(ax):
-        if ii == 0:  # hstretch for 3 panels
-            h = 3.8
-        elif ii == 8:
-            h = 3.25  # hstretch for 2 panels
-        else:
-            h = 1  # standard hstretch
-        subplotLabel(item, string.ascii_uppercase[ii], hstretch=h)
+    subplotLabel(ax, hstretch={0: 3.8, 8: 3.25})
 
     unkVec, scales = import_samples_2_15(N=100)  # use these for simulations
     full_unkVec, full_scales = import_samples_2_15()  # use these for violin plots
@@ -35,6 +27,10 @@ def makeFigure():
     gc_perc(ax[4], unkVec)
     violinPlots(ax[5:8], full_unkVec, full_scales)
     rateComp(ax[8], full_unkVec)
+    global_legend(ax[1], exppred=False)
+    legend = ax[1].get_legend()
+    labels = (x.get_text() for x in legend.get_texts())
+    ax[1].legend(legend.legendHandles, labels, loc='lower right')
 
     return f
 
@@ -57,19 +53,18 @@ def IL2Rb_perc(ax, unkVec):
 
     y_max = 100.
     ts = np.array([0., 2., 5., 15., 30., 60., 90.])
-    size = len(ts)
-    results = np.zeros((size, unkVec.shape[1], 4, 2))  # 3rd dim is cell condition (IL2Ra+/- and cytokC), 4th dim is cytok species
+    results = np.zeros((ts.size, unkVec.shape[1], 4, 2))  # 3rd dim is cell condition (IL2Ra+/- and cytokC), 4th dim is cytok species
 
     output = surf.calc(unkVec, ts) * y_max  # run the simulation
     # split according to experimental conditions
-    results[:, :, 2, 0] = output[:, 0:(size)].T
-    results[:, :, 3, 0] = output[:, (size):(size * 2)].T
-    results[:, :, 0, 0] = output[:, (size * 2):(size * 3)].T
-    results[:, :, 1, 0] = output[:, (size * 3):(size * 4)].T
-    results[:, :, 2, 1] = output[:, (size * 4):(size * 5)].T
-    results[:, :, 3, 1] = output[:, (size * 5):(size * 6)].T
-    results[:, :, 0, 1] = output[:, (size * 6):(size * 7)].T
-    results[:, :, 1, 1] = output[:, (size * 7):(size * 8)].T
+    results[:, :, 2, 0] = output[:, 0:(ts.size)].T
+    results[:, :, 3, 0] = output[:, (ts.size):(ts.size * 2)].T
+    results[:, :, 0, 0] = output[:, (ts.size * 2):(ts.size * 3)].T
+    results[:, :, 1, 0] = output[:, (ts.size * 3):(ts.size * 4)].T
+    results[:, :, 2, 1] = output[:, (ts.size * 4):(ts.size * 5)].T
+    results[:, :, 3, 1] = output[:, (ts.size * 5):(ts.size * 6)].T
+    results[:, :, 0, 1] = output[:, (ts.size * 6):(ts.size * 7)].T
+    results[:, :, 1, 1] = output[:, (ts.size * 7):(ts.size * 8)].T
 
     for n in range(4):
         # plot results within confidence intervals
@@ -123,20 +118,23 @@ def pstat_act(ax, unkVec, scales):
     IL15_minus = output[:, (PTS * 3):(PTS * 4)].T
 
     # plot confidence intervals based on model predictions
-    plot_conf_int(ax, np.log10(cytokC), IL2_minus, "darkorchid")
-    plot_conf_int(ax, np.log10(cytokC), IL15_minus, "goldenrod")
-    plot_conf_int(ax, np.log10(cytokC), IL2_plus, "darkorchid")
-    plot_conf_int(ax, np.log10(cytokC), IL15_plus, "goldenrod")
+    plot_conf_int(ax, cytokC, IL2_minus, "darkorchid")
+    plot_conf_int(ax, cytokC, IL15_minus, "goldenrod")
+    plot_conf_int(ax, cytokC, IL2_plus, "darkorchid")
+    plot_conf_int(ax, cytokC, IL15_plus, "goldenrod")
 
     # plot experimental data
+    cytokCplt = np.logspace(-3.3, 2.7, 8)
     path = os.path.dirname(os.path.abspath(__file__))
     data = pd.read_csv(join(path, "../data/IL2_IL15_extracted_data.csv")).values  # imports file into pandas array
-    ax.scatter(data[:, 0], data[:, 2], color='darkorchid', marker='^', edgecolors='k', zorder=100)  # IL2 in 2Ra-
-    ax.scatter(data[:, 0], data[:, 3], color='goldenrod', marker='^', edgecolors='k', zorder=101)  # IL15 in 2Ra-
-    ax.scatter(data[:, 0], data[:, 6], color='darkorchid', marker='o', edgecolors='k', zorder=102)  # IL2 in 2Ra+
-    ax.scatter(data[:, 0], data[:, 7], color='goldenrod', marker='o', edgecolors='k', zorder=103)  # IL15 in 2Ra+
-    ax.set(ylabel='pSTAT5 (% of max)', xlabel=r'Cytokine Conc. (log$_{10}$[nM])', title='YT-1 Cell Activity')
-    ax.set_xticks(np.arange(-3.3, 3.7, step=2))
+    ax.scatter(cytokCplt, data[:, 2], color='darkorchid', marker='^', edgecolors='k', zorder=100)  # IL2 in 2Ra-
+    ax.scatter(cytokCplt, data[:, 3], color='goldenrod', marker='^', edgecolors='k', zorder=101)  # IL15 in 2Ra-
+    ax.scatter(cytokCplt, data[:, 6], color='darkorchid', marker='o', edgecolors='k', zorder=102)  # IL2 in 2Ra+
+    ax.scatter(cytokCplt, data[:, 7], color='goldenrod', marker='o', edgecolors='k', zorder=103)  # IL15 in 2Ra+
+    ax.set(ylabel='pSTAT5 (% of max)', xlabel='Ligand Concentration (nM)', title='YT-1 Cell Activity')
+    ax.set_xscale('log')
+    ax.set_xticks([10e-5, 10e-2, 10e1])
+    ax.xaxis.set_tick_params(labelsize=7)
 
 
 def violinPlots(ax, unkVec, scales, Traf=True):

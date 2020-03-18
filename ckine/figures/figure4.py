@@ -1,8 +1,6 @@
 """
 This creates Figure 4. Comparison of Experimental verus Predicted Activity across IL2 and IL15 concentrations.
 """
-
-import string
 import numpy as np
 import pandas as pd
 import seaborn as sns
@@ -26,8 +24,7 @@ def makeFigure():
     # Get list of axis objects
     ax, f = getSetup((7, 6), (3, 3))
 
-    for ii, item in enumerate(ax):
-        subplotLabel(item, string.ascii_uppercase[ii])
+    subplotLabel(ax)
 
     tps = np.array([0.5, 1., 2., 4.]) * 60.
     compare_experimental_data(ax[0], pstat_df)  # compare experiment 1 to 2

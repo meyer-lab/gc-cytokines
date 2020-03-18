@@ -1,8 +1,6 @@
 """
 This creates Figure 3.
 """
-import string
-import logging
 import numpy as np
 import scipy as sp
 from sklearn.decomposition import PCA
@@ -16,17 +14,15 @@ from ..make_tensor import make_tensor, tensor_time
 
 cell_dim = 1  # For this figure, the cell dimension is along the second [python index 1].
 values, _, mat, _, _ = make_tensor()
-values[:, :, 24:36] /= 7.0  # IL-7 just seems to have larger values across the board, so shrink a bit
+values[:, :, 24:36] /= 20.0
 values = z_score_values(tl.tensor(values), cell_dim)
-logging.info("Done constructing tensor.")
 
-logging.info("Starting decomposition.")
 data, numpy_data, cell_names = import_Rexpr()
 factors_activity = []
 for jj in range(4):
     factors = perform_decomposition(values, jj + 1)
     factors_activity.append(factors)
-logging.info("Decomposition finished.")
+
 n_pred_comps = 3  # Placed here to be also used by Figure 5
 
 
@@ -50,26 +46,23 @@ def makeFigure():
     # Add subplot labels
     axLabel = ax.copy()
     del axLabel[4]
-    for ii, item in enumerate(axLabel):
-        if ii == 3:
-            h = 2.45  # for multz of 3 panels
-        elif ii == 0:
-            h = 2.75  # for multz of 2 panels
-        else:
-            h = 1  # default h is 1
-        subplotLabel(item, string.ascii_uppercase[ii], hstretch=h)  # Add subplot labels
+    subplotLabel(axLabel, hstretch={3: 2.45, 0: 2.75})
 
     plot_timepoints(ax[6], tensor_time, tl.to_numpy(factors_activ[0]))
 
     plot_cells(ax[7], tl.to_numpy(factors_activ[1]), 1, 2, cell_names)
+    ax[7].set_xlim(left=-0.03)
+    ax[7].set_ylim(bottom=-0.03)
     plot_cells(ax[8], tl.to_numpy(factors_activ[1]), 1, 3, cell_names)
+    ax[8].set_xlim(left=-0.03)
+    ax[8].set_ylim(bottom=-0.03)
     legend = ax[7].get_legend()
     labels = (x.get_text() for x in legend.get_texts())
-    ax[4].legend(legend.legendHandles, labels, loc='center', prop={"size": 9})
+    ax[4].legend(legend.legendHandles, labels, loc='center right', prop={"size": 9})
     ax[7].get_legend().remove()
     ax[8].get_legend().remove()
     ax[5].set_ylabel('Variance of Model\nOutput Explained', fontsize=8, multialignment='center')
-    plot_ligands(ax[9], tl.to_numpy(factors_activ[2]), ligand_names=['IL-2', 'IL-15', 'IL-7'], cutoff=5.0)
+    plot_ligands(ax[9], tl.to_numpy(factors_activ[2]), ligand_names=['IL-2', 'IL-15', 'IL-7'], cutoff=5.0, compLabel=False)
 
     return f
 

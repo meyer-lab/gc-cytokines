@@ -1,7 +1,6 @@
 """
 This creates Figure 6.
 """
-import string
 import logging
 import numpy as np
 import pandas as pd
@@ -9,8 +8,7 @@ import seaborn as sns
 import theano.tensor as T
 import theano
 from matplotlib.lines import Line2D
-from .figureCommon import subplotLabel, getSetup, global_legend, calc_dose_response, import_pMuteins, nllsq_EC50, organize_expr_pred, mutein_scaling, plot_cells, plot_ligand_comp, Par_Plot_comparison
-from .figure4 import WT_EC50s
+from .figureCommon import subplotLabel, getSetup, global_legend, calc_dose_response, import_pMuteins, nllsq_EC50, organize_expr_pred, mutein_scaling, plot_cells, plot_ligand_comp, plot_conf_int
 from ..imports import import_pstat, import_samples_2_15, import_Rexpr
 from ..model import getTotalActiveSpecies, receptor_expression, getRateVec, getparamsdict, getMutAffDict
 from ..differencing_op import runCkineDoseOp
@@ -33,16 +31,9 @@ mutData = import_pMuteins()
 def makeFigure():
     """Get a list of the axis objects and create a figure"""
     # Get list of axis objects
-    ax, f = getSetup((7.5, 2), (1, 4), multz={0:1, 2:1})
+    ax, f = getSetup((7.5, 6), (3, 4))
 
-    #ax[5].axis('off')
-    """
-    for ii, item in enumerate(ax):
-        if ii < 5:
-            subplotLabel(item, string.ascii_uppercase[ii])
-        elif ii > 5:
-            subplotLabel(item, string.ascii_uppercase[ii - 1])
-    """
+    subplotLabel(ax)
 
     ckines = ['IL-2', 'IL-15']
     tps = np.array([0.5, 1.0, 2.0, 4.0]) * 60.0
@@ -69,51 +60,44 @@ def makeFigure():
     ckineConc_ = np.delete(ckineConc, 11, 0)  # delete smallest concentration since zero/negative activity
     """
     mutEC50df = get_Mut_EC50s()
-    WT_EC50df = WT_EC50s()
     mutEC50df = mutEC50df.rename(columns={'Time Point': 'Time Point', 'IL': 'IL', 'Cell Type': 'CellType', 'Data Type': 'Data Type', 'EC-50': 'EC-50'})
-    WT_EC50df = WT_EC50df.rename(columns={'Time Point': 'Time Point', 'IL': 'IL', 'Cell Type': 'CellType', 'Data Type': 'Data Type', 'EC-50': 'EC-50'})
-    WT_EC50df = WT_EC50df[(WT_EC50df.CellType != 'Mem CD8+') & (WT_EC50df.CellType != 'Naive CD8+')]
-    mutEC50df = pd.concat([mutEC50df, WT_EC50df])
-
     affComp(ax[4])
     calc_plot_specificity(ax[0], 'NK', df_spec, df_act, ckines, ckineConc_)
     calc_plot_specificity(ax[1], 'T-helper', df_spec, df_act, ckines, ckineConc_)
     global_legend(ax[0], Spec=True, Mut=True)
-    """
-    Specificity(ax=ax[0])
-    Spec_Aff(ax[1], 40, unkVecT, scalesT)
-    """
-    Par_Plot_comparison(ax[6], mutEC50df)
 
-    Mut_Fact(ax[7:11])
-    legend = ax[7].get_legend()
+    Specificity(ax=ax[2])
+    Spec_Aff(ax[3], 40, unkVecT, scalesT)
+    Mut_Fact(ax[8:12])
+    legend = ax[8].get_legend()
     labels = (x.get_text() for x in legend.get_texts())
-    ax[5].legend(legend.legendHandles, labels, loc='center left', prop={"size": 9})
-    ax[7].get_legend().remove()
-    """
+    ax[4].legend(legend.legendHandles, labels, loc='upper right', prop={"size": 6})  # use this to place universal legend later
+    ax[8].get_legend().remove()
+    overlayT, overlaycells = 240., ['T-reg', 'NK', 'T-helper']
+    MuteinModelOverlay(ax[5:8], overlayT, overlaycells)
+
     return f
 
 
 def affComp(ax):
     """Compare 2Ra and 2BGc dissociation constants of wild type and mutant IL-2s"""
     affdict = getMutAffDict()
-    ligList = ['WT N-term', 'WT C-term', 'V91K C-term', 'R38Q N-term', 'F42Q N-Term', 'N88D C-term', 'WT IL2']
+    ligList = ['WT N-term', 'WT C-term', 'V91K C-term', 'R38Q N-term', 'F42Q N-Term', 'N88D C-term']
     RaAff, GcBAff = np.zeros([len(ligList)]), np.zeros([len(ligList)])
 
-    for i in range(0, len(ligList) - 1):
-        RaAff[i] = affdict[ligList[i]][0]
-        GcBAff[i] = affdict[ligList[i]][1]
-
-    RaAff[len(ligList) - 1] = unkVec[1] / 0.6
-    GcBAff[len(ligList) - 1] = unkVec[4] / 0.6
+    for i, ligand in enumerate(ligList):
+        RaAff[i] = affdict[ligand][0]
+        GcBAff[i] = affdict[ligand][1]
 
     KDdf = pd.DataFrame({'RaAff': RaAff, 'GcBAff': GcBAff, 'Ligand': ligList})
     KDdf = KDdf.sort_values(by=["Ligand"])
-    sns.scatterplot(x='RaAff', y='GcBAff', data=KDdf, hue="Ligand", palette=sns.color_palette("husl", 8)[0:5] + sns.color_palette("husl", 8)[6:8], ax=ax, legend=False)
-    ax.set_xlabel("IL-2Rα KD (log$_{10}$[nM])")
-    ax.set_ylabel("IL-2Rβ/γc KD (log$_{10}$[nM])")
+    sns.scatterplot(x='RaAff', y='GcBAff', data=KDdf, hue="Ligand", palette=sns.color_palette("husl", 6), ax=ax, legend=False)
+    ax.set_xlabel("IL-2Rα $K_D$ (log$_{10}$[nM])")
+    ax.set_ylabel("IL-2Rβ/γc $K_D$ (log$_{10}$[nM])")
     ax.set_xscale('log')
     ax.set_yscale('log')
+    ax.set_xticks(np.array([10e-2, 10e-1, 10e0, 10e1]))
+    ax.set_yticks(np.array([10e-1, 10e0, 10e1, 10e2]))
 
 
 def calc_plot_specificity(ax, cell_compare, df_specificity, df_activity, ligands, concs):
@@ -124,9 +108,9 @@ def calc_plot_specificity(ax, cell_compare, df_specificity, df_activity, ligands
         for _, conc in enumerate(concs):
             df_specificity = specificity(df_specificity, df_activity, 'T-reg', cell_compare, ckine, 60., conc)
 
-    df_specificity["Concentration"] = np.log10(df_specificity["Concentration"].astype(np.float))  # logscale for plotting
+    df_specificity["Concentration"] = df_specificity["Concentration"].astype(np.float)  # logscale for plotting
     df_specificity["Specificity"] = np.log10(df_specificity["Specificity"].astype(np.float))
-    df_specificity.drop(df_specificity[(df_specificity["Concentration"] < -2.5)].index, inplace=True)  # drop second conc due to negative activity
+    df_specificity.drop(df_specificity[(df_specificity["Concentration"] < 0.002)].index, inplace=True)  # drop second conc due to negative activity
 
     # plot all specificty values
     sns.set_palette(sns.xkcd_palette(["violet", "goldenrod"]))
@@ -135,6 +119,9 @@ def calc_plot_specificity(ax, cell_compare, df_specificity, df_activity, ligands
     sns.lineplot(x="Concentration", y="Specificity", hue="Ligand", data=df_specificity.loc[(df_specificity["Cells"] == cell_compare) &
                                                                                            (df_specificity["Data Type"] == 'Predicted')], ax=ax, legend=False)
     ax.set(xlabel="Concentration (nM)", ylabel="log$_{10}$[Specificity]", title=('T-reg vs. ' + cell_compare))
+    ax.set_xscale('log')
+    ax.set_xticks(np.array([10e-4, 10e-1, 10e1]))
+    ax.set_xlim(10e-4, 10e1)
 
 
 def specificity(df_specificity, df_activity, cell_type1, cell_type2, ligand, tp, concentration):
@@ -194,7 +181,7 @@ def Specificity(ax):
     sns.set_palette(sns.xkcd_palette(colors))
 
     sns.catplot(data=df, x='rate', y='value', kind="bar", hue='cell', ax=ax, legend=False)
-    ax.set_ylabel("Value")
+    ax.set_ylabel("d[Specificity] / d[Param]")
     ax.set_xlabel("")
     ax.legend()
     ax.set_yscale("symlog", linthreshy=0.01)
@@ -259,18 +246,19 @@ def Spec_Aff(ax, npoints, unkVecAff, scalesAff):
             specHolderNK[i, j] = SNKfun.eval()
             specHolderTh[i, j] = SThfun.eval()
         if i == 0:
-            ax.plot(1 / affRange, specHolderNK[i, :], label="TReg/NK pSTAT5 w/ " + str(1 / RaAff[i]) + " IL2Ra Affinity", color="xkcd:rich blue")
-            ax.plot(1 / affRange, specHolderTh[i, :], label="TReg/Th pSTAT5 w/ " + str(1 / RaAff[i]) + " IL2Ra Affinity", color="xkcd:sun yellow")
+            ax.plot(1 / affRange, specHolderNK[i, :], label="TReg/NK pSTAT5 w/ " + str(1 / RaAff[i]) + " IL-2Rα $K_a$", color="xkcd:rich blue")
+            ax.plot(1 / affRange, specHolderTh[i, :], label="TReg/Th pSTAT5 w/ " + str(1 / RaAff[i]) + " IL-2Rα $K_a$", color="xkcd:sun yellow")
         else:
-            ax.plot(1 / affRange, specHolderNK[i, :], label="TReg/NK pSTAT5 w/ " + str(1 / RaAff[i]) + " IL2Ra Affinity", linestyle='dotted', color="xkcd:rich blue")
-            ax.plot(1 / affRange, specHolderTh[i, :], label="TReg/Th pSTAT5 w/ " + str(1 / RaAff[i]) + " IL2Ra Affinity", linestyle='dotted', color="xkcd:sun yellow")
+            ax.plot(1 / affRange, specHolderNK[i, :], label="TReg/NK pSTAT5 w/ " + str(1 / RaAff[i]) + " IL2Rα $K_a$", linestyle='dotted', color="xkcd:rich blue")
+            ax.plot(1 / affRange, specHolderTh[i, :], label="TReg/Th pSTAT5 w/ " + str(1 / RaAff[i]) + " IL2Rα $K_a$", linestyle='dotted', color="xkcd:sun yellow")
 
     ax.set_xscale('log')
-    ax.set_xlabel('Relative IL-2Rβ/γc Affinity')
+    ax.set_xlabel('Relative IL-2Rβ/γc $K_a$')
     ax.set_ylabel('Specificity')
+    ax.set_xlim((10e-3, 10e0))
     handles = []
-    line = Line2D([], [], color='black', marker='_', linestyle='None', markersize=6, label='WT IL2Ra Affinity')
-    point = Line2D([], [], color='black', marker='.', linestyle='None', markersize=6, label='0.5 IL2Ra Affinity')
+    line = Line2D([], [], color='black', marker='_', linestyle='None', markersize=6, label='WT IL-2Rα $K_a$')
+    point = Line2D([], [], color='black', marker='.', linestyle='None', markersize=6, label='0.5 IL-2Rα $K_a$')
     handles.append(line)
     handles.append(point)
     ax.legend(handles=handles)
@@ -339,18 +327,12 @@ def get_Mut_EC50s():
 def Mut_Fact(ax):
     """Plots Non-Negative CP Factorization of Muteins into 4 ax subplots"""
     mutDataF = mutData.sort_values(by=['Cells', 'Ligand', 'Time', 'Concentration'])
-    mutDataF.reset_index(inplace=True)
-    _, _, _, _, WTdf = import_pstat()
-    combdf = pd.concat([mutDataF, WTdf], sort=True, ignore_index=True)
-    combdf = combdf.replace(["IL2", "IL15"], ["WT IL2", "WT IL15"])
-    combdf = combdf.sort_values(by=['Cells', 'Ligand', 'Time', 'Concentration'])
-    mutFactdf = combdf[(combdf.Cells != "Naive CD8+") & (combdf.Cells != "Mem CD8+")]
-    mutTensor = np.reshape(mutFactdf["RFU"].values, (8, 8, 4, 12))  # cells, muteins/WT, times, and concs.
+    mutTensor = np.reshape(mutDataF["RFU"].values, (8, 6, 4, 12))  # cells, muteins/WT, times, and concs.
 
-    concs = mutFactdf['Concentration'].unique()
-    ts = mutFactdf['Time'].unique() / 60
-    cells = mutFactdf['Cells'].unique()
-    ligs = mutFactdf['Ligand'].unique()
+    concs = mutDataF['Concentration'].unique()
+    ts = mutDataF['Time'].unique() / 60
+    cells = mutDataF['Cells'].unique()
+    ligs = mutDataF['Ligand'].unique()
 
     dataTensor = z_score_values(mutTensor, 0)
     parafac = perform_decomposition(dataTensor, 2, weightFactor=3)
@@ -364,7 +346,10 @@ def Mut_Fact(ax):
 
     # Cells
     plot_cells(ax[1], parafac[0], 1, 2, cells)
-    ax[1].legend(prop={"size": 6})
+    #ax[1].legend(prop={"size": 6})
+    handles, labels = ax[1].get_legend_handles_labels()
+    order = [3, 0, 7, 5, 2, 6, 4, 1]
+    ax[1].legend([handles[idx] for idx in order], [labels[idx] for idx in order], prop={"size": 5.5})
 
     # Timepoints
     tComp = np.r_[np.zeros((1, 2)), parafac[2]]
@@ -379,4 +364,57 @@ def Mut_Fact(ax):
     ax[3].semilogx(concs, parafac[3])
     ax[3].set_xlabel("Concentration (nM)")
     ax[3].set_ylabel("Component")
-    ax[3].set_xticks(np.array([10e-4, 10e-2, 10e0, 10e2]))
+    ax[3].set_xticks(np.array([10e-5, 10e-3, 10e-1, 10e1]))
+
+
+def MuteinModelOverlay(ax, tpoint, cells):
+    "Plots Mutein Experimental and model predictions overlaid for a given cell type/types"
+    bounds = np.array([35000, 2500, 14000])
+    cell_groups = [['T-reg', 'Mem Treg', 'Naive Treg'], ['T-helper', 'Mem Th', 'Naive Th'], ['NK'], ['CD8+']]
+    unkVec_2_15Over, _ = import_samples_2_15(N=25)
+    tps = np.array([0.5, 1.0, 2.0, 4.0]) * 60.0
+    muteinC = mutData.Concentration.unique()
+    pred_data = np.zeros((12, 4, unkVec_2_15Over.shape[1]))
+    mutData["Concentration"] = mutData["Concentration"].astype(np.float)
+    ligand_order = ['F42Q N-Term', 'N88D C-term', 'R38Q N-term', 'V91K C-term', 'WT C-term', 'WT N-term']
+    cell_order = ['NK', 'CD8+', 'T-reg', 'Naive Treg', 'Mem Treg', 'T-helper', 'Naive Th', 'Mem Th']
+    df = pd.DataFrame(columns=['Cells', 'Ligand', 'Time Point', 'Concentration', 'Activity Type', 'Replicate', 'Activity'])
+
+    for _, cell_name in enumerate(cell_order):
+        IL2Ra = data.loc[(data["Cell Type"] == cell_name) & (data["Receptor"] == 'IL-2R$\\alpha$'), "Count"].values[0]
+        IL2Rb = data.loc[(data["Cell Type"] == cell_name) & (data["Receptor"] == 'IL-2R$\\beta$'), "Count"].values[0]
+        gc = data.loc[(data["Cell Type"] == cell_name) & (data["Receptor"] == '$\\gamma_{c}$'), "Count"].values[0]
+        receptors = np.array([IL2Ra, IL2Rb, gc]).astype(np.float)
+
+        for _, ligand_name in enumerate(ligand_order):
+
+            # append dataframe with experimental and predicted activity
+            df = organize_expr_pred(df, cell_name, ligand_name, receptors, muteinC, tps, unkVec_2_15Over)
+
+    scales2 = mutein_scaling(df, unkVec_2_15Over)
+    colors = sns.color_palette("hls", 6)
+
+    for i, celltype in enumerate(cells):
+        for j, ligand in enumerate(ligand_order):
+            # scale and plot model predictions
+            for k, conc in enumerate(df.Concentration.unique()):
+                for l, tp in enumerate(tps):
+                    for m in range(unkVec_2_15Over.shape[1]):
+                        pred_data[k, l, m] = df.loc[(df["Cells"] == celltype) & (df["Ligand"] == ligand) & (
+                            df["Activity Type"] == 'predicted') & (df["Concentration"] == conc) & (df["Time Point"] == tp) & (df["Replicate"] == (m + 1)), "Activity"]
+
+            for n, cell_names in enumerate(cell_groups):
+                if celltype in cell_names:
+                    for o in range(unkVec_2_15Over.shape[1]):
+                        pred_data[:, :, o] = scales2[n, 1, o] * pred_data[:, :, o] / (pred_data[:, :, o] + scales2[n, 0, o])
+
+            plot_conf_int(ax[i], muteinC.astype(np.float), pred_data[:, 3, :], colors[j])
+    # plot experimental
+    for i, celltype in enumerate(cells):
+        for j, ligand in enumerate(ligand_order):
+            sns.scatterplot(x="Concentration", y="RFU", data=mutData.loc[(mutData["Cells"] == celltype) & (
+                mutData["Time"] == tpoint) & (mutData["Ligand"] == ligand)], ax=ax[i], s=10, color=colors[j], legend=False)
+            ax[i].set(xlabel=("Concentration (nM)"), ylabel="Activity", title=celltype, ylim=(0, bounds[i]))
+            ax[i].set_xscale('log')
+            ax[i].set_xlim(10e-5, 10e1)
+            ax[i].set_xticks([10e-5, 10e-3, 10e-1, 10e1])

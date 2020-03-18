@@ -1,6 +1,7 @@
 """
 This file contains functions that are used in multiple figures.
 """
+from string import ascii_uppercase
 from os.path import join, dirname
 import seaborn as sns
 import numpy as np
@@ -90,10 +91,20 @@ def plot_R2X(ax, tensor, factors_list):
     ax.set_xticklabels(np.arange(1, len(factors_list) + 1))
 
 
-def subplotLabel(ax, letter, hstretch=1):
-    """ Label each subplot """
-    ax.text(-0.2 / hstretch, 1.2, letter, transform=ax.transAxes,
-            fontsize=16, fontweight='bold', va='top')
+def subplotLabel(axs, hstretch=None):
+    """ Place subplot labels on figure. """
+    if hstretch is None:
+        hstretch = {}
+
+    for ii, ax in enumerate(axs):
+        hh = hstretch[ii] if ii in hstretch.keys() else 1.0
+
+        if ii < 26:
+            letter = ascii_uppercase[ii]
+        else:
+            letter = 'A' + ascii_uppercase[ii - 26]
+
+        ax.text(-0.2 / hh, 1.2, letter, transform=ax.transAxes, fontsize=16, fontweight="bold", va="top")
 
 
 def traf_names():
@@ -116,8 +127,12 @@ def plot_conf_int(ax, x_axis, y_axis, color, label=None):
 
 def plot_cells(ax, factors, component_x, component_y, cell_names, legend=True):
     """This function plots the combination decomposition based on cell type."""
-    colors = cm.rainbow(np.linspace(0, 1, len(cell_names)))
-    markersCells = ['^', '*', 'D', 's', 'X', 'o', '4', 'H', 'P', '*', 'D', 's', 'X']
+    colors = cm.rainbow(np.linspace(0, 1, 10))
+    if len(cell_names) == 10:
+        markersCells = ['^', '*', 'D', 's', 'X', 'o', '4', 'H', 'P', '*', 'D', 's', 'X']
+    else:
+        markersCells = ['*', '*', '4', '^', 'P', 'o', 'H', 'X']
+        colors = [colors[1], colors[9], colors[6], colors[0], colors[8], colors[5], colors[7], colors[4]]
 
     for ii, _ in enumerate(factors[:, component_x - 1]):
         ax.scatter(factors[ii, component_x - 1], factors[ii, component_y - 1], c=[colors[ii]], marker=markersCells[ii], label=cell_names[ii])
@@ -139,7 +154,7 @@ def plot_ligand_comp(ax, factors, component_x, component_y, ligand_names):
         Comp2[ii] = factors[ii, component_y - 1]
 
     CompDF = pds.DataFrame({'Comp1': Comp1, 'Comp2': Comp2, 'Ligand': ligand_names})
-    sns.scatterplot(x='Comp1', y='Comp2', data=CompDF, hue="Ligand", palette=sns.color_palette("husl", 8), legend='full', ax=ax)
+    sns.scatterplot(x='Comp1', y='Comp2', data=CompDF, hue="Ligand", palette=sns.color_palette("husl", 6), legend='full', ax=ax)
     ax.set_title('Ligands')
     ax.set_xlabel('Component ' + str(component_x))
     ax.set_ylabel('Component ' + str(component_y))
@@ -161,7 +176,7 @@ def overlayCartoon(figFile, cartoonFile, x, y, scalee=1, scale_x=1, scale_y=1):
     template.save(figFile)
 
 
-def plot_ligands(ax, factors, ligand_names, cutoff=0.0):
+def plot_ligands(ax, factors, ligand_names, cutoff=0.0, compLabel=True):
     """Function to put all ligand decomposition plots in one figure."""
     ILs, _, _, _, _ = import_pstat()  # Cytokine stimulation concentrations in nM
     n_ligands = len(ligand_names)
@@ -174,12 +189,13 @@ def plot_ligands(ax, factors, ligand_names, cutoff=0.0):
         legend_shape.append(Line2D([0], [0], color='k', marker=markers[ii], label=name, linestyle=''))  # Make ligand legend elements
 
     for ii in range(factors.shape[1]):
-        componentLabel = True
+        componentLabel = bool(compLabel)
+
         for jj in range(n_ligands):
             idx = range(jj * len(ILs), (jj + 1) * len(ILs))
 
             # If the component value never gets over cutoff, then don't plot the line
-            if np.max(factors[idx, ii]) > cutoff:
+            if np.linalg.norm(factors[idx, ii]) > cutoff:
                 if componentLabel:
                     ax.plot(ILs, factors[idx, ii], color=colors[ii], label='Cmp. ' + str(ii + 1))
                     componentLabel = False
@@ -193,7 +209,7 @@ def plot_ligands(ax, factors, ligand_names, cutoff=0.0):
     ax.set_ylabel('Component')
     ax.set_xscale('log')
     ax.set_title('Ligands')
-    ax.set_xticks(np.array([10e-4, 10e-2, 10e0, 10e2]))
+    ax.set_xticks(np.array([10e-5, 10e-3, 10e-1, 10e1]))
 
     # Place legend
     ax.legend(loc=6)
@@ -486,36 +502,6 @@ def catplot_comparison(ax, df, legend=False, Mut=True):
     triangle = Line2D([], [], color='black', marker='^', linestyle='None', markersize=6, label='Predicted')
     handles.append(circle)
     handles.append(triangle)
-    ax.legend(handles=handles)
-
-
-def Par_Plot_comparison(ax, df):
-    """ Construct EC50 parallel coordinate plots for Different ligands. """
-    # set a manual color palette
-    df = df.replace(['IL-2', 'IL-15'], ['WT IL2', 'WT IL15'])
-    df = df.sort_values(by=['Data Type', 'CellType', 'IL', 'Time Point'])
-
-    expEC50s, predEC50s = pds.DataFrame(columns=['IL', 'NK', 'CD8+', 'T-reg', 'Naive Treg', 'Mem Treg', 'T-helper', 'Naive Th', 'Mem Th']
-                                        ), pds.DataFrame(columns=['IL', 'NK', 'CD8+', 'T-reg', 'Naive Treg', 'Mem Treg', 'T-helper', 'Naive Th', 'Mem Th'])
-
-    for j, ligand in enumerate(df.IL.unique()):
-        expEC50s.loc[j, ['IL']], predEC50s.loc[j, ['IL']] = ligand, ligand
-        for cellname in df.CellType.unique():
-            exp50 = df["EC-50"].loc[(df['Time Point'] == 60.) & (df['IL'] == ligand) & (df['CellType'] == cellname) & (df['Data Type'] == 'Experimental')]
-            expEC50s.loc[j, [str(cellname)]] = exp50.to_numpy()
-            pred50 = df["EC-50"].loc[(df['Time Point'] == 60.) & (df['IL'] == ligand) & (df['CellType'] == cellname) & (df['Data Type'] == 'Predicted')]
-            predEC50s.loc[j, [str(cellname)]] = pred50.to_numpy()
-
-    pds.plotting.parallel_coordinates(expEC50s, 'IL', ax=ax, color=sns.color_palette("husl", 8))
-    pds.plotting.parallel_coordinates(predEC50s, 'IL', ax=ax, linestyle=':', color=sns.color_palette("husl", 8))
-    ax.set_xticklabels(ax.get_xticklabels(), rotation=40, fontsize=6.8, rotation_mode="anchor", ha="right")
-
-    handles = []
-    ax.set_ylabel(r"EC-50 (log$_{10}$[nM])")
-    dotted = Line2D([], [], color='black', marker='.', linestyle='None', markersize=6, label='Predicted')
-    line = Line2D([], [], color='black', marker='_', linestyle='None', markersize=6, label='Experimental')
-    handles.append(line)
-    handles.append(dotted)
     ax.legend(handles=handles)
 
 
