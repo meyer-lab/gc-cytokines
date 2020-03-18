@@ -38,8 +38,8 @@ def makeFigure():
     catplot_receptors(ax[0], data)
 
     # Blank out for the cartoon
-    ax[3].axis('off')
-    ax[4].axis('off')
+    ax[3].axis("off")
+    ax[4].axis("off")
 
     plot_R2X(ax[5], values, factors_activity)
 
@@ -58,11 +58,11 @@ def makeFigure():
     ax[8].set_ylim(bottom=-0.03)
     legend = ax[7].get_legend()
     labels = (x.get_text() for x in legend.get_texts())
-    ax[4].legend(legend.legendHandles, labels, loc='center right', prop={"size": 9})
+    ax[4].legend(legend.legendHandles, labels, loc="center right", prop={"size": 9})
     ax[7].get_legend().remove()
     ax[8].get_legend().remove()
-    ax[5].set_ylabel('Variance of Model\nOutput Explained', fontsize=8, multialignment='center')
-    plot_ligands(ax[9], tl.to_numpy(factors_activ[2]), ligand_names=['IL-2', 'IL-15', 'IL-7'], cutoff=5.0, compLabel=False)
+    ax[5].set_ylabel("Variance of Model\nOutput Explained", fontsize=8, multialignment="center")
+    plot_ligands(ax[9], tl.to_numpy(factors_activ[2]), ligand_names=["IL-2", "IL-15", "IL-7"], cutoff=5.0, compLabel=False)
 
     return f
 
@@ -71,10 +71,8 @@ def catplot_receptors(ax, datas):
     """Plot Bar graph for Receptor Expression Data. """
     sns.catplot(x="Cell Type", y="Count", hue="Receptor", data=datas, ci=68, ax=ax, kind="point", join=False, scale=0.5, dodge=True, estimator=sp.stats.gmean)
     ax.set_ylabel("Surface Receptor (#/cell)")
-    ax.set_xticklabels(ax.get_xticklabels(),
-                       rotation=25, rotation_mode="anchor", ha="right",
-                       position=(0, 0.02), fontsize=7.5)
-    ax.set_yscale('log')
+    ax.set_xticklabels(ax.get_xticklabels(), rotation=25, rotation_mode="anchor", ha="right", position=(0, 0.02), fontsize=7.5)
+    ax.set_yscale("log")
     ax.set_ylim(bottom=1)
 
 
@@ -87,22 +85,22 @@ def PCA_receptor(ax, cell_name, datas):
     expVar = pca.explained_variance_ratio_
 
     colors = cm.rainbow(np.linspace(0, 1, len(cell_name)))
-    markersCells = ['^', '*', 'D', 's', 'X', 'o', '4', 'H', 'P', '*', 'D', 's', 'X']
+    markersCells = ["^", "*", "D", "s", "X", "o", "4", "H", "P", "*", "D", "s", "X"]
 
     for ii in range(scores.shape[0]):
         ax[0].scatter(scores[ii, 0], scores[ii, 1], c=[colors[ii]], marker=markersCells[ii], label=cell_name[ii])
 
     for kk in range(loadings.shape[1]):
         if kk == 3:
-            ax[1].scatter(0, 0, s=16, label='IL-15Ra')
+            ax[1].scatter(0, 0, s=16, label="IL-15Ra")
         ax[1].scatter(loadings[0, kk], loadings[1, kk], s=16)
 
-    ax[0].set_title('Scores')
+    ax[0].set_title("Scores")
     set_bounds(ax[0])
-    ax[0].set_xlabel('PC1 (' + str(round(expVar[0] * 100)) + '%)')
-    ax[0].set_ylabel('PC2 (' + str(round(expVar[1] * 100)) + '%)')
+    ax[0].set_xlabel("PC1 (" + str(round(expVar[0] * 100)) + "%)")
+    ax[0].set_ylabel("PC2 (" + str(round(expVar[1] * 100)) + "%)")
 
-    ax[1].set_title('Loadings')
+    ax[1].set_title("Loadings")
     set_bounds(ax[1])
-    ax[1].set_xlabel('PC1 (' + str(round(expVar[0] * 100)) + '%)')
-    ax[1].set_ylabel('PC2 (' + str(round(expVar[1] * 100)) + '%)')
+    ax[1].set_xlabel("PC1 (" + str(round(expVar[0] * 100)) + "%)")
+    ax[1].set_ylabel("PC2 (" + str(round(expVar[1] * 100)) + "%)")

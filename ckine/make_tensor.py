@@ -26,11 +26,7 @@ def meshprep():
     # Make mesh grid of all ligand concentrations, First is IL-2 WT, Third is IL-15; Fourth is IL7
     # Set interleukins other than IL2&15 to zero. Should be of shape 3(IL2,mutIL2,IL15)*(len(ILs)) by 6 (6 for all ILs)
     concMesh = np.vstack(
-        (
-            np.array(np.meshgrid(ILs, 0, 0, 0, 0, 0)).T.reshape(-1, 6),
-            np.array(np.meshgrid(0, ILs, 0, 0, 0, 0)).T.reshape(-1, 6),
-            np.array(np.meshgrid(0, 0, ILs, 0, 0, 0)).T.reshape(-1, 6),
-        )
+        (np.array(np.meshgrid(ILs, 0, 0, 0, 0, 0)).T.reshape(-1, 6), np.array(np.meshgrid(0, ILs, 0, 0, 0, 0)).T.reshape(-1, 6), np.array(np.meshgrid(0, 0, ILs, 0, 0, 0)).T.reshape(-1, 6))
     )
     # Repeat the cytokine stimulations (concMesh) an X amount of times where X here is number of cells (12).
     # Just stacks up concMesh on top of each other 10 times (or however many cells are available)
@@ -69,7 +65,7 @@ def make_tensor():
 
     values = np.tensordot(y_of_combos, getTotalActiveSpecies(), (1, 0))
 
-    tensor3D = values.reshape((-1, len(concMesh), len(cell_names)), order='F')
+    tensor3D = values.reshape((-1, len(concMesh), len(cell_names)), order="F")
     tensor3D = np.swapaxes(tensor3D, 1, 2)
 
     return tensor3D, Conc_recept_cell, concMesh, concMesh_stacked, cell_names

@@ -37,7 +37,7 @@ def makeFigure():
     factors = out[1]
     plot_timepoints(ax[0], tensor_time, tl.to_numpy(factors[0]))
     plot_cells(ax[1], tl.to_numpy(factors[1]), 1, 2, cell_names)
-    plot_ligands(ax[2], tl.to_numpy(factors[2]), ligand_names=['IL-2', 'IL-15', 'IL-7'])
+    plot_ligands(ax[2], tl.to_numpy(factors[2]), ligand_names=["IL-2", "IL-15", "IL-7"])
 
     # Blank out
     ax[5].axis("off")
@@ -48,6 +48,6 @@ def makeFigure():
 def plot_core(ax, core):
     """Generate heatmaps for the core tensor."""
     # Begin by unfolding the core tensor on its 3 faces.
-    sns.heatmap(np.squeeze(core), cmap="YlGnBu", cbar=True, ax=ax, annot=True, square=True, fmt='.1f', xticklabels=['1', '2', '3'], yticklabels=['1', '2'])
+    sns.heatmap(np.squeeze(core), cmap="YlGnBu", cbar=True, ax=ax, annot=True, square=True, fmt=".1f", xticklabels=["1", "2", "3"], yticklabels=["1", "2"])
     ax.set_xlabel("Ligands")
     ax.set_ylabel("Cells")

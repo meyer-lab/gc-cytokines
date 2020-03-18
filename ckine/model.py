@@ -179,7 +179,7 @@ def getActiveCytokine(cytokineIDX, yVec):
 def getTotalActiveCytokine(cytokineIDX, yVec):
     """ Get amount of surface and endosomal active species. """
     assert yVec.ndim == 1
-    return getActiveCytokine(cytokineIDX, yVec[0:__halfL]) + __internalStrength * getActiveCytokine(cytokineIDX, yVec[__halfL: __halfL * 2])
+    return getActiveCytokine(cytokineIDX, yVec[0:__halfL]) + __internalStrength * getActiveCytokine(cytokineIDX, yVec[__halfL : __halfL * 2])
 
 
 def surfaceReceptors(y):
@@ -197,7 +197,7 @@ def surfaceReceptors(y):
 
 def totalReceptors(yVec):
     """This function takes in a vector y and returns the amounts of all 8 receptors in both cell compartments"""
-    return surfaceReceptors(yVec) + __internalStrength * surfaceReceptors(yVec[__halfL: __halfL * 2])
+    return surfaceReceptors(yVec) + __internalStrength * surfaceReceptors(yVec[__halfL : __halfL * 2])
 
 
 def receptor_expression(receptor_abundance, endo, kRec, sortF, kDeg):
@@ -220,32 +220,32 @@ def getparamsdict(rxntfr):
     rd = OrderedDict()
 
     kfbnd = 0.60
-    rd['IL2'], rd['IL15'], rd['IL7'], rd['IL9'], rd['IL4'], rd['IL21'], rd['kfwd'] = tuple(rxntfr[0:7])
-    rd['surf.k1rev'] = kfbnd * 10.0  # 7
-    rd['surf.k2rev'] = kfbnd * 144.0
-    rd['surf.k4rev'], rd['surf.k5rev'] = rxntfr[7], rxntfr[8]  # 9 #10
-    rd['surf.k10rev'] = 12.0 * rd['surf.k5rev'] / 1.5
-    rd['surf.k11rev'] = 63.0 * rd['surf.k5rev'] / 1.5
-    rd['surf.k13rev'] = kfbnd * 0.065
-    rd['surf.k14rev'] = kfbnd * 438.0
-    rd['surf.k16rev'] = rxntfr[9]
-    rd['surf.k17rev'] = rxntfr[10]  # 16
-    rd['surf.k22rev'] = rxntfr[11]
-    rd['surf.k23rev'] = rxntfr[12]
-    rd['surf.k25rev'] = kfbnd * 59.0
-    rd['surf.k27rev'] = rxntfr[13]
-    rd['surf.k29rev'] = kfbnd * 0.1
-    rd['surf.k31rev'] = rxntfr[14]
-    rd['surf.k32rev'] = kfbnd * 1.0
-    rd['surf.k33rev'] = rxntfr[15]
-    rd['surf.k34rev'] = kfbnd * 0.07
-    rd['surf.k35rev'] = rxntfr[16]
+    rd["IL2"], rd["IL15"], rd["IL7"], rd["IL9"], rd["IL4"], rd["IL21"], rd["kfwd"] = tuple(rxntfr[0:7])
+    rd["surf.k1rev"] = kfbnd * 10.0  # 7
+    rd["surf.k2rev"] = kfbnd * 144.0
+    rd["surf.k4rev"], rd["surf.k5rev"] = rxntfr[7], rxntfr[8]  # 9 #10
+    rd["surf.k10rev"] = 12.0 * rd["surf.k5rev"] / 1.5
+    rd["surf.k11rev"] = 63.0 * rd["surf.k5rev"] / 1.5
+    rd["surf.k13rev"] = kfbnd * 0.065
+    rd["surf.k14rev"] = kfbnd * 438.0
+    rd["surf.k16rev"] = rxntfr[9]
+    rd["surf.k17rev"] = rxntfr[10]  # 16
+    rd["surf.k22rev"] = rxntfr[11]
+    rd["surf.k23rev"] = rxntfr[12]
+    rd["surf.k25rev"] = kfbnd * 59.0
+    rd["surf.k27rev"] = rxntfr[13]
+    rd["surf.k29rev"] = kfbnd * 0.1
+    rd["surf.k31rev"] = rxntfr[14]
+    rd["surf.k32rev"] = kfbnd * 1.0
+    rd["surf.k33rev"] = rxntfr[15]
+    rd["surf.k34rev"] = kfbnd * 0.07
+    rd["surf.k35rev"] = rxntfr[16]
 
-    for ii in ('1', '2', '4', '5', '10', '11', '13', '14', '16', '17', '22', '23', '25', '27', '29', '31', '32', '33', '34', '35'):
-        rd['endo.k' + ii + 'rev'] = rd['surf.k' + ii + 'rev'] * 5.0
+    for ii in ("1", "2", "4", "5", "10", "11", "13", "14", "16", "17", "22", "23", "25", "27", "29", "31", "32", "33", "34", "35"):
+        rd["endo.k" + ii + "rev"] = rd["surf.k" + ii + "rev"] * 5.0
 
-    rd['endo'], rd['activeEndo'], rd['sortF'], rd['kRec'], rd['kDeg'] = tuple(rxntfr[17:22])
-    rd['Rexpr_2Ra'], rd['Rexpr_2Rb'], rd['Rexpr_gc'], rd['Rexpr_15Ra'], rd['Rexpr_7R'], rd['Rexpr_9R'], rd['Rexpr_4Ra'], rd['Rexpr_21Ra'] = tuple(rxntfr[22:30])
+    rd["endo"], rd["activeEndo"], rd["sortF"], rd["kRec"], rd["kDeg"] = tuple(rxntfr[17:22])
+    rd["Rexpr_2Ra"], rd["Rexpr_2Rb"], rd["Rexpr_gc"], rd["Rexpr_15Ra"], rd["Rexpr_7R"], rd["Rexpr_9R"], rd["Rexpr_4Ra"], rd["Rexpr_21Ra"] = tuple(rxntfr[22:30])
 
     return rd
 
@@ -268,14 +268,7 @@ def getRateVec(rxntfr):
     return FullRateVec
 
 
-mutaff = {
-    'WT N-term': [0.19, 5.296],
-    'WT C-term': [0.54, 3.043],
-    'V91K C-term': [0.69, 7.5586],
-    'R38Q N-term': [0.71, 3.9949],
-    'F42Q N-Term': [9.48, 2.815],
-    'N88D C-term': [1.01, 24.0166]
-}
+mutaff = {"WT N-term": [0.19, 5.296], "WT C-term": [0.54, 3.043], "V91K C-term": [0.69, 7.5586], "R38Q N-term": [0.71, 3.9949], "F42Q N-Term": [9.48, 2.815], "N88D C-term": [1.01, 24.0166]}
 
 
 def getMutAffDict():

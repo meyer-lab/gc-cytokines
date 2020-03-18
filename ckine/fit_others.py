@@ -21,27 +21,28 @@ class IL4_7_activity:  # pylint: disable=too-few-public-methods
         dataIL7 = pds.read_csv(join(path, "./data/Gonnord_S3C.csv")).values  # imports IL7 file into pandas array
 
         # units are converted from pg/mL to nM
-        self.cytokC_4 = np.array([5., 50., 500., 5000., 50000., 250000.]) / 14900.  # 14.9 kDa according to sigma aldrich
-        self.cytokC_7 = np.array([1., 10., 100., 1000., 10000., 100000.]) / 17400.  # 17.4 kDa according to prospec bio
+        self.cytokC_4 = np.array([5.0, 50.0, 500.0, 5000.0, 50000.0, 250000.0]) / 14900.0  # 14.9 kDa according to sigma aldrich
+        self.cytokC_7 = np.array([1.0, 10.0, 100.0, 1000.0, 10000.0, 100000.0]) / 17400.0  # 17.4 kDa according to prospec bio
 
         self.cytokM = np.zeros((self.cytokC_4.size * 2, 6), dtype=np.float64)
-        self.cytokM[0:self.cytokC_4.size, 4] = self.cytokC_4
-        self.cytokM[self.cytokC_4.size::, 2] = self.cytokC_7
+        self.cytokM[0 : self.cytokC_4.size, 4] = self.cytokC_4
+        self.cytokM[self.cytokC_4.size : :, 2] = self.cytokC_7
 
         IL4_data_max = np.amax(np.concatenate((dataIL4[:, 1], dataIL4[:, 2])))
         IL7_data_max = np.amax(np.concatenate((dataIL7[:, 1], dataIL7[:, 2])))
-        self.fit_data = np.concatenate((dataIL4[:, 1] / IL4_data_max, dataIL4[:, 2] / IL4_data_max, dataIL7[:, 1] / IL7_data_max,
-                                        dataIL7[:, 2] / IL7_data_max))  # measurements ARE normalized to max of own species
+        self.fit_data = np.concatenate(
+            (dataIL4[:, 1] / IL4_data_max, dataIL4[:, 2] / IL4_data_max, dataIL7[:, 1] / IL7_data_max, dataIL7[:, 2] / IL7_data_max)
+        )  # measurements ARE normalized to max of own species
 
     def calc(self, unkVec, scales):
         """ Simulate the experiment with different ligand stimulations and compare with experimental data. """
-        Op = runCkineDoseOp(tt=np.array(10.), condense=getTotalActiveSpecies().astype(np.float64), conditions=self.cytokM)
+        Op = runCkineDoseOp(tt=np.array(10.0), condense=getTotalActiveSpecies().astype(np.float64), conditions=self.cytokM)
 
         # Run the experiment
         outt = Op(unkVec)
 
-        actVecIL4 = outt[0:self.cytokC_4.size]
-        actVecIL7 = outt[self.cytokC_4.size:self.cytokC_4.size * 2]
+        actVecIL4 = outt[0 : self.cytokC_4.size]
+        actVecIL7 = outt[self.cytokC_4.size : self.cytokC_4.size * 2]
 
         # incorporate IC50 scale
         actVecIL4 = actVecIL4 / (actVecIL4 + scales[0])
@@ -62,16 +63,16 @@ class crosstalk:  # pylint: disable=too-few-public-methods
     """ This class performs the calculations necessary in order to fit our model to Gonnord Fig S3D. """
 
     def __init__(self):
-        self.ts = np.array([10.])  # was 10. in literature
+        self.ts = np.array([10.0])  # was 10. in literature
         self.cytokM = np.zeros((2, 6), dtype=np.float64)
-        self.cytokM[0, 4] = 100. / 14900.  # concentration used for IL4 stimulation
-        self.cytokM[1, 2] = 50. / 17400.  # concentration used for IL7 stimulation
+        self.cytokM[0, 4] = 100.0 / 14900.0  # concentration used for IL4 stimulation
+        self.cytokM[1, 2] = 50.0 / 17400.0  # concentration used for IL7 stimulation
 
         path = os.path.dirname(os.path.abspath(__file__))
         data = pds.read_csv(join(path, "./data/Gonnord_S3D.csv")).values
-        self.fit_data = np.concatenate((data[:, 1], data[:, 2], data[:, 3], data[:, 6], data[:, 7], data[:, 8])) / 100.
-        self.pre_IL7 = data[:, 0] / 17400.  # concentrations of IL7 used as pretreatment
-        self.pre_IL4 = data[:, 5] / 14900.  # concentrations of IL4 used as pretreatment
+        self.fit_data = np.concatenate((data[:, 1], data[:, 2], data[:, 3], data[:, 6], data[:, 7], data[:, 8])) / 100.0
+        self.pre_IL7 = data[:, 0] / 17400.0  # concentrations of IL7 used as pretreatment
+        self.pre_IL4 = data[:, 5] / 14900.0  # concentrations of IL4 used as pretreatment
 
     def singleCalc(self, unkVec, pre_cytokine, pre_conc, stim_cytokine, stim_conc):
         """ This function generates the active vector for a given unkVec, cytokine used for inhibition and concentration of pretreatment cytokine. """
@@ -80,7 +81,7 @@ class crosstalk:  # pylint: disable=too-few-public-methods
         # create ligands array for stimulation at t=0
         ligands = np.zeros((1, 6))
         ligands[0, stim_cytokine] = stim_conc
-        ligands[0, pre_cytokine] = pre_conc    # assume pretreatment ligand stays constant
+        ligands[0, pre_cytokine] = pre_conc  # assume pretreatment ligand stays constant
 
         prelig = np.zeros(6)
         prelig[pre_cytokine] = pre_conc
@@ -100,7 +101,7 @@ class crosstalk:  # pylint: disable=too-few-public-methods
         return outt[0]  # only look at active species associated with stimulation cytokine
 
     def singleCalc_no_pre(self, unkVec):
-        ''' This function generates the active vector for a given unkVec, cytokine, and concentration. '''
+        """ This function generates the active vector for a given unkVec, cytokine, and concentration. """
         Op = runCkineDoseOp(tt=self.ts, condense=getTotalActiveSpecies().astype(np.float64), conditions=self.cytokM)
 
         # Run the experiment
@@ -130,9 +131,9 @@ class crosstalk:  # pylint: disable=too-few-public-methods
         actVec_IL4stim = actVec_IL4stim / (actVec_IL4stim + scales[0])
         actVec_IL7stim = actVec_IL7stim / (actVec_IL7stim + scales[1])
 
-        case1 = (1 - (actVec_IL4stim / IL4stim_no_pre))    # % inhibition of IL4 act. after IL7 pre.
-        case2 = (1 - (actVec_IL7stim / IL7stim_no_pre))    # % inhibition of IL7 act. after IL4 pre.
-        inh_vec = T.concatenate((case1, case1, case1, case2, case2, case2))   # mimic order of CSV file
+        case1 = 1 - (actVec_IL4stim / IL4stim_no_pre)  # % inhibition of IL4 act. after IL7 pre.
+        case2 = 1 - (actVec_IL7stim / IL7stim_no_pre)  # % inhibition of IL7 act. after IL4 pre.
+        inh_vec = T.concatenate((case1, case1, case1, case2, case2, case2))  # mimic order of CSV file
 
         return inh_vec - self.fit_data
 
@@ -154,12 +155,12 @@ class build_model:
             kfwd, endo, activeEndo, kRec, kDeg, sortF = commonTraf()
             nullRates = T.ones(6, dtype=np.float64)  # associated with IL2 and IL15
             Tone = T.ones(1, dtype=np.float64)
-            k27rev = pm.Lognormal('k27rev', mu=np.log(0.1), sd=1, shape=1)  # associated with IL7
-            k33rev = pm.Lognormal('k33rev', mu=np.log(0.1), sd=1, shape=1)  # associated with IL4
+            k27rev = pm.Lognormal("k27rev", mu=np.log(0.1), sd=1, shape=1)  # associated with IL7
+            k33rev = pm.Lognormal("k33rev", mu=np.log(0.1), sd=1, shape=1)  # associated with IL4
 
             # constant according to measured number per cell. gc, blank, IL7R, blank, IL4R
-            Rexpr = (np.array([0., 0., 328., 0., 2591., 0., 254., 0.]) * endo) / (1. + ((kRec * (1. - sortF)) / (kDeg * sortF)))
-            scales = pm.Lognormal('scales', mu=np.log(100.), sd=1, shape=2)  # create scaling constants for activity measurements
+            Rexpr = (np.array([0.0, 0.0, 328.0, 0.0, 2591.0, 0.0, 254.0, 0.0]) * endo) / (1.0 + ((kRec * (1.0 - sortF)) / (kDeg * sortF)))
+            scales = pm.Lognormal("scales", mu=np.log(100.0), sd=1, shape=2)  # create scaling constants for activity measurements
 
             # indexing same as in model.hpp
             unkVec = T.concatenate((kfwd, nullRates, k27rev, Tone, k33rev, Tone, endo, activeEndo, sortF, kRec, kDeg, Rexpr))
@@ -167,16 +168,16 @@ class build_model:
             Y_int = self.act.calc(unkVec, scales)  # fitting the data based on act.calc for the given parameters
 
             sd_int = T.minimum(T.std(Y_int), 0.1)
-            pm.Deterministic('Y_int', T.sum(T.square(Y_int)))
-            pm.Normal('fitD_int', sd=sd_int, observed=Y_int)
+            pm.Deterministic("Y_int", T.sum(T.square(Y_int)))
+            pm.Normal("fitD_int", sd=sd_int, observed=Y_int)
 
             if self.pretreat is True:
-                Y_cross = self.cross.calc(unkVec, scales)   # fitting the data based on cross.calc
-                pm.Deterministic('Y_cross', T.sum(T.square(Y_cross)))
+                Y_cross = self.cross.calc(unkVec, scales)  # fitting the data based on cross.calc
+                pm.Deterministic("Y_cross", T.sum(T.square(Y_cross)))
                 sd_cross = T.minimum(T.std(Y_cross), 0.1)
-                pm.Normal('fitD_cross', sd=sd_cross, observed=Y_cross)  # the stderr is definitely less than 0.2
+                pm.Normal("fitD_cross", sd=sd_cross, observed=Y_cross)  # the stderr is definitely less than 0.2
 
             # Save likelihood
-            pm.Deterministic('logp', M.logpt)
+            pm.Deterministic("logp", M.logpt)
 
         return M

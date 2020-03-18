@@ -13,7 +13,7 @@ def import_Rexpr():
     """ Loads CSV file containing Rexpr levels from Visterra data. """
     data = pds.read_csv(join(path_here, "ckine/data/final_receptor_levels.csv"))  # Every row in the data represents a specific cell
 
-    with np.errstate(divide='ignore'):
+    with np.errstate(divide="ignore"):
         df = data.groupby(["Cell Type", "Receptor"]).agg(gmean)  # Get the mean receptor count for each cell across trials in a new dataframe.
 
     cell_names, receptor_names = df.index.unique().levels  # gc_idx=0|IL15Ra_idx=1|IL2Ra_idx=2|IL2Rb_idx=3
@@ -155,10 +155,10 @@ def import_pstat(combine_samples=True):
             zero_treatment = data[8 + (12 * i), 13]
             zero_treatment2 = data[8 + (12 * i), 30]
         # order of increasing time by cell type
-        IL2_data[4 * i: 4 * (i + 1), :] = np.flip(data[6 + (12 * i): 10 + (12 * i), 2:14].astype(np.float) - zero_treatment, 0)
-        IL2_data2[4 * i: 4 * (i + 1), :] = np.flip(data[6 + (12 * i): 10 + (12 * i), 19:31].astype(np.float) - zero_treatment2, 0)
-        IL15_data[4 * i: 4 * (i + 1), :] = np.flip(data[10 + (12 * i): 14 + (12 * i), 2:14].astype(np.float) - zero_treatment, 0)
-        IL15_data2[4 * i: 4 * (i + 1), :] = np.flip(data[10 + (12 * i): 14 + (12 * i), 19:31].astype(np.float) - zero_treatment2, 0)
+        IL2_data[4 * i : 4 * (i + 1), :] = np.flip(data[6 + (12 * i) : 10 + (12 * i), 2:14].astype(np.float) - zero_treatment, 0)
+        IL2_data2[4 * i : 4 * (i + 1), :] = np.flip(data[6 + (12 * i) : 10 + (12 * i), 19:31].astype(np.float) - zero_treatment2, 0)
+        IL15_data[4 * i : 4 * (i + 1), :] = np.flip(data[10 + (12 * i) : 14 + (12 * i), 2:14].astype(np.float) - zero_treatment, 0)
+        IL15_data2[4 * i : 4 * (i + 1), :] = np.flip(data[10 + (12 * i) : 14 + (12 * i), 19:31].astype(np.float) - zero_treatment2, 0)
 
     if combine_samples is False:
         return ckineConc, cell_names, IL2_data, IL2_data2, IL15_data, IL15_data2
@@ -169,8 +169,15 @@ def import_pstat(combine_samples=True):
             IL2_data[i, j] = np.nanmean(np.array([IL2_data[i, j], IL2_data2[i, j]]))
             IL15_data[i, j] = np.nanmean(np.array([IL15_data[i, j], IL15_data2[i, j]]))
 
-    dataMean = pds.DataFrame({'Cells': np.tile(np.repeat(cell_names, 48), 2), 'Ligand': np.concatenate((np.tile(np.array('IL2'), 480), np.tile(np.array('IL15'), 480))),
-                              'Time': np.tile(np.repeat(tps, 12), 20), 'Concentration': np.tile(ckineConc, 80), 'RFU': np.concatenate((IL2_data.reshape(480,), IL15_data.reshape(480,)))})
+    dataMean = pds.DataFrame(
+        {
+            "Cells": np.tile(np.repeat(cell_names, 48), 2),
+            "Ligand": np.concatenate((np.tile(np.array("IL2"), 480), np.tile(np.array("IL15"), 480))),
+            "Time": np.tile(np.repeat(tps, 12), 20),
+            "Concentration": np.tile(ckineConc, 80),
+            "RFU": np.concatenate((IL2_data.reshape(480), IL15_data.reshape(480))),
+        }
+    )
 
     for conc in dataMean.Concentration.unique():
         dataMean = dataMean.replace({"Concentration": conc}, np.round(conc, decimals=9))

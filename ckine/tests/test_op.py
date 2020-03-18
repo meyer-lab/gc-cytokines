@@ -12,7 +12,7 @@ from ..model import nSpecies, nParams, rxParams, getTotalActiveSpecies
 
 def setupJacobian(Op, unk):
     """ Take an Op, and a vector at which to evaluate the Op. Pass back the return value and Jacobian. """
-    a = T.dvector('tempVar')
+    a = T.dvector("tempVar")
     fexpr = Op(a)
 
     # Calculate the Jacobian
@@ -33,33 +33,33 @@ class TestOp(unittest.TestCase):
         self.doseUnkV = self.unkV[6::]
         self.doseUnkVfull = self.unkVfull[6::]
         self.cond = np.full(nSpecies(), 0.1)
-        self.conditions = np.full((3, 6), 10.)
+        self.conditions = np.full((3, 6), 10.0)
         self.ts = np.logspace(-3, 3, num=10)
 
     def test_runCkineDoseOp(self):
         """ Verify the Jacobian passed back by runCkineDoseOp. """
-        theano.config.compute_test_value = 'ignore'
+        theano.config.compute_test_value = "ignore"
         Op = runCkineDoseOp(np.array(1.0), self.cond, self.conditions)
 
         utt.verify_grad(Op, [self.doseUnkV], abs_tol=0.01, rel_tol=0.01)
 
     def test_runCkineDoseOpFull(self):
         """ Verify the Jacobian passed back by runCkineDoseOp with full param set. """
-        theano.config.compute_test_value = 'ignore'
+        theano.config.compute_test_value = "ignore"
         Op = runCkineDoseOp(np.array(1.0), self.cond, self.conditions)
 
         utt.verify_grad(Op, [self.doseUnkVfull], abs_tol=0.01, rel_tol=0.01)
 
     def test_runCkineDoseTpsOp(self):
         """ Verify the Jacobian passed back by runCkineDoseOp. """
-        theano.config.compute_test_value = 'ignore'
+        theano.config.compute_test_value = "ignore"
         Op = runCkineDoseOp(self.ts, self.cond, self.conditions)
 
         utt.verify_grad(Op, [self.doseUnkV], abs_tol=0.01, rel_tol=0.01)
 
     def test_runCkineDoseTpsOpFull(self):
         """ Verify the Jacobian passed back by runCkineDoseOp. """
-        theano.config.compute_test_value = 'ignore'
+        theano.config.compute_test_value = "ignore"
         Op = runCkineDoseOp(self.ts, self.cond, self.conditions)
 
         utt.verify_grad(Op, [self.doseUnkVfull], abs_tol=0.01, rel_tol=0.01)
@@ -78,7 +78,7 @@ class TestOp(unittest.TestCase):
 
     def test_runCkineDoseOp_noActivity(self):
         """ Test that in the absence of ligand most values and gradients are zero. """
-        theano.config.compute_test_value = 'ignore'
+        theano.config.compute_test_value = "ignore"
         # Setup an Op for conditions with no ligand, looking at cytokine activity
         Op = runCkineDoseOp(np.array(10.0), getTotalActiveSpecies().astype(np.float64), np.zeros_like(self.conditions))
 

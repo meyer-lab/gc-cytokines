@@ -8,10 +8,10 @@ from ..tensor import find_R2X, perform_decomposition
 
 
 class TestModel(unittest.TestCase):
-    '''Test Class for Tensor related work.'''
+    """Test Class for Tensor related work."""
 
     def test_R2X(self):
-        '''Test to ensure R2X for higher components is larger.'''
+        """Test to ensure R2X for higher components is larger."""
         tensor = tl.tensor(np.random.rand(12, 10, 15))
         arr = []
         for i in range(1, 8):

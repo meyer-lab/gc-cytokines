@@ -28,17 +28,17 @@ def makeFigure():
     muteinC = dataMean.Concentration.unique()
     dataMean["Concentration"] = dataMean["Concentration"].astype(np.float)  # logscale for plotting
 
-    ligand_order = ['WT N-term', 'WT C-term', 'V91K C-term', 'R38Q N-term', 'F42Q N-Term', 'N88D C-term']
-    cell_order = ['NK', 'CD8+', 'T-reg', 'Naive Treg', 'Mem Treg', 'T-helper', 'Naive Th', 'Mem Th']
+    ligand_order = ["WT N-term", "WT C-term", "V91K C-term", "R38Q N-term", "F42Q N-Term", "N88D C-term"]
+    cell_order = ["NK", "CD8+", "T-reg", "Naive Treg", "Mem Treg", "T-helper", "Naive Th", "Mem Th"]
 
-    df = pd.DataFrame(columns=['Cells', 'Ligand', 'Time Point', 'Concentration', 'Activity Type', 'Replicate', 'Activity'])  # make empty dataframe for all cell types
+    df = pd.DataFrame(columns=["Cells", "Ligand", "Time Point", "Concentration", "Activity Type", "Replicate", "Activity"])  # make empty dataframe for all cell types
 
     # loop for each cell type and mutein
     for _, cell_name in enumerate(cell_order):
 
-        IL2Ra = data.loc[(data["Cell Type"] == cell_name) & (data["Receptor"] == 'IL-2R$\\alpha$'), "Count"].values[0]
-        IL2Rb = data.loc[(data["Cell Type"] == cell_name) & (data["Receptor"] == 'IL-2R$\\beta$'), "Count"].values[0]
-        gc = data.loc[(data["Cell Type"] == cell_name) & (data["Receptor"] == '$\\gamma_{c}$'), "Count"].values[0]
+        IL2Ra = data.loc[(data["Cell Type"] == cell_name) & (data["Receptor"] == "IL-2R$\\alpha$"), "Count"].values[0]
+        IL2Rb = data.loc[(data["Cell Type"] == cell_name) & (data["Receptor"] == "IL-2R$\\beta$"), "Count"].values[0]
+        gc = data.loc[(data["Cell Type"] == cell_name) & (data["Receptor"] == "$\\gamma_{c}$"), "Count"].values[0]
         receptors = np.array([IL2Ra, IL2Rb, gc]).astype(np.float)
 
         for _, ligand_name in enumerate(ligand_order):
@@ -57,23 +57,31 @@ def plot_expr_predM(ax, df, scales, cell_order, ligand_order, tps, muteinC):
     """ Plots experimental and scaled model-predicted dose response for all cell types, muteins, and time points. """
 
     pred_data = np.zeros((12, 4, unkVec_2_15.shape[1]))
-    cell_groups = [['T-reg', 'Mem Treg', 'Naive Treg'], ['T-helper', 'Mem Th', 'Naive Th'], ['NK'], ['CD8+']]
-    ylims = [50000., 30000., 2500., 3500.]
+    cell_groups = [["T-reg", "Mem Treg", "Naive Treg"], ["T-helper", "Mem Th", "Naive Th"], ["NK"], ["CD8+"]]
+    ylims = [50000.0, 30000.0, 2500.0, 3500.0]
 
     for i, cell_name in enumerate(cell_order):
         for j, ligand_name in enumerate(ligand_order):
             axis = i * 6 + j
 
             # plot experimental data
-            sns.scatterplot(x="Concentration", y="RFU", hue="Time", data=dataMean.loc[(dataMean["Cells"] == cell_name)
-                                                                                      & (dataMean["Ligand"] == ligand_name)], ax=ax[axis], s=10, palette=cm.rainbow, legend=False)
+            sns.scatterplot(
+                x="Concentration", y="RFU", hue="Time", data=dataMean.loc[(dataMean["Cells"] == cell_name) & (dataMean["Ligand"] == ligand_name)], ax=ax[axis], s=10, palette=cm.rainbow, legend=False
+            )
 
             # scale and plot model predictions
             for k, conc in enumerate(df.Concentration.unique()):
                 for l, tp in enumerate(tps):
                     for m in range(unkVec_2_15.shape[1]):
-                        pred_data[k, l, m] = df.loc[(df["Cells"] == cell_name) & (df["Ligand"] == ligand_name) & (
-                            df["Activity Type"] == 'predicted') & (df["Concentration"] == conc) & (df["Time Point"] == tp) & (df["Replicate"] == (m + 1)), "Activity"]
+                        pred_data[k, l, m] = df.loc[
+                            (df["Cells"] == cell_name)
+                            & (df["Ligand"] == ligand_name)
+                            & (df["Activity Type"] == "predicted")
+                            & (df["Concentration"] == conc)
+                            & (df["Time Point"] == tp)
+                            & (df["Replicate"] == (m + 1)),
+                            "Activity",
+                        ]
 
             for n, cell_names in enumerate(cell_groups):
                 if cell_name in cell_names:
@@ -95,5 +103,5 @@ def plot_dose_responseM(ax, mutein_activity, tps, muteinC, legend=False):
         else:
             plot_conf_int(ax, muteinC.astype(np.float), mutein_activity[:, tt, :], colors[tt], (tps[tt] / 60.0).astype(str))
             ax.legend(title="time (hours)")
-    ax.set_xscale('log')
+    ax.set_xscale("log")
     ax.set_xticks(np.array([10e-5, 10e-3, 10e-1, 10e1]))

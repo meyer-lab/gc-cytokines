@@ -53,8 +53,8 @@ def plot_exp_v_pred(ax, cell_subset=None):
                 plot_dose_response(ax[axis], ax[axis + shift], IL2_activity[m, :, :, :], IL15_activity[m, :, :, :], name, tps, ckineConc, legend=True)
             else:
                 plot_dose_response(ax[axis], ax[axis + shift], IL2_activity[m, :, :, :], IL15_activity[m, :, :, :], name, tps, ckineConc)
-            plot_scaled_pstat(ax[axis], ckineConc.astype(np.float), IL2_data[(m * 4): ((m + 1) * 4)])
-            plot_scaled_pstat(ax[axis + shift], ckineConc.astype(np.float), IL15_data[(m * 4): ((m + 1) * 4)])
+            plot_scaled_pstat(ax[axis], ckineConc.astype(np.float), IL2_data[(m * 4) : ((m + 1) * 4)])
+            plot_scaled_pstat(ax[axis + shift], ckineConc.astype(np.float), IL15_data[(m * 4) : ((m + 1) * 4)])
             axis = axis + 1
 
 
@@ -77,8 +77,8 @@ def plot_dose_response(ax2, ax15, IL2_activity, IL15_activity, cell_type, tps, c
     ax2.set_xlabel(r"[IL-2] Concentration (nM)", fontsize=8)
     ax15.set(ylabel="Activity", title=cell_type)
     ax15.set_xlabel(r"[IL-15] Concentration (nM)", fontsize=8)
-    ax2.set_xscale('log')
-    ax15.set_xscale('log')
+    ax2.set_xscale("log")
+    ax15.set_xscale("log")
     ax2.set_xlim(10e-5, 10e1)
     ax15.set_xlim(10e-5, 10e1)
     ax2.set_xticks(np.array([10e-5, 10e-3, 10e-1, 10e1]))

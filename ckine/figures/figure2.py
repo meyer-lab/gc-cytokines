@@ -88,7 +88,7 @@ def pstat_plot(ax, unkVec, scales):
     output = pstat_calc(unkVec, scales, cytokC_common)  # run simulation
     # split according to cytokine and transpose for input into plot_conf_int
     IL4_output = output[0:K].T
-    IL7_output = output[K: (K * 2)].T
+    IL7_output = output[K : (K * 2)].T
 
     # plot confidence intervals based on model predictions
     plot_conf_int(ax, cytokC_common, IL4_output * 100.0, "powderblue", "IL-4 stim.")
@@ -99,8 +99,8 @@ def pstat_plot(ax, unkVec, scales):
     ax.scatter(cytokC_4, (dataIL4[:, 2] / IL4_data_max) * 100.0, color="powderblue", marker="^", edgecolors="k", zorder=200)
     ax.scatter(cytokC_7, (dataIL7[:, 1] / IL7_data_max) * 100.0, color="b", marker="^", edgecolors="k", zorder=300)
     ax.scatter(cytokC_7, (dataIL7[:, 2] / IL7_data_max) * 100.0, color="b", marker="^", edgecolors="k", zorder=400)
-    ax.set(ylabel="pSTAT5/6 (% of max)", xlabel='Ligand Concentration (nM)', title="Activity")
-    ax.set_xscale('log')
+    ax.set(ylabel="pSTAT5/6 (% of max)", xlabel="Ligand Concentration (nM)", title="Activity")
+    ax.set_xscale("log")
     ax.set_xticks([10e-5, 10e-3, 10e-1, 10e1])
 
 
@@ -223,12 +223,12 @@ def plot_pretreat(ax, unkVec, scales, title):
     output = pretreat_calc(unkVec, scales, pre_conc)  # run simulation
     # split according to cytokine and transpose so it works with plot_conf_int
     IL4_stim = output[0:K].T
-    IL7_stim = output[K: (K * 2)].T
+    IL7_stim = output[K : (K * 2)].T
 
     plot_conf_int(ax, pre_conc, IL4_stim * 100.0, "powderblue")
     plot_conf_int(ax, pre_conc, IL7_stim * 100.0, "b")
     ax.set(title=title)
-    ax.set_xlabel('Pretreatment Ligand Concentration (nM)')
+    ax.set_xlabel("Pretreatment Ligand Concentration (nM)")
     ax.set_ylabel("Inhibition (% of no pretreat)")
 
     # add experimental data to plots
@@ -238,7 +238,7 @@ def plot_pretreat(ax, unkVec, scales, title):
     ax.scatter(IL4_pretreat_conc, data[:, 6], color="b", zorder=103, marker="^", edgecolors="k")
     ax.scatter(IL4_pretreat_conc, data[:, 7], color="b", zorder=104, marker="^", edgecolors="k")
     ax.scatter(IL4_pretreat_conc, data[:, 8], color="b", zorder=105, marker="^", edgecolors="k")
-    ax.set_xscale('log')
+    ax.set_xscale("log")
     ax.set_xticks([10e-5, 10e-2, 10e0])
 
 
@@ -248,7 +248,7 @@ def surf_gc(ax, cytokC_pg, unkVec):
     ts = np.linspace(0.0, 100.0, num=PTS)
     output = calc_surf_gc(ts, cytokC_pg, unkVec)
     IL4vec = np.transpose(output[:, 0:PTS])
-    IL7vec = np.transpose(output[:, PTS: (PTS * 2)])
+    IL7vec = np.transpose(output[:, PTS : (PTS * 2)])
     plot_conf_int(ax, ts, IL4vec, "powderblue")
     plot_conf_int(ax, ts, IL7vec, "b")
     ax.set(title=(str(int(cytokC_pg)) + " pg/mL"), ylabel=r"Surface $\mathrm{γ_{c}}$ (%)", xlabel="Time (min)")
