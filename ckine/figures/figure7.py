@@ -1,5 +1,5 @@
 """
-This creates Figure 6.
+This creates Figure 7. Just internal.
 """
 import string
 import logging
@@ -212,7 +212,7 @@ def Spec_Aff(ax, scalesAff):
     ax[0].legend(prop={'size': 7}, loc = 'upper left', handles=handles[-5::])
     
     ax[3].legend(prop={'size': 7}, loc = 'upper left', handles=handles[-5::])
-    
+
     handles = []
     line = Line2D([], [], color='darkorange', marker='_', linestyle='None', markersize=6, label='WT CD25 Affinity')
     point = Line2D([], [], color='darkorange', marker='.', linestyle='None', markersize=6, label='0.5 CD25 Affinity')
@@ -220,9 +220,7 @@ def Spec_Aff(ax, scalesAff):
     handles.append(point)
     ax[1].legend(prop={'size': 7}, loc = 'upper left', handles=handles)
     ax[4].legend(prop={'size': 7}, loc = 'upper left', handles=handles)
-    
 
-    
     handles = []
     line = Line2D([], [], color='orangered', marker='_', linestyle='None', markersize=6, label='WT CD25 Affinity')
     point = Line2D([], [], color='orangered', marker='.', linestyle='None', markersize=6, label='0.5 CD25 Affinity')
@@ -230,4 +228,3 @@ def Spec_Aff(ax, scalesAff):
     handles.append(point)
     ax[2].legend(prop={'size': 7}, loc = 'upper right', handles=handles)
     ax[5].legend(prop={'size': 7}, loc = 'upper right', handles=handles)
-    
