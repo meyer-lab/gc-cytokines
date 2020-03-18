@@ -126,7 +126,6 @@ def Spec_Aff(ax, scalesAff):
         ax[num].set_xlabel('Relative IL-2Rβ/γc Affinity')
         ax[num].set_ylabel("Activation Specificity")
         ax[num].set_ylim((0, 70))
-        #ax[num].set_xticks(np.array([10e-5, 10e-3, 10e-1, 10e1]))
         ax[num].set_title("T-reg/T-helper pSTAT5 - 2 Hours")
 
         ax[1].plot(1 / affRange, specHolderCD[0, :], color="darkorange", linestyle=linemarker)
@@ -137,7 +136,6 @@ def Spec_Aff(ax, scalesAff):
         ax[num].set_xscale("log")
         ax[num].set_xlabel('Relative IL-2Rβ/γc Affinity')
         ax[num].set_ylabel("Activation Specificity")
-        #ax[num].set_xticks(np.array([10e-5, 10e-3, 10e-1, 10e1]))
         ax[num].set_title("T-reg/CD8+ pSTAT5 - 2 Hours")
 
         ax[2].plot(1 / affRange, specHolderNK[0, :], color="orangered", linestyle=linemarker)
@@ -148,7 +146,6 @@ def Spec_Aff(ax, scalesAff):
         ax[num].set_xscale("log")
         ax[num].set_xlabel('Relative IL-2Rβ/γc Affinity')
         ax[num].set_ylabel("Activation Specificity")
-        #ax[num].set_xticks(np.array([10e-5, 10e-3, 10e-1, 10e1]))
         ax[num].set_title("T-reg/NK pSTAT5 - 2 Hours")
 
     # 12 hours
