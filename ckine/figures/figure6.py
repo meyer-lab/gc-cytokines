@@ -40,7 +40,7 @@ def makeFigure():
 
     df_spec = pd.DataFrame(columns=['Cells', 'Ligand', 'Time', 'Concentration', 'Data Type', 'Specificity'])
     df_act = pd.DataFrame(columns=['Cells', 'Ligand', 'Time', 'Concentration', 'Activity Type', 'Activity'])
-    
+
     IL2_activity, IL15_activity, _ = calc_dose_response(cell_names_pstat, unkVec_2_15, scales, receptor_data, tps, ckineConc, IL2_data, IL15_data)
     for i, name in enumerate(cell_names_pstat):
         assert cell_names_pstat[i] == cell_names_receptor[i]
@@ -80,7 +80,7 @@ def makeFigure():
 
 
 def affComp(ax):
-    """Compare 2Ra and 2BGc dissociation constants of wild type and mutant IL-2s"""
+    """Compare 2Ra and 2BGc dissociation constants of wild type and mutant IL - 2s"""
     affdict = getMutAffDict()
     ligList = ['WT N-term', 'WT C-term', 'V91K C-term', 'R38Q N-term', 'F42Q N-Term', 'N88D C-term']
     RaAff, GcBAff = np.zeros([len(ligList)]), np.zeros([len(ligList)])
@@ -101,7 +101,7 @@ def affComp(ax):
 
 
 def calc_plot_specificity(ax, cell_compare, df_specificity, df_activity, ligands, concs):
-    """ Calculates and plots specificity for both cytokines and experimental/predicted activity for T-regs. """
+    """ Calculates and plots specificity for both cytokines and experimental / predicted activity for T - regs. """
 
     # calculate specificity and append to dataframe
     for _, ckine in enumerate(ligands):
@@ -325,7 +325,7 @@ def get_Mut_EC50s():
 
 
 def Mut_Fact(ax):
-    """Plots Non-Negative CP Factorization of Muteins into 4 ax subplots"""
+    """Plots Non - Negative CP Factorization of Muteins into 4 ax subplots"""
     mutDataF = mutData.sort_values(by=['Cells', 'Ligand', 'Time', 'Concentration'])
     mutTensor = np.reshape(mutDataF["RFU"].values, (8, 6, 4, 12))  # cells, muteins/WT, times, and concs.
 
@@ -346,7 +346,7 @@ def Mut_Fact(ax):
 
     # Cells
     plot_cells(ax[1], parafac[0], 1, 2, cells)
-    #ax[1].legend(prop={"size": 6})
+    # ax[1].legend(prop={"size": 6})
     handles, labels = ax[1].get_legend_handles_labels()
     order = [3, 0, 7, 5, 2, 6, 4, 1]
     ax[1].legend([handles[idx] for idx in order], [labels[idx] for idx in order], prop={"size": 5.5})
