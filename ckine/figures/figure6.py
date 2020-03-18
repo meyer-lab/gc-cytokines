@@ -40,7 +40,7 @@ def makeFigure():
 
     df_spec = pd.DataFrame(columns=['Cells', 'Ligand', 'Time', 'Concentration', 'Data Type', 'Specificity'])
     df_act = pd.DataFrame(columns=['Cells', 'Ligand', 'Time', 'Concentration', 'Activity Type', 'Activity'])
-    
+
     IL2_activity, IL15_activity, _ = calc_dose_response(cell_names_pstat, unkVec_2_15, scales, receptor_data, tps, ckineConc, IL2_data, IL15_data)
     for i, name in enumerate(cell_names_pstat):
         assert cell_names_pstat[i] == cell_names_receptor[i]
@@ -58,14 +58,13 @@ def makeFigure():
     df_act.drop(df_act[(df_act.Cells == 'Naive Treg') | (df_act.Cells == 'Mem Treg') | (df_act.Cells == 'Naive Th') |
                        (df_act.Cells == 'Mem Th') | (df_act.Cells == 'Naive CD8+') | (df_act.Cells == 'Mem CD8+')].index, inplace=True)
     ckineConc_ = np.delete(ckineConc, 11, 0)  # delete smallest concentration since zero/negative activity
-    """
+
     mutEC50df = get_Mut_EC50s()
     mutEC50df = mutEC50df.rename(columns={'Time Point': 'Time Point', 'IL': 'IL', 'Cell Type': 'CellType', 'Data Type': 'Data Type', 'EC-50': 'EC-50'})
     affComp(ax[4])
     calc_plot_specificity(ax[0], 'NK', df_spec, df_act, ckines, ckineConc_)
     calc_plot_specificity(ax[1], 'T-helper', df_spec, df_act, ckines, ckineConc_)
     global_legend(ax[0], Spec=True, Mut=True)
-
     Specificity(ax=ax[2])
     Spec_Aff(ax[3], 40, unkVecT, scalesT)
     Mut_Fact(ax[8:12])
