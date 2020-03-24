@@ -40,7 +40,7 @@ autopep:
 	autopep8 -i -a --max-line-length 200 ckine/*.py ckine/figures/*.py
 
 clean:
-	rm -f ./Manuscript/Manuscript.*
+	rm -f ./Manuscript/Manuscript.* Manuscript/Supplement.pdf
 	rm -f $(fdir)/figure* ckine/ckine.so profile.p* stats.dat .coverage nosetests.xml coverage.xml ckine.out ckine/cppcheck testResults.xml
 	rm -rf html ckine/*.dSYM doxy.log graph_all.svg valgrind.xml callgrind.out.* cprofile.svg venv
 	find -iname "*.pyc" -delete

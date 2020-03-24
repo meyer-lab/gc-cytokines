@@ -1,9 +1,13 @@
-\documentclass[9pt,twocolumn,twoside,lineno]{pnas-new}
+\documentclass[9pt,twocolumn,twoside,lineno]{Manuscript/pnas-new}
 % Use the lineno option to display guide line numbers if required.
 
-\templatetype{pnasresearcharticle}
+\templatetype{Manuscript/pnasresearcharticle}
+
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
 
 \let\autocites=\cite
+\let\autocite=\cite
 
 \title{$title$}
 
@@ -29,7 +33,7 @@ $endfor$
 \correspondingauthor{\textsuperscript{2}To whom correspondence should be addressed. E-mail: a\@asmlab.org}
 
 % At least three keywords are required at submission. Please provide three to five keywords, separated by the pipe symbol.
-\keywords{Keyword 1 $|$ Keyword 2 $|$ Keyword 3 $|$ ...} 
+\keywords{$for(keywords)$$keywords$$sep$ | $endfor$} 
 
 \begin{abstract}
 $abstract$
@@ -55,7 +59,8 @@ $for(include-after)$
 $include-after$
 $endfor$
 
-\showmatmethods{} % Display the Materials and Methods section
+% \matmethods{Put in here}
+% \showmatmethods{} % Display the Materials and Methods section
 
 \acknow{$acknowledge$}
 
