@@ -1,5 +1,3 @@
-\beginsupplement
-
 # Supplement
 
 ### IL-2, IL-15, and IL-7 Receptor Quantitation
@@ -64,8 +62,6 @@
 \cleardoublepage
 
 ### IL-2 variants' IL-2Rβ/γ~c~ affinities
-
-Data Table SD1: **IL-2Rβ/γ~c~ binding affinities of mutant and modified cytokines.** Data from the BLI studies for each IL-2 mutein.
 
 \cleardoublepage
 
