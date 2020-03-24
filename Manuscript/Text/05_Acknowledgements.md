@@ -1,6 +1,6 @@
 # Acknowledgements
 
-This work was supported by NIH DP5-OD019815 to A.S.M. and by a research agreement with Visterra Inc. **Competing financial interests:** S.M.C. and C.P. are employees of Visterra Inc.
+This work was supported by National Institutes of Health DP5-OD019815 to A.S.M. and by a research agreement with Visterra Inc. **Competing financial interests:** S.M.C. and C.P. are employees of Visterra Inc.
 
 # Author contributions statement
 
