@@ -30,7 +30,7 @@ graph_all.svg: ckine/data/graph_all.gv
 	dot $< -Tsvg -o $@
 
 Manuscript/Manuscript.pdf: Manuscript/Text/*.md $(patsubst %, $(fdir)/figure%.pdf, $(flist)) Manuscript/gatingFigure.pdf
-	pandoc -s $(pan_common) --fail-if-warnings --template=$(tdir)/default.latex --pdf-engine=xelatex -o $@
+	pandoc -s $(pan_common) --fail-if-warnings --template=Manuscript/pnas.latex --pdf-engine=xelatex -o $@
 
 ckine/ckine.so: gcSolver/model.cpp gcSolver/model.hpp gcSolver/reaction.hpp gcSolver/makefile
 	cd ./gcSolver && make ckine.so
