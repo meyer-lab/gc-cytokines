@@ -2,9 +2,9 @@
 title: Modeling Cell-Specific Dynamics and Regulation of the Common Gamma Chain Cytokines
 author:
 - name: Ali M. Farhat
-  affilnum: a,c
+  affilnum: a
 - name: Adam C. Weiner
-  affilnum: a,c
+  affilnum: a
 - name: Cori Posner
   affilnum: b
 - name: Zoe S. Kim
@@ -21,8 +21,6 @@ affiliation:
   key: a
 - name: Visterra, Inc., Waltham, MA
   key: b
-- name: These authors contributed equally to this work
-  key: c
 - name: a@asmlab.org
   key: d
 bibliography: ./Manuscript/References.bib
@@ -30,6 +28,7 @@ abstract: Many receptor families exhibit both pleiotropy and redundancy in their
 acknowledge: This work was supported by National Institutes of Health DP5-OD019815 to A.S.M. and by a research agreement with Visterra Inc.
 contrib: A.S.M. and S.M.C. conceived of the study. S.M.C. and C.P. performed the PBMC experiments and engineered the IL-2 fusion proteins. A.C.W., A.M.F., A.S.M, B.O.J., and Z.S.K. performed the computational analysis. All authors helped to design experiments and/or analyze the data.
 interests: S.M.C. and C.P. are employees of Visterra Inc.
+sigstate: Authors must submit a 120-word maximum statement about the significance of their research paper written at a level understandable to an undergraduate educated scientist outside their field of speciality. The primary goal of the significance statement is to explain the relevance of the work in broad context to a broad readership. The significance statement appears in the paper itself and is required for all research papers.
 link-citations: true
 csl: ./Manuscript/pnas.csl
 ---
@@ -41,7 +40,7 @@ csl: ./Manuscript/pnas.csl
 
 <!-- Introduce the common gc family and its importance regulating the immune system.-->
 
-Cytokines are cell signaling proteins responsible for cellular communication within the immune system. The common γ-chain (γ~c~) receptor cytokines, including interleukin (IL)-2, 4, 7, 9, 15, and 21, are integral for modulating both innate and adaptive immune responses. As such, they have existing uses and future potential as immune therapies [@Rochman_2009; @LEONARD2019832]. Each ligand binds to its specific private receptors before interacting with the common γ~c~ receptor to induce signaling [@Walsh2010]. γ~c~ receptor signaling induces lymphoproliferation, offering a mechanism for selectively expanding or repressing immune cell types [@Amorosi3304; @Vigliano2012]. Consequently, loss-of-function or reduced activity mutations in the γ~c~ receptor can cause severe combined immunodeficiency (SCID) due to insufficient T and NK cell maturation [@Wang9542]. Deletion or inactivating mutations in IL-2 or its private receptors leads to more selective effects, including diminished regulatory T cell (T~reg~) proliferation and loss of self-tolerance [@Sharma1251; @Sharfe3168; @Horak]. Deficiency in the IL-2 receptor IL-2Rα also causes hyperproliferation in CD8+ T cells, but diminished antigen response [@GOUDY2013248]. These examples show how γ~c~ receptor cytokines coordinate a dynamic balance of immune cell abundance and function.
+\dropcap{C}ytokines are cell signaling proteins responsible for cellular communication within the immune system. The common γ-chain (γ~c~) receptor cytokines, including interleukin (IL)-2, 4, 7, 9, 15, and 21, are integral for modulating both innate and adaptive immune responses. As such, they have existing uses and future potential as immune therapies [@Rochman_2009; @LEONARD2019832]. Each ligand binds to its specific private receptors before interacting with the common γ~c~ receptor to induce signaling [@Walsh2010]. γ~c~ receptor signaling induces lymphoproliferation, offering a mechanism for selectively expanding or repressing immune cell types [@Amorosi3304; @Vigliano2012]. Consequently, loss-of-function or reduced activity mutations in the γ~c~ receptor can cause severe combined immunodeficiency (SCID) due to insufficient T and NK cell maturation [@Wang9542]. Deletion or inactivating mutations in IL-2 or its private receptors leads to more selective effects, including diminished regulatory T cell (T~reg~) proliferation and loss of self-tolerance [@Sharma1251; @Sharfe3168; @Horak]. Deficiency in the IL-2 receptor IL-2Rα also causes hyperproliferation in CD8+ T cells, but diminished antigen response [@GOUDY2013248]. These examples show how γ~c~ receptor cytokines coordinate a dynamic balance of immune cell abundance and function.
 
 <!--Complex gc receptor family with effects across many cell populations.-->
 

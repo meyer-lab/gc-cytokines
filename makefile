@@ -1,7 +1,7 @@
 SHELL := /bin/bash
 fdir = ./Manuscript/Figures
 tdir = ./common/templates
-pan_common = -F pandoc-crossref -F pandoc-citeproc --filter=$(tdir)/figure-filter.py -f markdown ./Manuscript/Text/*.md
+pan_common = -F pandoc-crossref -F pandoc-citeproc --filter=$(tdir)/figure-filter.py -f markdown 
 
 flist = 1 2 3 4 5 6 S1 S2 S4 S5 S7
 
@@ -23,32 +23,24 @@ $(fdir)/figure%.svg: venv genFigures.py ckine/ckine.so graph_all.svg ckine/figur
 $(fdir)/figure%pdf: $(fdir)/figure%svg
 	rsvg-convert --keep-image-data -f pdf $< -o $@
 
-$(fdir)/figure%eps: $(fdir)/figure%svg
-	rsvg-convert --keep-image-data -f eps $< -o $@
-
 graph_all.svg: ckine/data/graph_all.gv
 	dot $< -Tsvg -o $@
 
 Manuscript/Manuscript.pdf: Manuscript/Text/*.md $(patsubst %, $(fdir)/figure%.pdf, $(flist)) Manuscript/gatingFigure.pdf
-	pandoc -s $(pan_common) --fail-if-warnings --template=Manuscript/pnas.latex --pdf-engine=xelatex -o $@
+	pandoc -s $(pan_common) ./Manuscript/Text/*.md --fail-if-warnings --template=Manuscript/pnas.latex --pdf-engine=xelatex -o $@
+
+Manuscript/Supplement.pdf: Manuscript/Supplement.md $(patsubst %, $(fdir)/figure%.pdf, $(flist))
+	pandoc -s $(pan_common) Manuscript/Supplement.md --fail-if-warnings --template=Manuscript/pnasSI.latex --pdf-engine=xelatex -o $@
 
 ckine/ckine.so: gcSolver/model.cpp gcSolver/model.hpp gcSolver/reaction.hpp gcSolver/makefile
 	cd ./gcSolver && make ckine.so
 	cp ./gcSolver/ckine.so ckine/ckine.so
 
-Manuscript/Manuscript.docx: Manuscript/Text/*.md $(patsubst %, $(fdir)/figure%.eps, $(flist))
-	cp -R $(fdir) ./
-	pandoc -s $(pan_common) -o $@
-	rm -r ./Figures
-
-Manuscript/CoverLetter.pdf: Manuscript/CoverLetter.md
-	pandoc --pdf-engine=xelatex --template=/Users/asm/.pandoc/letter-templ.tex $< -o $@
-
 autopep:
 	autopep8 -i -a --max-line-length 200 ckine/*.py ckine/figures/*.py
 
 clean:
-	rm -f ./Manuscript/Manuscript.* Manuscript/CoverLetter.docx Manuscript/CoverLetter.pdf ckine/libckine.debug.so
+	rm -f ./Manuscript/Manuscript.*
 	rm -f $(fdir)/figure* ckine/ckine.so profile.p* stats.dat .coverage nosetests.xml coverage.xml ckine.out ckine/cppcheck testResults.xml
 	rm -rf html ckine/*.dSYM doxy.log graph_all.svg valgrind.xml callgrind.out.* cprofile.svg venv
 	find -iname "*.pyc" -delete
