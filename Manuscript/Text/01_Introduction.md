@@ -31,17 +31,13 @@ acknowledge: This work was supported by National Institutes of Health DP5-OD0198
 contrib: A.S.M. and S.M.C. conceived of the study. S.M.C. and C.P. performed the PBMC experiments and engineered the IL-2 fusion proteins. A.C.W., A.M.F., A.S.M, B.O.J., and Z.S.K. performed the computational analysis. All authors helped to design experiments and/or analyze the data.
 interests: S.M.C. and C.P. are employees of Visterra Inc.
 link-citations: true
-csl: ./common/templates/nature.csl
+csl: ./Manuscript/pnas.csl
 ---
-
-# Summary points
 
 - A dynamical model of the γ-chain cytokines accurately models responses to IL-2, IL-15, IL-4, and IL-7.
 - Receptor trafficking is necessary for capturing ligand response. 
 - Tensor factorization maps responses across cell populations, receptors, cytokines, and dynamics to visualize cytokine specificity.
 - An activation model coupled with tensor factorization provides design specifications for engineering cell-specific responses.
-
-# Introduction
 
 <!-- Introduce the common gc family and its importance regulating the immune system.-->
 
