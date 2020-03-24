@@ -14,15 +14,13 @@ author:
 - name: Scott M. Carlson
   affilnum: b
 - name: Aaron S. Meyer
-  affilnum: a,d
-keywords: [IL-2, IL-15, IL-21, IL-4, IL-7, IL-9, common gamma chain, cytokines, receptors, immunology, T cells, NK cells]
+  affilnum: a
+keywords: [IL-2, IL-15, IL-21, IL-4, IL-7, IL-9, cytokines, receptors, immunology, T cells, NK cells]
 affiliation:
-- name: Department of Bioengineering, Jonsson Comprehensive Cancer Center, Eli and Edythe Broad Center of Regenerative Medicine and Stem Cell Research; University of California, Los Angeles
+- name: Department of Bioengineering, Jonsson Comprehensive Cancer Center, Eli and Edythe Broad Center of Regenerative Medicine and Stem Cell Research; University of California, Los Angeles 90095
   key: a
-- name: Visterra, Inc., Waltham, MA
+- name: Visterra, Inc., Waltham, MA 02451
   key: b
-- name: a@asmlab.org
-  key: d
 bibliography: ./Manuscript/References.bib
 abstract: Many receptor families exhibit both pleiotropy and redundancy in their regulation, with multiple ligands, receptors, and responding cell populations. Any intervention, therefore, has multiple effects, confounding intuition about how to precisely manipulate signaling for therapeutic purposes. The common γ-chain cytokine receptor dimerizes with complexes of the cytokines interleukin (IL)-2, IL-4, IL-7, IL-9, IL-15, and IL-21 and their corresponding "private" receptors. These cytokines have existing uses and future potential as immune therapies due to their ability to regulate the abundance and function of specific immune cell populations. However, engineering cell specificity into a therapy is confounded by the complexity of the family across responsive cell types. Here, we build a binding-reaction model for the ligand-receptor interactions of common γ-chain cytokines enabling quantitative predictions of response. We show that accounting for receptor-ligand trafficking is essential to accurately model cell response. This model accurately predicts ligand response across a wide panel of cell types under diverse experimental designs. Further, we can predict the effect and specificity of natural or engineered ligands across cell types. We then show that tensor factorization is a uniquely powerful tool to visualize changes in the input-output behavior of the family across time, cell types, ligands, and concentration. In total, these results present a more accurate model of ligand response validated across a panel of immune cell types, and demonstrate an approach for generating interpretable guidelines to manipulate the cell type-specific targeting of engineered ligands. These techniques will in turn help to study and therapeutically manipulate many other complex receptor-ligand families.
 acknowledge: This work was supported by National Institutes of Health DP5-OD019815 to A.S.M. and by a research agreement with Visterra Inc.
