@@ -27,8 +27,6 @@ acknowledge: This work was supported by National Institutes of Health DP5-OD0198
 contrib: A.S.M. and S.M.C. conceived of the study. S.M.C. and C.P. performed the PBMC experiments and engineered the IL-2 fusion proteins. A.C.W., A.M.F., A.S.M, B.O.J., and Z.S.K. performed the computational analysis. All authors helped to design experiments and/or analyze the data.
 interests: S.M.C. and C.P. are employees of Visterra Inc.
 sigstate: Authors must submit a 120-word maximum statement about the significance of their research paper written at a level understandable to an undergraduate educated scientist outside their field of speciality. The primary goal of the significance statement is to explain the relevance of the work in broad context to a broad readership. The significance statement appears in the paper itself and is required for all research papers.
-link-citations: true
-csl: ./Manuscript/pnas.csl
 ---
 
 - A dynamical model of the γ-chain cytokines accurately models responses to IL-2, IL-15, IL-4, and IL-7.
