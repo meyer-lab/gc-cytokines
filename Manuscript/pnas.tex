@@ -3,6 +3,8 @@
 
 \templatetype{pnasresearcharticle}
 
+\let\autocites=\cite
+
 \title{$title$}
 
 % Use letters for affiliations, numbers to show equal authorship (if applicable) and to indicate the corresponding author
@@ -45,24 +47,13 @@ $abstract$
 
 $for(include-before)$
 $include-before$
-
 $endfor$
 
 $body$
 
-\subsection*{Format}
-
-Many authors find it useful to organize their manuscripts with the following order of sections;  title, author line and affiliations, keywords, abstract, significance statement, introduction, results, discussion, materials and methods, acknowledgments, and references. Other orders and headings are permitted.
-
-\subsection*{Manuscript Length}
-
-A standard 6-page article is approximately 4,000 words, 50 references, and 4 medium-size graphical elements (i.e., figures and tables). The preferred length of articles remains at 6 pages, but PNAS will allow articles up to a maximum of 12 pages.
-
-\matmethods{Please describe your materials and methods here. This can be more than one paragraph, and may contain subsections and equations as required. Authors should include a statement in the methods section describing how readers will be able to access the data in the paper. 
-
-\subsection*{Subsection for Method}
-Example text for subsection.
-}
+$for(include-after)$
+$include-after$
+$endfor$
 
 \showmatmethods{} % Display the Materials and Methods section
 
@@ -71,6 +62,6 @@ Example text for subsection.
 \showacknow{} % Display the acknowledgments section
 
 % Bibliography
-\bibliography{pnas-sample}
+\bibliography{Manuscript/References}
 
 \end{document}
