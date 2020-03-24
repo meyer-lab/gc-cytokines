@@ -27,7 +27,6 @@ acknowledge: This work was supported by National Institutes of Health DP5-OD0198
 contrib: A.S.M. and S.M.C. conceived of the study. S.M.C. and C.P. performed the PBMC experiments and engineered the IL-2 fusion proteins. A.C.W., A.M.F., A.S.M, B.O.J., and Z.S.K. performed the computational analysis. All authors helped to design experiments and/or analyze the data.
 interests: S.M.C. and C.P. are employees of Visterra Inc.
 sigstate: The γ-chain cytokine receptor cytokines are powerful mediators of the immune response, and have been extensively studied due to their potential as immunotherapies. However, these cytokines' broad immune activation profiles and complicated signaling dynamics have frustrated their development as such. In order to unravel these dynamics, we build a family wide dynamical model of the γ-chain receptor family, including the effects of receptor trafficking, and are able to predict a panel of immune cell types' response to cytokine stimulation. Using tensor factorization, we map and visualize the overlapping effects that cell type, cytokine, time, and ligand concentration play in determining this response. By harnessing these approaches in tandem, we are able to provide design specifications for rational cell-specific cytokine engineering.
-
 link-citations: true
 csl: ./Manuscript/pnas.csl
 ---
