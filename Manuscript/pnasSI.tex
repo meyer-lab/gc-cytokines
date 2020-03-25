@@ -5,6 +5,15 @@
 
 \usepackage{textgreek, longtable}
 
+\makeatletter
+\def\maxwidth{\ifdim\Gin@nat@width>\linewidth\linewidth\else\Gin@nat@width\fi}
+\def\maxheight{\ifdim\Gin@nat@height>\textheight\textheight\else\Gin@nat@height\fi}
+\makeatother
+% Scale images if necessary, so that they will not overflow the page
+% margins by default, and it is still possible to overwrite the defaults
+% using explicit options in \includegraphics[width, height, ...]{}
+\setkeys{Gin}{width=\maxwidth,height=\maxheight,keepaspectratio}
+
 \title{Modeling Cell-Specific Dynamics and Regulation of the Common Gamma Chain Cytokines}
 \author{Ali M. Farhat, Adam C. Weiner, Cori Posner, Zoe S. Kim, Brian Orcutt-Jahns, Scott M. Carlson and Aaron S. Meyer}
 \correspondingauthor{Aaron S. Meyer.\\E-mail: a@asmlab.org}
