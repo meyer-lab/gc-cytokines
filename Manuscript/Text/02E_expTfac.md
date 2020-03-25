@@ -1,11 +1,11 @@
 ## Tensor Factorization of Experimental Measurements Distinguishes Cell Type-Specific Responses
 
 ```{=latex}
-\begin{SCfigure*}[\sidecaptionrelwidth][t]
+\begin{figure*}[t]
 \centering
 \includegraphics[width=15.4cm]{Manuscript/Figures/figure5.pdf}
 \caption{\textbf{Non-negative CP decomposition applied to experimental pSTAT5 measurements.} A) R2X of non-negative CP decomposition versus number of components used. B--D) Decomposition plot with respect to time (B), cell type (C), or ligand treatment (D).}\label{fig:expFac}
-\end{SCfigure*}
+\end{figure*}
 ```
 
 Given that tensor factorization helped to visualize model predictions of IL-2, -7, and -15 response, we wished to evaluate whether it could similarly help to visualize experimental measurements. We structured our experimental pSTAT5 measurements in an identical format to the model simulation tensor [@Fig:tfac]. Factoring into two components explained roughly 90% of the variance in the original data ([@Fig:expFac]A), which we can then interpret using each of the factor plots ([@Fig:expFac]B–D).

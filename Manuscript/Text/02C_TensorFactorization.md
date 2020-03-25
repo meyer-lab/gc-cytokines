@@ -3,7 +3,7 @@
 ```{=latex}
 \begin{SCfigure*}[\sidecaptionrelwidth][t]
 \centering
-\includegraphics[width=11.4cm]{Manuscript/Figures/figure3.pdf}
+\includegraphics[width=13.5cm]{Manuscript/Figures/figure3.pdf}
 \caption{\textbf{Tensor factorization to map model-predicted cytokine responses.} A) Measured receptor abundance for ten PBMC-derived subpopulations. Points and error bars show geometric mean and standard deviation respectively (N = 4). Error bars for some points are too small to display. B-C) PCA scores (B) and loadings (C) of receptor abundance. Axis label percentages indicate percent variance explained. D) Schematic representation of CP decomposition. Model predictions are arranged in a cube depending upon the time, ligand treatment, and cell type being modeled. CP decomposition then helps to visualize this space. E) Percent variance reconstructed (R2X) versus the number of components used in non-negative CP decomposition. F-I) Component values versus time (F), cell type (G-H), or ligand stimulation (I). The variation explained by
 each component is the product of the component's time, ligand, and cell type factorization. Ligand components with only negligible values (\textless{} 5\% max) are not shown.}\label{fig:tfac}
 \end{SCfigure*}
