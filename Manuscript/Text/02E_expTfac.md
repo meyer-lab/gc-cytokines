@@ -1,7 +1,7 @@
 ## Tensor Factorization of Experimental Measurements Distinguishes Cell Type-Specific Responses
 
 ```{=latex}
-\begin{figure*}
+\begin{figure*}[t]
 \centering
 \includegraphics[width=15.4cm]{Manuscript/Figures/figure5.pdf}
 \caption{\textbf{Non-negative CP decomposition applied to experimental pSTAT5 measurements.} A) R2X of non-negative CP decomposition versus number of components used. B--D) Decomposition plot with respect to time (B), cell type (C), or ligand treatment (D).}\label{fig:expFac}

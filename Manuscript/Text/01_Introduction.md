@@ -15,7 +15,7 @@ author:
   affilnum: b
 - name: Aaron S. Meyer
   affilnum: a
-keywords: [IL-2, IL-15, IL-21, IL-4, IL-7, IL-9, cytokines, receptors, immunology, T cells, NK cells]
+keywords: [IL-2, IL-15, cytokines, receptors, immunology, T cells]
 affiliation:
 - name: Department of Bioengineering, Jonsson Comprehensive Cancer Center, Eli and Edythe Broad Center of Regenerative Medicine and Stem Cell Research; University of California, Los Angeles 90095
   key: a
@@ -30,6 +30,14 @@ sigstate: The γ-chain cytokine receptor cytokines are powerful mediators of the
 ---
 <!-- Introduce the common gc family and its importance regulating the immune system.-->
 \dropcap{C}ytokines are cell signaling proteins responsible for cellular communication within the immune system. The common γ-chain (γ~c~) receptor cytokines, including interleukin (IL)-2, 4, 7, 9, 15, and 21, are integral for modulating both innate and adaptive immune responses. As such, they have existing uses and future potential as immune therapies [@Rochman_2009; @LEONARD2019832]. Each ligand binds to its specific private receptors before interacting with the common γ~c~ receptor to induce signaling [@Walsh2010]. γ~c~ receptor signaling induces lymphoproliferation, offering a mechanism for selectively expanding or repressing immune cell types [@Amorosi3304; @Vigliano2012]. Consequently, loss-of-function or reduced activity mutations in the γ~c~ receptor can cause severe combined immunodeficiency (SCID) due to insufficient T and NK cell maturation [@Wang9542]. Deletion or inactivating mutations in IL-2 or its private receptors leads to more selective effects, including diminished regulatory T cell (T~reg~) proliferation and loss of self-tolerance [@Sharma1251; @Sharfe3168; @Horak]. Deficiency in the IL-2 receptor IL-2Rα also causes hyperproliferation in CD8+ T cells, but diminished antigen response [@GOUDY2013248]. These examples show how γ~c~ receptor cytokines coordinate a dynamic balance of immune cell abundance and function.
+
+```{=latex}
+\begin{SCfigure*}[\sidecaptionrelwidth][t]
+\centering
+\includegraphics[width=13.4cm]{Manuscript/Figures/figure1.pdf}
+\caption{\textbf{Incorporating trafficking leads to an accurate model of IL-2 \& IL-15 response.} A) Schematic of all receptor (boxes)-ligand (circles) complexes and binding events. Active (pSTAT signaling; containing two non-α receptors) complexes are outlined in red. Rate constants obtained from literature, detailed balance, or fitting are denoted by diamonds, octagons, or octagons with a double outline, respectively. Rate constants that were experimentally measured relative to other rates are denoted by triangles. B) Model prediction vs.~experimental results for maximal pSTAT5 activation in YT-1 cells under various concentrations of ligand stimulation for 500 min. C-E) Model prediction vs.~experimental results for the percent of initial IL-2Rβ (C, D) and γ\textsubscript{c} (E) on the cell surface for various ligand stimulation concentrations and cell types. The 25-75\% and 10-90\% confidence intervals of model predictions are shaded dark and light respectively. Due to low prediction variability, only the 25-75\% interval is visible. F-H) Posterior distributions after data fitting. C\textsubscript{5} has units of \(\mathrm{\# \times cell^{-1}}\), k\textsubscript{fwd} has units of \(\mathrm{cell \times \#^{-1} \times min^{-1}}\), and f\textsubscript{sort} is unitless. I) Posterior distributions for the analogous reaction rates of IL-2 and IL-15. Rates constants measured in literature are represented by dots.}\label{fig:modelConstruct}
+\end{SCfigure*}
+```
 
 <!--Complex gc receptor family with effects across many cell populations.-->
 

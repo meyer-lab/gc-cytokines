@@ -1,11 +1,11 @@
 ## Accurately Predicted Response Across a Panel of PBMC-Derived Cell Types
 
 ```{=latex}
-\begin{figure*}
+\begin{SCfigure*}[\sidecaptionrelwidth][t]
 \centering
-\includegraphics[width=13.4cm]{Manuscript/Figures/figure4.pdf}
+\includegraphics[width=13cm]{Manuscript/Figures/figure4.pdf}
 \caption{\textbf{Model accurately predicts cell type-specific response across a panel of PBMC-derived cell types.} A) Comparison of two replicates measuring pSTAT5 response to a dose-response of IL-2/-15, time course, and panel of PBMC-derived cell types. B) Both experimentally-derived and model-predicted EC\textsubscript{50}s of dose response across IL-2/-15 and all 10 cell types. EC\textsubscript{50}s are shown for 1 hr time point. C) Pearson correlation coefficients between model prediction and experimental measurements for all 10 cell populations (full data shown in Fig.~\ref{fig:supp5}). D--I) pSTAT5 response to IL-2 (D-F) or IL-15 (G-I) dose responses in NK, CD8+, and T\textsubscript{reg} cells.}\label{fig:expData}
-\end{figure*}
+\end{SCfigure*}
 ```
 
 We evaluated whether our model accurately predicts differences in the cell type-specificity of ligand treatment by comparing its predictions for IL-2/-15 responses across a panel of 10 PBMC-derived cell populations. We both measured and used our model to predict PBMC response to cytokine stimulation at 12 concentrations (0.5 pM–84 nM) and 4 time points (30 minutes, 1, 2, and 4 hours). Individual cell types displayed reproducible responses to IL-2/-15 treatment ([@Fig:expData]A). Overall, our model predictions of ligand pSTAT5 response closely matched experimental measurement ([@Fig:expData; @Fig:supp5]). The differences between cell types largely matched known differences in cytokine response. For example, T~reg~s were markedly sensitive to IL-2 ([@Fig:expData]B/F), but not IL-15 ([@Fig:expData]B/I), at low concentrations of the cytokine [@Bell_2015; @Peterson_2018]. Small amounts of of IL-2Rα in helper T cells ([@Fig:tfac]A) partially sensitizes them to IL-2 ([@Fig:expData]B; [@Fig:supp5]H). Our model accurately captured these differences in sensitivity and response across all the cell populations ([@Fig:expData]C).
