@@ -61,7 +61,7 @@
 
 
 
-![**Model without trafficking fails to capture IL-2/-15 dose response.** A) Model without trafficking fit to IL-2 and IL-15 pSTAT5 dose response data [@ring_mechanistic_2012]. This model was not fit to the surface IL-2Rβ measurements since no receptors were allowed to internalize from the cell surface ([@Fig:modelConstruct]B-D). B) Posterior distributions of analogous reverse reaction rates for IL-2 and IL-15 in no-trafficking model. C) Posterior distributions for receptor surface abundance in no-trafficking model. D) Posterior distribution for the pSTAT5 activity scaling constant in no-trafficking model. ](./Manuscript/Figures/figureS1.svg){#fig:supp1}
+![**Model without trafficking fails to capture IL-2/-15 dose response.** A) Model without trafficking fit to IL-2 and IL-15 pSTAT5 dose response data (14). This model was not fit to the surface IL-2Rβ measurements since no receptors were allowed to internalize from the cell surface (Fig. 1B-D). B) Posterior distributions of analogous reverse reaction rates for IL-2 and IL-15 in no-trafficking model. C) Posterior distributions for receptor surface abundance in no-trafficking model. D) Posterior distribution for the pSTAT5 activity scaling constant in no-trafficking model. ](./Manuscript/Figures/figureS1.svg){#fig:supp1}
 
 ![**Geweke criterion scores for model fitting with and without trafficking.** Geweke criterion z-scores in all subplots were calculated using 20 intervals in the first 10% and last 50% of MCMC chain. Scores of |z| < 1 imply fitting convergence. A-B) IL-2/-15 with and without trafficking. C) IL-4/-7 with trafficking ([@Fig:supp1]). ](./Manuscript/Figures/figureS2.svg){#fig:supp2}
 
