@@ -5,7 +5,6 @@
 \centering
 \includegraphics[width=11.4cm]{Manuscript/Figures/figure6.pdf}
 \caption{\textbf{Model and tensor factorization predicts and decodes cell type-specific responses to IL-2 muteins.} A-B) Predicted and measured T\textsubscript{reg} activation specificity compared to NK (A) and T helper (B) cells. C) Partial derivatives of T\textsubscript{reg} activation specificity compared to NK and T helper cells with respect to each surface and endosomal reverse binding rate constant. D) T\textsubscript{reg} activation specificity with respect to NK and T helper cells as a function of IL-2Rβ/γc binding affinity for ligands with wild type and reduced IL-2Rα affinity. Specificity values are shown for cells exposed to a cytokine concentration of 38 pM. E) IL-2Rα and IL-2Rβ/γc dissociation constants for our panel of IL-2 muteins. F-H) Predicted versus experimental immune cell responses to IL-2 muteins for T\textsubscript{reg}s (F), NK cells (G), and T-helpers (H). Dots represent experimental measurements and shaded regions represent 10-90\% confidence interval for model predictions. Mutein stimulant denoted by color. I-L) Tensor factorization of experimentally measured cellular activation values for IL-2 muteins. Component values versus ligand (I), cell type (J), time (K), and cytokine concentration (L).}\label{fig:mutFac}
-}
 \end{figure*}
 ```
 
