@@ -24,7 +24,7 @@ if __name__ == '__main__':
         overlayCartoon(fdir + 'figure1.svg',
                        './graph_all.svg', 1, 12, scalee=0.33, scale_x=1.07, scale_y=0.94)  # scalee was 0.35, y was 15
         overlayCartoon(fdir + 'figure1.svg',
-                       './ckine/data/cell_legend.svg', 375, 105, scalee=0.14)  # scalee was 0.35, y was 15
+                       './ckine/data/cell_legend.svg', 355, 105, scalee=0.14)  # scalee was 0.35, y was 15
 
     if sys.argv[1] == '2':
         # Overlay Figure 2 cartoon
