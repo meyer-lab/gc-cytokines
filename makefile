@@ -1,7 +1,7 @@
 SHELL := /bin/bash
 fdir = ./Manuscript/Figures
 tdir = ./common/templates
-pan_common = -F pandoc-crossref --biblatex --filter=$(tdir)/figure-filter.py -f markdown 
+pan_common = -F pandoc-crossref --natbib --filter=$(tdir)/figure-filter.py -f markdown+raw_attribute
 
 flist = 1 2 3 4 5 6 S1 S2 S4 S5 S7
 
@@ -26,11 +26,17 @@ $(fdir)/figure%pdf: $(fdir)/figure%svg
 graph_all.svg: ckine/data/graph_all.gv
 	dot $< -Tsvg -o $@
 
-Manuscript/Manuscript.pdf: Manuscript/Text/*.md $(patsubst %, $(fdir)/figure%.pdf, $(flist)) Manuscript/gatingFigure.pdf
-	pandoc -s $(pan_common) ./Manuscript/Text/*.md --template=Manuscript/pnas.tex --pdf-engine=xelatex -o $@
+Manuscript/Manuscript.tex: Manuscript/Text/*.md
+	pandoc -s $(pan_common) ./Manuscript/Text/*.md --template=Manuscript/pnas.tex -o $@
+
+Manuscript/Manuscript.pdf: Manuscript/Manuscript.tex $(patsubst %, $(fdir)/figure%.pdf, $(flist)) Manuscript/gatingFigure.pdf
+	pdflatex -output-directory=Manuscript Manuscript.tex
+	cd Manuscript && bibtex Manuscript
+	pdflatex -output-directory=Manuscript Manuscript.tex
+	pdflatex -output-directory=Manuscript Manuscript.tex
 
 Manuscript/Supplement.pdf: Manuscript/Supplement.md $(patsubst %, $(fdir)/figure%.pdf, $(flist))
-	pandoc -s $(pan_common) Manuscript/Supplement.md --template=Manuscript/pnasSI.tex --pdf-engine=xelatex -o $@
+	pandoc -s $(pan_common) Manuscript/Supplement.md --template=Manuscript/pnasSI.tex --pdf-engine=pdflatex -o $@
 
 ckine/ckine.so: gcSolver/model.cpp gcSolver/model.hpp gcSolver/reaction.hpp gcSolver/makefile
 	cd ./gcSolver && make ckine.so
