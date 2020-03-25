@@ -3,7 +3,7 @@
 ```{=latex}
 \begin{figure*}
 \centering
-\includegraphics[width=11.4cm]{Manuscript/Figures/figure5.pdf}
+\includegraphics[width=15.4cm]{Manuscript/Figures/figure5.pdf}
 \caption{\textbf{Non-negative CP decomposition applied to experimental pSTAT5 measurements.} A) R2X of non-negative CP decomposition versus number of components used. B--D) Decomposition plot with respect to time (B), cell type (C), or ligand treatment (D).}\label{fig:expFac}
 \end{figure*}
 ```

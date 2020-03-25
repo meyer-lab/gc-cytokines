@@ -3,7 +3,7 @@
 ```{=latex}
 \begin{figure*}
 \centering
-\includegraphics{Manuscript/Figures/figure4.pdf}
+\includegraphics[width=13.4cm]{Manuscript/Figures/figure4.pdf}
 \caption{\textbf{Model accurately predicts cell type-specific response across a panel of PBMC-derived cell types.} A) Comparison of two replicates measuring pSTAT5 response to a dose-response of IL-2/-15, time course, and panel of PBMC-derived cell types. B) Both experimentally-derived and model-predicted EC\textsubscript{50}s of dose response across IL-2/-15 and all 10 cell types. EC\textsubscript{50}s are shown for 1 hr time point. C) Pearson correlation coefficients between model prediction and experimental measurements for all 10 cell populations (full data shown in Fig.~\ref{fig:supp5}). D--I) pSTAT5 response to IL-2 (D-F) or IL-15 (G-I) dose responses in NK, CD8+, and T\textsubscript{reg} cells.}\label{fig:expData}
 \end{figure*}
 ```

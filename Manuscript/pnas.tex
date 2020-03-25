@@ -8,8 +8,7 @@
 \providecommand{\tightlist}{%
   \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
 
-\let\autocites=\cite
-\let\autocite=\cite
+\setcounter{secnumdepth}{0}
 
 \title{$title$}
 
@@ -32,7 +31,7 @@ $endfor$
 \authorcontributions{$contrib$}
 \authordeclaration{$interests$}
 \equalauthors{\textsuperscript{1}A.M.F. contributed equally to this work with A.C.W.}
-\correspondingauthor{\textsuperscript{2}To whom correspondence should be addressed. E-mail: a\@asmlab.org}
+\correspondingauthor{\textsuperscript{2}To whom correspondence should be addressed. E-mail: a@asmlab.org}
 
 % At least three keywords are required at submission. Please provide three to five keywords, separated by the pipe symbol.
 \keywords{$for(keywords)$$keywords$$sep$ | $endfor$} 
@@ -69,6 +68,6 @@ $endfor$
 \showacknow{} % Display the acknowledgments section
 
 % Bibliography
-\bibliography{Manuscript/References}
+\bibliography{References}
 
 \end{document}
