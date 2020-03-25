@@ -1,9 +1,9 @@
 
-# Methods
+```{=latex}
+\matmethods{
+```
 
 All analysis was implemented in Python, and can be found at <https://github.com/meyer-lab/gc-cytokines>, release 1.0.
-
-## Model
 
 ### Base model
 
@@ -13,7 +13,7 @@ In addition to binding interactions, our model incorporated receptor-ligand traf
 
 Free receptors and complexes were measured in units of number per cell and soluble ligands were measured in units of concentration (nM). Due to these unit choices for our species, the rate constants for ligand binding to a free receptors had units of nM^-1^ min^-1^, rate constants for the forward dimerization of free receptor to complex had units of cell min^-1^ number^-1^. Dissociation rates had units of min^-1^. All ligand-receptor binding processes had an assumed forward rate (k~bnd~) of 10^7^ M^-1^ sec^-1^. All forward dimerization reaction rates were assumed to be identical, represented by k~fwd~. Reverse reaction rates were unique. Experimentally-derived affinities of 1.0 [@Gonnordeaal1253], 59 [@Walsh_IL7_2012], 0.1 [@Renauld5690], and 0.07 nM [@Gonnordeaal1253] were used for IL-4, -7, -9, and -21 binding to their cognate private receptors, respectively. IL-2 and -15 were assumed to have affinities of 10 nM and 0.065 nM for their respective α-chains [@Rickert_receptor_const; @Mortier20012006; @DUBOIS2002537], and affinities of 144 nM and 438 nM for their respective β-chains [@Rickert_receptor_const]. Rates k~5~, k~10~, and k~11~ were set to their experimentally-determined dissassociation constants of 1.5, 12, and 63 nM [@Rickert_receptor_const].
 
-Initial values were calculated by assuming steady-state in the absence of ligand. Differential equation solving was performed using the SUNDIALS solvers in C++, with a Python interface for all other code [@hindmarsh2005sundials]. Model sensitivities were calculated using the adjoint solution [@CAO2002171]. Calculating the adjoint requires the partial derivatives of the differential equations both with respect to the species and unknown parameters. Constructing these can be tedious and error-prone. Therefore, we calculated these algorithmically using forward-pass autodifferentiation implemented in Adept-2 [@hogan_robin_j_2017]. A model and sensitivities tolerance of 10^-9^ and 10^-3^, respectively, were used throughout. We used unit tests for conservation of mass, equilibrium, and detailed balance to help ensure model correctness.
+Initial values were calculated by assuming steady-state in the absence of ligand. Differential equation solving was performed using the SUNDIALS solvers in C++, with a Python interface for all other code [@hindmarsh2005sundials]. Model sensitivities were calculated using the adjoint solution [@CAO2002171]. Calculating the adjoint requires the partial derivatives of the differential equations both with respect to the species and unknown parameters. Constructing these can be tedious and error-prone. Therefore, we calculated these algorithmically using forward-pass autodifferentiation implemented in Adept-2 [@hogan_robin_j_2017]. A model and sensitivities tolerance of 10^-9^ and 10^-3^, respectively, were used throughout. We used unit tests for conservation of mass, equilibrium, and detailed balance to ensure model correctness.
 
 ### Model fitting
 
@@ -24,8 +24,6 @@ Fitting was performed with the Python package PyMC3. All unknown rate parameters
 ### Tensor Generation and Factorization
 
 To perform tensor factorization we generated a three- (timepoints $\times$ cell types $\times$ ligand) or four-dimensional (timepoints $\times$ cell types $\times$ concentration $\times$ mutein) data tensor of predicted or measured ligand-induced signaling. Before decomposition, the tensor was variance scaled across each cell population. Tensor decomposition was performed using the Python package TensorLy [@TensorlyArxiv]. Except where indicated otherwise, tensor decomposition was performed using non-negative canonical polyadic decomposition. Where indicated, non-negative Tucker decomposition was used.
-
-## Experimental Methods
 
 ### Receptor abundance quantitation
 
@@ -48,3 +46,7 @@ IL-2/Fc fusion proteins were expressed using the Expi293 expression system accor
 ### Octet binding assays
 
 Binding affinity was measured on an OctetRED384 (ForteBio). Briefly, biotinylated monomeric IL-2/Fc fusion proteins were uniformly loaded to Streptavidin biosensors (ForteBio) at roughly 10% of saturation point and equilibrated for 10 minutes in PBS + 0.1% bovine serum albumin (BSA). Association time was up to 40 minutes in IL-2Rβ/γ titrated in 2x steps from 400 nM to 6.25 nM, or IL-2Rα from 25 nM to 20 pM, followed by dissociation in PBS + 0.1% BSA. A zero-concentration control sensor was included in each measurement and used as a reference signal. Assays were performed in quadruplicate across two days. Binding to IL-2Rα did not fit to a simple binding model so equilibrium binding was used to determine the K~D~ within each assay. Binding to IL-2Rβ/γ fit a 1:1 binding model so on-rate (k~on~), off-rate (k~off~) and K~D~ were determined by fitting to the entire binding curve. Kinetic parameters and K~D~ were calculated for each assay by averaging all concentrations with detectable binding signal (typically 12.5 nM and above).
+
+```{=latex}
+}
+```

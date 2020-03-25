@@ -30,26 +30,30 @@ Manuscript/Manuscript.tex: Manuscript/Text/*.md
 	pandoc -s $(pan_common) ./Manuscript/Text/*.md --template=Manuscript/pnas.tex -o $@
 
 Manuscript/Manuscript.pdf: Manuscript/Manuscript.tex $(patsubst %, $(fdir)/figure%.pdf, $(flist)) Manuscript/gatingFigure.pdf
-	pdflatex -output-directory=Manuscript Manuscript.tex
+	pdflatex -interaction=batchmode -output-directory=Manuscript Manuscript.tex
 	cd Manuscript && bibtex Manuscript
-	pdflatex -output-directory=Manuscript Manuscript.tex
-	pdflatex -output-directory=Manuscript Manuscript.tex
+	pdflatex -interaction=batchmode -output-directory=Manuscript Manuscript.tex
+	pdflatex -interaction=batchmode -output-directory=Manuscript Manuscript.tex
+	rm -f Manuscript/Manuscript.aux Manuscript/Manuscript.bbl Manuscript/Manuscript.blg
 
 Manuscript/Supplement.pdf: Manuscript/Supplement.md $(patsubst %, $(fdir)/figure%.pdf, $(flist))
 	pandoc -s $(pan_common) Manuscript/Supplement.md --template=Manuscript/pnasSI.tex --pdf-engine=pdflatex -o $@
 
 ckine/ckine.so: gcSolver/model.cpp gcSolver/model.hpp gcSolver/reaction.hpp gcSolver/makefile
 	cd ./gcSolver && make ckine.so
-	cp ./gcSolver/ckine.so ckine/ckine.so
+	mv ./gcSolver/ckine.so ckine/ckine.so
 
 autopep:
 	autopep8 -i -a --max-line-length 200 ckine/*.py ckine/figures/*.py
 
 clean:
 	rm -f ./Manuscript/Manuscript.* Manuscript/Supplement.pdf
-	rm -f $(fdir)/figure* ckine/ckine.so profile.p* stats.dat .coverage nosetests.xml coverage.xml ckine.out ckine/cppcheck testResults.xml
-	rm -rf html ckine/*.dSYM doxy.log graph_all.svg valgrind.xml callgrind.out.* cprofile.svg venv
+	rm -f $(fdir)/figure* ckine/ckine.so stats.dat .coverage nosetests.xml coverage.xml ckine/cppcheck testResults.xml
+	rm -rf html doxy.log graph_all.svg venv
 	find -iname "*.pyc" -delete
+
+cleanms:
+	rm -f ./Manuscript/Manuscript.* Manuscript/Supplement.pdf
 
 spell.txt: Manuscript/Text/*.md
 	pandoc --lua-filter common/templates/spell.lua Manuscript/Text/*.md | sort | uniq -ic > spell.txt

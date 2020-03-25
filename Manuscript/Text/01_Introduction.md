@@ -15,7 +15,7 @@ author:
   affilnum: b
 - name: Aaron S. Meyer
   affilnum: a
-keywords: [IL-2, IL-15, IL-21, IL-4, IL-7, IL-9, cytokines, receptors, immunology, T cells, NK cells]
+keywords: [IL-2, IL-15, cytokines, receptors, immunology, T cells]
 affiliation:
 - name: Department of Bioengineering, Jonsson Comprehensive Cancer Center, Eli and Edythe Broad Center of Regenerative Medicine and Stem Cell Research; University of California, Los Angeles 90095
   key: a
