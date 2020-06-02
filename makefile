@@ -1,13 +1,13 @@
 SHELL := /bin/bash
 fdir = ./Manuscript/Figures
 tdir = ./common/templates
-pan_common = -F pandoc-crossref --natbib --filter=$(tdir)/figure-filter.py -f markdown+raw_attribute
+pan_common = -F pandoc-crossref -F pandoc-citeproc --filter=$(tdir)/figure-filter.py -f markdown ./Manuscript/Text/*.md
 
 flist = 1 2 3 4 5 6 S1 S2 S4 S5 S7
 
 .PHONY: clean test all testcover autopep spell
 
-all: ckine/ckine.so Manuscript/Manuscript.pdf pylint.log spell.txt Manuscript/Supplement.pdf
+all: ckine/ckine.so Manuscript/Manuscript.pdf Manuscript/Manuscript.docx pylint.log spell.txt
 
 venv: venv/bin/activate
 
@@ -23,37 +23,35 @@ $(fdir)/figure%.svg: venv genFigures.py ckine/ckine.so graph_all.svg ckine/figur
 $(fdir)/figure%pdf: $(fdir)/figure%svg
 	rsvg-convert --keep-image-data -f pdf $< -o $@
 
+$(fdir)/figure%eps: $(fdir)/figure%svg
+	rsvg-convert --keep-image-data -f eps $< -o $@
+
 graph_all.svg: ckine/data/graph_all.gv
 	dot $< -Tsvg -o $@
 
-Manuscript/Manuscript.tex: Manuscript/Text/*.md
-	pandoc -s $(pan_common) ./Manuscript/Text/*.md --template=Manuscript/pnas.tex -o $@
-
-Manuscript/Manuscript.pdf: Manuscript/Manuscript.tex $(patsubst %, $(fdir)/figure%.pdf, $(flist)) Manuscript/gatingFigure.pdf
-	pdflatex -interaction=batchmode -output-directory=Manuscript Manuscript.tex
-	cd Manuscript && bibtex Manuscript
-	pdflatex -interaction=batchmode -output-directory=Manuscript Manuscript.tex
-	pdflatex -interaction=batchmode -output-directory=Manuscript Manuscript.tex
-	rm -f Manuscript/Manuscript.aux Manuscript/Manuscript.bbl Manuscript/Manuscript.blg
-
-Manuscript/Supplement.pdf: Manuscript/Supplement.md $(patsubst %, $(fdir)/figure%.pdf, $(flist))
-	pandoc -s $(pan_common) Manuscript/Supplement.md --template=Manuscript/pnasSI.tex --pdf-engine=pdflatex -o $@
+Manuscript/Manuscript.pdf: Manuscript/Text/*.md $(patsubst %, $(fdir)/figure%.pdf, $(flist)) Manuscript/gatingFigure.pdf
+	pandoc -s $(pan_common) --fail-if-warnings --template=$(tdir)/default.latex --pdf-engine=xelatex -o $@
 
 ckine/ckine.so: gcSolver/model.cpp gcSolver/model.hpp gcSolver/reaction.hpp gcSolver/makefile
 	cd ./gcSolver && make ckine.so
-	mv ./gcSolver/ckine.so ckine/ckine.so
+	cp ./gcSolver/ckine.so ckine/ckine.so
+
+Manuscript/Manuscript.docx: Manuscript/Text/*.md $(patsubst %, $(fdir)/figure%.eps, $(flist))
+	cp -R $(fdir) ./
+	pandoc -s $(pan_common) -o $@
+	rm -r ./Figures
+
+Manuscript/CoverLetter.pdf: Manuscript/CoverLetter.md
+	pandoc --pdf-engine=xelatex --template=/Users/asm/.pandoc/letter-templ.tex $< -o $@
 
 autopep:
 	autopep8 -i -a --max-line-length 200 ckine/*.py ckine/figures/*.py
 
 clean:
-	rm -f ./Manuscript/Manuscript.* Manuscript/Supplement.pdf
-	rm -f $(fdir)/figure* ckine/ckine.so stats.dat .coverage nosetests.xml coverage.xml ckine/cppcheck testResults.xml
-	rm -rf html doxy.log graph_all.svg venv
+	rm -f ./Manuscript/Manuscript.* Manuscript/CoverLetter.docx Manuscript/CoverLetter.pdf ckine/libckine.debug.so
+	rm -f $(fdir)/figure* ckine/ckine.so profile.p* stats.dat .coverage nosetests.xml coverage.xml ckine.out ckine/cppcheck testResults.xml
+	rm -rf html ckine/*.dSYM doxy.log graph_all.svg valgrind.xml callgrind.out.* cprofile.svg venv
 	find -iname "*.pyc" -delete
-
-cleanms:
-	rm -f ./Manuscript/Manuscript.* Manuscript/Supplement.pdf
 
 spell.txt: Manuscript/Text/*.md
 	pandoc --lua-filter common/templates/spell.lua Manuscript/Text/*.md | sort | uniq -ic > spell.txt
