@@ -1,7 +1,4 @@
-
-```{=latex}
-\matmethods{
-```
+# Methods
 
 All analysis was implemented in Python, and can be found at <https://github.com/meyer-lab/gc-cytokines>, release 1.0.
 
@@ -46,7 +43,3 @@ IL-2/Fc fusion proteins were expressed using the Expi293 expression system accor
 ### Octet binding assays
 
 Binding affinity was measured on an OctetRED384 (ForteBio). Briefly, biotinylated monomeric IL-2/Fc fusion proteins were uniformly loaded to Streptavidin biosensors (ForteBio) at roughly 10% of saturation point and equilibrated for 10 minutes in PBS + 0.1% bovine serum albumin (BSA). Association time was up to 40 minutes in IL-2Rβ/γ titrated in 2x steps from 400 nM to 6.25 nM, or IL-2Rα from 25 nM to 20 pM, followed by dissociation in PBS + 0.1% BSA. A zero-concentration control sensor was included in each measurement and used as a reference signal. Assays were performed in quadruplicate across two days. Binding to IL-2Rα did not fit to a simple binding model so equilibrium binding was used to determine the K~D~ within each assay. Binding to IL-2Rβ/γ fit a 1:1 binding model so on-rate (k~on~), off-rate (k~off~) and K~D~ were determined by fitting to the entire binding curve. Kinetic parameters and K~D~ were calculated for each assay by averaging all concentrations with detectable binding signal (typically 12.5 nM and above).
-
-```{=latex}
-}
-```
