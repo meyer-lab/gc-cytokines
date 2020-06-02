@@ -2,9 +2,9 @@
 title: Modeling Cell-Specific Dynamics and Regulation of the Common Gamma Chain Cytokines
 author:
 - name: Ali M. Farhat
-  affilnum: a
+  affilnum: a,c
 - name: Adam C. Weiner
-  affilnum: a
+  affilnum: a,c
 - name: Cori Posner
   affilnum: b
 - name: Zoe S. Kim
@@ -21,12 +21,12 @@ affiliation:
   key: a
 - name: Visterra, Inc., Waltham, MA 02451
   key: b
+- name: These authors contributed equally to this work.
+   key: c
 bibliography: ./Manuscript/References.bib
 abstract: Many receptor families exhibit both pleiotropy and redundancy in their regulation, with multiple ligands, receptors, and responding cell populations. Any intervention, therefore, has multiple effects, confounding intuition about how to precisely manipulate signaling for therapeutic purposes. The common γ-chain cytokine receptor dimerizes with complexes of the cytokines interleukin (IL)-2, IL-4, IL-7, IL-9, IL-15, and IL-21 and their corresponding "private" receptors. These cytokines have existing uses and future potential as immune therapies due to their ability to regulate the abundance and function of specific immune cell populations. However, engineering cell specificity into a therapy is confounded by the complexity of the family across responsive cell types. Here, we build a binding-reaction model for the ligand-receptor interactions of common γ-chain cytokines enabling quantitative predictions of response. We show that accounting for receptor-ligand trafficking is essential to accurately model cell response. This model accurately predicts ligand response across a wide panel of cell types under diverse experimental designs. Further, we can predict the effect and specificity of natural or engineered ligands across cell types. We then show that tensor factorization is a uniquely powerful tool to visualize changes in the input-output behavior of the family across time, cell types, ligands, and concentration. In total, these results present a more accurate model of ligand response validated across a panel of immune cell types, and demonstrate an approach for generating interpretable guidelines to manipulate the cell type-specific targeting of engineered ligands. These techniques will in turn help to study and therapeutically manipulate many other complex receptor-ligand families.
-acknowledge: This work was supported by National Institutes of Health DP5-OD019815 to A.S.M. and by a research agreement with Visterra Inc.
-contrib: A.S.M. and S.M.C. conceived of the study. S.M.C. and C.P. performed the PBMC experiments and engineered the IL-2 fusion proteins. A.C.W., A.M.F., A.S.M, B.O.J., and Z.S.K. performed the computational analysis. All authors helped to design experiments and/or analyze the data.
-interests: S.M.C. and C.P. are employees of Visterra Inc.
-sigstate: The γ-chain receptor cytokines are powerful mediators of the immune response, and have extensive potential as immunotherapies. However, these cytokines' broad immune activation profiles and complicated signaling dynamics have frustrated their development as such. In order to unravel these dynamics, we build a family wide dynamical model of the γ-chain receptor family, including the effects of receptor trafficking, and are able to predict a panel of immune cell types' response to cytokine stimulation. Using tensor factorization, we map and visualize the overlapping effects that cell type, cytokine, time, and ligand concentration play in determining this response. By harnessing these approaches in tandem, we are able to provide design specifications for rational cell-specific cytokine engineering.
+link-citations: true
+csl: ./common/templates/nature.csl
 ---
 <!-- Introduce the common gc family and its importance regulating the immune system.-->
 \dropcap{C}ytokines are cell signaling proteins responsible for cellular communication within the immune system. The common γ-chain (γ~c~) receptor cytokines, including interleukin (IL)-2, 4, 7, 9, 15, and 21, are integral for modulating both innate and adaptive immune responses. As such, they have existing uses and future potential as immune therapies [@Rochman_2009; @LEONARD2019832]. Each ligand binds to its specific private receptors before interacting with the common γ~c~ receptor to induce signaling [@Walsh2010]. γ~c~ receptor signaling induces lymphoproliferation, offering a mechanism for selectively expanding or repressing immune cell types [@Amorosi3304; @Vigliano2012]. Consequently, loss-of-function or reduced activity mutations in the γ~c~ receptor can cause severe combined immunodeficiency (SCID) due to insufficient T and NK cell maturation [@Wang9542]. Deletion or inactivating mutations in IL-2 or its private receptors leads to more selective effects, including diminished regulatory T cell (T~reg~) proliferation and loss of self-tolerance [@Sharma1251; @Sharfe3168; @Horak]. Deficiency in the IL-2 receptor IL-2Rα also causes hyperproliferation in CD8+ T cells, but diminished antigen response [@GOUDY2013248]. These examples show how γ~c~ receptor cytokines coordinate a dynamic balance of immune cell abundance and function.
