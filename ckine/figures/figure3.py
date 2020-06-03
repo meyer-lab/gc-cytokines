@@ -74,6 +74,7 @@ def catplot_receptors(ax, datas):
     ax.set_xticklabels(ax.get_xticklabels(), rotation=25, rotation_mode="anchor", ha="right", position=(0, 0.02), fontsize=7.5)
     ax.set_yscale("log")
     ax.set_ylim(bottom=1)
+    ax.legend(prop={'size': 5})
 
 
 def PCA_receptor(ax, cell_name, datas):
