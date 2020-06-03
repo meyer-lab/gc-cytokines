@@ -38,6 +38,8 @@ csl: ./common/templates/nature.csl
 - Tensor factorization maps responses across cell populations, receptors, cytokines, and dynamics to visualize cytokine specificity.
 - An activation model coupled with tensor factorization provides design specifications for engineering cell-specific responses.
 
+**Keywords:** IL-2, IL-15, cytokines, receptors, immunology, T cells
+
 # Introduction
 
 <!-- Introduce the common gc family and its importance regulating the immune system.-->
