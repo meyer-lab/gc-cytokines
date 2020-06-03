@@ -21,7 +21,7 @@ pipeline {
             sh 'make -j 9'
             archiveArtifacts artifacts: 'spell.txt', onlyIfSuccessful: true
             recordIssues qualityGates: [[threshold: 1, type: 'TOTAL_HIGH', unstable: true], [threshold: 1, type: 'TOTAL_NORMAL', unstable: true], [threshold: 30, type: 'TOTAL_LOW', unstable: true]], tools: [pyLint(pattern: 'pylint.log')]
-            archiveArtifacts artifacts: 'Manuscript/Figures/*.pdf, Manuscript/Manuscript.pdf', onlyIfSuccessful: true
+            archiveArtifacts artifacts: 'Manuscript/Figures/*.pdf, Manuscript/*.pdf', onlyIfSuccessful: true
           }
         }
       }

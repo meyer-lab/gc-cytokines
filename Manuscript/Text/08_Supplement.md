@@ -79,4 +79,4 @@ Data Table SD1: **IL-2Rβ/γ~c~ binding affinities of mutant and modified cytoki
 
 ![**Cytokine affinity measurements to IL-2Rα.** Binding is quantified in relative units.](./Manuscript/CD25binding.pdf){#fig:supp6}
 
-![**Full panel of predicted versus actual immune cell type responses to IL-2 muteins.** Dots represent experimental measurements and shaded regions represent 10-90% confidence interval for model predictions. Time of pSTAT5 activity measurement is denoted by color. Cell populations were stimulated with IL-2 muteins of varying IL-2Rα and IL-2Rβ/γ~c~ binding affinities.](./Manuscript/Figures/figureS7.svg){#fig:supp7}
+![**Full panel of predicted versus actual immune cell type responses to IL-2 muteins.** Dots represent experimental measurements and shaded regions represent 10-90% confidence interval for model predictions. Time of pSTAT5 activity measurement is denoted by color. Cell populations were stimulated with IL-2 muteins of varying IL-2Rα and IL-2Rβ/γ~c~ binding affinities.](./Manuscript/Figures/figureS7.svg){#fig:supp7 height=90%}
