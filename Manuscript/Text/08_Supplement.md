@@ -55,7 +55,7 @@
 |    R38Q N-term        	|    N-Terminus   	|    R38Q	|   V69A/Q74P/C125S   	|
 |    V91K C-term        	|    C-Terminus   	|    V91K	|   C125A   	|
 |    WT C-term        	|    C-Terminus   	|    Wild-type	|   C125A    	|
-|    WT N-term        	|    C-Terminus   	|    Wild-type	|   V69A/Q74P/C125S     	|
+|    WT N-term        	|    N-Terminus   	|    Wild-type	|   V69A/Q74P/C125S     	|
 
 : **Modified IL-2 ligands and their respective mutations, and Fc conjugations.**
 
