@@ -7,7 +7,7 @@ flist = 1 2 3 4 5 6 S1 S2 S4 S5 S7
 
 .PHONY: clean test all testcover autopep spell
 
-all: ckine/ckine.so Manuscript/Manuscript.pdf Manuscript/Manuscript.docx pylint.log spell.txt
+all: ckine/ckine.so Manuscript/Manuscript.pdf Manuscript/Manuscript.docx spell.txt
 
 venv: venv/bin/activate
 
@@ -41,9 +41,6 @@ Manuscript/Manuscript.docx: Manuscript/Text/*.md $(patsubst %, $(fdir)/figure%.e
 	pandoc -s $(pan_common) -o $@
 	rm -r ./Figures
 
-Manuscript/CoverLetter.pdf: Manuscript/CoverLetter.md
-	pandoc --pdf-engine=xelatex --template=/Users/asm/.pandoc/letter-templ.tex $< -o $@
-
 autopep:
 	autopep8 -i -a --max-line-length 200 ckine/*.py ckine/figures/*.py
 
@@ -59,8 +56,5 @@ spell.txt: Manuscript/Text/*.md
 test: venv ckine/ckine.so
 	. venv/bin/activate && pytest
 
-testcover: venv ckine/ckine.so
-	. venv/bin/activate && THEANO_FLAGS='mode=FAST_COMPILE' pytest --junitxml=junit.xml --cov-branch --cov=ckine --cov-report xml:coverage.xml
-
-pylint.log: venv common/pylintrc
-	. venv/bin/activate && (pylint --rcfile=./common/pylintrc ckine > pylint.log || echo "pylint3 exited with $?")
+coverage.xml: venv ckine/ckine.so
+	. venv/bin/activate && THEANO_FLAGS='mode=FAST_COMPILE' pytest --cov=ckine --cov-report=xml
