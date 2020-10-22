@@ -1,0 +1,29 @@
+name: Build
+
+on: [push]
+
+jobs:
+  build:
+    runs-on: self-hosted
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Cache references
+      uses: actions/cache@v2
+      with:
+        path: ~/cache
+        key: ${{ runner.os }}-${{ hashFiles('**/lockfiles') }}
+    - name: Install dependencies
+      run: |
+        git submodule update --init --recursive && make clean
+        make venv
+        make ckine/ckine.so
+    - name: Build figures
+      run: make all -j 9
+    - name: Upload files
+      uses: actions/upload-artifact@v2
+      with:
+        name: files
+        path: |
+          Manuscript/Figures/*.pdf
+          Manuscript/*.pdf
