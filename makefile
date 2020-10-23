@@ -45,10 +45,8 @@ autopep:
 	autopep8 -i -a --max-line-length 200 ckine/*.py ckine/figures/*.py
 
 clean:
-	rm -f ./Manuscript/Manuscript.* Manuscript/CoverLetter.docx Manuscript/CoverLetter.pdf ckine/libckine.debug.so
-	rm -f $(fdir)/figure* ckine/ckine.so profile.p* stats.dat .coverage nosetests.xml coverage.xml ckine.out ckine/cppcheck testResults.xml
-	rm -rf html ckine/*.dSYM doxy.log graph_all.svg valgrind.xml callgrind.out.* cprofile.svg venv
-	find -iname "*.pyc" -delete
+	rm -f ./Manuscript/Manuscript.* $(fdir)/figure* ckine/ckine.so .coverage coverage.xml graph_all.svg
+	rm -rf venv
 
 spell.txt: Manuscript/Text/*.md
 	pandoc --lua-filter common/templates/spell.lua Manuscript/Text/*.md | sort | uniq -ic > spell.txt
@@ -57,4 +55,4 @@ test: venv ckine/ckine.so
 	. venv/bin/activate && pytest
 
 coverage.xml: venv ckine/ckine.so
-	. venv/bin/activate && THEANO_FLAGS='mode=FAST_COMPILE' pytest --cov=ckine --cov-report=xml
+	. venv/bin/activate && THEANO_FLAGS='mode=FAST_COMPILE' pytest --cov=ckine --cov-report=xml --cov-config=.github/workflows/coveragerc
