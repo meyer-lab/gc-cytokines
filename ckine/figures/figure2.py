@@ -112,7 +112,7 @@ def traf_violin(ax, unkVec):
 
     traf.columns = traf_names()
     a = sns.violinplot(data=np.log10(traf), ax=ax, linewidth=0.5, color="grey")
-    a.set_xticklabels(a.get_xticklabels(), rotation=25, rotation_mode="anchor", ha="right", fontsize=8, position=(0, 0.04))
+    a.set_xticklabels(a.get_xticklabels(), rotation=25, rotation_mode="anchor", ha="right", fontsize=6, position=(0, 0.04))
     a.set_ylabel(r"$\mathrm{log_{10}(\frac{1}{min})}$")
     a.set_title("Trafficking Parameters")
 
@@ -130,7 +130,7 @@ def rexpr_violin(ax, unkVec):
     a = sns.violinplot(data=np.log10(Rexpr), ax=ax, linewidth=0.5, palette=col_list_palette)
     a.set_xticklabels(a.get_xticklabels(), rotation=25, rotation_mode="anchor", ha="right", fontsize=8, position=(0, 0.03))
     a.set_ylabel(r"$\mathrm{log_{10}(\frac{\#}{cell * min})}$")
-    a.set_title("Receptor Expression")
+    a.set_title("Receptor Expression Rates")
 
 
 def misc_violin(ax, unkVec, scales):
@@ -143,11 +143,11 @@ def misc_violin(ax, unkVec, scales):
     misc.columns = [
         r"$\mathrm{C_{6}}$ / " + "{:.2E}".format(np.max(scales[:, 0])),
         r"$\mathrm{C_{5}}$ / " + "{:.2E}".format(np.max(scales[:, 1])),
-        r"$\mathrm{f_{sort}}$",
-        r"$\mathrm{k_{fwd}}$ / " + "{:.2E}".format(np.max(unkVec[6, :])),
+        "Sorting Fraction / "  + "{:.2E}".format(np.max(unkVec[:, 6])),
+        "Cmplx form. rate / " + "{:.2E}".format(np.max(unkVec[6, :])),
     ]
     a = sns.violinplot(data=misc, ax=ax, linewidth=0.5, color="grey")
-    a.set_xticklabels(a.get_xticklabels(), rotation=25, rotation_mode="anchor", ha="right", fontsize=8, position=(0, 0.02))
+    a.set_xticklabels(a.get_xticklabels(), rotation=25, rotation_mode="anchor", ha="right", fontsize=5, position=(0, 0.02))
     a.set_ylabel("value")
     a.set_title("Misc. Parameters")
 
