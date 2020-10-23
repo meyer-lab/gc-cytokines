@@ -143,7 +143,7 @@ def misc_violin(ax, unkVec, scales):
     misc.columns = [
         r"$\mathrm{C_{6}}$ / " + "{:.2E}".format(np.max(scales[:, 0])),
         r"$\mathrm{C_{5}}$ / " + "{:.2E}".format(np.max(scales[:, 1])),
-        "Sorting Fraction / "  + "{:.2E}".format(np.max(unkVec[:, 6])),
+        "Sorting Fraction / " + "{:.2E}".format(np.max(unkVec[:, 6])),
         "Cmplx form. rate / " + "{:.2E}".format(np.max(unkVec[6, :])),
     ]
     a = sns.violinplot(data=misc, ax=ax, linewidth=0.5, color="grey")
