@@ -3,3 +3,4 @@
 **/.ipynb_checkpoints
 venv
 ckine/ckine.so
+.vscode/settings.json
