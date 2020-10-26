@@ -1,7 +1,7 @@
 """
 Test Theano interfaces and Ops for correctness.
 """
-import unittest
+import pytest
 import theano
 import theano.tensor as T
 from theano.tests import unittest_tools as utt
@@ -24,72 +24,31 @@ def setupJacobian(Op, unk):
     return f(unk), fprime(unk)
 
 
-class TestOp(unittest.TestCase):
-    """ Test Theano Ops. """
+@pytest.mark.parametrize("tps", [np.array(1.0), np.logspace(-3, 3, num=10)])
+@pytest.mark.parametrize("params", [np.full(nParams() - 6, 0.3), np.full(nParams() - 6, 0.1), np.full(rxParams() - 6, 0.3)])
+@pytest.mark.parametrize("preT,preStim", [(0.0, None), (10.0, np.ones(6) * 10.0)])
+def test_runCkineDoseOp(tps, params, preT, preStim):
+    """ Verify the Jacobian passed back by runCkineDoseOp. """
+    theano.config.compute_test_value = "ignore"
+    Op = runCkineDoseOp(tps, np.full(nSpecies(), 0.1), np.full((3, 6), 10.0), preT, preStim)
 
-    def setUp(self):
-        self.unkV = np.full(nParams(), 0.3)
-        self.unkVfull = np.full(rxParams(), 0.3)
-        self.doseUnkV = self.unkV[6::]
-        self.doseUnkVfull = self.unkVfull[6::]
-        self.cond = np.full(nSpecies(), 0.1)
-        self.conditions = np.full((3, 6), 10.0)
-        self.ts = np.logspace(-3, 3, num=10)
+    utt.verify_grad(Op, [params], abs_tol=0.001, rel_tol=0.001)
 
-    def test_runCkineDoseOp(self):
-        """ Verify the Jacobian passed back by runCkineDoseOp. """
-        theano.config.compute_test_value = "ignore"
-        Op = runCkineDoseOp(np.array(1.0), self.cond, self.conditions)
 
-        utt.verify_grad(Op, [self.doseUnkV], abs_tol=0.01, rel_tol=0.01)
+def test_runCkineDoseOp_noActivity():
+    """ Test that in the absence of ligand most values and gradients are zero. """
+    theano.config.compute_test_value = "ignore"
+    # Setup an Op for conditions with no ligand, looking at cytokine activity
+    Op = runCkineDoseOp(np.array(10.0), getTotalActiveSpecies().astype(np.float64), np.zeros((3, 6)))
 
-    def test_runCkineDoseOpFull(self):
-        """ Verify the Jacobian passed back by runCkineDoseOp with full param set. """
-        theano.config.compute_test_value = "ignore"
-        Op = runCkineDoseOp(np.array(1.0), self.cond, self.conditions)
+    # Calculate the Jacobian
+    f, Jac = setupJacobian(Op, np.full(nParams() - 6, 0.3))
 
-        utt.verify_grad(Op, [self.doseUnkVfull], abs_tol=0.01, rel_tol=0.01)
+    # There should be no activity
+    np.testing.assert_almost_equal(np.max(f), 0.0)
 
-    def test_runCkineDoseTpsOp(self):
-        """ Verify the Jacobian passed back by runCkineDoseOp. """
-        theano.config.compute_test_value = "ignore"
-        Op = runCkineDoseOp(self.ts, self.cond, self.conditions)
+    # Assert that no other parameters matter when there is no ligand
+    np.testing.assert_almost_equal(np.max(np.sum(Jac, axis=0)[6::]), 0.0)
 
-        utt.verify_grad(Op, [self.doseUnkV], abs_tol=0.01, rel_tol=0.01)
-
-    def test_runCkineDoseTpsOpFull(self):
-        """ Verify the Jacobian passed back by runCkineDoseOp. """
-        theano.config.compute_test_value = "ignore"
-        Op = runCkineDoseOp(self.ts, self.cond, self.conditions)
-
-        utt.verify_grad(Op, [self.doseUnkVfull], abs_tol=0.01, rel_tol=0.01)
-
-    def test_runCkineDosePrestimOp(self):
-        """ Verify the Jacobian passed back by runCkineDoseOp with prestimulation. """
-        Op = runCkineDoseOp(np.array(1.0), self.cond, self.conditions, 10.0, np.ones(6) * 10.0)
-
-        utt.verify_grad(Op, [self.doseUnkV], abs_tol=0.01, rel_tol=0.01)
-
-    def test_runCkineDosePrestimOpFull(self):
-        """ Verify the Jacobian passed back by runCkineDoseOp with prestimulation. """
-        Op = runCkineDoseOp(np.array(1.0), self.cond, self.conditions, 10.0, np.ones(6) * 10.0)
-
-        utt.verify_grad(Op, [self.doseUnkVfull], abs_tol=0.01, rel_tol=0.01)
-
-    def test_runCkineDoseOp_noActivity(self):
-        """ Test that in the absence of ligand most values and gradients are zero. """
-        theano.config.compute_test_value = "ignore"
-        # Setup an Op for conditions with no ligand, looking at cytokine activity
-        Op = runCkineDoseOp(np.array(10.0), getTotalActiveSpecies().astype(np.float64), np.zeros_like(self.conditions))
-
-        # Calculate the Jacobian
-        f, Jac = setupJacobian(Op, self.doseUnkV)
-
-        # There should be no activity
-        self.assertAlmostEqual(np.max(f), 0.0)
-
-        # Assert that no other parameters matter when there is no ligand
-        self.assertAlmostEqual(np.max(np.sum(Jac, axis=0)[6::]), 0.0)
-
-        # Assert that all the conditions are the same so the derivatives are the same
-        self.assertAlmostEqual(np.std(np.sum(Jac, axis=1)), 0.0)
+    # Assert that all the conditions are the same so the derivatives are the same
+    np.testing.assert_almost_equal(np.std(np.sum(Jac, axis=1)), 0.0)
