@@ -18,16 +18,16 @@ def load_data(filename):
 
 def sampling(M):
     """ This is the sampling that actually runs the model. """
-    return pm.sample(init="adapt_diag", chains=2, model=M, target_accept=0.90, step_scale=0.01)
+    return pm.sample(init="adapt_diag", chains=4, model=M, target_accept=0.90, step_scale=0.01)
 
 
 def commonTraf(trafficking=True):
     """ Set the common trafficking parameter priors. """
-    kfwd = pm.Lognormal("kfwd", mu=np.log(0.001), sd=0.5, shape=1)
+    kfwd = pm.Lognormal("kfwd", mu=np.log(0.0001), sd=0.5, shape=1)
 
     if trafficking:
-        endo = pm.Lognormal("endo", mu=np.log(0.1), sd=0.1, shape=1)
-        activeEndo = pm.Lognormal("activeEndo", sd=0.1, shape=1)
+        endo = pm.Lognormal("endo", mu=np.log(0.01), sd=0.1, shape=1)
+        activeEndo = pm.Lognormal("activeEndo", mu=np.log(0.1), sd=0.1, shape=1)
         kRec = pm.Lognormal("kRec", mu=np.log(0.1), sd=0.1, shape=1)
         kDeg = pm.Lognormal("kDeg", mu=np.log(0.01), sd=0.2, shape=1)
         sortF = pm.Beta("sortF", alpha=12, beta=80, shape=1)
@@ -121,7 +121,7 @@ class IL2_15_activity:  # pylint: disable=too-few-public-methods
         actCat = T.concatenate((Op(unkVec), Op(unkVecIL2RaMinus)))
 
         # account for pSTAT5 saturation
-        actCat = actCat / (actCat + scale)
+        # actCat = actCat / (actCat + scale)
 
         # normalize from 0 to 1 and return the residual
         return self.fit_data - actCat / T.max(actCat)
