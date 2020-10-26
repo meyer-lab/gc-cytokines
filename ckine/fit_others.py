@@ -155,12 +155,12 @@ class build_model:
             kfwd, endo, activeEndo, kRec, kDeg, sortF = commonTraf()
             nullRates = T.ones(6, dtype=np.float64)  # associated with IL2 and IL15
             Tone = T.ones(1, dtype=np.float64)
-            k27rev = pm.Lognormal("k27rev", mu=np.log(0.1), sd=1, shape=1)  # associated with IL7
-            k33rev = pm.Lognormal("k33rev", mu=np.log(0.1), sd=1, shape=1)  # associated with IL4
+            k27rev = pm.Lognormal("k27rev", mu=np.log(0.1), sigma=1, shape=1)  # associated with IL7
+            k33rev = pm.Lognormal("k33rev", mu=np.log(0.1), sigma=1, shape=1)  # associated with IL4
 
             # constant according to measured number per cell. gc, blank, IL7R, blank, IL4R
             Rexpr = (np.array([0.0, 0.0, 328.0, 0.0, 2591.0, 0.0, 254.0, 0.0]) * endo) / (1.0 + ((kRec * (1.0 - sortF)) / (kDeg * sortF)))
-            scales = pm.Lognormal("scales", mu=np.log(100.0), sd=1, shape=2)  # create scaling constants for activity measurements
+            scales = pm.Lognormal("scales", mu=np.log(100.0), sigma=1, shape=2)  # create scaling constants for activity measurements
 
             # indexing same as in model.hpp
             unkVec = T.concatenate((kfwd, nullRates, k27rev, Tone, k33rev, Tone, endo, activeEndo, sortF, kRec, kDeg, Rexpr))
@@ -169,13 +169,13 @@ class build_model:
 
             sd_int = T.minimum(T.std(Y_int), 0.1)
             pm.Deterministic("Y_int", T.sum(T.square(Y_int)))
-            pm.Normal("fitD_int", sd=sd_int, observed=Y_int)
+            pm.Normal("fitD_int", sigma=sd_int, observed=Y_int)
 
             if self.pretreat is True:
                 Y_cross = self.cross.calc(unkVec, scales)  # fitting the data based on cross.calc
                 pm.Deterministic("Y_cross", T.sum(T.square(Y_cross)))
                 sd_cross = T.minimum(T.std(Y_cross), 0.1)
-                pm.Normal("fitD_cross", sd=sd_cross, observed=Y_cross)  # the stderr is definitely less than 0.2
+                pm.Normal("fitD_cross", sigma=sd_cross, observed=Y_cross)  # the stderr is definitely less than 0.2
 
             # Save likelihood
             pm.Deterministic("logp", M.logpt)
