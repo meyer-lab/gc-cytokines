@@ -104,7 +104,7 @@ def subplotLabel(axs, hstretch=None):
 
 def traf_names():
     """ Returns a list of the trafficking parameters in order they appear within unkVec. """
-    return ["Endocyt. Rate Inact.", "Endocyt. Rate Act.", "Recycling Rate", "Degredation Rate"]
+    return ["Endocyt. Rate Inact.", "Endocyt. Rate Act.", "Recycling Rate", "Degradation Rate"]
 
 
 def plot_conf_int(ax, x_axis, y_axis, color, label=None):

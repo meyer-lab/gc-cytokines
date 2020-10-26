@@ -228,7 +228,7 @@ def plot_pretreat(ax, unkVec, scales, title):
     plot_conf_int(ax, pre_conc, IL4_stim * 100.0, "powderblue")
     plot_conf_int(ax, pre_conc, IL7_stim * 100.0, "b")
     ax.set(title=title)
-    ax.set_xlabel("Pretreatment Ligand Concentration (nM)")
+    ax.set_xlabel("[Pretreatment Ligand] (nM)")
     ax.set_ylabel("Inhibition (% of no pretreat)")
 
     # add experimental data to plots
