@@ -4,7 +4,6 @@ Analyze tensor from make_tensor.
 import numpy as np
 import tensorly as tl
 from tensorly.decomposition import non_negative_parafac, non_negative_tucker
-from tensorly.metrics.regression import variance as tl_var
 
 tl.set_backend("numpy")  # Set the backend
 
@@ -16,20 +15,21 @@ def z_score_values(A, cell_dim):
     convIDX = [None] * tl.ndim(A)
     convIDX[cell_dim] = slice(None)
 
-    sigma = tl.tensor(np.std(tl.to_numpy(A), axis=convAxes))
+    sigma = np.std(A, axis=convAxes)
     return A / sigma[tuple(convIDX)]
 
 
 def R2X(reconstructed, original):
     """ Calculates R2X of two tensors. """
-    return 1.0 - tl_var(reconstructed - original) / tl_var(original)
+    return 1.0 - np.var(reconstructed - original) / np.var(original)
 
 
 def perform_decomposition(tensor, r, weightFactor=2):
     """ Perform PARAFAC decomposition. """
-    weights, factors = non_negative_parafac(tensor, r, tol=1.0e-10, n_iter_max=6000, normalize_factors=True)
-    factors[weightFactor] *= weights[np.newaxis, :]  # Put weighting in designated factor
-    return factors
+    fac = non_negative_parafac(tensor, r, tol=1.0e-10, n_iter_max=6000)
+    fac = tl.cp_normalize(fac)
+    fac.factors[weightFactor] *= fac.weights[np.newaxis, :]  # Put weighting in designated factor
+    return fac.factors
 
 
 def perform_tucker(tensor, rank_list):
@@ -45,4 +45,4 @@ def find_R2X_tucker(values, out):
 
 def find_R2X(values, factors):
     """Compute R2X from parafac. Note that the inputs values and factors are in numpy."""
-    return R2X(tl.kruskal_to_tensor((np.ones(factors[0].shape[1]), factors)), values)
+    return R2X(tl.cp_to_tensor((np.ones(factors[0].shape[1]), factors)), values)
