@@ -215,7 +215,7 @@ def Specificity(ax):
     colors = ["rich blue", "sun yellow"]
     sns.set_palette(sns.xkcd_palette(colors))
 
-    sns.pointplot(data=df, x="rate", y="value", kind="bar", hue="cell", ax=ax, legend=False)
+    sns.barplot(data=df, x="rate", y="value", hue="cell", ax=ax, legend=False)
     ax.set_ylabel("d[Specificity] / d[Param]")
     ax.set_xlabel("")
     ax.legend()
