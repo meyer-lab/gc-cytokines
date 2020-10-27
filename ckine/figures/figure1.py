@@ -148,37 +148,37 @@ def violinPlots(ax, unkVec, scales, Traf=True):
     if Traf:  # include sortF
         misc = np.vstack((scaless, unkVec[:, 19], kfwd))
         misc = pd.DataFrame(misc.T)
-        misc.columns = [r"$\mathrm{C_{5}}$ / " + "{:.2E}".format(np.max(scales)), r"$\mathrm{f_{sort}}$", r"$\mathrm{k_{fwd}}$ / " + "{:.2E}".format(np.max(unkVec[:, 6]))]
+        misc.columns = [r"$\mathrm{C_{5}}$ / " + "{:.2E}".format(np.max(scales)), "Sorting Fraction", "Cmplx form. rate / " + "{:.2E}".format(np.max(unkVec[:, 6]))]
     else:  # ignore sortF
         misc = np.vstack((scaless, kfwd))
         misc = pd.DataFrame(misc.T)
-        misc.columns = [r"$\mathrm{C_{5}}$ / " + "{:.2E}".format(np.max(scales)), r"$\mathrm{k_{fwd}}$ / " + "{:.2E}".format(np.max(unkVec[:, 6]))]
+        misc.columns = [r"$\mathrm{C_{5}}$ / " + "{:.2E}".format(np.max(scales)), "Cmplx form. rate / " + "{:.2E}".format(np.max(unkVec[:, 6]))]
 
     Rexpr.columns = ["IL-2Rα", "IL-2Rβ", r"$\mathrm{γ_{c}}$", "IL-15Rα"]
     col_list = ["violet", "violet", "grey", "goldenrod"]
     col_list_palette = sns.xkcd_palette(col_list)
     a = sns.violinplot(data=np.log10(Rexpr), ax=ax[0], linewidth=0.5, palette=col_list_palette)
-    a.set(title="Receptor Expression", ylabel=r"$\mathrm{log_{10}(\frac{\#}{cell * min})}$")
+    a.set(title="Receptor Expression Rates", ylabel=r"$\mathrm{log_{10}(\frac{\#}{cell * min})}$")
     a.set_xticklabels(a.get_xticklabels(), rotation=25, rotation_mode="anchor", ha="right", fontsize=8, position=(0, 0.02))
 
     if Traf:
         traf.columns = traf_names()
         b = sns.violinplot(data=np.log10(traf), ax=ax[1], linewidth=0.5, color="grey")
-        b.set_xticklabels(b.get_xticklabels(), rotation=25, rotation_mode="anchor", ha="right", fontsize=8, position=(0, 0.05))
+        b.set_xticklabels(b.get_xticklabels(), rotation=35, rotation_mode="anchor", ha="right", fontsize=5, position=(0, 0.05))
         b.set(title="Trafficking Parameters", ylabel=r"$\mathrm{log_{10}(\frac{1}{min})}$")
 
     sc_ax = 1  # subplot number for the scaling constant
     if Traf:
         sc_ax = 2
     c = sns.violinplot(data=misc, ax=ax[sc_ax], linewidth=0.5, color="grey")
-    c.set_xticklabels(c.get_xticklabels(), rotation=25, rotation_mode="anchor", ha="right", fontsize=8, position=(0, 0.05))
+    c.set_xticklabels(c.get_xticklabels(), rotation=35, rotation_mode="anchor", ha="right", fontsize=5, position=(0, 0.05))
     c.set(ylabel="Value", title="Misc. Parameters")
 
 
-def rateComp(ax, unkVec, fsize=6.2):
+def rateComp(ax, unkVec, fsize=5):
     """ This function compares the analogous reverse rxn distributions from IL2 and IL15 in a violin plot. """
     # assign values from unkVec
-    k4rev, k5rev, k16rev, k17rev, k22rev, k23rev = unkVec[7, :], unkVec[8, :], unkVec[9, :], unkVec[10, :], unkVec[11, :], unkVec[12, :]
+    kfwd, k4rev, k5rev, k16rev, k17rev, k22rev, k23rev = unkVec[6, :], unkVec[7, :], unkVec[8, :], unkVec[9, :], unkVec[10, :], unkVec[11, :], unkVec[12, :]
     split = unkVec.shape[1]
     # plug in values from measured constants into arrays of size 500
     kfbnd = 0.60  # Assuming on rate of 10^7 M-1 sec-1
@@ -186,6 +186,7 @@ def rateComp(ax, unkVec, fsize=6.2):
     k2rev = np.full((split), (kfbnd * 144))  # doi:10.1016/j.jmb.2004.04.038, 144 nM
     k13rev = np.full((split), (kfbnd * 0.065))  # based on the multiple papers suggesting 30-100 pM
     k14rev = np.full((split), (kfbnd * 438))  # doi:10.1038/ni.2449, 438 nM
+    kfbndCol = np.full((split), (kfbnd))
 
     # proportions known through measurements
     k10rev = 12.0 * k5rev / 1.5  # doi:10.1016/j.jmb.2004.04.038
@@ -202,15 +203,15 @@ def rateComp(ax, unkVec, fsize=6.2):
     # add each rate duo as separate column in dataframe
     df = pd.DataFrame(
         {
-            r"$\mathrm{k_{1}, k_{13}}$": np.append(k1rev, k13rev),
-            r"$\mathrm{k_{2}, k_{14}}$": np.append(k2rev, k14rev),
-            r"$\mathrm{k_{4}, k_{16}}$": np.append(k4rev, k16rev),
-            r"$\mathrm{k_{5}, k_{17}}$": np.append(k5rev, k17rev),
-            r"$\mathrm{k_{8}, k_{20}}$": np.append(k8rev, k20rev),
-            r"$\mathrm{k_{9}, k_{21}}$": np.append(k9rev, k21rev),
-            r"$\mathrm{k_{10}, k_{22}}$": np.append(k10rev, k22rev),
-            r"$\mathrm{k_{11}, k_{23}}$": np.append(k11rev, k23rev),
-            r"$\mathrm{k_{12}, k_{24}}$": np.append(k12rev, k24rev),
+            "(2)·2Rα, (15)·15Rα": np.append(kfbndCol / k1rev, kfbndCol / k13rev),
+            "(2)·2Rβ, (15)·2Rβ": np.append(kfbndCol / k2rev, kfbndCol / k14rev),
+            r"($\mathrm{γ_{c}}$)·2·2Rα, ($\mathrm{γ_{c}}$)·15·15Rα": np.append(kfwd / k4rev, kfwd / k16rev),
+            r"($\mathrm{γ_{c}}$)·2·2Rβ, ($\mathrm{γ_{c}}$)·15·2Rβ": np.append(kfwd / k5rev, kfwd / k17rev),
+            r"(2Rα)·2·2Rβ·$\mathrm{γ_{c}}$, (15Rα)·15·2Rβ·$\mathrm{γ_{c}}$": np.append(kfwd / k8rev, kfwd / k20rev),
+            r"(2Rβ)·2·2Rα·$\mathrm{γ_{c}}$, (2Rβ)·15·15Rα·$\mathrm{γ_{c}}$": np.append(kfwd / k9rev, kfwd / k21rev),
+            r"($\mathrm{γ_{c}}$)·2·2Rα·2Rβ, ($\mathrm{γ_{c}}$)·15·15Rα·2Rβ": np.append(kfwd / k10rev, kfwd / k22rev),
+            "(2Rβ)·2·2Rα, (2Rβ)·15·15Rα": np.append(kfwd / k11rev, kfwd / k23rev),
+            "(15Rα)·2·2Rβ, (15Rα)·15·2Rβ": np.append(kfwd / k12rev, kfwd / k24rev),
         }
     )
 
@@ -219,19 +220,19 @@ def rateComp(ax, unkVec, fsize=6.2):
     df.loc[split: (split * 2), "cytokine"] = "IL-15"
 
     # melt into long form and take log value
-    melted = pd.melt(df, id_vars="cytokine", var_name="Rate", value_name=r"$\mathrm{log_{10}(\frac{1}{min})}$")
-    melted.loc[:, r"$\mathrm{log_{10}(\frac{1}{min})}$"] = np.log10(melted.loc[:, r"$\mathrm{log_{10}(\frac{1}{min})}$"])
+    melted = pd.melt(df, id_vars="cytokine", var_name="Rate", value_name=r"$\mathrm{log_{10}(K_{a})}$")
+    melted.loc[:, r"$\mathrm{log_{10}(K_{a})}$"] = np.log10(melted.loc[:, r"$\mathrm{log_{10}(K_{a})}$"])
 
     col_list = ["violet", "goldenrod"]
     col_list_palette = sns.xkcd_palette(col_list)
     sns.set_palette(col_list_palette)
 
     # plot with hue being cytokine species
-    a = sns.violinplot(x="Rate", y=r"$\mathrm{log_{10}(\frac{1}{min})}$", data=melted, hue="cytokine", ax=ax, linewidth=0, scale="width")
+    a = sns.violinplot(x="Rate", y=r"$\mathrm{log_{10}(K_{a})}$", data=melted, hue="cytokine", ax=ax, linewidth=0, scale="width")
     a.get_legend().remove()  # remove the legend
-    a.scatter(-0.3, np.log10(kfbnd * 10), color="darkviolet")  # overlay point for k1rev
-    a.scatter(0.1, np.log10(kfbnd * 0.065), color="goldenrod")  # overlay point for k13rev
-    a.scatter(0.7, np.log10(kfbnd * 144), color="darkviolet")  # overlay point for k2rev
-    a.scatter(1.1, np.log10(kfbnd * 468), color="goldenrod")  # overlay point for k14rev
-    a.set_xticklabels(a.get_xticklabels(), rotation=25, fontsize=fsize)
-    a.set_title("Analogous Dissociation Rates")
+    a.scatter(-0.3, np.log10(1 / 10), color="darkviolet")  # overlay point for k1rev
+    a.scatter(0.1, np.log10(1 / 0.065), color="goldenrod")  # overlay point for k13rev
+    a.scatter(0.7, np.log10(1 / 144), color="darkviolet")  # overlay point for k2rev
+    a.scatter(1.1, np.log10(1 / 468), color="goldenrod")  # overlay point for k14rev
+    a.set_xticklabels(a.get_xticklabels(), rotation=45, rotation_mode="anchor", ha="right", fontsize=fsize)
+    a.set(title=r"Species Association Constants", ylabel=r"$\mathrm{log_{10}(K_{a})}$", xlabel="")
