@@ -20,8 +20,7 @@ if __name__ == "__main__":  # only go into this loop if you're running fit.py di
     elif args.trafficking == "F":
         traf = False
     else:
-        print("enter valid trafficking parameter")
-        raise ValueError
+        raise ValueError("Trafficking should be true or false.")
 
     if args.cytokines == '2':
         from ckine.fit import build_model
@@ -31,26 +30,17 @@ if __name__ == "__main__":  # only go into this loop if you're running fit.py di
         else:
             print('Running IL2/15 model without trafficking')
             filename = "ckine/data/fits/IL2_15_no_traf"
+        M = build_model(traf=traf)
     elif args.cytokines == '4':
         from ckine.fit_others import build_model
         if traf:
             print('Running IL4/7 model with trafficking')
             filename = "ckine/data/fits/IL4-7_model_results"
+            M = build_model()
         else:
-            print('Running IL4/7 model without trafficking')
-            filename = "ckine/data/fits/IL4_7_no_traf"
-    elif args.cytokines == '2v':
-        from ckine.fit_visterra import build_model
-        if traf:
-            print('Running IL2/15 Visterra model with trafficking')
-            filename = "ckine/data/fits/IL2_visterra_results"
-        else:
-            print('Running IL2/15 Visterra model without trafficking')
-            filename = "ckine/data/fits/IL2_15_no_traf_visterra"
+            raise ValueError("We're only looking at the IL-4/7 fit with trafficking.")
     else:
-        print("enter valid cytokine parameter")
-        raise ValueError
+        raise ValueError("Enter valid fit selection.")
 
-    M = build_model(traf=traf)
     trace = sampling(M.M)
     pm.backends.text.dump(filename, trace)  # instead of pickling data we dump it into file that can be accessed by read_fit_data.py
