@@ -15,55 +15,35 @@ libb.runCkine.argtypes = (pcd, ct.c_uint, pcd, pcd, ct.c_bool, ct.c_double, pcd)
 libb.runCkineParallel.argtypes = (pcd, pcd, ct.c_uint, ct.c_uint, pcd, ct.c_double, pcd)
 libb.runCkineSParallel.argtypes = (pcd, pcd, ct.c_uint, ct.c_uint, pcd, pcd, pcd, ct.c_double, pcd)
 
-__nSpecies = 62
-
 
 def nSpecies():
     """ Returns the total number of species in the model. """
-    return __nSpecies
-
-
-__halfL = 28
+    return 62
 
 
 def halfL():
     """ Returns the number of species on the surface alone. """
-    return __halfL
-
-
-__nParams = 30
-__rxParams = 60
+    return 28
 
 
 def nParams():
     """ Returns the length of the rxntfR vector. """
-    return __nParams
+    return 30
 
 
 def rxParams():
     """ Returns the length of the rxntfR vector. """
-    return __rxParams
-
-
-__internalStrength = 0.5  # strength of endosomal activity relative to surface
+    return 60
 
 
 def internalStrength():
     """Returns the internalStrength of endosomal activity."""
-    return __internalStrength
+    return 0.5
 
 
-__nRxn = 17
-
-
-def nRxn():
-    """ Returns the length of the rxn rates vector (doesn't include traf rates). """
-    return __nRxn
-
-
-def runCkineU(tps, rxntfr, preT=0.0, prestim=None, mut_name=None):
+def runCkineU(tps, rxntfr):
     """ Standard version of solver that returns species abundances given times and unknown rates. """
-    return runCkineUP(tps, np.atleast_2d(rxntfr.copy()), preT, prestim, mut_name=mut_name)
+    return runCkineUP(tps, np.atleast_2d(rxntfr.copy()))
 
 
 def runCkineUP(tps, rxntfr, preT=0.0, prestim=None, actV=None, mut_name=None):
@@ -74,16 +54,16 @@ def runCkineUP(tps, rxntfr, preT=0.0, prestim=None, actV=None, mut_name=None):
 
     # Convert if we're using the condensed model
     rxnSizeStart = rxntfr.shape[1]
-    if rxntfr.shape[1] == __nParams:
-        assert rxntfr.size % __nParams == 0
+    if rxntfr.shape[1] == nParams():
+        assert rxntfr.size % nParams() == 0
         assert (rxntfr[:, 19] < 1.0).all()  # Check that sortF won't throw
 
         rxntfr = getRateVec(rxntfr)
         if mut_name:
             rxntfr = mut_adjust(rxntfr, mutaff, mut_name)
     else:
-        assert rxntfr.size % __rxParams == 0
-        assert rxntfr.shape[1] == __rxParams
+        assert rxntfr.size % rxParams() == 0
+        assert rxntfr.shape[1] == rxParams()
 
     if preT != 0.0:
         assert preT > 0.0
@@ -91,14 +71,14 @@ def runCkineUP(tps, rxntfr, preT=0.0, prestim=None, actV=None, mut_name=None):
         prestim = prestim.ctypes.data_as(ct.POINTER(ct.c_double))
 
     if actV is None:
-        yOut = np.zeros((rxntfr.shape[0] * tps.size, __nSpecies), dtype=np.float64)
+        yOut = np.zeros((rxntfr.shape[0] * tps.size, nSpecies()), dtype=np.float64)
 
         retVal = libb.runCkineParallel(
             rxntfr.ctypes.data_as(ct.POINTER(ct.c_double)), tps.ctypes.data_as(ct.POINTER(ct.c_double)), tps.size, rxntfr.shape[0], yOut.ctypes.data_as(ct.POINTER(ct.c_double)), preT, prestim
         )
     else:
         yOut = np.zeros((rxntfr.shape[0] * tps.size), dtype=np.float64)
-        sensV = np.zeros((rxntfr.shape[0] * tps.size, __rxParams), dtype=np.float64, order="C")
+        sensV = np.zeros((rxntfr.shape[0] * tps.size, rxParams()), dtype=np.float64, order="C")
 
         retVal = libb.runCkineSParallel(
             rxntfr.ctypes.data_as(ct.POINTER(ct.c_double)),
@@ -116,7 +96,7 @@ def runCkineUP(tps, rxntfr, preT=0.0, prestim=None, actV=None, mut_name=None):
 
     if actV is not None:
         # If we're using the condensed model
-        if rxnSizeStart == __nParams:
+        if rxnSizeStart == nParams():
             sensV = condenseSENV(sensV)
 
         return (yOut, sensV)
@@ -126,7 +106,7 @@ def runCkineUP(tps, rxntfr, preT=0.0, prestim=None, actV=None, mut_name=None):
 
 def fullModel(y, t, rxntfr):
     """ Implement the full model based on dydt, trafficking, expression. """
-    assert rxntfr.size == __nParams
+    assert rxntfr.size == nParams()
 
     yOut = np.zeros_like(y)
 
@@ -137,7 +117,7 @@ def fullModel(y, t, rxntfr):
     return yOut
 
 
-__active_species_IDX = np.zeros(__halfL, dtype=np.bool)
+__active_species_IDX = np.zeros(halfL(), dtype=np.bool)
 __active_species_IDX[np.array([7, 8, 14, 15, 18, 21, 24, 27])] = 1
 
 
@@ -149,7 +129,7 @@ def getActiveSpecies():
 def getTotalActiveSpecies():
     """ Return a vector of all the species (surface + endosome) which are active. """
     activity = getActiveSpecies()
-    return np.concatenate((activity, __internalStrength * activity, np.zeros(6)))
+    return np.concatenate((activity, internalStrength() * activity, np.zeros(6)))
 
 
 def getCytokineSpecies():
@@ -159,14 +139,14 @@ def getCytokineSpecies():
 
 def getSurfaceIL2RbSpecies():
     """ Returns a list of vectors for which surface species contain the IL2Rb receptor. """
-    condense = np.zeros(__nSpecies)
+    condense = np.zeros(nSpecies())
     condense[np.array([1, 4, 5, 7, 8, 11, 12, 14, 15])] = 1
     return condense
 
 
 def getSurfaceGCSpecies():
     """ Returns a list of vectors for which surface species contain the gc receptor. """
-    condense = np.zeros(__nSpecies)
+    condense = np.zeros(nSpecies())
     condense[np.array([2, 6, 7, 8, 13, 14, 15, 18, 21])] = 1
     return condense
 
@@ -179,7 +159,7 @@ def getActiveCytokine(cytokineIDX, yVec):
 def getTotalActiveCytokine(cytokineIDX, yVec):
     """ Get amount of surface and endosomal active species. """
     assert yVec.ndim == 1
-    return getActiveCytokine(cytokineIDX, yVec[0:__halfL]) + __internalStrength * getActiveCytokine(cytokineIDX, yVec[__halfL: __halfL * 2])
+    return getActiveCytokine(cytokineIDX, yVec[0:halfL()]) + internalStrength() * getActiveCytokine(cytokineIDX, yVec[halfL(): halfL() * 2])
 
 
 def surfaceReceptors(y):
@@ -197,7 +177,7 @@ def surfaceReceptors(y):
 
 def totalReceptors(yVec):
     """This function takes in a vector y and returns the amounts of all 8 receptors in both cell compartments"""
-    return surfaceReceptors(yVec) + __internalStrength * surfaceReceptors(yVec[__halfL: __halfL * 2])
+    return surfaceReceptors(yVec) + internalStrength() * surfaceReceptors(yVec[halfL(): halfL() * 2])
 
 
 def receptor_expression(receptor_abundance, endo, kRec, sortF, kDeg):
