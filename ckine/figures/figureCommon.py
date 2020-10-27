@@ -353,10 +353,10 @@ def optimize_scale(model_act2, model_act15, exp_act2, exp_act15):
         scaled_act2 = sc[1] * model_act2 / (model_act2 + sc[0])
         scaled_act15 = sc[1] * model_act15 / (model_act15 + sc[0])
         err = np.hstack((exp_act2 - scaled_act2, exp_act15 - scaled_act15))
-        return np.reshape(err, (-1,))
+        return err.ravel()
 
     # find result of minimization where both params are >= 0
-    res = least_squares(calc_res, guess, bounds=(0.0, np.inf))
+    res = least_squares(calc_res, guess, jac="3-point", bounds=(0.0, np.inf))
     return res.x
 
 
