@@ -319,7 +319,6 @@ def calc_dose_response(cell_names, unkVec, scales, receptor_data, tps, cytokC, e
 
 def grouped_scaling(scales, cell_names, expr_act2, expr_act15, pred_act2, pred_act15):
     """ Determines scaling parameters for specified cell groups. """
-
     cell_groups = [["T-reg", "Mem Treg", "Naive Treg"], ["T-helper", "Mem Th", "Naive Th"], ["NK"], ["CD8+", "Naive CD8+", "Mem CD8+"]]
 
     scale = np.zeros((4, 2, len(scales)))
@@ -328,36 +327,21 @@ def grouped_scaling(scales, cell_names, expr_act2, expr_act15, pred_act2, pred_a
         expr_act_15 = expr_act_2.copy()
         pred_act_2 = expr_act_2.copy()
         pred_act_15 = expr_act_2.copy()
-        for j, _ in enumerate(scales):
+        for j in range(len(scales)):
             num = 0
-            for k, cell in enumerate(cell_names):
-                if cell in cells:
+            for k in range(len(cell_names)):
+                if _ in cells:
                     expr_act_2[num, :, j, :] = expr_act2[(k * 4): ((k + 1) * 4)].T
                     expr_act_15[num, :, j, :] = expr_act15[(k * 4): ((k + 1) * 4)].T
                     pred_act_2[num, :, j, :] = pred_act2[k, :, j, :]
                     pred_act_15[num, :, j, :] = pred_act15[k, :, j, :]
                     num = num + 1
-            scale[i, :, j] = optimize_scale(pred_act_2[:, :, j, :], pred_act_15[:, :, j, :], expr_act_2[:, :, j, :], expr_act_15[:, :, j, :])
+
+            predd = np.concatenate((pred_act_2[:, :, j, :], pred_act_15[:, :, j, :]))
+            exprr = np.concatenate((expr_act_2[:, :, j, :], expr_act_15[:, :, j, :]))
+            scale[i, :, j] = optimize_scale(predd, exprr)
 
     return scale
-
-
-def optimize_scale(model_act2, model_act15, exp_act2, exp_act15):
-    """ Formulates the optimal scale to minimize the residual between model activity predictions and experimental activity measurments for a given cell type. """
-
-    # scaling factors are sigmoidal and linear, respectively
-    guess = np.array([100.0, np.mean(exp_act2 + exp_act15) / np.mean(model_act2 + model_act15)])
-
-    def calc_res(sc):
-        """ Calculate the residuals. This is the function we minimize. """
-        scaled_act2 = sc[1] * model_act2 / (model_act2 + sc[0])
-        scaled_act15 = sc[1] * model_act15 / (model_act15 + sc[0])
-        err = np.hstack((exp_act2 - scaled_act2, exp_act15 - scaled_act15))
-        return err.ravel()
-
-    # find result of minimization where both params are >= 0
-    res = least_squares(calc_res, guess, jac="3-point", bounds=(0.0, np.inf))
-    return res.x
 
 
 def import_pMuteins():
@@ -446,14 +430,13 @@ def organize_expr_pred(df, cell_name, ligand_name, receptors, muteinC, tps, unkV
 
 def mutein_scaling(df, unkVec):
     """ Determines scaling parameters for specified cell groups for across all muteins. """
-
     cell_groups = [["T-reg", "Mem Treg", "Naive Treg"], ["T-helper", "Mem Th", "Naive Th"], ["NK"], ["CD8+"]]
 
     scales = np.zeros((4, 2, unkVec.shape[1]))
     for i, cells in enumerate(cell_groups):
         for j in range(unkVec.shape[1]):
             subset_df = df[df["Cells"].isin(cells)]
-            scales[i, :, j] = optimize_scale_mut(
+            scales[i, :, j] = optimize_scale(
                 np.array(subset_df.loc[(subset_df["Activity Type"] == "predicted") & (subset_df["Replicate"] == (j + 1)), "Activity"]),
                 np.array(subset_df.loc[(subset_df["Activity Type"] == "experimental"), "Activity"]),
             )
@@ -461,7 +444,7 @@ def mutein_scaling(df, unkVec):
     return scales
 
 
-def optimize_scale_mut(model_act, exp_act):
+def optimize_scale(model_act, exp_act):
     """ Formulates the optimal scale to minimize the residual between model activity predictions and experimental activity measurments for a given cell type. """
 
     # scaling factors are sigmoidal and linear, respectively
@@ -470,11 +453,10 @@ def optimize_scale_mut(model_act, exp_act):
     def calc_res(sc):
         """ Calculate the residuals. This is the function we minimize. """
         scaled_act = sc[1] * model_act / (model_act + sc[0])
-        err = exp_act - scaled_act
-        return err.flatten()
+        return (exp_act - scaled_act).flatten()
 
     # find result of minimization where both params are >= 0
-    res = least_squares(calc_res, guess, bounds=(0.0, np.inf))
+    res = least_squares(calc_res, guess, jac="3-point", bounds=(0.0, np.inf))
     return res.x
 
 
