@@ -30,16 +30,17 @@ if __name__ == "__main__":  # only go into this loop if you're running fit.py di
         else:
             print('Running IL2/15 model without trafficking')
             filename = "ckine/data/fits/IL2_15_no_traf"
+        M = build_model(traf=traf)
     elif args.cytokines == '4':
         from ckine.fit_others import build_model
         if traf:
             print('Running IL4/7 model with trafficking')
             filename = "ckine/data/fits/IL4-7_model_results"
+            M = build_model()
         else:
             raise ValueError("We're only looking at the IL-4/7 fit with trafficking.")
     else:
         raise ValueError("Enter valid fit selection.")
 
-    M = build_model(traf=traf)
     trace = sampling(M.M)
     pm.backends.text.dump(filename, trace)  # instead of pickling data we dump it into file that can be accessed by read_fit_data.py
