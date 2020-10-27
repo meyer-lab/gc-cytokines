@@ -327,18 +327,18 @@ def grouped_scaling(scales, cell_names, expr_act2, expr_act15, pred_act2, pred_a
         expr_act_15 = expr_act_2.copy()
         pred_act_2 = expr_act_2.copy()
         pred_act_15 = expr_act_2.copy()
-        for j in range(len(scales)):
+        for j, _ in enumerate(scales):
             num = 0
-            for k in range(len(cell_names)):
-                if _ in cells:
+            for k, cell in enumerate(cell_names):
+                if cell in cells:
                     expr_act_2[num, :, j, :] = expr_act2[(k * 4): ((k + 1) * 4)].T
                     expr_act_15[num, :, j, :] = expr_act15[(k * 4): ((k + 1) * 4)].T
                     pred_act_2[num, :, j, :] = pred_act2[k, :, j, :]
                     pred_act_15[num, :, j, :] = pred_act15[k, :, j, :]
                     num = num + 1
 
-            predd = np.concatenate((pred_act_2[:, :, j, :], pred_act_15[:, :, j, :]))
-            exprr = np.concatenate((expr_act_2[:, :, j, :], expr_act_15[:, :, j, :]))
+            predd = np.stack((pred_act_2[:, :, j, :], pred_act_15[:, :, j, :]))
+            exprr = np.stack((expr_act_2[:, :, j, :], expr_act_15[:, :, j, :]))
             scale[i, :, j] = optimize_scale(predd, exprr)
 
     return scale
