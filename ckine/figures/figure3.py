@@ -35,6 +35,8 @@ def makeFigure():
 
     # Start plotting
     PCA_receptor(ax[1:3], cell_names, numpy_data)
+    ax[1].text(1.5, 2, 'See Legend Below', verticalalignment='center', fontsize=5)
+    ax[1].text(0.25, 0.5, 'See 3A Legend', verticalalignment='center', fontsize=5)
     catplot_receptors(ax[0], data)
 
     # Blank out for the cartoon
@@ -62,7 +64,7 @@ def makeFigure():
     ax[7].get_legend().remove()
     ax[8].get_legend().remove()
     ax[5].set_ylabel("Variance of Model\nOutput Explained", fontsize=8, multialignment="center")
-    plot_ligands(ax[9], tl.to_numpy(factors_activ[2]), ligand_names=["IL-2", "IL-15", "IL-7"], cutoff=5.0, compLabel=False)
+    plot_ligands(ax[9], tl.to_numpy(factors_activ[2]), ligand_names=["IL-2", "IL-15", "IL-7"], cutoff=15.0, compLabel=True)
 
     return f
 
