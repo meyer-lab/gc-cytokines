@@ -232,12 +232,12 @@ def plot_pretreat(ax, unkVec, scales, title):
     ax.set_ylabel("Inhibition (% of no pretreat)")
 
     # add experimental data to plots
-    ax.scatter(IL7_pretreat_conc, data[:, 1], color="powderblue", zorder=100, marker="^", edgecolors="k")
-    ax.scatter(IL7_pretreat_conc, data[:, 2], color="powderblue", zorder=101, marker="^", edgecolors="k")
-    ax.scatter(IL7_pretreat_conc, data[:, 3], color="powderblue", zorder=102, marker="^", edgecolors="k")
-    ax.scatter(IL4_pretreat_conc, data[:, 6], color="b", zorder=103, marker="^", edgecolors="k")
-    ax.scatter(IL4_pretreat_conc, data[:, 7], color="b", zorder=104, marker="^", edgecolors="k")
-    ax.scatter(IL4_pretreat_conc, data[:, 8], color="b", zorder=105, marker="^", edgecolors="k")
+    ax.scatter(IL7_pretreat_conc, data[:, 1], color="powderblue", zorder=100, marker="^", edgecolors="k", s=20)
+    ax.scatter(IL7_pretreat_conc, data[:, 2], color="powderblue", zorder=101, marker="^", edgecolors="k", s=20)
+    ax.scatter(IL7_pretreat_conc, data[:, 3], color="powderblue", zorder=102, marker="^", edgecolors="k", s=20)
+    ax.scatter(IL4_pretreat_conc, data[:, 6], color="b", zorder=103, marker="^", edgecolors="k", s=20)
+    ax.scatter(IL4_pretreat_conc, data[:, 7], color="b", zorder=104, marker="^", edgecolors="k", s=20)
+    ax.scatter(IL4_pretreat_conc, data[:, 8], color="b", zorder=105, marker="^", edgecolors="k", s=20)
     ax.set_xscale("log")
     ax.set_xticks([10e-5, 10e-2, 10e0])
 
