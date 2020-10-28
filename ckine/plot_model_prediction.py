@@ -60,7 +60,7 @@ class pstat:
         self.activity = getTotalActiveSpecies().astype(np.float64)
         self.ts = np.array([500.0])  # was 500. in literature
 
-    def calc(self, unkVec, scale, cytokC):
+    def calc(self, unkVec, cytokC):
         """This function uses an unkVec that has the same elements as the unkVec in fit.py"""
         assert unkVec.shape[0] == nParams()
         K = unkVec.shape[1]
@@ -80,9 +80,8 @@ class pstat:
             actVec_IL15[:, x] = parallelCalc(unkVec, 1, conc, self.ts, self.activity, reshapeP=False)
             actVec_IL15_IL2Raminus[:, x] = parallelCalc(unkVec_IL2Raminus, 1, conc, self.ts, self.activity, reshapeP=False)
 
-        # put together into one vector & normalize by scale
+        # put together into one vector
         actVec = np.concatenate((actVec_IL2, actVec_IL2_IL2Raminus, actVec_IL15, actVec_IL15_IL2Raminus), axis=1)
-        actVec = actVec / (actVec + scale[:, np.newaxis])
 
         return actVec / actVec.max(axis=1, keepdims=True)  # normalize by the max value of each row
 

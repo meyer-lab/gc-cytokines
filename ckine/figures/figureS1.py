@@ -20,10 +20,10 @@ def makeFigure():
     del axLabel[leg_ind]
     subplotLabel(axLabel, hstretch={1: 2.35})
 
-    unkVec, scales = import_samples_2_15(Traf=False, N=100)
-    full_unkVec, full_scales = import_samples_2_15(Traf=False)
-    pstat_act(ax[0], unkVec, scales)
+    unkVec = import_samples_2_15(Traf=False, N=100)
+    full_unkVec = import_samples_2_15(Traf=False)
+    pstat_act(ax[0], unkVec)
     rateComp(ax[1], full_unkVec, fsize=8)
-    violinPlots(ax[3:5], full_unkVec, full_scales, Traf=False)
+    violinPlots(ax[3:5], full_unkVec, Traf=False)
 
     return f

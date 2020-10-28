@@ -74,8 +74,7 @@ def import_samples_2_15(Traf=True, ret_trace=False, N=None, tensor=False):
     if ret_trace:
         return trace
 
-    scales = trace["scales__0"].values
-    num = scales.size
+    num = trace["kfwd__0"].values.size
 
     unkVec = np.zeros((nParams(), num))
     unkVec[6:13, :] = trace[["kfwd__0", "rxn__0", "rxn__1", "rxn__2", "rxn__3", "rxn__4", "rxn__5"]].values.T
@@ -89,9 +88,9 @@ def import_samples_2_15(Traf=True, ret_trace=False, N=None, tensor=False):
         assert 0 < N < num, "The N specified is out of bounds."
 
         idx = np.random.randint(num, size=N)  # pick N numbers without replacement from 0 to num
-        unkVec, scales = unkVec[:, idx], scales[idx]
+        unkVec = unkVec[:, idx]
 
-    return unkVec, scales
+    return unkVec
 
 
 def import_samples_4_7(ret_trace=False, N=None):
@@ -106,8 +105,7 @@ def import_samples_4_7(ret_trace=False, N=None):
     sortF = trace["sortF__0"].values
     kRec = trace["kRec__0"].values
     kDeg = trace["kDeg__0"].values
-    scales = trace[["scales__0", "scales__1"]].values
-    num = scales.shape[0]
+    num = endo.shape[0]
 
     unkVec = np.zeros((nParams(), num))
     unkVec[6, :] = trace["kfwd__0"].values
@@ -129,9 +127,9 @@ def import_samples_4_7(ret_trace=False, N=None):
         assert 0 < N < num, "The N specified is out of bounds."
 
         idx = np.random.randint(num, size=N)  # pick N numbers without replacement from 0 to num
-        unkVec, scales = unkVec[:, idx], scales[idx, :]
+        unkVec = unkVec[:, idx]
 
-    return unkVec, scales
+    return unkVec
 
 
 def import_pstat(combine_samples=True):
