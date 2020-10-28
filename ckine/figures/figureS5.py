@@ -33,10 +33,15 @@ def plot_exp_v_pred(ax, cell_subset=None):
     _, receptor_data, _ = import_Rexpr()
     unkVec_2_15 = import_samples_2_15(N=100)  # use all rates
     ckineConc, cell_names_pstat, IL2_data, IL15_data, _ = import_pstat()
+    _, _, IL2_data1, IL2_data2, IL15_data1, IL15_data2 = import_pstat(False)
 
     # Scale all the data down so we don't have a bunch of zeros on our axes
     IL2_data = IL2_data / 1000.0
     IL15_data = IL15_data / 1000.0
+    IL2_data1 *= 1 / 1000
+    IL2_data2 *= 1 / 1000
+    IL15_data1 *= 1 / 1000
+    IL15_data2 *= 1 / 1000
 
     if cell_subset is None:
         cell_subset = []
@@ -53,8 +58,10 @@ def plot_exp_v_pred(ax, cell_subset=None):
                 plot_dose_response(ax[axis], ax[axis + shift], IL2_activity[m, :, :, :], IL15_activity[m, :, :, :], name, tps, ckineConc, legend=True)
             else:
                 plot_dose_response(ax[axis], ax[axis + shift], IL2_activity[m, :, :, :], IL15_activity[m, :, :, :], name, tps, ckineConc)
-            plot_scaled_pstat(ax[axis], ckineConc.astype(np.float), IL2_data[(m * 4): ((m + 1) * 4)])
-            plot_scaled_pstat(ax[axis + shift], ckineConc.astype(np.float), IL15_data[(m * 4): ((m + 1) * 4)])
+            plot_scaled_pstat(ax[axis], ckineConc.astype(np.float), IL2_data1[(m * 4): ((m + 1) * 4)])
+            plot_scaled_pstat(ax[axis], ckineConc.astype(np.float), IL2_data2[(m * 4): ((m + 1) * 4)])
+            plot_scaled_pstat(ax[axis + shift], ckineConc.astype(np.float), IL15_data1[(m * 4): ((m + 1) * 4)])
+            plot_scaled_pstat(ax[axis + shift], ckineConc.astype(np.float), IL15_data2[(m * 4): ((m + 1) * 4)])
             axis = axis + 1
 
 

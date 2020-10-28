@@ -9,7 +9,7 @@ from ..imports import import_samples_2_15
 def makeFigure():
     """Get a list of the axis objects and create a figure"""
     # Get list of axis objects
-    ax, f = getSetup((7.5, 4), (2, 3), multz={1: 1})
+    ax, f = getSetup((7.5, 6), (2, 3), multz={1: 1})
 
     # add legend
     leg_ind = 2
