@@ -38,7 +38,6 @@ def plot_geweke_2_15(ax, traf):
     df["IL-2Rβ"] = geweke(trace["Rexpr_2Rb__0"])[:, 1]
     df["IL-15Rα"] = geweke(trace["Rexpr_15Ra__0"])[:, 1]
     df[r"$γ_{c}$"] = geweke(trace["Rexpr_gc__0"])[:, 1]
-    df[r"$C_{5}$"] = geweke(trace["scales__0"])[:, 1]
     df[r"$k_{fwd}$"] = geweke(trace["kfwd__0"])[:, 1]
 
     if traf:  # add the trafficking parameters if necessary & set proper title
@@ -65,8 +64,6 @@ def plot_geweke_4_7(ax):
     df = pd.DataFrame()
     df[r"$k_{27}$"] = geweke(trace["k27rev__0"])[:, 1]
     df[r"$k_{33}$"] = geweke(trace["k33rev__0"])[:, 1]
-    df[r"$C_{5}$"] = geweke(trace["scales__0"])[:, 1]
-    df[r"$C_{6}$"] = geweke(trace["scales__1"])[:, 1]
     df[r"$k_{fwd}$"] = geweke(trace["kfwd__0"])[:, 1]
     df[r"$k_{endo}$"] = geweke(trace["endo__0"])[:, 1]
     df[r"$k_{endo,a}$"] = geweke(trace["activeEndo__0"])[:, 1]

@@ -8,13 +8,13 @@ import seaborn as sns
 import theano.tensor as T
 import theano
 from matplotlib.lines import Line2D
-from .figureCommon import subplotLabel, getSetup, global_legend, calc_dose_response, import_pMuteins, nllsq_EC50, organize_expr_pred, mutein_scaling, plot_cells, plot_ligand_comp, plot_conf_int
+from .figureCommon import subplotLabel, getSetup, global_legend, calc_dose_response, import_pMuteins, nllsq_EC50, organize_expr_pred, plot_cells, plot_ligand_comp, plot_conf_int
 from ..imports import import_pstat, import_samples_2_15, import_Rexpr
 from ..model import getTotalActiveSpecies, receptor_expression, getRateVec, getparamsdict, getMutAffDict
 from ..differencing_op import runCkineDoseOp
 from ..tensor import perform_decomposition, find_R2X, z_score_values
 
-unkVec_2_15, scales = import_samples_2_15(N=1)
+unkVec_2_15 = import_samples_2_15(N=1)
 data, receptor_data, cell_names_receptor = import_Rexpr()
 ckineConc, cell_names_pstat, IL2_data, IL15_data, _ = import_pstat()
 ckineC = ckineConc[7]
@@ -41,7 +41,7 @@ def makeFigure():
     df_spec = pd.DataFrame(columns=["Cells", "Ligand", "Time", "Concentration", "Data Type", "Specificity"])
     df_act = pd.DataFrame(columns=["Cells", "Ligand", "Time", "Concentration", "Activity Type", "Activity"])
 
-    IL2_activity, IL15_activity, _ = calc_dose_response(cell_names_pstat, unkVec_2_15, scales, receptor_data, tps, ckineConc, IL2_data, IL15_data)
+    IL2_activity, IL15_activity = calc_dose_response(cell_names_pstat, unkVec_2_15, receptor_data, tps, ckineConc, IL2_data, IL15_data)
     for i, name in enumerate(cell_names_pstat):
         assert cell_names_pstat[i] == cell_names_receptor[i]
         df_add2 = pd.DataFrame(
@@ -82,7 +82,7 @@ def makeFigure():
     calc_plot_specificity(ax[1], "T-helper", df_spec, df_act, ckines, ckineConc_)
     global_legend(ax[0], Spec=True, Mut=True)
     Specificity(ax=ax[2])
-    Spec_Aff(ax[3], 40, unkVecT, scalesT)
+    Spec_Aff(ax[3], 40, unkVecT)
     Mut_Fact(ax[8:12])
     legend = ax[8].get_legend()
     labels = (x.get_text() for x in legend.get_texts())
@@ -175,12 +175,11 @@ def specificity(df_specificity, df_activity, cell_type1, cell_type2, ligand, tp,
 
 
 tpsSc = np.array([0.5, 1.0, 2.0, 4.0]) * 60.0
-_, _, scalesT = calc_dose_response(cell_names_receptor, unkVec_2_15, scales, receptor_data, tpsSc, ckineConc, IL2_data, IL15_data)
 
 
 def Specificity(ax):
     """ Creates Theano Function for calculating Specificity gradient with respect to various parameters"""
-    S_NK, S_Th = OPgenSpec(unkVecT, scalesT)
+    S_NK, S_Th = OPgenSpec(unkVecT)
     SNKgrad = T.grad(S_NK[0], unkVecT)
     SThgrad = T.grad(S_Th[0], unkVecT)
     SNKgradfunc = theano.function([unkVecT], SNKgrad)
@@ -226,7 +225,7 @@ def Specificity(ax):
     ax.set_xticklabels(labels, rotation=60, rotation_mode="anchor", ha="right", fontdict={"fontsize": 6})
 
 
-def OPgen(unkVecOP, CellTypes, OpC, scalesTh, RaAffM, RbAffM):
+def OPgen(unkVecOP, CellTypes, OpC, RaAffM, RbAffM):
     """ Generates the UnkVec with cell specific receptor abundances and expression rates. """
     _, receptor_dataC, cell_names_receptorC = import_Rexpr()
     cell_names_receptorC = cell_names_receptorC.tolist()
@@ -246,28 +245,19 @@ def OPgen(unkVecOP, CellTypes, OpC, scalesTh, RaAffM, RbAffM):
     for ii in [2, 3, 4, 5, 6, 22, 23, 24, 25, 26]:
         unkVecOP = T.set_subtensor(unkVecOP[ii], unkVecOP[ii] * RbAffM)
 
-    cell_groups = np.array([["T-reg", "Mem Treg", "Naive Treg"], ["T-helper", "Mem Th", "Naive Th"], ["NK"], ["CD8+", "Naive CD8+", "Mem CD8+"]])
-    for i, group in enumerate(cell_groups):
-        group = np.array(group)
-        if np.where(group == CellTypes)[0].size > 0:
-            scale1 = scalesTh[i, 1, 0]
-            scale2 = scalesTh[i, 0, 0]
-
-    Cell_Op = (OpC(unkVecOP) * scale1) / (OpC(unkVecOP) + scale2)
-
-    return Cell_Op
+    return OpC(unkVecOP) / OpC(unkVecOP)
 
 
-def OPgenSpec(unk, scalesIn, k1Aff=1.0, k5Aff=1.0):
+def OPgenSpec(unk, k1Aff=1.0, k5Aff=1.0):
     """ Make an Op for specificity from the given conditions. """
-    S_NK = OPgen(unk, "T-reg", Op, scalesIn, k1Aff, k5Aff) / OPgen(unk, "NK", Op, scalesIn, k1Aff, k5Aff)
+    S_NK = OPgen(unk, "T-reg", Op, k1Aff, k5Aff) / OPgen(unk, "NK", Op, k1Aff, k5Aff)
 
-    S_Th = OPgen(unk, "T-reg", Op, scalesIn, k1Aff, k5Aff) / OPgen(unk, "T-helper", Op, scalesIn, k1Aff, k5Aff)
+    S_Th = OPgen(unk, "T-reg", Op, k1Aff, k5Aff) / OPgen(unk, "T-helper", Op, k1Aff, k5Aff)
 
     return S_NK, S_Th
 
 
-def Spec_Aff(ax, npoints, unkVecAff, scalesAff):
+def Spec_Aff(ax, npoints, unkVecAff):
     "Plots specificity for a cell type over a range of IL2RBG and IL2Ra affinities"
     affRange = np.logspace(2, -1, npoints)
     RaAff = np.array([1, 2])
@@ -275,7 +265,7 @@ def Spec_Aff(ax, npoints, unkVecAff, scalesAff):
     specHolderTh = np.zeros([len(RaAff), npoints])
     for i, k1Aff in enumerate(RaAff):
         for j, k5Aff in enumerate(affRange):
-            SNKfun, SThfun = OPgenSpec(unkVecAff, scalesAff, k1Aff, k5Aff)
+            SNKfun, SThfun = OPgenSpec(unkVecAff, k1Aff, k5Aff)
             specHolderNK[i, j] = SNKfun.eval()
             specHolderTh[i, j] = SThfun.eval()
         if i == 0:
@@ -305,7 +295,6 @@ def get_Mut_EC50s():
     celltypes = mutData.Cells.unique()
     times = mutData.Time.unique()
     EC50df = pd.DataFrame(columns=["Time Point", "IL", "Cell Type", "Data Type", "EC-50"])
-    cell_groups = [["T-reg", "Mem Treg", "Naive Treg"], ["T-helper", "Mem Th", "Naive Th"], ["NK"], ["CD8+"]]
 
     # experimental
     for _, IL in enumerate(ligand_order):
@@ -333,9 +322,6 @@ def get_Mut_EC50s():
             # append dataframe with experimental and predicted activity
             df = organize_expr_pred(df, cell_name, ligand_name, receptors, ckineConc, tpsSc, unkVec_2_15)
 
-    # determine scaling constants
-    scalesIn = mutein_scaling(df, unkVec_2_15)
-
     # scale
     pred_data = np.zeros((12, 4, unkVec_2_15.shape[1]))
     for _, cell_name in enumerate(cell_order):
@@ -350,10 +336,6 @@ def get_Mut_EC50s():
                         & (df["Time Point"] == tp)
                         & (df["Replicate"] == 1)
                     ]["Activity"]
-
-            for n, cell_names in enumerate(cell_groups):
-                if cell_name in cell_names:
-                    pred_data[:, :] = scalesIn[n, 1, 0] * pred_data[:, :] / (pred_data[:, :] + scalesIn[n, 0, 0])
 
             for kk, timeEC in enumerate(tpsSc):
                 doseData = (pred_data[:, kk]).flatten()
@@ -409,8 +391,7 @@ def Mut_Fact(ax):
 def MuteinModelOverlay(ax, tpoint, cells):
     "Plots Mutein Experimental and model predictions overlaid for a given cell type/types"
     bounds = np.array([35000, 2500, 14000])
-    cell_groups = [["T-reg", "Mem Treg", "Naive Treg"], ["T-helper", "Mem Th", "Naive Th"], ["NK"], ["CD8+"]]
-    unkVec_2_15Over, _ = import_samples_2_15(N=25)
+    unkVec_2_15Over = import_samples_2_15(N=25)
     tps = np.array([0.5, 1.0, 2.0, 4.0]) * 60.0
     muteinC = mutData.Concentration.unique()
     pred_data = np.zeros((12, 4, unkVec_2_15Over.shape[1]))
@@ -430,7 +411,6 @@ def MuteinModelOverlay(ax, tpoint, cells):
             # append dataframe with experimental and predicted activity
             df = organize_expr_pred(df, cell_name, ligand_name, receptors, muteinC, tps, unkVec_2_15Over)
 
-    scales2 = mutein_scaling(df, unkVec_2_15Over)
     colors = sns.color_palette("hls", 6)
 
     for i, celltype in enumerate(cells):
@@ -448,11 +428,6 @@ def MuteinModelOverlay(ax, tpoint, cells):
                             & (df["Replicate"] == (m + 1)),
                             "Activity",
                         ]
-
-            for n, cell_names in enumerate(cell_groups):
-                if celltype in cell_names:
-                    for o in range(unkVec_2_15Over.shape[1]):
-                        pred_data[:, :, o] = scales2[n, 1, o] * pred_data[:, :, o] / (pred_data[:, :, o] + scales2[n, 0, o])
 
             plot_conf_int(ax[i], muteinC.astype(np.float), pred_data[:, 3, :], colors[j])
     # plot experimental
