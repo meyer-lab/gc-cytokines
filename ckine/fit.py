@@ -27,11 +27,11 @@ def commonTraf(trafficking=True):
 
     if trafficking:
         endo = pm.Lognormal("endo", mu=np.log(0.1), sigma=0.1, shape=1)
-        activeEndo = T.ones(1, dtype=np.float64) # pm.Lognormal("activeEndo", sigma=0.1, shape=1)
+        activeEndo = T.ones(1, dtype=np.float64)  # pm.Lognormal("activeEndo", sigma=0.1, shape=1)
         pm.Deterministic("activeEndo", activeEndo)
         kRec = pm.Lognormal("kRec", mu=np.log(0.1), sigma=0.1, shape=1)
         kDeg = pm.Lognormal("kDeg", mu=np.log(0.01), sigma=0.2, shape=1)
-        sortF = T.ones(1, dtype=np.float64) * 0.1 # pm.Beta("sortF", alpha=12, beta=80, shape=1)
+        sortF = T.ones(1, dtype=np.float64) * 0.1  # pm.Beta("sortF", alpha=12, beta=80, shape=1)
         pm.Deterministic("sortF", sortF)
     else:
         # Assigning trafficking to zero to fit without trafficking

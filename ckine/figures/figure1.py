@@ -99,7 +99,7 @@ def gc_perc(ax, unkVec):
     ax.set_xticks(np.arange(0, 300, step=60))
 
 
-def pstat_act(ax, unkVec, scales):
+def pstat_act(ax, unkVec):
     """ This function generates the pSTAT activation levels for each combination of parameters in unkVec. The results are plotted and then overlayed with the values measured by Ring et al. """
     pstat5 = pstat()
     PTS = 30
@@ -110,7 +110,7 @@ def pstat_act(ax, unkVec, scales):
     IL15_plus = IL2_plus.copy()
     IL2_minus = IL2_plus.copy()
 
-    output = pstat5.calc(unkVec, scales, cytokC) * y_max  # calculate activity for all unkVecs and concs
+    output = pstat5.calc(unkVec, cytokC) * y_max  # calculate activity for all unkVecs and concs
     # split according to experimental condition
     IL2_plus = output[:, 0:PTS].T
     IL2_minus = output[:, PTS: (PTS * 2)].T
@@ -137,22 +137,21 @@ def pstat_act(ax, unkVec, scales):
     ax.xaxis.set_tick_params(labelsize=7)
 
 
-def violinPlots(ax, unkVec, scales, Traf=True):
+def violinPlots(ax, unkVec, Traf=True):
     """ Create violin plots of model posterior. """
     unkVec = unkVec.transpose()
     traf = np.concatenate((unkVec[:, 17:19], unkVec[:, 20:22]), axis=1)
     traf = pd.DataFrame(traf)
     Rexpr = pd.DataFrame(unkVec[:, 22:26])
-    scaless = scales / np.max(scales)
     kfwd = unkVec[:, 6] / np.max(unkVec[:, 6])
     if Traf:  # include sortF
-        misc = np.vstack((scaless, unkVec[:, 19], kfwd))
+        misc = np.vstack((unkVec[:, 19], kfwd))
         misc = pd.DataFrame(misc.T)
-        misc.columns = [r"$\mathrm{C_{5}}$ / " + "{:.2E}".format(np.max(scales)), "Sorting Fraction", "Cmplx form. rate / " + "{:.2E}".format(np.max(unkVec[:, 6]))]
+        misc.columns = ["Sorting Fraction", "Cmplx form. rate / " + "{:.2E}".format(np.max(unkVec[:, 6]))]
     else:  # ignore sortF
-        misc = np.vstack((scaless, kfwd))
+        misc = kfwd
         misc = pd.DataFrame(misc.T)
-        misc.columns = [r"$\mathrm{C_{5}}$ / " + "{:.2E}".format(np.max(scales)), "Cmplx form. rate / " + "{:.2E}".format(np.max(unkVec[:, 6]))]
+        misc.columns = ["Cmplx form. rate / " + "{:.2E}".format(np.max(unkVec[:, 6]))]
 
     Rexpr.columns = ["IL-2Rα", "IL-2Rβ", r"$\mathrm{γ_{c}}$", "IL-15Rα"]
     col_list = ["violet", "violet", "grey", "goldenrod"]
