@@ -4,3 +4,4 @@
 venv
 ckine/ckine.so
 .vscode/settings.json
+graph_all.svg
