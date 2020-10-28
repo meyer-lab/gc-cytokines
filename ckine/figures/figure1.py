@@ -20,12 +20,12 @@ def makeFigure():
 
     subplotLabel(ax, hstretch={0: 3.8, 8: 3.25})
 
-    unkVec, scales = import_samples_2_15(N=100)  # use these for simulations
-    full_unkVec, full_scales = import_samples_2_15()  # use these for violin plots
-    pstat_act(ax[1], unkVec, scales)
+    unkVec = import_samples_2_15(N=100)  # use these for simulations
+    full_unkVec = import_samples_2_15()  # use these for violin plots
+    pstat_act(ax[1], unkVec)
     IL2Rb_perc(ax[2:4], unkVec)
     gc_perc(ax[4], unkVec)
-    violinPlots(ax[5:8], full_unkVec, full_scales)
+    violinPlots(ax[5:8], full_unkVec)
     rateComp(ax[8], full_unkVec)
     global_legend(ax[1], exppred=False)
     legend = ax[1].get_legend()
