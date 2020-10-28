@@ -35,8 +35,8 @@ def makeFigure():
 
     # Start plotting
     PCA_receptor(ax[1:3], cell_names, numpy_data)
-    ax[1].text(1.2, 2, 'See Legend\nBelow', verticalalignment='center', fontsize=5)
-    ax[2].text(0.1, 0.5, 'See 3A Legend', verticalalignment='center', fontsize=5)
+    ax[1].text(1.5, 1.9, 'See\nLegend\nBelow', verticalalignment='center', fontsize=7)
+    ax[2].text(0.3, 0.75, 'See 3A\nLegend', verticalalignment='center', fontsize=7)
     catplot_receptors(ax[0], data)
 
     # Blank out for the cartoon
