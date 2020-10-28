@@ -5,14 +5,14 @@ import numpy as np
 import pandas as pd
 import seaborn as sns
 import matplotlib.cm as cm
-from .figureCommon import subplotLabel, getSetup, plot_conf_int, import_pMuteins, organize_expr_pred, mutein_scaling
+from .figureCommon import subplotLabel, getSetup, plot_conf_int, import_pMuteins, organize_expr_pred
 from ..imports import import_Rexpr, import_samples_2_15, import_pstat
 
 dataMean = import_pMuteins()
 dataMean.reset_index(inplace=True)
 data, _, _ = import_Rexpr()
 data.reset_index(inplace=True)
-unkVec_2_15, _ = import_samples_2_15(N=25)
+unkVec_2_15 = import_samples_2_15(N=25)
 _, _, _, _, pstat_df = import_pstat()
 dataMean = dataMean.append(pstat_df, ignore_index=True, sort=True)
 
@@ -42,23 +42,18 @@ def makeFigure():
         receptors = np.array([IL2Ra, IL2Rb, gc]).astype(np.float)
 
         for _, ligand_name in enumerate(ligand_order):
-
             # append dataframe with experimental and predicted activity
             df = organize_expr_pred(df, cell_name, ligand_name, receptors, muteinC, tps, unkVec_2_15)
 
     # determine scaling constants
-    scales = mutein_scaling(df, unkVec_2_15)
-    plot_expr_predM(ax, df, scales, cell_order, ligand_order, tps, muteinC)
+    plot_expr_predM(ax, df, cell_order, ligand_order, tps, muteinC)
 
     return f
 
 
-def plot_expr_predM(ax, df, scales, cell_order, ligand_order, tps, muteinC):
+def plot_expr_predM(ax, df, cell_order, ligand_order, tps, muteinC):
     """ Plots experimental and scaled model-predicted dose response for all cell types, muteins, and time points. """
-
     pred_data = np.zeros((12, 4, unkVec_2_15.shape[1]))
-    cell_groups = [["T-reg", "Mem Treg", "Naive Treg"], ["T-helper", "Mem Th", "Naive Th"], ["NK"], ["CD8+"]]
-    ylims = [50000.0, 30000.0, 2500.0, 3500.0]
 
     for i, cell_name in enumerate(cell_order):
         for j, ligand_name in enumerate(ligand_order):
@@ -83,13 +78,7 @@ def plot_expr_predM(ax, df, scales, cell_order, ligand_order, tps, muteinC):
                             "Activity",
                         ]
 
-            for n, cell_names in enumerate(cell_groups):
-                if cell_name in cell_names:
-                    for o in range(unkVec_2_15.shape[1]):
-                        pred_data[:, :, o] = scales[n, 1, o] * pred_data[:, :, o] / (pred_data[:, :, o] + scales[n, 0, o])
-
-                    plot_dose_responseM(ax[axis], pred_data, tps, muteinC, legend=(axis == 0))
-                    ax[axis].set(ylim=(0, ylims[n]))
+            plot_dose_responseM(ax[axis], pred_data, tps, muteinC, legend=(axis == 0))
             ax[axis].set(xlabel=("[" + ligand_name + "] (nM)"), ylabel="Activity", title=cell_name)
 
 
