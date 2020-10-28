@@ -171,7 +171,10 @@ def violinPlots(ax, unkVec, scales, Traf=True):
     if Traf:
         sc_ax = 2
     c = sns.violinplot(data=misc, ax=ax[sc_ax], linewidth=0.5, color="grey")
-    c.set_xticklabels(c.get_xticklabels(), rotation=35, rotation_mode="anchor", ha="right", fontsize=5, position=(0, 0.05))
+    if Traf:
+        c.set_xticklabels(c.get_xticklabels(), rotation=35, rotation_mode="anchor", ha="right", fontsize=5, position=(0, 0.05))
+    else:
+        c.set_xticklabels(c.get_xticklabels(), rotation=35, rotation_mode="anchor", ha="right", fontsize=8, position=(0, 0.05))
     c.set(ylabel="Value", title="Misc. Parameters")
 
 
