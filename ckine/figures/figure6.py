@@ -215,8 +215,8 @@ def Specificity(ax):
     colors = ["rich blue", "sun yellow"]
     sns.set_palette(sns.xkcd_palette(colors))
 
-    sns.pointplot(data=df, x="rate", y="value", kind="bar", hue="cell", ax=ax, legend=False)
-    ax.set_ylabel("d[Specificity] / d[Param]")
+    sns.barplot(data=df, x="rate", y="value", hue="cell", ax=ax, legend=False)
+    ax.set_ylabel(r"$\frac{d[Specificity]}{d[Param]}$")
     ax.set_xlabel("")
     ax.legend()
     ax.set_yscale("symlog", linthreshy=0.01)
@@ -467,7 +467,7 @@ def MuteinModelOverlay(ax, tpoint, cells):
                 color=colors[j],
                 legend=False,
             )
-            ax[i].set(xlabel=("Concentration (nM)"), ylabel="Activity", title=celltype, ylim=(0, bounds[i]))
+            ax[i].set(xlabel=("Concentration (nM)"), ylabel="pSTAT5", title=celltype, ylim=(0, bounds[i]))
             ax[i].set_xscale("log")
             ax[i].set_xlim(10e-5, 10e1)
             ax[i].set_xticks([10e-5, 10e-3, 10e-1, 10e1])

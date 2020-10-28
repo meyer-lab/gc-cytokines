@@ -73,9 +73,9 @@ def plot_dose_response(ax2, ax15, IL2_activity, IL15_activity, cell_type, tps, c
         plot_conf_int(ax15, cytokC.astype(np.float), IL15_activity[:, :, tt], colors[tt])
 
     # plots for input cell type
-    ax2.set(ylabel="Activity", title=cell_type)
+    ax2.set(ylabel="pSTAT5", title=cell_type)
     ax2.set_xlabel(r"[IL-2] Concentration (nM)", fontsize=8)
-    ax15.set(ylabel="Activity", title=cell_type)
+    ax15.set(ylabel="pSTAT5", title=cell_type)
     ax15.set_xlabel(r"[IL-15] Concentration (nM)", fontsize=8)
     ax2.set_xscale("log")
     ax15.set_xscale("log")
