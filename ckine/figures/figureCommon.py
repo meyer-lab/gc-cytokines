@@ -478,34 +478,23 @@ def optimize_scale_mut(model_act, exp_act):
     return res.x
 
 
-def catplot_comparison(ax, df, legend=False, Mut=True):
+def catplot_comparison(ax, df, Mut=True):
     """ Construct EC50 catplots for each time point for Different ligands. """
     # set a manual color palette
-    col_list = ["violet", "goldenrod"]
-    col_list_palette = sns.xkcd_palette(col_list)
-    sns.set_palette(col_list_palette)
+    sns.set_palette(sns.xkcd_palette(["violet", "goldenrod"]))
     if Mut:
         sns.set_palette(sns.color_palette("husl", 8)[0:5] + [sns.color_palette("husl", 8)[7]])
         df = df.sort_values(by=["Data Type", "Cell Type", "IL", "Time Point"])
 
-    # plot predicted EC50
-    sns.pointplot(x="Cell Type", y="EC-50", hue="IL", data=df.loc[(df["Time Point"] == 60.0) & (df["Data Type"] == "Predicted")], legend=legend, legend_out=legend, ax=ax, marker="^", s=3.5)
-
-    # plot experimental EC50
-    sns.pointplot(x="Cell Type", y="EC-50", hue="IL", data=df.loc[(df["Time Point"] == 60.0) & (df["Data Type"] == "Experimental")], legend=False, legend_out=False, ax=ax, marker="o", s=3.5)
-
-    ax.set_xticklabels(ax.get_xticklabels(), rotation=40, fontsize=6.8, rotation_mode="anchor", ha="right")
+    # plot predicted and experimental EC50
+    sns.scatterplot(x="Cell Type", y="EC-50", hue="IL", style="Data Type", data=df.loc[df["Time Point"] == 60.0], legend=False, ax=ax)
     ax.set_xlabel("")  # remove "Cell Type" from xlabel
     ax.set_ylabel(r"EC-50 (log$_{10}$[nM])")
-    handles = []
-    if legend:
-        handles, _ = ax.get_legend_handles_labels()
-        handles = handles[0:6]
-    circle = Line2D([], [], color="black", marker="o", linestyle="None", markersize=6, label="Experimental")
-    triangle = Line2D([], [], color="black", marker="^", linestyle="None", markersize=6, label="Predicted")
-    handles.append(circle)
-    handles.append(triangle)
-    ax.legend(handles=handles)
+    ax.tick_params(axis='x', which='major', rotation=40, labelsize=6.8, rotation_mode="anchor", ha="right")
+
+    expp = Line2D([], [], color="black", marker="x", linestyle="None", markersize=6, label="Experimental")
+    predd = Line2D([], [], color="black", marker="o", linestyle="None", markersize=6, label="Predicted")
+    ax.legend(handles=[expp, predd])
 
 
 def nllsq_EC50(x0, xdata, ydata):
