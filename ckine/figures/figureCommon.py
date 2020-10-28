@@ -472,7 +472,7 @@ def catplot_comparison(ax, df, Mut=True):
     sns.scatterplot(x="Cell Type", y="EC-50", hue="IL", style="Data Type", data=df.loc[df["Time Point"] == 60.0], legend=False, ax=ax)
     ax.set_xlabel("")  # remove "Cell Type" from xlabel
     ax.set_ylabel(r"EC-50 (log$_{10}$[nM])")
-    ax.tick_params(axis='x', which='major', rotation=40, labelsize=6.8, rotation_mode="anchor", ha="right")
+    ax.tick_params(axis='x', which='major', rotation=40, labelsize=6.8)
 
     expp = Line2D([], [], color="black", marker="x", linestyle="None", markersize=6, label="Experimental")
     predd = Line2D([], [], color="black", marker="o", linestyle="None", markersize=6, label="Predicted")
