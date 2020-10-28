@@ -431,7 +431,7 @@ def MuteinModelOverlay(ax, tpoint, cells):
             df = organize_expr_pred(df, cell_name, ligand_name, receptors, muteinC, tps, unkVec_2_15Over)
 
     scales2 = mutein_scaling(df, unkVec_2_15Over)
-    colors = sns.color_palette("hls", 6)
+    colors = sns.color_palette("husl", 6)
 
     for i, celltype in enumerate(cells):
         for j, ligand in enumerate(ligand_order):

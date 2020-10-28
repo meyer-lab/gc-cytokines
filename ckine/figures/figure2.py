@@ -95,10 +95,10 @@ def pstat_plot(ax, unkVec, scales):
     plot_conf_int(ax, cytokC_common, IL7_output * 100.0, "b", "IL-7 stim.")
 
     # overlay experimental data
-    ax.scatter(cytokC_4, (dataIL4[:, 1] / IL4_data_max) * 100.0, color="powderblue", marker="^", edgecolors="k", zorder=100)
-    ax.scatter(cytokC_4, (dataIL4[:, 2] / IL4_data_max) * 100.0, color="powderblue", marker="^", edgecolors="k", zorder=200)
-    ax.scatter(cytokC_7, (dataIL7[:, 1] / IL7_data_max) * 100.0, color="b", marker="^", edgecolors="k", zorder=300)
-    ax.scatter(cytokC_7, (dataIL7[:, 2] / IL7_data_max) * 100.0, color="b", marker="^", edgecolors="k", zorder=400)
+    ax.scatter(cytokC_4, (dataIL4[:, 1] / IL4_data_max) * 100.0, color="powderblue", marker="^", edgecolors="k", zorder=100, s=20)
+    ax.scatter(cytokC_4, (dataIL4[:, 2] / IL4_data_max) * 100.0, color="powderblue", marker="^", edgecolors="k", zorder=200, s=20)
+    ax.scatter(cytokC_7, (dataIL7[:, 1] / IL7_data_max) * 100.0, color="b", marker="^", edgecolors="k", zorder=300, s=20)
+    ax.scatter(cytokC_7, (dataIL7[:, 2] / IL7_data_max) * 100.0, color="b", marker="^", edgecolors="k", zorder=400, s=20)
     ax.set(ylabel="pSTAT5/6 (% of max)", xlabel="Ligand Concentration (nM)", title="Activity")
     ax.set_xscale("log")
     ax.set_xticks([10e-5, 10e-3, 10e-1, 10e1])
@@ -232,12 +232,12 @@ def plot_pretreat(ax, unkVec, scales, title):
     ax.set_ylabel("Inhibition (% of no pretreat)")
 
     # add experimental data to plots
-    ax.scatter(IL7_pretreat_conc, data[:, 1], color="powderblue", zorder=100, marker="^", edgecolors="k")
-    ax.scatter(IL7_pretreat_conc, data[:, 2], color="powderblue", zorder=101, marker="^", edgecolors="k")
-    ax.scatter(IL7_pretreat_conc, data[:, 3], color="powderblue", zorder=102, marker="^", edgecolors="k")
-    ax.scatter(IL4_pretreat_conc, data[:, 6], color="b", zorder=103, marker="^", edgecolors="k")
-    ax.scatter(IL4_pretreat_conc, data[:, 7], color="b", zorder=104, marker="^", edgecolors="k")
-    ax.scatter(IL4_pretreat_conc, data[:, 8], color="b", zorder=105, marker="^", edgecolors="k")
+    ax.scatter(IL7_pretreat_conc, data[:, 1], color="powderblue", zorder=100, marker="^", edgecolors="k", s=20)
+    ax.scatter(IL7_pretreat_conc, data[:, 2], color="powderblue", zorder=101, marker="^", edgecolors="k", s=20)
+    ax.scatter(IL7_pretreat_conc, data[:, 3], color="powderblue", zorder=102, marker="^", edgecolors="k", s=20)
+    ax.scatter(IL4_pretreat_conc, data[:, 6], color="b", zorder=103, marker="^", edgecolors="k", s=20)
+    ax.scatter(IL4_pretreat_conc, data[:, 7], color="b", zorder=104, marker="^", edgecolors="k", s=20)
+    ax.scatter(IL4_pretreat_conc, data[:, 8], color="b", zorder=105, marker="^", edgecolors="k", s=20)
     ax.set_xscale("log")
     ax.set_xticks([10e-5, 10e-2, 10e0])
 
