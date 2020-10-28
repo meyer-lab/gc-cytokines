@@ -215,11 +215,10 @@ def Specificity(ax):
     colors = ["rich blue", "sun yellow"]
     sns.set_palette(sns.xkcd_palette(colors))
 
-    sns.barplot(data=df, x="rate", y="value", hue="cell", ax=ax, legend=False)
+    sns.barplot(data=df, x="rate", y="value", hue="cell", ax=ax)
     ax.set_ylabel(r"$\frac{d[Specificity]}{d[Param]}$")
     ax.set_xlabel("")
-    ax.legend()
-    ax.set_yscale("symlog", linthreshy=0.01)
+    ax.set_yscale("symlog", linthresh=0.01)
     labels = df.rate.unique()
     for ii, _ in enumerate(labels):
         labels[ii] = labels[ii].split(".")[-1]
@@ -246,10 +245,9 @@ def OPgen(unkVecOP, CellTypes, OpC, scalesTh, RaAffM, RbAffM):
     for ii in [2, 3, 4, 5, 6, 22, 23, 24, 25, 26]:
         unkVecOP = T.set_subtensor(unkVecOP[ii], unkVecOP[ii] * RbAffM)
 
-    cell_groups = np.array([["T-reg", "Mem Treg", "Naive Treg"], ["T-helper", "Mem Th", "Naive Th"], ["NK"], ["CD8+", "Naive CD8+", "Mem CD8+"]])
+    cell_groups = [["T-reg", "Mem Treg", "Naive Treg"], ["T-helper", "Mem Th", "Naive Th"], ["NK"], ["CD8+", "Naive CD8+", "Mem CD8+"]]
     for i, group in enumerate(cell_groups):
-        group = np.array(group)
-        if np.where(group == CellTypes)[0].size > 0:
+        if group.count(CellTypes) > 0:
             scale1 = scalesTh[i, 1, 0]
             scale2 = scalesTh[i, 0, 0]
 
