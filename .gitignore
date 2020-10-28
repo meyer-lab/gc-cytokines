@@ -5,3 +5,5 @@ venv
 ckine/ckine.so
 .vscode/settings.json
 graph_all.svg
+Manuscript/Figures/figure*.pdf
+Manuscript/Figures/figure*.svg

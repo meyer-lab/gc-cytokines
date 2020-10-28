@@ -272,7 +272,7 @@ def global_legend(ax, Spec=False, Mut=False, exppred=True):
                 ax.legend(handles=[purple, yellow, circle, line], loc="upper left")
 
 
-def calc_dose_response(cell_names, unkVec, scales, receptor_data, tps, cytokC, expr_act2, expr_act15):
+def calc_dose_response(cell_names, unkVec, receptor_data, tps, cytokC, expr_act2, expr_act15):
     """ Calculates activity for all cell types at various cytokine concentrations and timepoints. """
     PTS = cytokC.shape[0]  # number of cytokine concentrations
 
@@ -303,45 +303,8 @@ def calc_dose_response(cell_names, unkVec, scales, receptor_data, tps, cytokC, e
 
             total_activity2[i, j, :, :] = np.reshape(activity2, (-1, 4))  # save the activity from this concentration for all 4 tps
             total_activity15[i, j, :, :] = np.reshape(activity15, (-1, 4))  # save the activity from this concentration for all 4 tps
-    scale = grouped_scaling(scales, cell_names, expr_act2, expr_act15, total_activity2, total_activity15)
 
-    cell_groups = [["T-reg", "Mem Treg", "Naive Treg"], ["T-helper", "Mem Th", "Naive Th"], ["NK"], ["CD8+", "Naive CD8+", "Mem CD8+"]]
-
-    for k, cells in enumerate(cell_groups):
-        for l, cell in enumerate(cell_names):
-            if cell in cells:
-                for m in range(scale.shape[2]):
-                    total_activity2[l, :, m, :] = scale[k, 1, m] * total_activity2[l, :, m, :] / (total_activity2[l, :, m, :] + scale[k, 0, m])  # adjust activity for this sample
-                    total_activity15[l, :, m, :] = scale[k, 1, m] * total_activity15[l, :, m, :] / (total_activity15[l, :, m, :] + scale[k, 0, m])  # adjust activity for this sample
-
-    return total_activity2, total_activity15, scale
-
-
-def grouped_scaling(scales, cell_names, expr_act2, expr_act15, pred_act2, pred_act15):
-    """ Determines scaling parameters for specified cell groups. """
-    cell_groups = [["T-reg", "Mem Treg", "Naive Treg"], ["T-helper", "Mem Th", "Naive Th"], ["NK"], ["CD8+", "Naive CD8+", "Mem CD8+"]]
-
-    scale = np.zeros((4, 2, len(scales)))
-    for i, cells in enumerate(cell_groups):
-        expr_act_2 = np.zeros((len(cells), pred_act2.shape[1], len(scales), 4))
-        expr_act_15 = expr_act_2.copy()
-        pred_act_2 = expr_act_2.copy()
-        pred_act_15 = expr_act_2.copy()
-        for j, _ in enumerate(scales):
-            num = 0
-            for k, cell in enumerate(cell_names):
-                if cell in cells:
-                    expr_act_2[num, :, j, :] = expr_act2[(k * 4): ((k + 1) * 4)].T
-                    expr_act_15[num, :, j, :] = expr_act15[(k * 4): ((k + 1) * 4)].T
-                    pred_act_2[num, :, j, :] = pred_act2[k, :, j, :]
-                    pred_act_15[num, :, j, :] = pred_act15[k, :, j, :]
-                    num = num + 1
-
-            predd = np.stack((pred_act_2[:, :, j, :], pred_act_15[:, :, j, :]))
-            exprr = np.stack((expr_act_2[:, :, j, :], expr_act_15[:, :, j, :]))
-            scale[i, :, j] = optimize_scale(predd, exprr)
-
-    return scale
+    return total_activity2, total_activity15
 
 
 def import_pMuteins():
@@ -426,38 +389,6 @@ def organize_expr_pred(df, cell_name, ligand_name, receptors, muteinC, tps, unkV
         df = df.append(df_pred, ignore_index=True)
 
     return df
-
-
-def mutein_scaling(df, unkVec):
-    """ Determines scaling parameters for specified cell groups for across all muteins. """
-    cell_groups = [["T-reg", "Mem Treg", "Naive Treg"], ["T-helper", "Mem Th", "Naive Th"], ["NK"], ["CD8+"]]
-
-    scales = np.zeros((4, 2, unkVec.shape[1]))
-    for i, cells in enumerate(cell_groups):
-        for j in range(unkVec.shape[1]):
-            subset_df = df[df["Cells"].isin(cells)]
-            scales[i, :, j] = optimize_scale(
-                np.array(subset_df.loc[(subset_df["Activity Type"] == "predicted") & (subset_df["Replicate"] == (j + 1)), "Activity"]),
-                np.array(subset_df.loc[(subset_df["Activity Type"] == "experimental"), "Activity"]),
-            )
-
-    return scales
-
-
-def optimize_scale(model_act, exp_act):
-    """ Formulates the optimal scale to minimize the residual between model activity predictions and experimental activity measurments for a given cell type. """
-
-    # scaling factors are sigmoidal and linear, respectively
-    guess = np.array([100.0, np.mean(exp_act) / np.mean(model_act)])
-
-    def calc_res(sc):
-        """ Calculate the residuals. This is the function we minimize. """
-        scaled_act = sc[1] * model_act / (model_act + sc[0])
-        return (exp_act - scaled_act).flatten()
-
-    # find result of minimization where both params are >= 0
-    res = least_squares(calc_res, guess, jac="3-point", bounds=(0.0, np.inf))
-    return res.x
 
 
 def catplot_comparison(ax, df, legend=False, Mut=True):
