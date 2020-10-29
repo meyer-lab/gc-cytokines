@@ -214,11 +214,10 @@ def Specificity(ax):
     colors = ["rich blue", "sun yellow"]
     sns.set_palette(sns.xkcd_palette(colors))
 
-    sns.catplot(data=df, x="rate", y="value", kind="bar", hue="cell", ax=ax, legend=False)
+    sns.barplot(data=df, x="rate", y="value", hue="cell", ax=ax)
     ax.set_ylabel(r"$\frac{d[Specificity]}{d[Param]}$")
     ax.set_xlabel("")
-    ax.legend()
-    ax.set_yscale("symlog", linthreshy=0.01)
+    ax.set_yscale("symlog", linthresh=0.01)
     labels = df.rate.unique()
     for ii, _ in enumerate(labels):
         labels[ii] = labels[ii].split(".")[-1]
