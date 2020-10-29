@@ -464,12 +464,11 @@ def expScaleWT(predSTAT2, predSTAT15, expSTAT2, expSTAT15, rep2=False):
             subExpSTAT2 = np.nan_to_num(subExpSTAT2)
             subExpSTAT15 = np.nan_to_num(subExpSTAT15)
             if cellSet == ['CD8+', 'Naive CD8+', 'Mem CD8+']:
-                subPredSTAT2 =  np.reshape(subPredSTAT2[0, :, :, :], (1, subPredSTAT2.shape[1], subPredSTAT2.shape[2], subPredSTAT2.shape[3]))
+                subPredSTAT2 = np.reshape(subPredSTAT2[0, :, :, :], (1, subPredSTAT2.shape[1], subPredSTAT2.shape[2], subPredSTAT2.shape[3]))
                 subPredSTAT15 = np.reshape(subPredSTAT15[0, :, :, :], (1, subPredSTAT15.shape[1], subPredSTAT15.shape[2], subPredSTAT15.shape[3]))
                 subExpSTAT2 = np.reshape(subExpSTAT2[0, :, :], (1, subExpSTAT2.shape[1], subExpSTAT2.shape[2]))
                 subExpSTAT15 = np.reshape(subExpSTAT15[0, :, :], (1, subExpSTAT15.shape[1], subExpSTAT15.shape[2]))
-                
-        
+
         subExpSTAT2 = np.reshape(subExpSTAT2, (subExpSTAT2.shape[0], subExpSTAT2.shape[1], subExpSTAT2.shape[2], 1))
         subExpSTAT2 = np.tile(subExpSTAT2, (1, 1, 1, subPredSTAT2.shape[3]))
         subExpSTAT15 = np.reshape(subExpSTAT15, (subExpSTAT15.shape[0], subExpSTAT15.shape[1], subExpSTAT15.shape[2], 1))
@@ -481,7 +480,7 @@ def expScaleWT(predSTAT2, predSTAT15, expSTAT2, expSTAT15, rep2=False):
         lsqScale = least_squares(scaleResids, x0, args=(predSTAT, expSTAT))
         output2[(iterator * 4): (iteratorEnd * 4)] = expSTAT2[(iterator * 4): (iteratorEnd * 4)] * lsqScale.x[1] + lsqScale.x[0]
         output15[(iterator * 4): (iteratorEnd * 4)] = expSTAT15[(iterator * 4): (iteratorEnd * 4)] * lsqScale.x[1] + lsqScale.x[0]
-        iterator = copy.copy(iteratorEnd)  
+        iterator = copy.copy(iteratorEnd)
 
     return output2, output15
 
