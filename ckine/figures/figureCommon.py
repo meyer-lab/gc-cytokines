@@ -9,6 +9,7 @@ import pandas as pds
 import matplotlib
 import matplotlib.cm as cm
 import svgutils.transform as st
+import copy
 from matplotlib import gridspec, pyplot as plt
 from matplotlib.lines import Line2D
 from matplotlib.patches import Patch
@@ -437,3 +438,54 @@ def hill_equation(x, x0, solution=0):
 def residuals(x0, x, y):
     """ Residual function for Hill Equation. """
     return hill_equation(x, x0) - y
+
+
+def expScaleWT(predSTAT2, predSTAT15, expSTAT2, expSTAT15, rep2=False):
+    """Scales data to model predictions. It is assumed here that predictions and data are lined up by concentration"""
+    cellGroups = [['NK'], ['CD8+', 'Naive CD8+', 'Mem CD8+'], ['T-reg', 'Naive Treg', 'Mem Treg'], ['T-helper', 'Naive Th', 'Mem Th']]
+    x0 = np.array([0, 1])
+    iterator, iteratorEnd = 0, 0
+    output2 = np.zeros(expSTAT2.shape)
+    output15 = np.zeros(expSTAT15.shape)
+
+    for cellSet in cellGroups:
+        iteratorEnd += len(cellSet)
+        subExpSTAT2 = np.reshape(expSTAT2[(iterator * 4): (iteratorEnd * 4)], (len(cellSet), predSTAT2.shape[3], predSTAT2.shape[1]))
+        subExpSTAT15 = np.reshape(expSTAT15[(iterator * 4): (iteratorEnd * 4)], (len(cellSet), predSTAT15.shape[3], predSTAT15.shape[1]))
+        subPredSTAT2 = predSTAT2[(iterator): (iteratorEnd), :, :, :]
+        subPredSTAT15 = predSTAT15[(iterator): (iteratorEnd), :, :, :]
+
+        subPredSTAT2 = np.swapaxes(subPredSTAT2, 3, 1)
+        subPredSTAT2 = np.swapaxes(subPredSTAT2, 3, 2)
+        subPredSTAT15 = np.swapaxes(subPredSTAT15, 3, 1)
+        subPredSTAT15 = np.swapaxes(subPredSTAT15, 3, 2)
+
+        if rep2:
+            subExpSTAT2 = np.nan_to_num(subExpSTAT2)
+            subExpSTAT15 = np.nan_to_num(subExpSTAT15)
+            if cellSet == ['CD8+', 'Naive CD8+', 'Mem CD8+']:
+                subPredSTAT2 =  np.reshape(subPredSTAT2[0, :, :, :], (1, subPredSTAT2.shape[1], subPredSTAT2.shape[2], subPredSTAT2.shape[3]))
+                subPredSTAT15 = np.reshape(subPredSTAT15[0, :, :, :], (1, subPredSTAT15.shape[1], subPredSTAT15.shape[2], subPredSTAT15.shape[3]))
+                subExpSTAT2 = np.reshape(subExpSTAT2[0, :, :], (1, subExpSTAT2.shape[1], subExpSTAT2.shape[2]))
+                subExpSTAT15 = np.reshape(subExpSTAT15[0, :, :], (1, subExpSTAT15.shape[1], subExpSTAT15.shape[2]))
+                
+        
+        subExpSTAT2 = np.reshape(subExpSTAT2, (subExpSTAT2.shape[0], subExpSTAT2.shape[1], subExpSTAT2.shape[2], 1))
+        subExpSTAT2 = np.tile(subExpSTAT2, (1, 1, 1, subPredSTAT2.shape[3]))
+        subExpSTAT15 = np.reshape(subExpSTAT15, (subExpSTAT15.shape[0], subExpSTAT15.shape[1], subExpSTAT15.shape[2], 1))
+        subExpSTAT15 = np.tile(subExpSTAT15, (1, 1, 1, subPredSTAT15.shape[3]))
+
+        expSTAT = np.vstack((subExpSTAT2, subExpSTAT15))
+        predSTAT = np.vstack((subPredSTAT2, subPredSTAT2))
+
+        lsqScale = least_squares(scaleResids, x0, args=(predSTAT, expSTAT))
+        output2[(iterator * 4): (iteratorEnd * 4)] = expSTAT2[(iterator * 4): (iteratorEnd * 4)] * lsqScale.x[1] + lsqScale.x[0]
+        output15[(iterator * 4): (iteratorEnd * 4)] = expSTAT15[(iterator * 4): (iteratorEnd * 4)] * lsqScale.x[1] + lsqScale.x[0]
+        iterator = copy.copy(iteratorEnd)  
+
+    return output2, output15
+
+
+def scaleResids(x, preds, exps):
+    """Residual function for linear scaling"""
+    return np.linalg.norm((exps * x[1] + x[0]) - preds)

@@ -3,7 +3,7 @@ This creates Figure S5. Full panel of measured vs simulated for IL-2 and IL-15.
 """
 import numpy as np
 import matplotlib.cm as cm
-from .figureCommon import subplotLabel, getSetup, plot_conf_int, plot_scaled_pstat, calc_dose_response
+from .figureCommon import subplotLabel, getSetup, plot_conf_int, plot_scaled_pstat, calc_dose_response, expScaleWT
 from ..imports import import_Rexpr, import_samples_2_15, import_pstat
 
 
@@ -36,12 +36,6 @@ def plot_exp_v_pred(ax, cell_subset=None):
     _, _, IL2_data1, IL2_data2, IL15_data1, IL15_data2 = import_pstat(False)
 
     # Scale all the data down so we don't have a bunch of zeros on our axes
-    IL2_data = IL2_data / 1000.0
-    IL15_data = IL15_data / 1000.0
-    IL2_data1 *= 1 / 1000
-    IL2_data2 *= 1 / 1000
-    IL15_data1 *= 1 / 1000
-    IL15_data2 *= 1 / 1000
 
     if cell_subset is None:
         cell_subset = []
@@ -51,6 +45,9 @@ def plot_exp_v_pred(ax, cell_subset=None):
     shift = 10 if cell_subset == [] else len(cell_subset)  # there are 10 cells if no subset is given
 
     IL2_activity, IL15_activity = calc_dose_response(cell_names_pstat, unkVec_2_15, receptor_data, tps, ckineConc, IL2_data, IL15_data)
+
+    IL2_data1, IL15_data1 = expScaleWT(IL2_activity, IL15_activity, IL2_data1, IL15_data1)
+    IL2_data2, IL15_data2 = expScaleWT(IL2_activity, IL15_activity, IL2_data2, IL15_data2, True)
 
     for m, name in enumerate(cell_names_pstat):
         if name in cell_subset or cell_subset == []:  # if a subset is provided only plot the listed names
