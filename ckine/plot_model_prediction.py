@@ -2,7 +2,7 @@
 This file is responsible for performing calculations that allow us to compare our fitting results with the Ring paper in figure1.py
 """
 import numpy as np
-from .model import getTotalActiveSpecies, runCkineUP, getSurfaceIL2RbSpecies, nParams, getSurfaceGCSpecies
+from .model import getTotalActiveSpecies, runCkineUP, nParams, getSurfaceGCSpecies
 
 
 def parallelCalc(unkVec, cytokine, conc, t, condense, reshapeP=True):
@@ -14,42 +14,6 @@ def parallelCalc(unkVec, cytokine, conc, t, condense, reshapeP=True):
     if reshapeP is True:
         return outt.reshape((unkVec.shape[0], len(t)))
     return outt
-
-
-class surf_IL2Rb:
-    """Generate values to match the surface IL2Rb measurements used in fitting"""
-
-    def __init__(self):
-        # import function returns from model.py
-        self.IL2Rb_species_IDX = getSurfaceIL2RbSpecies()
-
-    def calc(self, unkVec, t):
-        """This function uses an unkVec that has the same elements as the unkVec in fit.py"""
-        assert unkVec.shape[0] == nParams()
-        K = unkVec.shape[1]
-
-        # set IL2 concentrations
-        unkVecIL2RaMinus = unkVec.copy()
-        unkVecIL2RaMinus[22, :] = 0.0
-
-        # calculate IL2 stimulation
-        a = parallelCalc(unkVec, 0, 1.0, t, self.IL2Rb_species_IDX)
-        b = parallelCalc(unkVec, 0, 500.0, t, self.IL2Rb_species_IDX)
-        c = parallelCalc(unkVecIL2RaMinus, 0, 1.0, t, self.IL2Rb_species_IDX)
-        d = parallelCalc(unkVecIL2RaMinus, 0, 500.0, t, self.IL2Rb_species_IDX)
-
-        # calculate IL15 stimulation
-        e = parallelCalc(unkVec, 1, 1.0, t, self.IL2Rb_species_IDX)
-        f = parallelCalc(unkVec, 1, 500.0, t, self.IL2Rb_species_IDX)
-        g = parallelCalc(unkVecIL2RaMinus, 1, 1.0, t, self.IL2Rb_species_IDX)
-        h = parallelCalc(unkVecIL2RaMinus, 1, 500.0, t, self.IL2Rb_species_IDX)
-
-        catVec = np.concatenate((a, b, c, d, e, f, g, h), axis=1)
-
-        for ii in range(K):
-            catVec[ii] = catVec[ii] / a[ii, 0]  # normalize by a[0] for each row
-
-        return catVec
 
 
 class pstat:
