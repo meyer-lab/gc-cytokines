@@ -459,15 +459,11 @@ def expScaleWT(predSTAT2, predSTAT15, expSTAT2, expSTAT15, rep2=False):
         subPredSTAT15 = np.swapaxes(subPredSTAT15, 3, 1)
         subPredSTAT15 = np.swapaxes(subPredSTAT15, 3, 2)
 
-        if rep2:
-            if cellSet == ['NK']:
-                subExpSTAT15[0, 0, -2::] = subExpSTAT15[0, 3, -3]
-            elif cellSet == ['CD8+', 'Naive CD8+', 'Mem CD8+']:
-                subPredSTAT2 = np.reshape(subPredSTAT2[0, :, :, :], (1, subPredSTAT2.shape[1], subPredSTAT2.shape[2], subPredSTAT2.shape[3]))
-                subPredSTAT15 = np.reshape(subPredSTAT15[0, :, :, :], (1, subPredSTAT15.shape[1], subPredSTAT15.shape[2], subPredSTAT15.shape[3]))
-                subExpSTAT2 = np.reshape(subExpSTAT2[0, :, :], (1, subExpSTAT2.shape[1], subExpSTAT2.shape[2]))
-                subExpSTAT15 = np.reshape(subExpSTAT15[0, :, :], (1, subExpSTAT15.shape[1], subExpSTAT15.shape[2]))
-                subExpSTAT15[0, 0, -2::] = subExpSTAT15[0, 3, -3]
+        if rep2 and cellSet == ['CD8+', 'Naive CD8+', 'Mem CD8+']:
+            subPredSTAT2 = np.reshape(subPredSTAT2[0, :, :, :], (1, subPredSTAT2.shape[1], subPredSTAT2.shape[2], subPredSTAT2.shape[3]))
+            subPredSTAT15 = np.reshape(subPredSTAT15[0, :, :, :], (1, subPredSTAT15.shape[1], subPredSTAT15.shape[2], subPredSTAT15.shape[3]))
+            subExpSTAT2 = np.reshape(subExpSTAT2[0, :, :], (1, subExpSTAT2.shape[1], subExpSTAT2.shape[2]))
+            subExpSTAT15 = np.reshape(subExpSTAT15[0, :, :], (1, subExpSTAT15.shape[1], subExpSTAT15.shape[2]))
 
         subExpSTAT2 = np.reshape(subExpSTAT2, (subExpSTAT2.shape[0], subExpSTAT2.shape[1], subExpSTAT2.shape[2], 1))
         subExpSTAT2 = np.tile(subExpSTAT2, (1, 1, 1, subPredSTAT2.shape[3]))
@@ -477,7 +473,12 @@ def expScaleWT(predSTAT2, predSTAT15, expSTAT2, expSTAT15, rep2=False):
         expSTAT = np.vstack((subExpSTAT2, subExpSTAT15))
         predSTAT = np.vstack((subPredSTAT2, subPredSTAT2))
 
-        slope, intercept, _, _, _ = stats.linregress(np.ravel(expSTAT), np.ravel(predSTAT))
+        ravPred = np.ravel(predSTAT)
+        ravExp = np.ravel(expSTAT)
+        ravPred = ravPred[~np.isnan(ravExp)]
+        ravExp = ravExp[~np.isnan(ravExp)]
+
+        slope, intercept, _, _, _ = stats.linregress(ravExp, ravPred)
         output2[(iterator * 4): ((iterator + len(cellSet)) * 4)] = expSTAT2[(iterator * 4): ((iterator + len(cellSet)) * 4)] * slope + intercept
         output15[(iterator * 4): ((iterator + len(cellSet)) * 4)] = expSTAT15[(iterator * 4): ((iterator + len(cellSet)) * 4)] * slope + intercept
         iterator += len(cellSet)
