@@ -7,8 +7,8 @@ import numpy as np
 import seaborn as sns
 import pandas as pd
 from .figureCommon import subplotLabel, getSetup, traf_names, plot_conf_int, global_legend
-from ..plot_model_prediction import parallelCalc, pstat, surf_gc
-from ..model import getSurfaceIL2RbSpecies
+from ..plot_model_prediction import parallelCalc
+from ..model import getSurfaceIL2RbSpecies, getSurfaceGCSpecies, getTotalActiveSpecies
 from ..imports import import_samples_2_15
 
 
@@ -102,15 +102,23 @@ def IL2Rb_perc(ax, unkVec):
 
 def gc_perc(ax, unkVec):
     """ Calculates the amount of gc that stays on the cell surface and compares it to experimental values in Mitra paper. """
-    surf = surf_gc()  # load proper class
+    gc_species_IDX = getSurfaceGCSpecies()
     # overlay experimental data
     path = os.path.dirname(os.path.abspath(__file__))
     data = pd.read_csv(join(path, "../data/mitra_surface_gc_depletion.csv")).values  # imports file into pandas array
     ts = data[:, 0]
     ax.scatter(ts, data[:, 1], color="darkorchid", marker="^", edgecolors="k", zorder=100)  # 1000 nM of IL2 in 2Ra-
 
-    y_max = 100.0
-    output = surf.calc(unkVec, ts) * y_max  # run the simulation
+    # set IL2 concentrations
+    unkVecIL2RaMinus = unkVec.copy()
+    unkVecIL2RaMinus[22, :] = 0.0
+
+    # calculate IL2 stimulation
+    output = parallelCalc(unkVecIL2RaMinus, 0, 1000.0, ts, gc_species_IDX)
+
+    output /= output[:, 0][:, np.newaxis]  # normalize by output[0] for each row
+    output *= 100.0
+
     plot_conf_int(ax, ts, output.T, "darkorchid")
 
     # label axes and titles
@@ -121,7 +129,6 @@ def gc_perc(ax, unkVec):
 
 def pstat_act(ax, unkVec, scales):
     """ This function generates the pSTAT activation levels for each combination of parameters in unkVec. The results are plotted and then overlayed with the values measured by Ring et al. """
-    pstat5 = pstat()
     PTS = 30
     cytokC = np.logspace(-3.3, 2.7, PTS)
     y_max = 100.0
@@ -130,7 +137,29 @@ def pstat_act(ax, unkVec, scales):
     IL15_plus = IL2_plus.copy()
     IL2_minus = IL2_plus.copy()
 
-    output = pstat5.calc(unkVec, scales, cytokC) * y_max  # calculate activity for all unkVecs and concs
+    activity = getTotalActiveSpecies().astype(np.float64)
+    ts = np.array([500.0])  # was 500. in literature
+
+    unkVec_IL2Raminus = unkVec.copy()
+    unkVec_IL2Raminus[22, :] = np.zeros(unkVec.shape[1])  # set IL2Ra expression rates to 0
+
+    actVec_IL2 = np.zeros((unkVec.shape[1], len(cytokC)))
+    actVec_IL2_IL2Raminus = actVec_IL2.copy()
+    actVec_IL15 = actVec_IL2.copy()
+    actVec_IL15_IL2Raminus = actVec_IL2.copy()
+
+    # Calculate activities
+    for x, conc in enumerate(cytokC):
+        actVec_IL2[:, x] = parallelCalc(unkVec, 0, conc, ts, activity).T
+        actVec_IL2_IL2Raminus[:, x] = parallelCalc(unkVec_IL2Raminus, 0, conc, ts, activity).T
+        actVec_IL15[:, x] = parallelCalc(unkVec, 1, conc, ts, activity).T
+        actVec_IL15_IL2Raminus[:, x] = parallelCalc(unkVec_IL2Raminus, 1, conc, ts, activity).T
+
+    # put together into one vector & normalize by scale
+    actVec = np.concatenate((actVec_IL2, actVec_IL2_IL2Raminus, actVec_IL15, actVec_IL15_IL2Raminus), axis=1)
+    actVec = actVec / (actVec + scales[:, np.newaxis])
+    output = actVec / actVec.max(axis=1, keepdims=True) * y_max  # normalize by the max value of each row
+
     # split according to experimental condition
     IL2_plus = output[:, 0:PTS].T
     IL2_minus = output[:, PTS: (PTS * 2)].T
