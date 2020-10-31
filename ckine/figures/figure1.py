@@ -7,8 +7,7 @@ import numpy as np
 import seaborn as sns
 import pandas as pd
 from .figureCommon import subplotLabel, getSetup, traf_names, plot_conf_int, global_legend
-from ..plot_model_prediction import parallelCalc
-from ..model import getSurfaceIL2RbSpecies, getSurfaceGCSpecies, getTotalActiveSpecies
+from ..model import getSurfaceIL2RbSpecies, getSurfaceGCSpecies, getTotalActiveSpecies, runCkineUP
 from ..imports import import_samples_2_15
 
 
@@ -34,6 +33,14 @@ def makeFigure():
     ax[1].legend(legend.legendHandles, labels, loc="lower right")
 
     return f
+
+
+def parallelCalc(unkVec, cytokine, conc, t, condense):
+    """ Calculates the species over time in parallel for one condition. """
+    unkVec = np.transpose(unkVec).copy()
+    unkVec[:, cytokine] = conc
+    outt = np.dot(runCkineUP(t, unkVec), condense)
+    return outt.reshape((unkVec.shape[0], len(t)))
 
 
 def IL2Rb_perc(ax, unkVec):
