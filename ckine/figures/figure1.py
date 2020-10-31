@@ -132,10 +132,6 @@ def pstat_act(ax, unkVec, scales):
     PTS = 30
     cytokC = np.logspace(-3.3, 2.7, PTS)
     y_max = 100.0
-    IL2_plus = np.zeros((unkVec.shape[1], PTS))
-    IL15_minus = IL2_plus.copy()
-    IL15_plus = IL2_plus.copy()
-    IL2_minus = IL2_plus.copy()
 
     activity = getTotalActiveSpecies().astype(np.float64)
     ts = np.array([500.0])  # was 500. in literature
@@ -143,34 +139,33 @@ def pstat_act(ax, unkVec, scales):
     unkVec_IL2Raminus = unkVec.copy()
     unkVec_IL2Raminus[22, :] = np.zeros(unkVec.shape[1])  # set IL2Ra expression rates to 0
 
-    actVec_IL2 = np.zeros((unkVec.shape[1], len(cytokC)))
+    actVec_IL2 = np.zeros((len(cytokC), unkVec.shape[1]))
     actVec_IL2_IL2Raminus = actVec_IL2.copy()
     actVec_IL15 = actVec_IL2.copy()
     actVec_IL15_IL2Raminus = actVec_IL2.copy()
 
     # Calculate activities
     for x, conc in enumerate(cytokC):
-        actVec_IL2[:, x] = parallelCalc(unkVec, 0, conc, ts, activity).T
-        actVec_IL2_IL2Raminus[:, x] = parallelCalc(unkVec_IL2Raminus, 0, conc, ts, activity).T
-        actVec_IL15[:, x] = parallelCalc(unkVec, 1, conc, ts, activity).T
-        actVec_IL15_IL2Raminus[:, x] = parallelCalc(unkVec_IL2Raminus, 1, conc, ts, activity).T
+        actVec_IL2[x, :] = parallelCalc(unkVec, 0, conc, ts, activity).T
+        actVec_IL2_IL2Raminus[x, :] = parallelCalc(unkVec_IL2Raminus, 0, conc, ts, activity).T
+        actVec_IL15[x, :] = parallelCalc(unkVec, 1, conc, ts, activity).T
+        actVec_IL15_IL2Raminus[x, :] = parallelCalc(unkVec_IL2Raminus, 1, conc, ts, activity).T
 
     # put together into one vector & normalize by scale
-    actVec = np.concatenate((actVec_IL2, actVec_IL2_IL2Raminus, actVec_IL15, actVec_IL15_IL2Raminus), axis=1)
-    actVec = actVec / (actVec + scales[:, np.newaxis])
-    output = actVec / actVec.max(axis=1, keepdims=True) * y_max  # normalize by the max value of each row
-
-    # split according to experimental condition
-    IL2_plus = output[:, 0:PTS].T
-    IL2_minus = output[:, PTS: (PTS * 2)].T
-    IL15_plus = output[:, (PTS * 2): (PTS * 3)].T
-    IL15_minus = output[:, (PTS * 3): (PTS * 4)].T
+    actVec_IL2 = actVec_IL2 / (actVec_IL2 + scales[np.newaxis, :])
+    actVec_IL2_IL2Raminus = actVec_IL2_IL2Raminus / (actVec_IL2_IL2Raminus + scales[np.newaxis, :])
+    actVec_IL15 = actVec_IL15 / (actVec_IL15 + scales[np.newaxis, :])
+    actVec_IL15_IL2Raminus = actVec_IL15_IL2Raminus / (actVec_IL15_IL2Raminus + scales[np.newaxis, :])
+    actVec_IL2 = actVec_IL2 / actVec_IL2.max(axis=0, keepdims=True) * y_max  # normalize by the max value of each row
+    actVec_IL2_IL2Raminus = actVec_IL2_IL2Raminus / actVec_IL2_IL2Raminus.max(axis=0, keepdims=True) * y_max  # normalize by the max value of each row
+    actVec_IL15 = actVec_IL15 / actVec_IL15.max(axis=0, keepdims=True) * y_max  # normalize by the max value of each row
+    actVec_IL15_IL2Raminus = actVec_IL15_IL2Raminus / actVec_IL15_IL2Raminus.max(axis=0, keepdims=True) * y_max  # normalize by the max value of each row
 
     # plot confidence intervals based on model predictions
-    plot_conf_int(ax, cytokC, IL2_minus, "darkorchid")
-    plot_conf_int(ax, cytokC, IL15_minus, "goldenrod")
-    plot_conf_int(ax, cytokC, IL2_plus, "darkorchid")
-    plot_conf_int(ax, cytokC, IL15_plus, "goldenrod")
+    plot_conf_int(ax, cytokC, actVec_IL2_IL2Raminus, "darkorchid")
+    plot_conf_int(ax, cytokC, actVec_IL15_IL2Raminus, "goldenrod")
+    plot_conf_int(ax, cytokC, actVec_IL2, "darkorchid")
+    plot_conf_int(ax, cytokC, actVec_IL15, "goldenrod")
 
     # plot experimental data
     cytokCplt = np.logspace(-3.3, 2.7, 8)
