@@ -44,6 +44,8 @@ def makeFigure():
         for _, ligand_name in enumerate(ligand_order):
             # append dataframe with experimental and predicted activity
             df = organize_expr_pred(df, cell_name, ligand_name, receptors, muteinC, tps, unkVec_2_15)
+    
+    print(df)
 
     # determine scaling constants
     plot_expr_predM(ax, df, cell_order, ligand_order, tps, muteinC)

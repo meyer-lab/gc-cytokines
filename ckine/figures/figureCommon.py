@@ -332,6 +332,7 @@ def import_pMuteins():
 
 dataMean = import_pMuteins()
 dataMean.reset_index(inplace=True)
+dataMean = expScaleMut(dataMean)
 _, _, _, _, pstat_df = import_pstat()
 dataMean = dataMean.append(pstat_df, ignore_index=True, sort=True)
 
@@ -473,3 +474,7 @@ def expScaleWT(predSTAT2, predSTAT15, expSTAT2, expSTAT15, rep2=False):
         iterator += len(cellSet)
 
     return output2, output15
+
+
+def expScaleMut(mutDF):
+    return 5
