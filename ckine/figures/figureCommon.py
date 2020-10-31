@@ -332,7 +332,6 @@ def import_pMuteins():
 
 dataMean = import_pMuteins()
 dataMean.reset_index(inplace=True)
-dataMean = expScaleMut(dataMean)
 _, _, _, _, pstat_df = import_pstat()
 dataMean = dataMean.append(pstat_df, ignore_index=True, sort=True)
 
@@ -433,7 +432,6 @@ def residuals(x0, x, y):
 def expScaleWT(predSTAT2, predSTAT15, expSTAT2, expSTAT15, rep2=False):
     """Scales data to model predictions. It is assumed here that predictions and data are lined up by concentration"""
     cellGroups = [['NK'], ['CD8+', 'Naive CD8+', 'Mem CD8+'], ['T-reg', 'Naive Treg', 'Mem Treg'], ['T-helper', 'Naive Th', 'Mem Th']]
-    x0 = np.array([0, 1])
     iterator = 0
     output2 = np.zeros(expSTAT2.shape)
     output15 = np.zeros(expSTAT15.shape)
@@ -477,4 +475,14 @@ def expScaleWT(predSTAT2, predSTAT15, expSTAT2, expSTAT15, rep2=False):
 
 
 def expScaleMut(mutDF):
-    return 5
+    """Scales data to model predictions for muteins"""
+    cellGroups = [['NK'], ['CD8+', 'Naive CD8+', 'Mem CD8+'], ['T-reg', 'Naive Treg', 'Mem Treg'], ['T-helper', 'Naive Th', 'Mem Th']]
+    mutGroups = [["F42Q N-Term", "N88D C-term", "R38Q N-term"], ["WT C-term", "V91K C-term"], ["WT N-term"]]
+    for mutsGroup in mutGroups:
+        for cellSet in cellGroups:
+            exp_data = np.ravel(np.array(mutDF.loc[(mutDF["Cells"].isin(cellSet)) & (mutDF["Ligand"].isin(mutsGroup)) & (mutDF["Activity Type"] == "experimental")].Activity))
+            pred_data = np.ravel(np.array(mutDF.loc[(mutDF["Cells"].isin(cellSet)) & (mutDF["Ligand"].isin(mutsGroup)) & (mutDF["Activity Type"] == "predicted")].Activity))
+            slope, intercept, _, _, _ = stats.linregress(exp_data, pred_data)
+            mutDF.loc[(mutDF["Cells"].isin(cellSet)) & (mutDF["Ligand"].isin(mutsGroup)) & (mutDF["Activity Type"] == "experimental")] = mutDF.loc[(mutDF["Cells"].isin(cellSet)) & (mutDF["Ligand"].isin(mutsGroup)) & (mutDF["Activity Type"] == "experimental")] * slope + intercept
+
+    return mutDF

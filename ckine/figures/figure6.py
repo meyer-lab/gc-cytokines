@@ -8,7 +8,7 @@ import seaborn as sns
 import theano.tensor as T
 import theano
 from matplotlib.lines import Line2D
-from .figureCommon import subplotLabel, getSetup, global_legend, calc_dose_response, import_pMuteins, nllsq_EC50, organize_expr_pred, plot_cells, plot_ligand_comp, plot_conf_int
+from .figureCommon import subplotLabel, getSetup, global_legend, calc_dose_response, import_pMuteins, nllsq_EC50, organize_expr_pred, plot_cells, plot_ligand_comp, plot_conf_int, expScaleMut
 from ..imports import import_pstat, import_samples_2_15, import_Rexpr
 from ..model import getTotalActiveSpecies, receptor_expression, getRateVec, getparamsdict, getMutAffDict
 from ..differencing_op import runCkineDoseOp
@@ -411,6 +411,7 @@ def MuteinModelOverlay(ax, tpoint, cells):
             df = organize_expr_pred(df, cell_name, ligand_name, receptors, muteinC, tps, unkVec_2_15Over)
 
     #do it for all cells then drop
+    df = expScaleMut(df)
     colors = sns.color_palette("husl", 6)
     #do it here
 
