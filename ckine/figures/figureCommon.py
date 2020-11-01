@@ -486,11 +486,13 @@ def expScaleMut(mutDF):
             for cell in cellSet:
                 for mutLig in mutsGroup:
                     expArray = np.append(expArray, np.tile(np.ravel(np.array(exp_data.loc[(exp_data["Cells"] == cell) & (mutDF["Ligand"] == mutLig)].Activity)), 25))
-            
+
             pred_data = np.ravel(np.array(mutDF.loc[(mutDF["Cells"].isin(cellSet)) & (mutDF["Ligand"].isin(mutsGroup)) & (mutDF["Activity Type"] == "predicted")].Activity))
             slope, intercept, _, _, _ = stats.linregress(expArray, pred_data)
 
-            mutDF.loc[(mutDF["Cells"].isin(cellSet)) & (mutDF["Ligand"].isin(mutsGroup)) & (mutDF["Activity Type"] == "experimental"), "Activity"] = np.array(mutDF.loc[(mutDF["Cells"].isin(cellSet)) & (mutDF["Ligand"].isin(mutsGroup)) & (mutDF["Activity Type"] == "experimental"), "Activity"]) * slope
-            mutDF.loc[(mutDF["Cells"].isin(cellSet)) & (mutDF["Ligand"].isin(mutsGroup)) & (mutDF["Activity Type"] == "experimental"), "Activity"] = np.array(mutDF.loc[(mutDF["Cells"].isin(cellSet)) & (mutDF["Ligand"].isin(mutsGroup)) & (mutDF["Activity Type"] == "experimental"), "Activity"]) + intercept
+            mutDF.loc[(mutDF["Cells"].isin(cellSet)) & (mutDF["Ligand"].isin(mutsGroup)) & (mutDF["Activity Type"] == "experimental"), "Activity"] = np.array(
+                mutDF.loc[(mutDF["Cells"].isin(cellSet)) & (mutDF["Ligand"].isin(mutsGroup)) & (mutDF["Activity Type"] == "experimental"), "Activity"]) * slope
+            mutDF.loc[(mutDF["Cells"].isin(cellSet)) & (mutDF["Ligand"].isin(mutsGroup)) & (mutDF["Activity Type"] == "experimental"), "Activity"] = np.array(
+                mutDF.loc[(mutDF["Cells"].isin(cellSet)) & (mutDF["Ligand"].isin(mutsGroup)) & (mutDF["Activity Type"] == "experimental"), "Activity"]) + intercept
 
     return mutDF
