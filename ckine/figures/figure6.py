@@ -410,10 +410,10 @@ def MuteinModelOverlay(ax, tpoint, cells):
             # append dataframe with experimental and predicted activity
             df = organize_expr_pred(df, cell_name, ligand_name, receptors, muteinC, tps, unkVec_2_15Over)
 
-    #do it for all cells then drop
+    # do it for all cells then drop
     df = expScaleMut(df)
     colors = sns.color_palette("husl", 6)
-    #do it here
+    # do it here
 
     for i, celltype in enumerate(cells):
         for j, ligand in enumerate(ligand_order):
