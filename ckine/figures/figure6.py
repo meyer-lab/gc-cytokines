@@ -389,7 +389,7 @@ def Mut_Fact(ax):
 
 def MuteinModelOverlay(ax, tpoint, cells):
     "Plots Mutein Experimental and model predictions overlaid for a given cell type/types"
-    bounds = np.array([35000, 2500, 14000])
+    bounds = np.array([150, 1000, 10])
     unkVec_2_15Over = import_samples_2_15(N=25)
     tps = np.array([0.5, 1.0, 2.0, 4.0]) * 60.0
     muteinC = mutData.Concentration.unique()
@@ -437,8 +437,8 @@ def MuteinModelOverlay(ax, tpoint, cells):
         for j, ligand in enumerate(ligand_order):
             sns.scatterplot(
                 x="Concentration",
-                y="RFU",
-                data=mutData.loc[(mutData["Cells"] == celltype) & (mutData["Time"] == tpoint) & (mutData["Ligand"] == ligand)],
+                y="Activity",
+                data=df.loc[(df["Cells"] == celltype) & (df["Time Point"] == tpoint) & (df["Ligand"] == ligand) & (df["Activity Type"] == "experimental")],
                 ax=ax[i],
                 s=10,
                 color=colors[j],
