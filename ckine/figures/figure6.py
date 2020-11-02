@@ -8,7 +8,7 @@ import seaborn as sns
 import theano.tensor as T
 import theano
 from matplotlib.lines import Line2D
-from .figureCommon import subplotLabel, getSetup, global_legend, calc_dose_response, import_pMuteins, nllsq_EC50, organize_expr_pred, plot_cells, plot_ligand_comp, plot_conf_int
+from .figureCommon import subplotLabel, getSetup, global_legend, calc_dose_response, import_pMuteins, nllsq_EC50, organize_expr_pred, plot_cells, plot_ligand_comp, plot_conf_int, expScaleMut
 from ..imports import import_pstat, import_samples_2_15, import_Rexpr
 from ..model import getTotalActiveSpecies, receptor_expression, getRateVec, getparamsdict, getMutAffDict
 from ..differencing_op import runCkineDoseOp
@@ -389,7 +389,7 @@ def Mut_Fact(ax):
 
 def MuteinModelOverlay(ax, tpoint, cells):
     "Plots Mutein Experimental and model predictions overlaid for a given cell type/types"
-    bounds = np.array([35000, 2500, 14000])
+    bounds = np.array([150, 1000, 10])
     unkVec_2_15Over = import_samples_2_15(N=25)
     tps = np.array([0.5, 1.0, 2.0, 4.0]) * 60.0
     muteinC = mutData.Concentration.unique()
@@ -410,7 +410,10 @@ def MuteinModelOverlay(ax, tpoint, cells):
             # append dataframe with experimental and predicted activity
             df = organize_expr_pred(df, cell_name, ligand_name, receptors, muteinC, tps, unkVec_2_15Over)
 
+    # do it for all cells then drop
+    df = expScaleMut(df)
     colors = sns.color_palette("husl", 6)
+    # do it here
 
     for i, celltype in enumerate(cells):
         for j, ligand in enumerate(ligand_order):
@@ -434,8 +437,8 @@ def MuteinModelOverlay(ax, tpoint, cells):
         for j, ligand in enumerate(ligand_order):
             sns.scatterplot(
                 x="Concentration",
-                y="RFU",
-                data=mutData.loc[(mutData["Cells"] == celltype) & (mutData["Time"] == tpoint) & (mutData["Ligand"] == ligand)],
+                y="Activity",
+                data=df.loc[(df["Cells"] == celltype) & (df["Time Point"] == tpoint) & (df["Ligand"] == ligand) & (df["Activity Type"] == "experimental")],
                 ax=ax[i],
                 s=10,
                 color=colors[j],

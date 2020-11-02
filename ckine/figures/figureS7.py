@@ -5,7 +5,7 @@ import numpy as np
 import pandas as pd
 import seaborn as sns
 import matplotlib.cm as cm
-from .figureCommon import subplotLabel, getSetup, plot_conf_int, import_pMuteins, organize_expr_pred
+from .figureCommon import subplotLabel, getSetup, plot_conf_int, import_pMuteins, organize_expr_pred, expScaleMut
 from ..imports import import_Rexpr, import_samples_2_15, import_pstat
 
 dataMean = import_pMuteins()
@@ -45,6 +45,8 @@ def makeFigure():
             # append dataframe with experimental and predicted activity
             df = organize_expr_pred(df, cell_name, ligand_name, receptors, muteinC, tps, unkVec_2_15)
 
+    df = expScaleMut(df)
+
     # determine scaling constants
     plot_expr_predM(ax, df, cell_order, ligand_order, tps, muteinC)
 
@@ -60,9 +62,8 @@ def plot_expr_predM(ax, df, cell_order, ligand_order, tps, muteinC):
             axis = i * 6 + j
 
             # plot experimental data
-            sns.scatterplot(
-                x="Concentration", y="RFU", hue="Time", data=dataMean.loc[(dataMean["Cells"] == cell_name) & (dataMean["Ligand"] == ligand_name)], ax=ax[axis], s=10, palette=cm.rainbow, legend=False
-            )
+            sns.scatterplot(x="Concentration", y="Activity", hue="Time Point", data=df.loc[(df["Cells"] == cell_name) & (
+                df["Ligand"] == ligand_name) & (df["Activity Type"] == "experimental")], ax=ax[axis], s=10, palette=cm.rainbow, legend=False)
 
             # scale and plot model predictions
             for k, conc in enumerate(df.Concentration.unique()):
