@@ -8,7 +8,7 @@ import seaborn as sns
 import theano.tensor as T
 import theano
 from matplotlib.lines import Line2D
-from .figureCommon import subplotLabel, getSetup, global_legend, calc_dose_response, import_pMuteins, nllsq_EC50, organize_expr_pred, plot_cells, plot_ligand_comp, plot_conf_int, expScaleMut
+from .figureCommon import subplotLabel, getSetup, global_legend, calc_dose_response, import_pMuteins, nllsq_EC50, organize_expr_pred, plot_cells, plot_ligand_comp, plot_conf_int, expScaleMut, expScaleWT
 from ..imports import import_pstat, import_samples_2_15, import_Rexpr
 from ..model import getTotalActiveSpecies, receptor_expression, getRateVec, getparamsdict, getMutAffDict
 from ..differencing_op import runCkineDoseOp
@@ -38,10 +38,12 @@ def makeFigure():
     ckines = ["IL-2", "IL-15"]
     tps = np.array([0.5, 1.0, 2.0, 4.0]) * 60.0
 
-    df_spec = pd.DataFrame(columns=["Cells", "Ligand", "Time", "Concentration", "Data Type", "Specificity"])
-    df_act = pd.DataFrame(columns=["Cells", "Ligand", "Time", "Concentration", "Activity Type", "Activity"])
+    df_spec = pd.DataFrame(columns=["Cells", "Ligand", "Time", "Concentration", "Data Type", "Specificity", "Replicate"])
+    df_act = pd.DataFrame(columns=["Cells", "Ligand", "Time", "Concentration", "Activity Type", "Activity", "Replicate"])
 
     IL2_activity, IL15_activity = calc_dose_response(cell_names_pstat, unkVec_2_15, receptor_data, tps, ckineConc, IL2_data, IL15_data)
+    IL2_datasc, IL15_datasc = expScaleWT(IL2_activity, IL15_activity, IL2_data, IL15_data)
+
     for i, name in enumerate(cell_names_pstat):
         assert cell_names_pstat[i] == cell_names_receptor[i]
         df_add2 = pd.DataFrame(
@@ -51,9 +53,10 @@ def makeFigure():
                 "Time": np.tile(np.repeat(tps, len(ckineConc)), 2),
                 "Concentration": np.tile(ckineConc, len(tps) * 2),
                 "Activity Type": np.concatenate((np.tile("Experimental", len(tps) * len(ckineConc)), np.tile("Predicted", len(tps) * len(ckineConc)))),
-                "Activity": np.concatenate((IL2_data[(i * 4): ((i + 1) * 4)].reshape(48), np.squeeze(IL2_activity[i, :, :, :]).T.reshape(48))),
+                "Activity": np.concatenate((IL2_datasc[(i * 4): ((i + 1) * 4)].reshape(48), np.squeeze(IL2_activity[i, :, :, :]).T.reshape(48))),
             }
         )
+
         df_add15 = pd.DataFrame(
             {
                 "Cells": np.tile(name, len(ckineConc) * len(tps) * 2),
@@ -61,7 +64,7 @@ def makeFigure():
                 "Time": np.tile(np.repeat(tps, len(ckineConc)), 2),
                 "Concentration": np.tile(ckineConc, len(tps) * 2),
                 "Activity Type": np.concatenate((np.tile("Experimental", len(tps) * len(ckineConc)), np.tile("Predicted", len(tps) * len(ckineConc)))),
-                "Activity": np.concatenate((IL15_data[(i * 4): ((i + 1) * 4)].reshape(48), np.squeeze(IL15_activity[i, :, :, :]).T.reshape(48))),
+                "Activity": np.concatenate((IL15_datasc[(i * 4): ((i + 1) * 4)].reshape(48), np.squeeze(IL15_activity[i, :, :, :]).T.reshape(48))),
             }
         )
         df_act = df_act.append(df_add2, ignore_index=True)
@@ -244,7 +247,7 @@ def OPgen(unkVecOP, CellTypes, OpC, RaAffM, RbAffM):
     for ii in [2, 3, 4, 5, 6, 22, 23, 24, 25, 26]:
         unkVecOP = T.set_subtensor(unkVecOP[ii], unkVecOP[ii] * RbAffM)
 
-    return OpC(unkVecOP) / OpC(unkVecOP)
+    return OpC(unkVecOP)
 
 
 def OPgenSpec(unk, k1Aff=1.0, k5Aff=1.0):
@@ -278,6 +281,7 @@ def Spec_Aff(ax, npoints, unkVecAff):
     ax.set_xlabel("Relative IL-2Rβ/γc $K_a$")
     ax.set_ylabel("Specificity")
     ax.set_xlim((10e-3, 10e0))
+    ax.set_yscale("log")
     handles = []
     line = Line2D([], [], color="black", marker="_", linestyle="None", markersize=6, label="WT IL-2Rα $K_a$")
     point = Line2D([], [], color="black", marker=".", linestyle="None", markersize=6, label="0.5 IL-2Rα $K_a$")
