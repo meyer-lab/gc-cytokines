@@ -56,7 +56,7 @@ def plot_expr_predM(ax, df, cell_order, ligand_order, tps, muteinC):
     """ Plots experimental and scaled model-predicted dose response for all cell types, muteins, and time points. """
     pred_data = np.zeros((12, 4, unkVec_2_15.shape[1]))
     bounds = np.array([800, 50, 150, 150, 150, 15, 15, 15])
-    
+
     for i, cell_name in enumerate(cell_order):
         for j, ligand_name in enumerate(ligand_order):
             axis = i * 6 + j
