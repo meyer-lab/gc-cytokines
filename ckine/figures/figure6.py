@@ -93,7 +93,6 @@ def makeFigure():
     labels = (x.get_text() for x in legend.get_texts())
     ax[4].legend(legend.legendHandles, labels, loc="upper right", prop={"size": 6})  # use this to place universal legend later
     ax[8].get_legend().remove()
-    
 
     return f
 
