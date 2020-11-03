@@ -6,7 +6,7 @@ import numpy as np
 from hypothesis import given, settings
 from hypothesis.strategies import floats
 from hypothesis.extra.numpy import arrays as harrays
-from ..model import fullModel, getTotalActiveCytokine, runCkineU, nSpecies, runCkineUP
+from ..model import fullModel, getTotalActiveCytokine, nSpecies, runCkineUP
 
 
 settings.register_profile("ci", max_examples=1000, deadline=None)
@@ -79,12 +79,12 @@ class TestModel(unittest.TestCase):
         rxnIL2[0], rxnIL15[1], rxnIL7[2], rxnIL9[3], rxnIL4[5], rxnIL21[6] = 100.0, 100.0, 100.0, 100.0, 100.0, 100.0
 
         # runCkine to get yOut
-        yOut_2 = runCkineU(t, rxnIL2)
-        yOut_15 = runCkineU(t, rxnIL15)
-        yOut_7 = runCkineU(t, rxnIL7)
-        yOut_9 = runCkineU(t, rxnIL9)
-        yOut_4 = runCkineU(t, rxnIL4)
-        yOut_21 = runCkineU(t, rxnIL21)
+        yOut_2 = runCkineUP(t, rxnIL2)
+        yOut_15 = runCkineUP(t, rxnIL15)
+        yOut_7 = runCkineUP(t, rxnIL7)
+        yOut_9 = runCkineUP(t, rxnIL9)
+        yOut_4 = runCkineUP(t, rxnIL4)
+        yOut_21 = runCkineUP(t, rxnIL21)
 
         # check that dydt is ~0
         self.assertPosEquilibrium(yOut_2[1], lambda y: fullModel(y, t[1], rxnIL2))
@@ -96,7 +96,7 @@ class TestModel(unittest.TestCase):
 
     def test_fullModel(self):
         """ Assert that we're at autocrine steady-state at t=0. """
-        yOut = runCkineU(np.array([0.0]), self.rxntfR)
+        yOut = runCkineUP(np.array([0.0]), self.rxntfR)
         yOut = np.squeeze(yOut)
 
         rxnNoLigand = self.rxntfR
@@ -123,7 +123,7 @@ class TestModel(unittest.TestCase):
     def test_runCkine(self, vec):
         """ Make sure model runs properly by checking retVal. """
         vec[19] = np.tanh(vec[19]) * 0.9  # Force sorting fraction to be less than 1.0
-        runCkineU(self.ts, vec)
+        runCkineUP(self.ts, vec)
 
     def test_runCkineParallel(self):
         """ Test that we can run solving in parallel. """
@@ -137,14 +137,14 @@ class TestModel(unittest.TestCase):
 
     def test_initial(self):
         """ Test that there is at least 1 non-zero species at T=0. """
-        temp = runCkineU(self.ts, self.rxntfR)
+        temp = runCkineUP(self.ts, self.rxntfR)
         self.assertGreater(np.count_nonzero(temp[0, :]), 0)
 
     def test_gc(self):
         """ Test to check that no active species is present when gamma chain is not expressed. """
         rxntfR = self.rxntfR.copy()
         rxntfR[24] = 0.0  # set expression of gc to 0.0
-        yOut = runCkineU(self.ts, rxntfR)
+        yOut = runCkineUP(self.ts, rxntfR)
         self.assertAlmostEqual(getTotalActiveCytokine(0, yOut[1]), 0.0, places=5)  # IL2
         self.assertAlmostEqual(getTotalActiveCytokine(1, yOut[1]), 0.0, places=5)  # IL15
         self.assertAlmostEqual(getTotalActiveCytokine(2, yOut[1]), 0.0, places=5)  # IL7
@@ -182,12 +182,12 @@ class TestModel(unittest.TestCase):
         rxntfR_6[5] = 1000.0
 
         # first element is t=0 and second element is t=10**5
-        yOut_1 = runCkineU(self.ts, rxntfR_1)
-        yOut_2 = runCkineU(self.ts, rxntfR_2)
-        yOut_3 = runCkineU(self.ts, rxntfR_3)
-        yOut_4 = runCkineU(self.ts, rxntfR_4)
-        yOut_5 = runCkineU(self.ts, rxntfR_5)
-        yOut_6 = runCkineU(self.ts, rxntfR_6)
+        yOut_1 = runCkineUP(self.ts, rxntfR_1)
+        yOut_2 = runCkineUP(self.ts, rxntfR_2)
+        yOut_3 = runCkineUP(self.ts, rxntfR_3)
+        yOut_4 = runCkineUP(self.ts, rxntfR_4)
+        yOut_5 = runCkineUP(self.ts, rxntfR_5)
+        yOut_6 = runCkineUP(self.ts, rxntfR_6)
 
         # make sure endosomal free ligand is positive at equilibrium
         # IL2
@@ -221,6 +221,6 @@ class TestModel(unittest.TestCase):
         """ Make sure no endosomal species are found when endo=0. """
         rxntfR = self.rxntfR.copy()
         rxntfR[17:19] = 0.0  # set endo and activeEndo to 0.0
-        yOut = runCkineU(self.ts, rxntfR)
+        yOut = runCkineUP(self.ts, rxntfR)
         tot_endo = np.sum(yOut[1, 28::])
         self.assertEqual(tot_endo, 0.0)
