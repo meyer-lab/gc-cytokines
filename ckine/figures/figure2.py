@@ -21,26 +21,26 @@ def makeFigure():
 
     subplotLabel(ax)
 
-    full_unkVec_2_15, _ = import_samples_2_15()
-    full_unkVec_4_7, full_scales_4_7 = import_samples_4_7()  # full version used for violin plots
-    unkVec_4_7, scales_4_7 = import_samples_4_7(N=100)  # a subsampled version used for simulation
+    full_unkVec_2_15 = import_samples_2_15(N=300)
+    full_unkVec_4_7 = import_samples_4_7(N=300)  # full version used for violin plots
+    unkVec_4_7 = import_samples_4_7(N=100)  # a subsampled version used for simulation
 
-    pstat_plot(ax[1], unkVec_4_7, scales_4_7)
-    plot_pretreat(ax[2], unkVec_4_7, scales_4_7, "Cross-Talk pSTAT Inhibition")
+    pstat_plot(ax[1], unkVec_4_7)
+    plot_pretreat(ax[2], unkVec_4_7, "Cross-Talk pSTAT Inhibition")
     traf_violin(ax[6], full_unkVec_4_7)
     rexpr_violin(ax[7], full_unkVec_4_7)
-    misc_violin(ax[8], full_unkVec_4_7, full_scales_4_7)
+    misc_violin(ax[8], full_unkVec_4_7)
     surf_gc(ax[4], 100.0, full_unkVec_4_7)
     unkVec_noActiveEndo = unkVec_4_7.copy()
     unkVec_noActiveEndo[18] = 0.0  # set activeEndo rate to 0
-    plot_pretreat(ax[3], unkVec_noActiveEndo, scales_4_7, r"Cross-Talk: $\mathrm{k_{endo,a} = k_{endo}}$")
+    plot_pretreat(ax[3], unkVec_noActiveEndo, r"Cross-Talk: $\mathrm{k_{endo,a} = k_{endo}}$")
 
     relativeGC(ax[5], full_unkVec_2_15, full_unkVec_4_7)  # plot last to avoid coloring all other violins purple
 
     return f
 
 
-def pstat_calc(unkVec, scales, cytokC):
+def pstat_calc(unkVec, cytokC):
     """ This function performs the calculations necessary to produce the Gonnord Figures S3B and S3C. """
     activity = getTotalActiveSpecies().astype(np.float64)
     ts = np.array([10.0])  # was 10. in literature
@@ -63,9 +63,6 @@ def pstat_calc(unkVec, scales, cytokC):
         actVecIL4[:, x] = parallelCalc(unkVec, 4, conc)
 
     for ii in range(K):
-        # incorporate IC50 (sigmoidal) scale
-        actVecIL4[ii] = actVecIL4[ii] / (actVecIL4[ii] + scales[ii, 0])
-        actVecIL7[ii] = actVecIL7[ii] / (actVecIL7[ii] + scales[ii, 1])
         # normalize from 0-1
         actVecIL4[ii] = actVecIL4[ii] / np.max(actVecIL4[ii])
         actVecIL7[ii] = actVecIL7[ii] / np.max(actVecIL7[ii])
@@ -73,7 +70,7 @@ def pstat_calc(unkVec, scales, cytokC):
     return np.concatenate((actVecIL4, actVecIL7))
 
 
-def pstat_plot(ax, unkVec, scales):
+def pstat_plot(ax, unkVec):
     """ This function calls the pstat_calc function to re-generate Gonnord figures S3B and S3C with our own fitting data. """
     PTS = 30
     K = unkVec.shape[1]  # should be 500
@@ -85,7 +82,7 @@ def pstat_plot(ax, unkVec, scales):
     IL4_data_max = np.amax(np.concatenate((dataIL4[:, 1], dataIL4[:, 2])))
     IL7_data_max = np.amax(np.concatenate((dataIL7[:, 1], dataIL7[:, 2])))
 
-    output = pstat_calc(unkVec, scales, cytokC_common)  # run simulation
+    output = pstat_calc(unkVec, cytokC_common)  # run simulation
     # split according to cytokine and transpose for input into plot_conf_int
     IL4_output = output[0:K].T
     IL7_output = output[K: (K * 2)].T
@@ -133,16 +130,12 @@ def rexpr_violin(ax, unkVec):
     a.set_title("Receptor Expression Rates")
 
 
-def misc_violin(ax, unkVec, scales):
+def misc_violin(ax, unkVec):
     """ Create violin plot of activity scaling constants, sortF, and kfwd. """
-    scales6 = scales[:, 0] / np.max(scales[:, 0])
-    scales5 = scales[:, 1] / np.max(scales[:, 1])
-    misc = np.vstack((scales6, scales5, unkVec[19, :], unkVec[6, :] / np.max(unkVec[6, :])))
+    misc = np.vstack((unkVec[19, :], unkVec[6, :] / np.max(unkVec[6, :])))
     misc = pd.DataFrame(misc.T)
 
     misc.columns = [
-        r"$\mathrm{C_{6}}$ / " + "{:.2E}".format(np.max(scales[:, 0])),
-        r"$\mathrm{C_{5}}$ / " + "{:.2E}".format(np.max(scales[:, 1])),
         "Sorting Fraction / " + "{:.2E}".format(np.max(unkVec[:, 6])),
         "Cmplx form. rate / " + "{:.2E}".format(np.max(unkVec[6, :])),
     ]
@@ -152,7 +145,7 @@ def misc_violin(ax, unkVec, scales):
     a.set_title("Misc. Parameters")
 
 
-def pretreat_calc(unkVec, scales, pre_conc):
+def pretreat_calc(unkVec, pre_conc):
     """ This function performs the calculations necessary to produce the Gonnord Figures S3B and S3C. """
     activity = getTotalActiveSpecies().astype(np.float64)
     ts = np.array([10.0])  # was 10. in literature
@@ -200,17 +193,13 @@ def pretreat_calc(unkVec, scales, pre_conc):
     ret2 = ret1.copy()
     # incorporate IC50 and find inhibition
     for ii in range(K):
-        actVec_IL4stim[ii] = actVec_IL4stim[ii] / (actVec_IL4stim[ii] + scales[ii, 0])
-        actVec_IL7stim[ii] = actVec_IL7stim[ii] / (actVec_IL7stim[ii] + scales[ii, 1])
-        IL4stim_no_pre[ii] = IL4stim_no_pre[ii] / (IL4stim_no_pre[ii] + scales[ii, 0])
-        IL7stim_no_pre[ii] = IL7stim_no_pre[ii] / (IL7stim_no_pre[ii] + scales[ii, 1])
         ret1[ii] = 1 - (actVec_IL4stim[ii] / IL4stim_no_pre[ii])
         ret2[ii] = 1 - (actVec_IL7stim[ii] / IL7stim_no_pre[ii])
 
     return np.concatenate((ret1, ret2))
 
 
-def plot_pretreat(ax, unkVec, scales, title):
+def plot_pretreat(ax, unkVec, title):
     """ Generates plots that mimic the percent inhibition after pretreatment in Gonnord Fig S3. """
     path = os.path.dirname(os.path.abspath(__file__))
     data = pd.read_csv(join(path, "../data/Gonnord_S3D.csv")).values
@@ -220,7 +209,7 @@ def plot_pretreat(ax, unkVec, scales, title):
     K = unkVec.shape[1]  # should be 500
     pre_conc = np.logspace(-3.8, 1.0, num=PTS)
 
-    output = pretreat_calc(unkVec, scales, pre_conc)  # run simulation
+    output = pretreat_calc(unkVec, pre_conc)  # run simulation
     # split according to cytokine and transpose so it works with plot_conf_int
     IL4_stim = output[0:K].T
     IL7_stim = output[K: (K * 2)].T

@@ -5,14 +5,14 @@ import numpy as np
 import pandas as pd
 import seaborn as sns
 import matplotlib.cm as cm
-from .figureCommon import subplotLabel, getSetup, plot_conf_int, import_pMuteins, organize_expr_pred, mutein_scaling
+from .figureCommon import subplotLabel, getSetup, plot_conf_int, import_pMuteins, organize_expr_pred, expScaleMut
 from ..imports import import_Rexpr, import_samples_2_15, import_pstat
 
 dataMean = import_pMuteins()
 dataMean.reset_index(inplace=True)
 data, _, _ = import_Rexpr()
 data.reset_index(inplace=True)
-unkVec_2_15, _ = import_samples_2_15(N=25)
+unkVec_2_15 = import_samples_2_15(N=25)
 _, _, _, _, pstat_df = import_pstat()
 dataMean = dataMean.append(pstat_df, ignore_index=True, sort=True)
 
@@ -35,39 +35,35 @@ def makeFigure():
 
     # loop for each cell type and mutein
     for _, cell_name in enumerate(cell_order):
-
         IL2Ra = data.loc[(data["Cell Type"] == cell_name) & (data["Receptor"] == "IL-2R$\\alpha$"), "Count"].values[0]
         IL2Rb = data.loc[(data["Cell Type"] == cell_name) & (data["Receptor"] == "IL-2R$\\beta$"), "Count"].values[0]
         gc = data.loc[(data["Cell Type"] == cell_name) & (data["Receptor"] == "$\\gamma_{c}$"), "Count"].values[0]
         receptors = np.array([IL2Ra, IL2Rb, gc]).astype(np.float)
 
         for _, ligand_name in enumerate(ligand_order):
-
             # append dataframe with experimental and predicted activity
             df = organize_expr_pred(df, cell_name, ligand_name, receptors, muteinC, tps, unkVec_2_15)
 
+    df = expScaleMut(df)
+
     # determine scaling constants
-    scales = mutein_scaling(df, unkVec_2_15)
-    plot_expr_predM(ax, df, scales, cell_order, ligand_order, tps, muteinC)
+    plot_expr_predM(ax, df, cell_order, ligand_order, tps, muteinC)
 
     return f
 
 
-def plot_expr_predM(ax, df, scales, cell_order, ligand_order, tps, muteinC):
+def plot_expr_predM(ax, df, cell_order, ligand_order, tps, muteinC):
     """ Plots experimental and scaled model-predicted dose response for all cell types, muteins, and time points. """
-
     pred_data = np.zeros((12, 4, unkVec_2_15.shape[1]))
-    cell_groups = [["T-reg", "Mem Treg", "Naive Treg"], ["T-helper", "Mem Th", "Naive Th"], ["NK"], ["CD8+"]]
-    ylims = [50000.0, 30000.0, 2500.0, 3500.0]
+    bounds = np.array([800, 50, 150, 150, 150, 15, 15, 15])
 
     for i, cell_name in enumerate(cell_order):
         for j, ligand_name in enumerate(ligand_order):
             axis = i * 6 + j
 
             # plot experimental data
-            sns.scatterplot(
-                x="Concentration", y="RFU", hue="Time", data=dataMean.loc[(dataMean["Cells"] == cell_name) & (dataMean["Ligand"] == ligand_name)], ax=ax[axis], s=10, palette=cm.rainbow, legend=False
-            )
+            sns.scatterplot(x="Concentration", y="Activity", hue="Time Point", data=df.loc[(df["Cells"] == cell_name) & (
+                df["Ligand"] == ligand_name) & (df["Activity Type"] == "experimental")], ax=ax[axis], s=10, palette=cm.rainbow, legend=False)
 
             # scale and plot model predictions
             for k, conc in enumerate(df.Concentration.unique()):
@@ -83,14 +79,8 @@ def plot_expr_predM(ax, df, scales, cell_order, ligand_order, tps, muteinC):
                             "Activity",
                         ]
 
-            for n, cell_names in enumerate(cell_groups):
-                if cell_name in cell_names:
-                    for o in range(unkVec_2_15.shape[1]):
-                        pred_data[:, :, o] = scales[n, 1, o] * pred_data[:, :, o] / (pred_data[:, :, o] + scales[n, 0, o])
-
-                    plot_dose_responseM(ax[axis], pred_data, tps, muteinC, legend=(axis == 0))
-                    ax[axis].set(ylim=(0, ylims[n]))
-            ax[axis].set(xlabel=("[" + ligand_name + "] (nM)"), ylabel="Activity", title=cell_name)
+            plot_dose_responseM(ax[axis], pred_data, tps, muteinC, legend=(axis == 0))
+            ax[axis].set(xlabel=("[" + ligand_name + "] (nM)"), ylabel="Activity", title=cell_name, ylim=(0, bounds[i]))
 
 
 def plot_dose_responseM(ax, mutein_activity, tps, muteinC, legend=False):
