@@ -10,11 +10,11 @@ from ..imports import import_pstat, import_samples_2_15, import_Rexpr
 from ..model import getTotalActiveSpecies, receptor_expression, getRateVec
 from ..differencing_op import runCkineDoseOp
 
-unkVec_2_15, scales = import_samples_2_15(N=1)
+unkVec_2_15 = import_samples_2_15(N=1)
 data, receptor_data, cell_names_receptor = import_Rexpr()
 ckineConc, cell_names_pstat, IL2_data, IL15_data, _ = import_pstat()
 tpsSc = np.array([0.5, 1.0, 2.0, 4.0]) * 60.0
-_, _, scalesT = calc_dose_response(cell_names_receptor, unkVec_2_15, scales, receptor_data, tpsSc, ckineConc, IL2_data, IL15_data)
+_, _ = calc_dose_response(cell_names_receptor, unkVec_2_15, receptor_data, tpsSc, ckineConc, IL2_data, IL15_data)
 
 
 def makeFigure():
@@ -22,12 +22,12 @@ def makeFigure():
     # Get list of axis objects
     ax, f = getSetup((9, 5), (2, 3))
 
-    Spec_Aff(ax[0:6], scalesT)
+    Spec_Aff(ax[0:6])
 
     return f
 
 
-def OPgen(unkVecOP, CellTypes, OpC, scalesTh, RaAffM, RbAffM, CD25Add=1.0):
+def OPgen(unkVecOP, CellTypes, OpC, RaAffM, RbAffM, CD25Add=1.0):
     """ Generates the UnkVec with cell specific receptor abundances and expression rates. """
     _, receptor_dataC, cell_names_receptorC = import_Rexpr()
     cell_names_receptorC = cell_names_receptorC.tolist()
@@ -48,38 +48,33 @@ def OPgen(unkVecOP, CellTypes, OpC, scalesTh, RaAffM, RbAffM, CD25Add=1.0):
         unkVecOP = T.set_subtensor(unkVecOP[ii], unkVecOP[ii] * RbAffM)
 
     cell_groups = np.array([['T-reg', 'Mem Treg', 'Naive Treg'], ['T-helper', 'Mem Th', 'Naive Th'], ['NK'], ['CD8+', 'Naive CD8+', 'Mem CD8+']])
-    for i, group in enumerate(cell_groups):
-        group = np.array(group)
-        if np.where(group == CellTypes)[0].size > 0:
-            scale1 = scalesTh[i, 1, 0]
-            scale2 = scalesTh[i, 0, 0]
 
-    Cell_Op = (OpC(unkVecOP) * scale1) / (OpC(unkVecOP) + scale2)
+    Cell_Op = (OpC(unkVecOP)) / (OpC(unkVecOP))
 
     return Cell_Op
 
 
-def OPgenSpec(unk, scalesIn, Op, k1Aff=1.0, k5Aff=1.0):
+def OPgenSpec(unk, Op, k1Aff=1.0, k5Aff=1.0):
     """ Make an Op for specificity from the given conditions. """
-    S_CD = (OPgen(unk, "T-reg", Op, scalesIn, k1Aff, k5Aff) /
-            OPgen(unk, "CD8+", Op, scalesIn, k1Aff, k5Aff))
+    S_CD = (OPgen(unk, "T-reg", Op, k1Aff, k5Aff) /
+            OPgen(unk, "CD8+", Op, k1Aff, k5Aff))
 
-    S_ThAve = (OPgen(unk, "T-reg", Op, scalesIn, k1Aff, k5Aff) /
-               OPgen(unk, "T-helper", Op, scalesIn, k1Aff, k5Aff, 1.0))
+    S_ThAve = (OPgen(unk, "T-reg", Op, k1Aff, k5Aff) /
+               OPgen(unk, "T-helper", Op, k1Aff, k5Aff, 1.0))
 
-    S_ThHigh = (OPgen(unk, "T-reg", Op, scalesIn, k1Aff, k5Aff) /
-                OPgen(unk, "T-helper", Op, scalesIn, k1Aff, k5Aff, 2.0))
+    S_ThHigh = (OPgen(unk, "T-reg", Op, k1Aff, k5Aff) /
+                OPgen(unk, "T-helper", Op, k1Aff, k5Aff, 2.0))
 
-    S_ThLow = (OPgen(unk, "T-reg", Op, scalesIn, k1Aff, k5Aff) /
-               OPgen(unk, "T-helper", Op, scalesIn, k1Aff, k5Aff, 0.5))
+    S_ThLow = (OPgen(unk, "T-reg", Op, k1Aff, k5Aff) /
+               OPgen(unk, "T-helper", Op, k1Aff, k5Aff, 0.5))
 
-    S_NK = (OPgen(unk, "T-reg", Op, scalesIn, k1Aff, k5Aff) /
-            OPgen(unk, "NK", Op, scalesIn, k1Aff, k5Aff))
+    S_NK = (OPgen(unk, "T-reg", Op, k1Aff, k5Aff) /
+            OPgen(unk, "NK", Op, k1Aff, k5Aff))
 
     return S_CD, S_ThAve, S_ThHigh, S_ThLow, S_NK
 
 
-def Spec_Aff(ax, scalesAff):
+def Spec_Aff(ax):
     """ Plots specificity for a cell type over a range of IL2RBG and IL2Ra affinities. """
     dose = ckineConc[7]
     affRange = np.logspace(2, 0, 50)
@@ -105,7 +100,7 @@ def Spec_Aff(ax, scalesAff):
         for ii, time in enumerate(timemat):
             for jj, affinity in enumerate(affRange):
                 Op = runCkineDoseOp(tt=np.array(time), condense=getTotalActiveSpecies().astype(np.float64), conditions=CondIL)
-                SCD8fun, SThfunAve, SThfunHigh, SThfunLow, SNKfun = OPgenSpec(unkVecAff, scalesAff, Op, CD25aff, affinity)
+                SCD8fun, SThfunAve, SThfunHigh, SThfunLow, SNKfun = OPgenSpec(unkVecAff, Op, CD25aff, affinity)
                 specHolderCD[ii, jj] = SCD8fun.eval()
                 specHolderThAve[ii, jj] = SThfunAve.eval()
                 specHolderThHigh[ii, jj] = SThfunHigh.eval()

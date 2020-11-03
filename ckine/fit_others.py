@@ -34,7 +34,7 @@ class IL4_7_activity:  # pylint: disable=too-few-public-methods
             (dataIL4[:, 1] / IL4_data_max, dataIL4[:, 2] / IL4_data_max, dataIL7[:, 1] / IL7_data_max, dataIL7[:, 2] / IL7_data_max)
         )  # measurements ARE normalized to max of own species
 
-    def calc(self, unkVec, scales):
+    def calc(self, unkVec):
         """ Simulate the experiment with different ligand stimulations and compare with experimental data. """
         Op = runCkineDoseOp(tt=np.array(10.0), condense=getTotalActiveSpecies().astype(np.float64), conditions=self.cytokM)
 
@@ -43,10 +43,6 @@ class IL4_7_activity:  # pylint: disable=too-few-public-methods
 
         actVecIL4 = outt[0: self.cytokC_4.size]
         actVecIL7 = outt[self.cytokC_4.size: self.cytokC_4.size * 2]
-
-        # incorporate IC50 scale
-        actVecIL4 = actVecIL4 / (actVecIL4 + scales[0])
-        actVecIL7 = actVecIL7 / (actVecIL7 + scales[1])
 
         # normalize each actVec by its maximum
         actVecIL4 = actVecIL4 / T.max(actVecIL4)
@@ -111,25 +107,16 @@ class crosstalk:  # pylint: disable=too-few-public-methods
         actVecIL7 = outt[1]
         return actVecIL4, actVecIL7
 
-    def calc(self, unkVec, scales):
+    def calc(self, unkVec):
         """ Generates residual calculation that compares model to data. """
         # with no pretreatment
         IL4stim_no_pre, IL7stim_no_pre = self.singleCalc_no_pre(unkVec)
-
-        # incorporate IC50
-        IL4stim_no_pre = IL4stim_no_pre / (IL4stim_no_pre + scales[0])
-        IL7stim_no_pre = IL7stim_no_pre / (IL7stim_no_pre + scales[1])
 
         # IL7 pretreatment with IL4 stimulation
         actVec_IL4stim = T.stack((list(self.singleCalc(unkVec, 2, x, 4, self.cytokM[0, 4]) for x in self.pre_IL7)))
 
         # IL4 pretreatment with IL7 stimulation
         actVec_IL7stim = T.stack((list(self.singleCalc(unkVec, 4, x, 2, self.cytokM[1, 2]) for x in self.pre_IL4)))
-
-        # shoudld I be dividing by the max before doing this?
-        # incorporate IC50
-        actVec_IL4stim = actVec_IL4stim / (actVec_IL4stim + scales[0])
-        actVec_IL7stim = actVec_IL7stim / (actVec_IL7stim + scales[1])
 
         case1 = 1 - (actVec_IL4stim / IL4stim_no_pre)  # % inhibition of IL4 act. after IL7 pre.
         case2 = 1 - (actVec_IL7stim / IL7stim_no_pre)  # % inhibition of IL7 act. after IL4 pre.
@@ -160,19 +147,18 @@ class build_model:
 
             # constant according to measured number per cell. gc, blank, IL7R, blank, IL4R
             Rexpr = (np.array([0.0, 0.0, 328.0, 0.0, 2591.0, 0.0, 254.0, 0.0]) * endo) / (1.0 + ((kRec * (1.0 - sortF)) / (kDeg * sortF)))
-            scales = pm.Lognormal("scales", mu=np.log(100.0), sigma=1, shape=2)  # create scaling constants for activity measurements
 
             # indexing same as in model.hpp
             unkVec = T.concatenate((kfwd, nullRates, k27rev, Tone, k33rev, Tone, endo, activeEndo, sortF, kRec, kDeg, Rexpr))
 
-            Y_int = self.act.calc(unkVec, scales)  # fitting the data based on act.calc for the given parameters
+            Y_int = self.act.calc(unkVec)  # fitting the data based on act.calc for the given parameters
 
             sd_int = T.minimum(T.std(Y_int), 0.1)
             pm.Deterministic("Y_int", T.sum(T.square(Y_int)))
             pm.Normal("fitD_int", sigma=sd_int, observed=Y_int)
 
             if self.pretreat is True:
-                Y_cross = self.cross.calc(unkVec, scales)  # fitting the data based on cross.calc
+                Y_cross = self.cross.calc(unkVec)  # fitting the data based on cross.calc
                 pm.Deterministic("Y_cross", T.sum(T.square(Y_cross)))
                 sd_cross = T.minimum(T.std(Y_cross), 0.1)
                 pm.Normal("fitD_cross", sigma=sd_cross, observed=Y_cross)  # the stderr is definitely less than 0.2

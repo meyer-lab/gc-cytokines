@@ -27,10 +27,12 @@ def commonTraf(trafficking=True):
 
     if trafficking:
         endo = pm.Lognormal("endo", mu=np.log(0.1), sigma=0.1, shape=1)
-        activeEndo = pm.Lognormal("activeEndo", sigma=0.1, shape=1)
+        activeEndo = T.ones(1, dtype=np.float64)  # pm.Lognormal("activeEndo", sigma=0.1, shape=1)
+        pm.Deterministic("activeEndo", activeEndo)
         kRec = pm.Lognormal("kRec", mu=np.log(0.1), sigma=0.1, shape=1)
         kDeg = pm.Lognormal("kDeg", mu=np.log(0.01), sigma=0.2, shape=1)
-        sortF = pm.Beta("sortF", alpha=12, beta=80, shape=1)
+        sortF = T.ones(1, dtype=np.float64) * 0.1  # pm.Beta("sortF", alpha=12, beta=80, shape=1)
+        pm.Deterministic("sortF", sortF)
     else:
         # Assigning trafficking to zero to fit without trafficking
         endo = activeEndo = kRec = kDeg = T.zeros(1, dtype=np.float64)
@@ -91,8 +93,10 @@ class gc_trafficking:  # pylint: disable=too-few-public-methods
         # Condense to just gc
         Op = runCkineDoseOp(tt=self.ts, condense=getSurfaceGCSpecies().astype(np.float64), conditions=self.cytokM)
 
-        # IL2Ra+ stimulation only
-        a = Op(unkVec)
+        unkVecIL2RaMinus = T.set_subtensor(unkVec[16], 0.0)  # Set IL2Ra to zero
+
+        # IL2Ra- stimulation only
+        a = Op(unkVecIL2RaMinus)
 
         # return residual assuming all gc starts on the cell surface
         return a / a[0] - self.data
@@ -109,7 +113,7 @@ class IL2_15_activity:  # pylint: disable=too-few-public-methods
         self.cytokM[0: self.cytokC.size, 0] = self.cytokC
         self.cytokM[self.cytokC.size::, 1] = self.cytokC
 
-    def calc(self, unkVec, scale):
+    def calc(self, unkVec):
         """ Simulate the STAT5 measurements and return residuals between model prediction and experimental data. """
 
         # IL2Ra- cells have same IL15 activity, so we can just reuse same solution
@@ -119,9 +123,6 @@ class IL2_15_activity:  # pylint: disable=too-few-public-methods
 
         # put together into one vector
         actCat = T.concatenate((Op(unkVec), Op(unkVecIL2RaMinus)))
-
-        # account for pSTAT5 saturation
-        actCat = actCat / (actCat + scale)
 
         # normalize from 0 to 1 and return the residual
         return self.fit_data - actCat / T.max(actCat)
@@ -151,12 +152,10 @@ class build_model:
             Rexpr_2Rb = pm.Lognormal("Rexpr_2Rb", sigma=0.5, shape=1)  # Expression: IL2Rb
             Rexpr_15Ra = pm.Lognormal("Rexpr_15Ra", sigma=0.5, shape=1)  # Expression: IL15Ra
             Rexpr_gc = pm.Lognormal("Rexpr_gc", sigma=0.5, shape=1)  # Expression: gamma chain
-            scale = pm.Lognormal("scales", mu=np.log(100.0), sigma=1, shape=1)  # create scaling constant for activity measurements
 
             unkVec = T.concatenate((kfwd, rxnrates, nullRates, endo, activeEndo, sortF, kRec, kDeg, Rexpr_2Ra, Rexpr_2Rb, Rexpr_gc, Rexpr_15Ra, nullRates * 0.0))
-            unkVec_2Ra_minus = T.concatenate((kfwd, rxnrates, nullRates, endo, activeEndo, sortF, kRec, kDeg, T.zeros(1, dtype=np.float64), Rexpr_2Rb, Rexpr_gc, Rexpr_15Ra, nullRates * 0.0))
 
-            Y_15 = self.dst15.calc(unkVec, scale)  # fitting the data based on dst15.calc for the given parameters
+            Y_15 = self.dst15.calc(unkVec)  # fitting the data based on dst15.calc for the given parameters
             sd_15 = T.minimum(T.std(Y_15), 0.03)  # Add bounds for the stderr to help force the fitting solution
             pm.Deterministic("Y_15", T.sum(T.square(Y_15)))
             pm.Normal("fitD_15", sigma=sd_15, observed=Y_15)  # experimental-derived stderr is used
@@ -167,7 +166,7 @@ class build_model:
                 pm.Deterministic("Y_int", T.sum(T.square(Y_int)))
                 pm.Normal("fitD_int", sigma=sd_int, observed=Y_int)
 
-                Y_gc = self.gc.calc(unkVec_2Ra_minus)  # fitting the data using IL2Ra- cells
+                Y_gc = self.gc.calc(unkVec)  # fitting the data using IL2Ra- cells
                 sd_gc = T.minimum(T.std(Y_gc), 0.02)  # Add bounds for the stderr to help force the fitting solution
                 pm.Deterministic("Y_gc", T.sum(T.square(Y_gc)))
                 pm.Normal("fitD_gc", sigma=sd_gc, observed=Y_gc)
