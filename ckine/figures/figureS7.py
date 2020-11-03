@@ -35,7 +35,6 @@ def makeFigure():
 
     # loop for each cell type and mutein
     for _, cell_name in enumerate(cell_order):
-
         IL2Ra = data.loc[(data["Cell Type"] == cell_name) & (data["Receptor"] == "IL-2R$\\alpha$"), "Count"].values[0]
         IL2Rb = data.loc[(data["Cell Type"] == cell_name) & (data["Receptor"] == "IL-2R$\\beta$"), "Count"].values[0]
         gc = data.loc[(data["Cell Type"] == cell_name) & (data["Receptor"] == "$\\gamma_{c}$"), "Count"].values[0]
@@ -57,6 +56,7 @@ def plot_expr_predM(ax, df, cell_order, ligand_order, tps, muteinC):
     """ Plots experimental and scaled model-predicted dose response for all cell types, muteins, and time points. """
     pred_data = np.zeros((12, 4, unkVec_2_15.shape[1]))
     bounds = np.array([800, 50, 150, 150, 150, 15, 15, 15])
+    
     for i, cell_name in enumerate(cell_order):
         for j, ligand_name in enumerate(ligand_order):
             axis = i * 6 + j

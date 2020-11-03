@@ -78,6 +78,8 @@ def makeFigure():
     )
     ckineConc_ = np.delete(ckineConc, 11, 0)  # delete smallest concentration since zero/negative activity
 
+    overlayT, overlaycells = 240.0, ["T-reg", "NK", "T-helper"]
+    MuteinModelOverlay(ax[5:8], overlayT, overlaycells)
     mutEC50df = get_Mut_EC50s()
     mutEC50df = mutEC50df.rename(columns={"Time Point": "Time Point", "IL": "IL", "Cell Type": "CellType", "Data Type": "Data Type", "EC-50": "EC-50"})
     affComp(ax[4])
@@ -91,8 +93,7 @@ def makeFigure():
     labels = (x.get_text() for x in legend.get_texts())
     ax[4].legend(legend.legendHandles, labels, loc="upper right", prop={"size": 6})  # use this to place universal legend later
     ax[8].get_legend().remove()
-    overlayT, overlaycells = 240.0, ["T-reg", "NK", "T-helper"]
-    MuteinModelOverlay(ax[5:8], overlayT, overlaycells)
+    
 
     return f
 
