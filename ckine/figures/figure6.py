@@ -78,7 +78,7 @@ def makeFigure():
     )
     ckineConc_ = np.delete(ckineConc, 11, 0)  # delete smallest concentration since zero/negative activity
 
-    overlayT, overlaycells = 240.0, ["T-reg", "NK", "T-helper"]
+    overlayT, overlaycells = 60.0, ["T-reg", "NK", "T-helper"]
     MuteinModelOverlay(ax[5:8], overlayT, overlaycells)
     mutEC50df = get_Mut_EC50s()
     mutEC50df = mutEC50df.rename(columns={"Time Point": "Time Point", "IL": "IL", "Cell Type": "CellType", "Data Type": "Data Type", "EC-50": "EC-50"})
@@ -396,6 +396,7 @@ def MuteinModelOverlay(ax, tpoint, cells):
     bounds = np.array([150, 1000, 10])
     unkVec_2_15Over = import_samples_2_15(N=25)
     tps = np.array([0.5, 1.0, 2.0, 4.0]) * 60.0
+    tpsScale = np.array([0.5, 1.0]) * 60.0
     muteinC = mutData.Concentration.unique()
     pred_data = np.zeros((12, 4, unkVec_2_15Over.shape[1]))
     mutData["Concentration"] = mutData["Concentration"].astype(np.float)
@@ -414,10 +415,8 @@ def MuteinModelOverlay(ax, tpoint, cells):
             # append dataframe with experimental and predicted activity
             df = organize_expr_pred(df, cell_name, ligand_name, receptors, muteinC, tps, unkVec_2_15Over)
 
-    # do it for all cells then drop
-    df = expScaleMut(df)
+    df = expScaleMut(df, tpsScale)
     colors = sns.color_palette("husl", 6)
-    # do it here
 
     for i, celltype in enumerate(cells):
         for j, ligand in enumerate(ligand_order):

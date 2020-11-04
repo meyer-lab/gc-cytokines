@@ -112,11 +112,11 @@ def plot_conf_int(ax, x_axis, y_axis, color, label=None):
     """ Shades the 25-75 percentiles dark and the 10-90 percentiles light. The percentiles are found along axis=1. """
     y_axis_top = np.percentile(y_axis, 90.0, axis=1)
     y_axis_bot = np.percentile(y_axis, 10.0, axis=1)
-    ax.fill_between(x_axis, y_axis_top, y_axis_bot, color=color, alpha=0.3)
+    ax.fill_between(x_axis, y_axis_top, y_axis_bot, color=color, alpha=0.2, linewidth = 0)
 
     y_axis_top = np.percentile(y_axis, 75.0, axis=1)
     y_axis_bot = np.percentile(y_axis, 25.0, axis=1)
-    ax.fill_between(x_axis, y_axis_top, y_axis_bot, color=color, alpha=0.8, label=label)
+    ax.fill_between(x_axis, y_axis_top, y_axis_bot, color=color, alpha=0.65, label=label, linewidth = 0)
     if label is not None:
         ax.legend()
 
@@ -238,13 +238,12 @@ def legend_2_15(ax, location="center right"):
     ax.axis("off")  # remove the grid
 
 
-def plot_scaled_pstat(ax, cytokC, pstat):
+def plot_scaled_pstat(ax, cytokC, pstat, allFour=True):
     """ Plots pSTAT5 data scaled by the average activity measurement. """
     # plot pstat5 data for each time point
-    ax.scatter(cytokC, pstat[0, :], c="indigo", s=2)  # 0.5 hr
-    ax.scatter(cytokC, pstat[1, :], c="teal", s=2)  # 1 hr
-    ax.scatter(cytokC, pstat[2, :], c="forestgreen", s=2)  # 2 hr
-    ax.scatter(cytokC, pstat[3, :], c="darkred", s=2)  # 4 hr
+    colors = ["indigo", "teal", "forestgreen", "darkred"]
+    for i in range(0, pstat.shape[0]):
+        ax.scatter(cytokC, pstat[i, :], c=colors[i], s=2)  # 0.5 hr
 
 
 def global_legend(ax, Spec=False, Mut=False, exppred=True):
@@ -303,8 +302,8 @@ def calc_dose_response(cell_names, unkVec, receptor_data, tps, cytokC, expr_act2
             yOut = runCkineUP(tps, rxntfr15)
             activity15 = np.dot(yOut, getTotalActiveSpecies().astype(np.float))
 
-            total_activity2[i, j, :, :] = np.reshape(activity2, (-1, 4))  # save the activity from this concentration for all 4 tps
-            total_activity15[i, j, :, :] = np.reshape(activity15, (-1, 4))  # save the activity from this concentration for all 4 tps
+            total_activity2[i, j, :, :] = np.reshape(activity2, (-1, len(tps)))  # save the activity from this concentration for all 4 tps
+            total_activity15[i, j, :, :] = np.reshape(activity15, (-1, len(tps)))  # save the activity from this concentration for all 4 tps
 
     return total_activity2, total_activity15
 
@@ -455,9 +454,13 @@ def expScaleWT(predSTAT2, predSTAT15, expSTAT2, expSTAT15, rep2=False):
 
         subExpSTAT2 = np.reshape(subExpSTAT2, (subExpSTAT2.shape[0], subExpSTAT2.shape[1], subExpSTAT2.shape[2], 1))
         subExpSTAT2 = np.tile(subExpSTAT2, (1, 1, 1, subPredSTAT2.shape[3]))
+        subExpSTAT2 = subExpSTAT2[:, 0:2, :, :]
         subExpSTAT15 = np.reshape(subExpSTAT15, (subExpSTAT15.shape[0], subExpSTAT15.shape[1], subExpSTAT15.shape[2], 1))
         subExpSTAT15 = np.tile(subExpSTAT15, (1, 1, 1, subPredSTAT15.shape[3]))
+        subExpSTAT15 = subExpSTAT2[:, 0:2, :, :]
 
+        subPredSTAT2 = subPredSTAT2[:, 0:2, :, :]
+        subPredSTAT15 = subPredSTAT15[:, 0:2, :, :]
         expSTAT = np.vstack((subExpSTAT2, subExpSTAT15))
         predSTAT = np.vstack((subPredSTAT2, subPredSTAT2))
 
@@ -474,7 +477,7 @@ def expScaleWT(predSTAT2, predSTAT15, expSTAT2, expSTAT15, rep2=False):
     return output2, output15
 
 
-def expScaleMut(mutDF):
+def expScaleMut(mutDF, scaleTimes):
     """Scales data to model predictions for muteins"""
     cellGroups = [['NK'], ['CD8+'], ['T-reg', 'Naive Treg', 'Mem Treg'], ['T-helper', 'Naive Th', 'Mem Th']]
     mutGroups = [["F42Q N-Term", "N88D C-term", "R38Q N-term"], ["WT C-term", "V91K C-term"], ["WT N-term"]]
@@ -484,10 +487,12 @@ def expScaleMut(mutDF):
             exp_data = mutDF.loc[(mutDF["Cells"].isin(cellSet)) & (mutDF["Ligand"].isin(mutsGroup)) & (mutDF["Activity Type"] == "experimental")]
             expArray = np.array([])
             pred_data = np.array([])
+            
             for cell in cellSet:
                 for mutLig in mutsGroup:
-                    expArray = np.append(expArray, np.tile(np.ravel(np.array(exp_data.loc[(exp_data["Cells"] == cell) & (mutDF["Ligand"] == mutLig)].Activity)), 25))
-                    pred_data = np.append(pred_data, np.ravel(np.array(mutDF.loc[(mutDF["Cells"] == cell) & (mutDF["Ligand"] == mutLig) & (mutDF["Activity Type"] == "predicted")].Activity)))
+                    for time in scaleTimes:
+                        expArray = np.append(expArray, np.tile(np.ravel(np.array(exp_data.loc[(exp_data["Cells"] == cell) & (mutDF["Ligand"] == mutLig) & (mutDF["Time Point"] == time)].Activity)), 25))
+                        pred_data = np.append(pred_data, np.ravel(np.array(mutDF.loc[(mutDF["Cells"] == cell) & (mutDF["Ligand"] == mutLig) & (mutDF["Activity Type"] == "predicted") & (mutDF["Time Point"] == time)].Activity)))
 
             slope, intercept, _, _, _ = stats.linregress(expArray, pred_data)
 
