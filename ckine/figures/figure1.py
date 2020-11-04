@@ -7,8 +7,7 @@ import numpy as np
 import seaborn as sns
 import pandas as pd
 from .figureCommon import subplotLabel, getSetup, traf_names, plot_conf_int, global_legend
-from ..plot_model_prediction import parallelCalc, pstat, surf_gc
-from ..model import getSurfaceIL2RbSpecies
+from ..model import getSurfaceIL2RbSpecies, getSurfaceGCSpecies, getTotalActiveSpecies, runCkineUP
 from ..imports import import_samples_2_15
 
 
@@ -34,6 +33,14 @@ def makeFigure():
     ax[1].legend(legend.legendHandles, labels, loc="lower right")
 
     return f
+
+
+def parallelCalc(unkVec, cytokine, conc, t, condense):
+    """ Calculates the species over time in parallel for one condition. """
+    unkVec = np.transpose(unkVec).copy()
+    unkVec[:, cytokine] = conc
+    outt = np.dot(runCkineUP(t, unkVec), condense)
+    return outt.reshape((unkVec.shape[0], len(t)))
 
 
 def IL2Rb_perc(ax, unkVec):
@@ -102,15 +109,23 @@ def IL2Rb_perc(ax, unkVec):
 
 def gc_perc(ax, unkVec):
     """ Calculates the amount of gc that stays on the cell surface and compares it to experimental values in Mitra paper. """
-    surf = surf_gc()  # load proper class
+    gc_species_IDX = getSurfaceGCSpecies()
     # overlay experimental data
     path = os.path.dirname(os.path.abspath(__file__))
     data = pd.read_csv(join(path, "../data/mitra_surface_gc_depletion.csv")).values  # imports file into pandas array
     ts = data[:, 0]
     ax.scatter(ts, data[:, 1], color="darkorchid", marker="^", edgecolors="k", zorder=100)  # 1000 nM of IL2 in 2Ra-
 
-    y_max = 100.0
-    output = surf.calc(unkVec, ts) * y_max  # run the simulation
+    # set IL2 concentrations
+    unkVecIL2RaMinus = unkVec.copy()
+    unkVecIL2RaMinus[22, :] = 0.0
+
+    # calculate IL2 stimulation
+    output = parallelCalc(unkVecIL2RaMinus, 0, 1000.0, ts, gc_species_IDX)
+
+    output /= output[:, 0][:, np.newaxis]  # normalize by output[0] for each row
+    output *= 100.0
+
     plot_conf_int(ax, ts, output.T, "darkorchid")
 
     # label axes and titles
@@ -121,27 +136,39 @@ def gc_perc(ax, unkVec):
 
 def pstat_act(ax, unkVec):
     """ This function generates the pSTAT activation levels for each combination of parameters in unkVec. The results are plotted and then overlayed with the values measured by Ring et al. """
-    pstat5 = pstat()
     PTS = 30
     cytokC = np.logspace(-3.3, 2.7, PTS)
     y_max = 100.0
-    IL2_plus = np.zeros((unkVec.shape[1], PTS))
-    IL15_minus = IL2_plus.copy()
-    IL15_plus = IL2_plus.copy()
-    IL2_minus = IL2_plus.copy()
 
-    output = pstat5.calc(unkVec, cytokC) * y_max  # calculate activity for all unkVecs and concs
-    # split according to experimental condition
-    IL2_plus = output[:, 0:PTS].T
-    IL2_minus = output[:, PTS: (PTS * 2)].T
-    IL15_plus = output[:, (PTS * 2): (PTS * 3)].T
-    IL15_minus = output[:, (PTS * 3): (PTS * 4)].T
+    activity = getTotalActiveSpecies().astype(np.float64)
+    ts = np.array([500.0])  # was 500. in literature
+
+    unkVec_IL2Raminus = unkVec.copy()
+    unkVec_IL2Raminus[22, :] = np.zeros(unkVec.shape[1])  # set IL2Ra expression rates to 0
+
+    actVec_IL2 = np.zeros((len(cytokC), unkVec.shape[1]))
+    actVec_IL2_IL2Raminus = actVec_IL2.copy()
+    actVec_IL15 = actVec_IL2.copy()
+    actVec_IL15_IL2Raminus = actVec_IL2.copy()
+
+    # Calculate activities
+    for x, conc in enumerate(cytokC):
+        actVec_IL2[x, :] = parallelCalc(unkVec, 0, conc, ts, activity).T
+        actVec_IL2_IL2Raminus[x, :] = parallelCalc(unkVec_IL2Raminus, 0, conc, ts, activity).T
+        actVec_IL15[x, :] = parallelCalc(unkVec, 1, conc, ts, activity).T
+        actVec_IL15_IL2Raminus[x, :] = parallelCalc(unkVec_IL2Raminus, 1, conc, ts, activity).T
+
+    # put together into one vector & normalize by scale
+    actVec_IL2 = actVec_IL2 / actVec_IL2.max(axis=0, keepdims=True) * y_max  # normalize by the max value of each row
+    actVec_IL2_IL2Raminus = actVec_IL2_IL2Raminus / actVec_IL2_IL2Raminus.max(axis=0, keepdims=True) * y_max  # normalize by the max value of each row
+    actVec_IL15 = actVec_IL15 / actVec_IL15.max(axis=0, keepdims=True) * y_max  # normalize by the max value of each row
+    actVec_IL15_IL2Raminus = actVec_IL15_IL2Raminus / actVec_IL15_IL2Raminus.max(axis=0, keepdims=True) * y_max  # normalize by the max value of each row
 
     # plot confidence intervals based on model predictions
-    plot_conf_int(ax, cytokC, IL2_minus, "darkorchid")
-    plot_conf_int(ax, cytokC, IL15_minus, "goldenrod")
-    plot_conf_int(ax, cytokC, IL2_plus, "darkorchid")
-    plot_conf_int(ax, cytokC, IL15_plus, "goldenrod")
+    plot_conf_int(ax, cytokC, actVec_IL2_IL2Raminus, "darkorchid")
+    plot_conf_int(ax, cytokC, actVec_IL15_IL2Raminus, "goldenrod")
+    plot_conf_int(ax, cytokC, actVec_IL2, "darkorchid")
+    plot_conf_int(ax, cytokC, actVec_IL15, "goldenrod")
 
     # plot experimental data
     cytokCplt = np.logspace(-3.3, 2.7, 8)
