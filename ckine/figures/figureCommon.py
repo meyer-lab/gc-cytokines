@@ -112,11 +112,11 @@ def plot_conf_int(ax, x_axis, y_axis, color, label=None):
     """ Shades the 25-75 percentiles dark and the 10-90 percentiles light. The percentiles are found along axis=1. """
     y_axis_top = np.percentile(y_axis, 90.0, axis=1)
     y_axis_bot = np.percentile(y_axis, 10.0, axis=1)
-    ax.fill_between(x_axis, y_axis_top, y_axis_bot, color=color, alpha=0.2, linewidth=0)
+    ax.fill_between(x_axis, y_axis_top, y_axis_bot, color=color, alpha=0.2, linewidth=0.5)
 
     y_axis_top = np.percentile(y_axis, 75.0, axis=1)
     y_axis_bot = np.percentile(y_axis, 25.0, axis=1)
-    ax.fill_between(x_axis, y_axis_top, y_axis_bot, color=color, alpha=0.65, label=label, linewidth=0)
+    ax.fill_between(x_axis, y_axis_top, y_axis_bot, color=color, alpha=0.65, label=label, linewidth=0.5)
     if label is not None:
         ax.legend()
 
@@ -470,8 +470,10 @@ def expScaleWT(predSTAT2, predSTAT15, expSTAT2, expSTAT15, rep2=False):
         ravExp = ravExp[~np.isnan(ravExp)]
 
         slope, intercept, _, _, _ = stats.linregress(ravExp, ravPred)
-        output2[(iterator * 4): ((iterator + len(cellSet)) * 4)] = expSTAT2[(iterator * 4): ((iterator + len(cellSet)) * 4)] * slope + intercept
-        output15[(iterator * 4): ((iterator + len(cellSet)) * 4)] = expSTAT15[(iterator * 4): ((iterator + len(cellSet)) * 4)] * slope + intercept
+        output2[(iterator * 4): ((iterator + len(cellSet)) * 4)] = expSTAT2[(iterator * 4): ((iterator + len(cellSet)) * 4)] * slope
+        #output2 += intercept
+        output15[(iterator * 4): ((iterator + len(cellSet)) * 4)] = expSTAT15[(iterator * 4): ((iterator + len(cellSet)) * 4)] * slope
+        #output15 += intercept
         iterator += len(cellSet)
 
     return output2, output15
