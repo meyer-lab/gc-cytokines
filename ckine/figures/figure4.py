@@ -30,13 +30,14 @@ def makeFigure():
     subplotLabel(ax)
 
     tps = np.array([0.5, 1.0, 2.0, 4.0]) * 60.0
+    tpsSC = np.array([0.5, 1.0]) * 60.0
     compare_experimental_data(ax[0], pstat_df)  # compare experiment 1 to 2
     df = WT_EC50s()
     catplot_comparison(ax[1], df, Mut=False)  # compare experiments to model predictions
     plot_corrcoef(ax[2], tps)  # find correlation coefficients
     global_legend(ax[0], Mut=True, exppred=False)  # add legend subplots A-C
 
-    plot_exp_v_pred(ax[3:9], cell_subset=["NK", "CD8+", "T-reg"])  # NK, CD8+, and Treg subplots taken from fig S5
+    plot_exp_v_pred(ax[3:9], tpsSC, cell_subset=["NK", "CD8+", "T-reg"])  # NK, CD8+, and Treg subplots taken from fig S5
 
     return f
 

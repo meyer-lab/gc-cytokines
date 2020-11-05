@@ -25,6 +25,7 @@ def makeFigure():
     subplotLabel(ax)
 
     tps = np.array([0.5, 1.0, 2.0, 4.0]) * 60.0
+    tpsScale = np.array([0.5, 1.0]) * 60.0
     muteinC = dataMean.Concentration.unique()
     dataMean["Concentration"] = dataMean["Concentration"].astype(np.float)  # logscale for plotting
 
@@ -44,7 +45,7 @@ def makeFigure():
             # append dataframe with experimental and predicted activity
             df = organize_expr_pred(df, cell_name, ligand_name, receptors, muteinC, tps, unkVec_2_15)
 
-    df = expScaleMut(df)
+    df = expScaleMut(df, tpsScale)
 
     # determine scaling constants
     plot_expr_predM(ax, df, cell_order, ligand_order, tps, muteinC)
