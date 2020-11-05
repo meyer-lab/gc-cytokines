@@ -469,11 +469,9 @@ def expScaleWT(predSTAT2, predSTAT15, expSTAT2, expSTAT15, rep2=False):
         ravPred = ravPred[~np.isnan(ravExp)]
         ravExp = ravExp[~np.isnan(ravExp)]
 
-        slope, intercept, _, _, _ = stats.linregress(ravExp, ravPred)
+        slope = np.linalg.lstsq(np.atleast_2d(ravExp).T, ravPred, rcond=None)[0]
         output2[(iterator * 4): ((iterator + len(cellSet)) * 4)] = expSTAT2[(iterator * 4): ((iterator + len(cellSet)) * 4)] * slope
-        #output2 += intercept
         output15[(iterator * 4): ((iterator + len(cellSet)) * 4)] = expSTAT15[(iterator * 4): ((iterator + len(cellSet)) * 4)] * slope
-        #output15 += intercept
         iterator += len(cellSet)
 
     return output2, output15
