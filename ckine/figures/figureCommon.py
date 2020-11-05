@@ -457,7 +457,7 @@ def expScaleWT(predSTAT2, predSTAT15, expSTAT2, expSTAT15, rep2=False):
         subExpSTAT2 = subExpSTAT2[:, 0:2, :, :]
         subExpSTAT15 = np.reshape(subExpSTAT15, (subExpSTAT15.shape[0], subExpSTAT15.shape[1], subExpSTAT15.shape[2], 1))
         subExpSTAT15 = np.tile(subExpSTAT15, (1, 1, 1, subPredSTAT15.shape[3]))
-        subExpSTAT15 = subExpSTAT2[:, 0:2, :, :]
+        subExpSTAT15 = subExpSTAT15[:, 0:2, :, :]
 
         subPredSTAT2 = subPredSTAT2[:, 0:2, :, :]
         subPredSTAT15 = subPredSTAT15[:, 0:2, :, :]
