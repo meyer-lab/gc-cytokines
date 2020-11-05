@@ -49,7 +49,6 @@ def plot_exp_v_pred(ax, tps, cell_subset=None):
     IL2_data1, IL15_data1 = expScaleWT(IL2_activity, IL15_activity, IL2_data1, IL15_data1)
     IL2_data2, IL15_data2 = expScaleWT(IL2_activity, IL15_activity, IL2_data2, IL15_data2, True)
 
-
     for m, name in enumerate(cell_names_pstat):
         if name in cell_subset or cell_subset == []:  # if a subset is provided only plot the listed names
             if axis == 0:

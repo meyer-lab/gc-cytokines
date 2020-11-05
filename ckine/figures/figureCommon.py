@@ -112,11 +112,11 @@ def plot_conf_int(ax, x_axis, y_axis, color, label=None):
     """ Shades the 25-75 percentiles dark and the 10-90 percentiles light. The percentiles are found along axis=1. """
     y_axis_top = np.percentile(y_axis, 90.0, axis=1)
     y_axis_bot = np.percentile(y_axis, 10.0, axis=1)
-    ax.fill_between(x_axis, y_axis_top, y_axis_bot, color=color, alpha=0.2, linewidth = 0)
+    ax.fill_between(x_axis, y_axis_top, y_axis_bot, color=color, alpha=0.2, linewidth=0)
 
     y_axis_top = np.percentile(y_axis, 75.0, axis=1)
     y_axis_bot = np.percentile(y_axis, 25.0, axis=1)
-    ax.fill_between(x_axis, y_axis_top, y_axis_bot, color=color, alpha=0.65, label=label, linewidth = 0)
+    ax.fill_between(x_axis, y_axis_top, y_axis_bot, color=color, alpha=0.65, label=label, linewidth=0)
     if label is not None:
         ax.legend()
 
@@ -487,12 +487,14 @@ def expScaleMut(mutDF, scaleTimes):
             exp_data = mutDF.loc[(mutDF["Cells"].isin(cellSet)) & (mutDF["Ligand"].isin(mutsGroup)) & (mutDF["Activity Type"] == "experimental")]
             expArray = np.array([])
             pred_data = np.array([])
-            
+
             for cell in cellSet:
                 for mutLig in mutsGroup:
                     for time in scaleTimes:
-                        expArray = np.append(expArray, np.tile(np.ravel(np.array(exp_data.loc[(exp_data["Cells"] == cell) & (mutDF["Ligand"] == mutLig) & (mutDF["Time Point"] == time)].Activity)), 25))
-                        pred_data = np.append(pred_data, np.ravel(np.array(mutDF.loc[(mutDF["Cells"] == cell) & (mutDF["Ligand"] == mutLig) & (mutDF["Activity Type"] == "predicted") & (mutDF["Time Point"] == time)].Activity)))
+                        expArray = np.append(expArray, np.tile(np.ravel(np.array(exp_data.loc[(exp_data["Cells"] == cell) &
+                                                                                              (mutDF["Ligand"] == mutLig) & (mutDF["Time Point"] == time)].Activity)), 25))
+                        pred_data = np.append(pred_data, np.ravel(np.array(mutDF.loc[(mutDF["Cells"] == cell) & (mutDF["Ligand"] == mutLig)
+                                                                                     & (mutDF["Activity Type"] == "predicted") & (mutDF["Time Point"] == time)].Activity)))
 
             slope, intercept, _, _, _ = stats.linregress(expArray, pred_data)
 
