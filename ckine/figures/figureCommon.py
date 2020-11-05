@@ -431,20 +431,18 @@ def residuals(x0, x, y):
 def expScaleWT(predSTAT2, predSTAT15, expSTAT2, expSTAT15, rep2=False):
     """Scales data to model predictions. It is assumed here that predictions and data are lined up by concentration"""
     cellGroups = [['NK'], ['CD8+', 'Naive CD8+', 'Mem CD8+'], ['T-reg', 'Naive Treg', 'Mem Treg'], ['T-helper', 'Naive Th', 'Mem Th']]
-    iterator = 0
+    it = 0
     output2 = np.zeros(expSTAT2.shape)
     output15 = np.zeros(expSTAT15.shape)
 
     for cellSet in cellGroups:
-        subExpSTAT2 = np.reshape(expSTAT2[(iterator * 4): ((iterator + len(cellSet)) * 4)], (len(cellSet), predSTAT2.shape[3], predSTAT2.shape[1]))
-        subExpSTAT15 = np.reshape(expSTAT15[(iterator * 4): ((iterator + len(cellSet)) * 4)], (len(cellSet), predSTAT15.shape[3], predSTAT15.shape[1]))
-        subPredSTAT2 = predSTAT2[(iterator): ((iterator + len(cellSet))), :, :, :]
-        subPredSTAT15 = predSTAT15[(iterator): ((iterator + len(cellSet))), :, :, :]
+        subExpSTAT2 = np.reshape(expSTAT2[(it * 4): ((it + len(cellSet)) * 4)], (len(cellSet), predSTAT2.shape[3], predSTAT2.shape[1]))
+        subExpSTAT15 = np.reshape(expSTAT15[(it * 4): ((it + len(cellSet)) * 4)], (len(cellSet), predSTAT15.shape[3], predSTAT15.shape[1]))
+        subPredSTAT2 = predSTAT2[(it): ((it + len(cellSet))), :, :, :]
+        subPredSTAT15 = predSTAT15[(it): ((it + len(cellSet))), :, :, :]
 
-        subPredSTAT2 = np.swapaxes(subPredSTAT2, 3, 1)
-        subPredSTAT2 = np.swapaxes(subPredSTAT2, 3, 2)
-        subPredSTAT15 = np.swapaxes(subPredSTAT15, 3, 1)
-        subPredSTAT15 = np.swapaxes(subPredSTAT15, 3, 2)
+        subPredSTAT2 = np.moveaxis(subPredSTAT2, 3, 1)
+        subPredSTAT15 = np.moveaxis(subPredSTAT15, 3, 1)
 
         if rep2 and cellSet == ['CD8+', 'Naive CD8+', 'Mem CD8+']:
             subPredSTAT2 = np.reshape(subPredSTAT2[0, :, :, :], (1, subPredSTAT2.shape[1], subPredSTAT2.shape[2], subPredSTAT2.shape[3]))
@@ -461,18 +459,16 @@ def expScaleWT(predSTAT2, predSTAT15, expSTAT2, expSTAT15, rep2=False):
 
         subPredSTAT2 = subPredSTAT2[:, 0:2, :, :]
         subPredSTAT15 = subPredSTAT15[:, 0:2, :, :]
-        expSTAT = np.vstack((subExpSTAT2, subExpSTAT15))
-        predSTAT = np.vstack((subPredSTAT2, subPredSTAT2))
 
-        ravPred = np.ravel(predSTAT)
-        ravExp = np.ravel(expSTAT)
+        ravPred = np.ravel(np.vstack((subPredSTAT2, subPredSTAT2)))
+        ravExp = np.ravel(np.vstack((subExpSTAT2, subExpSTAT15)))
         ravPred = ravPred[~np.isnan(ravExp)]
         ravExp = ravExp[~np.isnan(ravExp)]
 
         slope = np.linalg.lstsq(np.atleast_2d(ravExp).T, ravPred, rcond=None)[0]
-        output2[(iterator * 4): ((iterator + len(cellSet)) * 4)] = expSTAT2[(iterator * 4): ((iterator + len(cellSet)) * 4)] * slope
-        output15[(iterator * 4): ((iterator + len(cellSet)) * 4)] = expSTAT15[(iterator * 4): ((iterator + len(cellSet)) * 4)] * slope
-        iterator += len(cellSet)
+        output2[(it * 4): ((it + len(cellSet)) * 4)] = expSTAT2[(it * 4): ((it + len(cellSet)) * 4)] * slope
+        output15[(it * 4): ((it + len(cellSet)) * 4)] = expSTAT15[(it * 4): ((it + len(cellSet)) * 4)] * slope
+        it += len(cellSet)
 
     return output2, output15
 
