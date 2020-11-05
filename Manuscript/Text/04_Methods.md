@@ -40,8 +40,7 @@ $$
 \frac{dIL2·IL2R\alpha·IL2R\beta}{dt} = -kfwd * IL2·IL2R\alpha·IL2R\beta * \gamma_c + k10rev * IL2·IL2R\alpha·IL2R\beta·\gamma_c + kfwd * IL2·IL2R\alpha * IL2R\beta - k11rev * IL2·IL2R\alpha·IL2R\beta + kfwd * IL2·IL2R\beta * IL2R\alpha - k12rev * IL2·IL2R\alpha·IL2R\beta
 $$
 
-$$
-	
+$$	
 \frac{dIL2·IL2R\alpha·\gamma_c}{dt} = -kfwd * IL2·IL2R\alpha·\gamma_c * IL2R\beta  + k9rev * IL2·IL2R\alpha·IL2R\beta·\gamma_c + kfwd * IL2·IL2R\alpha * \gamma_c - k4rev * IL2·IL2R\alpha·\gamma_c 
 $$
 
