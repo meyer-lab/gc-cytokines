@@ -17,15 +17,15 @@ Initial values were calculated by assuming steady-state in the absence of ligand
 Below are the ODEs pertaining to IL-2 binding and unbinding events.
 
 $$
-\frac{dIL2R\alpha}{dt} = -kfbnd * IL2R\alpha * IL2 + k1rev * IL2·IL2R\alpha - kfwd * IL2Ra * IL2·IL2R𝛽·\gamma_c + k8rev * IL2·IL2R\alpha·IL2R𝛽·\gamma_c - kfwd * IL2R\alpha * IL2·IL2R𝛽 + k12rev * IL2·IL2R\alpha·IL2R𝛽
+\frac{dIL2R\alpha}{dt} = -kfbnd * IL2R\alpha * IL2 + k1rev * IL2·IL2R\alpha - kfwd * IL2Ra * IL2·IL2R\beta·\gamma_c + k8rev * IL2·IL2R\alpha·IL2R\beta·\gamma_c - kfwd * IL2R\alpha * IL2·IL2R\beta + k12rev * IL2·IL2R\alpha·IL2R\beta
 $$
 
 $$
-\frac{dIL2R𝛽}{dt} = -kfbnd * IL2R𝛽 * IL2 + k2rev * IL2·IL2R𝛽 - kfwd * IL2R𝛽 * IL2·IL2R\alpha·\gamma_c + k9rev * IL2·IL2R\alpha·IL2R𝛽·\gamma_c - kfwd * IL2R𝛽 * IL2·IL2R\alpha + k11rev * IL2·IL2R\alpha·IL2R𝛽
+\frac{dIL2R\beta}{dt} = -kfbnd * IL2R\beta * IL2 + k2rev * IL2·IL2R\beta - kfwd * IL2R\beta * IL2·IL2R\alpha·\gamma_c + k9rev * IL2·IL2R\alpha·IL2R\beta·\gamma_c - kfwd * IL2R\beta * IL2·IL2R\alpha + k11rev * IL2·IL2R\alpha·IL2R\beta
 $$
 
 $$
-\frac{d\gamma_c}{dt} = -kfwd * IL2·IL2R𝛽 * \gamma_c + k5rev * IL2·IL2R𝛽·\gamma_c - kfwd * IL2·IL2R\alpha * \gamma_c + k4rev * IL2·IL2R\alpha·\gamma_c - kfwd * IL2·IL2R\alpha·IL2R𝛽 * \gamma_c + k10rev * IL2·IL2R\alpha·IL2R𝛽·\gamma_c
+\frac{d\gamma_c}{dt} = -kfwd * IL2·IL2R\beta * \gamma_c + k5rev * IL2·IL2R\beta·\gamma_c - kfwd * IL2·IL2R\alpha * \gamma_c + k4rev * IL2·IL2R\alpha·\gamma_c - kfwd * IL2·IL2R\alpha·IL2R\beta * \gamma_c + k10rev * IL2·IL2R\alpha·IL2R\beta·\gamma_c
 $$
 
 $$
@@ -40,7 +40,7 @@ $$
 \frac{dIL2·IL2R\alpha·IL2R\beta}{dt} = -kfwd * IL2·IL2R\alpha·IL2R\beta * \gamma_c + k10rev * IL2·IL2R\alpha·IL2R\beta·\gamma_c + kfwd * IL2·IL2R\alpha * IL2R\beta - k11rev * IL2·IL2R\alpha·IL2R\beta + kfwd * IL2·IL2R\beta * IL2R\alpha - k12rev * IL2·IL2R\alpha·IL2R\beta
 $$
 
-$$	
+$$  
 \frac{dIL2·IL2R\alpha·\gamma_c}{dt} = -kfwd * IL2·IL2R\alpha·\gamma_c * IL2R\beta  + k9rev * IL2·IL2R\alpha·IL2R\beta·\gamma_c + kfwd * IL2·IL2R\alpha * \gamma_c - k4rev * IL2·IL2R\alpha·\gamma_c 
 $$
 
