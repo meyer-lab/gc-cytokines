@@ -12,6 +12,92 @@ Free receptors and complexes were measured in units of number per cell and solub
 
 Initial values were calculated by assuming steady-state in the absence of ligand. Differential equation solving was performed using the SUNDIALS solvers in C++, with a Python interface for all other code [@hindmarsh2005sundials]. Model sensitivities were calculated using the adjoint solution [@CAO2002171]. Calculating the adjoint requires the partial derivatives of the differential equations both with respect to the species and unknown parameters. Constructing these can be tedious and error-prone. Therefore, we calculated these algorithmically using forward-pass autodifferentiation implemented in Adept-2 [@hogan_robin_j_2017]. A model and sensitivities tolerance of 10^-9^ and 10^-3^, respectively, were used throughout. We used unit tests for conservation of mass, equilibrium, and detailed balance to ensure model correctness.
 
+### Full Model ODEs
+
+Below are the ODEs pertaining to IL-2 binding and unbinding events.
+
+$$
+\frac{dIL2R\alpha}{dt} = -k_{fbnd} * IL2R\alpha * IL2 + k_{1,rev} * [IL2·IL2R\alpha] - k_{fwd} * IL2Ra * [IL2·IL2R\beta·\gamma_c] + k_{8,rev} * [IL2·IL2R\alpha·IL2R\beta·\gamma_c] - k_{fwd} * IL2R\alpha * [IL2·IL2R\beta] + k_{12,rev} * [IL2·IL2R\alpha·IL2R\beta]
+$$
+
+$$
+\frac{dIL2R\beta}{dt} = -k_{fbnd} * IL2R\beta * IL2 + k_{2,rev} * [IL2·IL2R\beta] - k_{fwd} * IL2R\beta * [IL2·IL2R\alpha·\gamma_c] + k_{9,rev} * [IL2·IL2R\alpha·IL2R\beta·\gamma_c] - k_{fwd} * IL2R\beta * [IL2·IL2R\alpha] + k_{11,rev} * [IL2·IL2R\alpha·IL2R\beta]
+$$
+
+$$
+\frac{d\gamma_c}{dt} = -k_{fwd} * [IL2·IL2R\beta] * \gamma_c + k_{5,rev} * [IL2·IL2R\beta·\gamma_c] - k_{fwd} * [IL2·IL2R\alpha] * \gamma_c + k_{4,rev} * [IL2·IL2R\alpha·\gamma_c] - k_{fwd} * [IL2·IL2R\alpha·IL2R\beta] * \gamma_c + k_{10,rev} * [IL2·IL2R\alpha·IL2R\beta·\gamma_c]
+$$
+
+$$
+\frac{d[IL2·IL2R\alpha]}{dt} = -k_{fwd} * [IL2·IL2R\alpha] * IL2R\beta + k_{11,rev} * [IL2·IL2R\alpha·IL2R\beta] - k_{fwd} * {IL2·IL2R\alpha} * \gamma_c + k_{4,rev} * [IL2·IL2R\alpha·\gamma_c] + k_{fbnd} * IL2 * IL2R\alpha - k_{1,rev} * [IL2·IL2R\alpha]
+$$
+
+$$
+\frac{d[IL2·IL2R\beta]}{dt} = -k_{fwd} * [IL2·IL2R\beta] * IL2R\alpha + k_{12,rev} * [IL2·IL2R\alpha·IL2R\beta] - k_{fwd} * [IL2·IL2R\beta] * \gamma_c + k_{5,rev} * [IL2·IL2R\beta·\gamma_c] + k_{fbnd} * IL2 * IL2R\beta - k_{2,rev} * [IL2·IL2R\beta]
+$$
+
+$$
+\frac{d[IL2·IL2R\alpha·IL2R\beta]}{dt} = -k_{fwd} * [IL2·IL2R\alpha·IL2R\beta] * \gamma_c + k_{10,rev} * [IL2·IL2R\alpha·IL2R\beta·\gamma_c] + k_{fwd} * [IL2·IL2R\alpha] * IL2R\beta - k_{11,rev} * [IL2·IL2R\alpha·IL2R\beta] + k_{fwd} * [IL2·IL2R\beta] * IL2R\alpha - k_{12,rev} * [IL2·IL2R\alpha·IL2R\beta]
+$$
+
+$$  
+\frac{d[IL2·IL2R\alpha·\gamma_c]}{dt} = -k_{fwd} * [IL2·IL2R\alpha·\gamma_c] * IL2R\beta  + k_{9,rev} * [IL2·IL2R\alpha·IL2R\beta·\gamma_c] + k_{fwd} * [IL2·IL2R\alpha] * \gamma_c - k_{4,rev} * [IL2·IL2R\alpha·\gamma_c] 
+$$
+
+$$
+\frac{d[IL2·IL2R\beta·\gamma_c]}{dt} = -k_{fwd} * [IL2·IL2R\beta·\gamma_c] * IL2R\alpha  + k_{8,rev} * [IL2·IL2R\alpha·IL2R\beta·\gamma_c] + k_{fwd} * [IL2·IL2R\beta] * \gamma_c - k_{5,rev} * [IL2·IL2R\beta·\gamma_c] 
+$$
+
+$$
+\frac{d[IL2·IL2R\alpha·IL2R\beta·\gamma_c]}{dt} = k_{fwd} * [IL2·IL2R\beta·\gamma_c] * IL2R\alpha  - k_{8,rev} * [IL2·IL2R\alpha·IL2R\beta·\gamma_c] + k_{fwd} * [IL2·IL2R\alpha·\gamma_c] * IL2R\beta - k_{9,rev} * [IL2·IL2R\alpha·IL2R\beta·\gamma_c] + k_{fwd} * [IL2·IL2R\alpha·IL2R\beta] * \gamma_c - k_{10,rev} * [IL2·IL2R\alpha·IL2R\beta·\gamma_c]
+$$
+
+The ODEs for IL-15 binding and unbinding events are of the same form as those for IL-2, with IL-2, and IL-2R$\alpha$ having analogous species IL-15, and IL-15R$\alpha$. The analogous reverse binding rates are as follows:
+
+$$
+k_{1,rev} = k_{13,rev}, \  k_{2,rev} = k_{14,rev}, \  k_{4,rev} = k_{16,rev}, \  k_{5,rev} = k_{17,rev}, \  k_{8,rev} = k_{20,rev}, \  k_{9,rev} = k_{21,rev}, \  k_{10,rev} = k_{22,rev}, \  k_{11,rev} = k_{23,rev}, \  k_{12,rev} = k_{24,rev}
+$$
+
+Below are the ODEs pertaining to IL-4 binding and unbinding events.
+
+$$
+\frac{dIL4R\alpha}{dt} = -k_{fbnd} * IL4 * IL4R\alpha + k_{32_rev}*[IL4·IL4R\alpha]
+$$
+
+$$
+\frac{d[IL4·IL4R\alpha]}{dt} = - k_{fwd} * [IL4·IL4R\alpha] * \gamma_c + k_{33,rev} * [IL4·IL4R\alpha·\gamma_c] + k_{fbnd} * IL4 * IL4R\alpha
+$$
+
+$$
+\frac{d[IL4·IL4R\alpha·\gamma_c]}{dt} = k_{fwd} * [IL4·IL4R\alpha] * \gamma_c - k_{33,rev} * [IL4·IL4R\alpha·\gamma_c]
+$$
+
+The ODEs for IL-7 binding and unbinding events are of the same form as those for IL-4, with IL-4, and IL-4R$\alpha$ having analogous species IL-7, and IL-7R$\alpha$. The analogous reverse binding rates are as follows:
+
+$$
+k_{33,rev} = k_{27,rev}, \  k_{32,rev} = k_{25,rev} 
+$$
+
+All of the above reactions also occur in the endosome for trafficked species, with reverse binding rates being 5 fold larger due to pH discrepancies between the endosome and extracellular space.
+
+Trafficking is calculated for each species using the below equations.
+
+$$
+\frac{d \ Extracellular \ Active \ Species}{dt} = -Extracellular \ Active \ Species * (k_{endo} + k_{endo,a})
+$$
+
+$$
+\frac{d \ Intracellular \ Active \ Species}{dt} = Extracellular \ Active \ Species * (k_{endo} + k_{endo,a}) / 0.5 - k_{deg}*Intracellular \ Active \ Species
+$$
+
+$$
+\frac{d \ Extracellular \ Inactive \ Species}{dt} = -Extracellular \ Inactive \ Species * (k_{endo}) + k_{rec}*(1-f_{sort})*Intracellular \ Inactive \ Species * 0.5
+$$
+
+$$
+\frac{d \ Intracellular \ Inactive \ Species}{dt} = Extracellular \ Inactive \ Species * (k_{endo}) / 0.5 - k_{rec}*(1-f_{sort})*Intracellular \ Inactive \ Species - (k_{deg}*f_{sort})*Intracellular \ Inactive \ Species
+$$
+
 ### Model fitting
 
 We used Markov chain Monte Carlo to fit the unknown parameters in our model using previously published cytokine response data [@ring_mechanistic_2012; @Gonnordeaal1253]. Experimental measurements include pSTAT activity under stimulation with varying concentrations of IL-2, -15, -4, and -7 as well as time-course measurements of surface IL-2Rβ upon IL-2 and -15 stimulation. YT-1 human NK cells were used for all data-sets involving IL-2 and IL-15. Human PBMC-derived CD4+TCR+CCR7^high^ cells were used for all IL-4 and -7 response data. All YT-1 cell experiments were performed both with the wild-type cell line, lacking IL-2Rα, and cells sorted for expression of the receptor. Data from Ring *et al* and Gonnord *et al* can be found in Figure 5 and Figure S3 of each paper, respectively [@ring_mechanistic_2012; @Gonnordeaal1253]. Measurements of receptor counts at steady state in Gonnord *et al* were used to solve for IL-7Rα, IL-4Rα, and γ~c~ expression rates in human PBMCs.
