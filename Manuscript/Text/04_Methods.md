@@ -17,65 +17,65 @@ Initial values were calculated by assuming steady-state in the absence of ligand
 Below are the ODEs pertaining to IL-2 binding and unbinding events.
 
 $$
-\frac{dIL2R\alpha}{dt} = -kfbnd * IL2R\alpha * IL2 + k1rev * IL2·IL2R\alpha - kfwd * IL2Ra * IL2·IL2R\beta·\gamma_c + k8rev * IL2·IL2R\alpha·IL2R\beta·\gamma_c - kfwd * IL2R\alpha * IL2·IL2R\beta + k12rev * IL2·IL2R\alpha·IL2R\beta
+\frac{dIL2R\alpha}{dt} = -k_{fbnd} * IL2R\alpha * IL2 + k_{1,rev} * [IL2·IL2R\alpha] - k_{fwd} * IL2Ra * [IL2·IL2R\beta·\gamma_c] + k_{8,rev} * [IL2·IL2R\alpha·IL2R\beta·\gamma_c] - k_{fwd} * IL2R\alpha * [IL2·IL2R\beta] + k_{12,rev} * [IL2·IL2R\alpha·IL2R\beta]
 $$
 
 $$
-\frac{dIL2R\beta}{dt} = -kfbnd * IL2R\beta * IL2 + k2rev * IL2·IL2R\beta - kfwd * IL2R\beta * IL2·IL2R\alpha·\gamma_c + k9rev * IL2·IL2R\alpha·IL2R\beta·\gamma_c - kfwd * IL2R\beta * IL2·IL2R\alpha + k11rev * IL2·IL2R\alpha·IL2R\beta
+\frac{dIL2R\beta}{dt} = -k_{fbnd} * IL2R\beta * IL2 + k_{2,rev} * [IL2·IL2R\beta] - k_{fwd} * IL2R\beta * [IL2·IL2R\alpha·\gamma_c] + k_{9,rev} * [IL2·IL2R\alpha·IL2R\beta·\gamma_c] - k_{fwd} * IL2R\beta * [IL2·IL2R\alpha] + k_{11,rev} * [IL2·IL2R\alpha·IL2R\beta]
 $$
 
 $$
-\frac{d\gamma_c}{dt} = -kfwd * IL2·IL2R\beta * \gamma_c + k5rev * IL2·IL2R\beta·\gamma_c - kfwd * IL2·IL2R\alpha * \gamma_c + k4rev * IL2·IL2R\alpha·\gamma_c - kfwd * IL2·IL2R\alpha·IL2R\beta * \gamma_c + k10rev * IL2·IL2R\alpha·IL2R\beta·\gamma_c
+\frac{d\gamma_c}{dt} = -k_{fwd} * [IL2·IL2R\beta] * \gamma_c + k_{5,rev} * [IL2·IL2R\beta·\gamma_c] - k_{fwd} * [IL2·IL2R\alpha] * \gamma_c + k_{4,rev} * [IL2·IL2R\alpha·\gamma_c] - k_{fwd} * [IL2·IL2R\alpha·IL2R\beta] * \gamma_c + k_{10,rev} * [IL2·IL2R\alpha·IL2R\beta·\gamma_c]
 $$
 
 $$
-\frac{dIL2·IL2R \gamma }{dt} = -kfwd * IL2·IL2R\alpha * IL2R\beta + k11rev * IL2·IL2R\alpha·IL2R\beta - kfwd * IL2·IL2R\alpha * \gamma_c + k4rev * IL2·IL2R\alpha·\gamma_c + kfbnd * IL2 * IL2R\alpha - k1rev * IL2·IL2R\alpha
+\frac{d[IL2·IL2R\alpha]}{dt} = -k_{fwd} * [IL2·IL2R\alpha] * IL2R\beta + k_{11,rev} * [IL2·IL2R\alpha·IL2R\beta] - k_{fwd} * {IL2·IL2R\alpha} * \gamma_c + k_{4,rev} * [IL2·IL2R\alpha·\gamma_c] + k_{fbnd} * IL2 * IL2R\alpha - k_{1,rev} * [IL2·IL2R\alpha]
 $$
 
 $$
-\frac{dIL2·IL2R\beta}{dt} = -kfwd * IL2·IL2R\beta * IL2R\alpha + k12rev * IL2·IL2R\alpha·IL2R\beta - kfwd * IL2·IL2R\beta * \gamma_c + k5rev * IL2·IL2R\beta·\gamma_c + kfbnd * IL2 * IL2R\beta - k2rev * IL2·IL2R\beta
+\frac{d[IL2·IL2R\beta]}{dt} = -k_{fwd} * [IL2·IL2R\beta] * IL2R\alpha + k_{12,rev} * [IL2·IL2R\alpha·IL2R\beta] - k_{fwd} * [IL2·IL2R\beta] * \gamma_c + k_{5,rev} * [IL2·IL2R\beta·\gamma_c] + k_{fbnd} * IL2 * IL2R\beta - k_{2,rev} * [IL2·IL2R\beta]
 $$
 
 $$
-\frac{dIL2·IL2R\alpha·IL2R\beta}{dt} = -kfwd * IL2·IL2R\alpha·IL2R\beta * \gamma_c + k10rev * IL2·IL2R\alpha·IL2R\beta·\gamma_c + kfwd * IL2·IL2R\alpha * IL2R\beta - k11rev * IL2·IL2R\alpha·IL2R\beta + kfwd * IL2·IL2R\beta * IL2R\alpha - k12rev * IL2·IL2R\alpha·IL2R\beta
+\frac{d[IL2·IL2R\alpha·IL2R\beta]}{dt} = -k_{fwd} * [IL2·IL2R\alpha·IL2R\beta] * \gamma_c + k_{10,rev} * [IL2·IL2R\alpha·IL2R\beta·\gamma_c] + k_{fwd} * [IL2·IL2R\alpha] * IL2R\beta - k_{11,rev} * [IL2·IL2R\alpha·IL2R\beta] + k_{fwd} * [IL2·IL2R\beta] * IL2R\alpha - k_{12,rev} * [IL2·IL2R\alpha·IL2R\beta]
 $$
 
 $$  
-\frac{dIL2·IL2R\alpha·\gamma_c}{dt} = -kfwd * IL2·IL2R\alpha·\gamma_c * IL2R\beta  + k9rev * IL2·IL2R\alpha·IL2R\beta·\gamma_c + kfwd * IL2·IL2R\alpha * \gamma_c - k4rev * IL2·IL2R\alpha·\gamma_c 
+\frac{d[IL2·IL2R\alpha·\gamma_c]}{dt} = -k_{fwd} * [IL2·IL2R\alpha·\gamma_c] * IL2R\beta  + k_{9,rev} * [IL2·IL2R\alpha·IL2R\beta·\gamma_c] + k_{fwd} * [IL2·IL2R\alpha] * \gamma_c - k_{4,rev} * [IL2·IL2R\alpha·\gamma_c] 
 $$
 
 $$
-\frac{dIL2·IL2R\beta·\gamma_c}{dt} = -kfwd * IL2·IL2R\beta·\gamma_c * IL2R\alpha  + k8rev * IL2·IL2R\alpha·IL2R\beta·\gamma_c + kfwd * IL2·IL2R\beta * \gamma_c - k5rev * IL2·IL2R\beta·\gamma_c 
+\frac{d[IL2·IL2R\beta·\gamma_c]}{dt} = -k_{fwd} * [IL2·IL2R\beta·\gamma_c] * IL2R\alpha  + k_{8,rev} * [IL2·IL2R\alpha·IL2R\beta·\gamma_c] + k_{fwd} * [IL2·IL2R\beta] * \gamma_c - k_{5,rev} * [IL2·IL2R\beta·\gamma_c] 
 $$
 
 $$
-\frac{dIL2·IL2R\alpha·IL2R\beta·\gamma_c}{dt} = kfwd * IL2·IL2R\beta·\gamma_c * IL2R\alpha  - k8rev * IL2·IL2R\alpha·IL2R\beta·\gamma_c + kfwd * IL2·IL2R\alpha·\gamma_c * IL2R\beta - k9rev * IL2·IL2R\alpha·IL2R\beta·\gamma_c + kfwd * IL2·IL2R\alpha·IL2R\beta * \gamma_c - k10rev * IL2·IL2R\alpha·IL2R\beta·\gamma_c
+\frac{d[IL2·IL2R\alpha·IL2R\beta·\gamma_c]}{dt} = k_{fwd} * [IL2·IL2R\beta·\gamma_c] * IL2R\alpha  - k_{8,rev} * [IL2·IL2R\alpha·IL2R\beta·\gamma_c] + k_{fwd} * [IL2·IL2R\alpha·\gamma_c] * IL2R\beta - k_{9,rev} * [IL2·IL2R\alpha·IL2R\beta·\gamma_c] + k_{fwd} * [IL2·IL2R\alpha·IL2R\beta] * \gamma_c - k_{10,rev} * [IL2·IL2R\alpha·IL2R\beta·\gamma_c]
 $$
 
 The ODEs for IL-15 binding and unbinding events are of the same form as those for IL-2, with IL-2, and IL-2R$\alpha$ having analogous species IL-15, and IL-15R$\alpha$. The analogous reverse binding rates are as follows:
 
 $$
-k1rev = k13rev, \  k2rev = k14rev, \  k4rev = k16rev, \  k5rev = k17rev, \  k8rev = k20rev, \  k9rev = k21rev, \  k10rev = k22rev, \  k11rev = k23rev, \  k12rev = k24rev
+k_{1,rev} = k_{13,rev}, \  k_{2,rev} = k_{14,rev}, \  k_{4,rev} = k_{16,rev}, \  k_{5,rev} = k_{17,rev}, \  k_{8,rev} = k_{20,rev}, \  k_{9,rev} = k_{21,rev}, \  k_{10,rev} = k_{22,rev}, \  k_{11,rev} = k_{23,rev}, \  k_{12,rev} = k_{24,rev}
 $$
 
 Below are the ODEs pertaining to IL-4 binding and unbinding events.
 
 $$
-\frac{dIL4R\alpha}{dt} = -kfbnd * IL4 * IL4R\alpha + k32rev*IL4·IL4R\alpha
+\frac{dIL4R\alpha}{dt} = -k_{fbnd} * IL4 * IL4R\alpha + k_{32_rev}*[IL4·IL4R\alpha]
 $$
 
 $$
-\frac{dIL4·IL4R\alpha}{dt} = - kfwd * IL4·IL4R\alpha * \gamma_c + k33rev·IL4·IL4R\alpha·\gamma_c + kfbnd * IL4 * IL4R\alpha
+\frac{d[IL4·IL4R\alpha]}{dt} = - k_{fwd} * [IL4·IL4R\alpha] * \gamma_c + k_{33,rev} * [IL4·IL4R\alpha·\gamma_c] + k_{fbnd} * IL4 * IL4R\alpha
 $$
 
 $$
-\frac{dIL4·IL4R\alpha·\gamma_c}{dt} = kfwd * IL4·IL4R\alpha * \gamma_c - k33rev·IL4·IL4R\alpha·\gamma_c
+\frac{d[IL4·IL4R\alpha·\gamma_c]}{dt} = k_{fwd} * [IL4·IL4R\alpha] * \gamma_c - k_{33,rev} * [IL4·IL4R\alpha·\gamma_c]
 $$
 
 The ODEs for IL-7 binding and unbinding events are of the same form as those for IL-4, with IL-4, and IL-4R$\alpha$ having analogous species IL-7, and IL-7R$\alpha$. The analogous reverse binding rates are as follows:
 
 $$
-k33rev = k27rev, \  k32rev = k25rev 
+k_{33,rev} = k_{27,rev}, \  k_{32,rev} = k_{25,rev} 
 $$
 
 All of the above reactions also occur in the endosome for trafficked species, with reverse binding rates being 5 fold larger due to pH discrepancies between the endosome and extracellular space.
