@@ -75,7 +75,7 @@ Data Table SD1: **IL-2Rβ/γ~c~ binding affinities of mutant and modified cytoki
 
 ![**Tucker factorization of predicted immune cell type responses.** A) Timepoint decomposition plot showing factorization component values against time after decomposing the tensor’s first dimension into 2 components. B) Decomposition plot along the second (cell) dimension after decomposing it to 2 components showing the ten cell type values along each component. C) Ligand decomposition plot along the tensor’s third dimension after decomposing it into 3 components. D–E) Slices of the Tucker core tensor corresponding to time component 1 (D) and 2 (E).](./Manuscript/Figures/figureS4.svg){#fig:supp4}
 
-![**Full panel of predicted versus actual immune cell type responses.** Dots represent experimental measurements and shaded regions represent 10-90% confidence interval for model predictions. Time of pSTAT5 activity measurement is denoted by color. All cell populations were stimulated with either IL-2 (A-J) or IL-15 (K-T). Experiments were performed in duplicate (n=2).](./Manuscript/Figures/figureS5.svg){#fig:supp5}
+![**Full panel of predicted versus actual immune cell type responses.** Dots represent experimental measurements and shaded regions represent 10-90% confidence interval for model predictions. Time of pSTAT5 activity measurement is denoted by color. All cell populations were stimulated with either IL-2 (A-J) or IL-15 (K-T). Experiments were performed in duplicate (N = 2).](./Manuscript/Figures/figureS5.svg){#fig:supp5}
 
 ![**Cytokine affinity measurements to IL-2Rα.** Binding is quantified in relative units.](./Manuscript/CD25binding.pdf){#fig:supp6}
 

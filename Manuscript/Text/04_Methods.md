@@ -4,13 +4,99 @@ All analysis was implemented in Python, and can be found at <https://github.com/
 
 ### Base model
 
-Cytokine (IL-2, -4, -7, -9, -15, & -21) binding to receptors was modeled using ordinary differential equations (ODEs). IL-2 and -15 each had two private receptors, one being a signaling-deficient α-chain (IL-2Rα & -15Rα) and the other being signaling-competent IL-2Rβ. The other four cytokines each had one signaling-competent private receptor (IL-7Rα, -9R, -4Rα, & -21Rα). JAK-STAT signaling is initiated when JAK-binding motifs are brought together. JAK binding sites are found on the intracellular regions of the γ~c~, IL-2Rβ, IL-4Rα, IL-7Rα, IL-9R, and IL-21Rα receptors; therefore all complexes which contained two signaling-competent receptors were deemed to be active species. Ligands were assumed to first bind a private receptor and then can dimerize with other private receptors or γ~c~ thereafter. Direct binding of ligand to γ~c~ was not included due to its very weak or absent binding [@Voss2428].
+Cytokine (IL-2, -4, -7, -9, -15, & -21) binding to receptors was modeled using ordinary differential equations (ODEs). IL-2 and -15 each had two private receptors, one being a signaling-deficient α-chain (IL-2Rα & -15Rα) and the other being signaling-competent IL-2Rβ. The other four cytokines each had one signaling-competent private receptor (IL-7Rα, -9R, -4Rα, & -21Rα). JAK-STAT signaling is initiated when JAK-binding motifs are brought together. JAK binding sites are found on the intracellular regions of the γ~c~, IL-2Rβ, IL-4Rα, IL-7Rα, IL-9R, and IL-21Rα receptors; therefore all complexes which contained two signaling-competent receptors were deemed to be active species. Ligands were assumed to first bind a private receptor and then can dimerize with other private receptors or γ~c~ thereafter. Direct binding of ligand to γ~c~ was not included due to its very weak or absent binding [@Voss2428]. Our model's output was defined by the number of active signaling complexes; experimental STAT phosphorylation measurements were compared to model predictions by use of a fit scalar factor.
 
 In addition to binding interactions, our model incorporated receptor-ligand trafficking. Receptor synthesis was assumed to occur at a constant rate. The endocytosis rate was defined separately for active (k~endo,a~) and inactive (k~endo~) receptors. f~sort~ fraction of species in the endosome were ultimately trafficked to the lysosome, and active species in the endosome had a sorting fraction of 1.0. All endosomal species not sent to lysosomes were recycled back to the cell surface. The lysosomal degradation and recycling rate constants were defined as k~deg~ and k~rec~, respectively. We assumed no autocrine ligand was produced by the cells. We assumed an endosomal volume of 10 fL and endosomal surface area half that of the plasma membrane [@MEYER201525]. All binding events were assumed to occur with 5-fold greater disassociation rate in the endosome due to its acidic pH [@Fallon2000].
 
 Free receptors and complexes were measured in units of number per cell and soluble ligands were measured in units of concentration (nM). Due to these unit choices for our species, the rate constants for ligand binding to a free receptors had units of nM^-1^ min^-1^, rate constants for the forward dimerization of free receptor to complex had units of cell min^-1^ number^-1^. Dissociation rates had units of min^-1^. All ligand-receptor binding processes had an assumed forward rate (k~bnd~) of 10^7^ M^-1^ sec^-1^. All forward dimerization reaction rates were assumed to be identical, represented by k~fwd~. Reverse reaction rates were unique. Experimentally-derived affinities of 1.0 [@Gonnordeaal1253], 59 [@Walsh_IL7_2012], 0.1 [@Renauld5690], and 0.07 nM [@Gonnordeaal1253] were used for IL-4, -7, -9, and -21 binding to their cognate private receptors, respectively. IL-2 and -15 were assumed to have affinities of 10 nM and 0.065 nM for their respective α-chains [@Rickert_receptor_const; @Mortier20012006; @DUBOIS2002537], and affinities of 144 nM and 438 nM for their respective β-chains [@Rickert_receptor_const]. Rates k~5~, k~10~, and k~11~ were set to their experimentally-determined dissassociation constants of 1.5, 12, and 63 nM [@Rickert_receptor_const].
 
 Initial values were calculated by assuming steady-state in the absence of ligand. Differential equation solving was performed using the SUNDIALS solvers in C++, with a Python interface for all other code [@hindmarsh2005sundials]. Model sensitivities were calculated using the adjoint solution [@CAO2002171]. Calculating the adjoint requires the partial derivatives of the differential equations both with respect to the species and unknown parameters. Constructing these can be tedious and error-prone. Therefore, we calculated these algorithmically using forward-pass autodifferentiation implemented in Adept-2 [@hogan_robin_j_2017]. A model and sensitivities tolerance of 10^-9^ and 10^-3^, respectively, were used throughout. We used unit tests for conservation of mass, equilibrium, and detailed balance to ensure model correctness.
+
+### Full Model ODEs
+
+Below are the ODEs pertaining to IL-2 binding and unbinding events.
+
+$$
+\frac{dIL2R\alpha}{dt} = -k_{fbnd} * IL2R\alpha * IL2 + k_{1,rev} * [IL2·IL2R\alpha] - k_{fwd} * IL2Ra * [IL2·IL2R\beta·\gamma_c] + k_{8,rev} * [IL2·IL2R\alpha·IL2R\beta·\gamma_c] - k_{fwd} * IL2R\alpha * [IL2·IL2R\beta] + k_{12,rev} * [IL2·IL2R\alpha·IL2R\beta]
+$$
+
+$$
+\frac{dIL2R\beta}{dt} = -k_{fbnd} * IL2R\beta * IL2 + k_{2,rev} * [IL2·IL2R\beta] - k_{fwd} * IL2R\beta * [IL2·IL2R\alpha·\gamma_c] + k_{9,rev} * [IL2·IL2R\alpha·IL2R\beta·\gamma_c] - k_{fwd} * IL2R\beta * [IL2·IL2R\alpha] + k_{11,rev} * [IL2·IL2R\alpha·IL2R\beta]
+$$
+
+$$
+\frac{d\gamma_c}{dt} = -k_{fwd} * [IL2·IL2R\beta] * \gamma_c + k_{5,rev} * [IL2·IL2R\beta·\gamma_c] - k_{fwd} * [IL2·IL2R\alpha] * \gamma_c + k_{4,rev} * [IL2·IL2R\alpha·\gamma_c] - k_{fwd} * [IL2·IL2R\alpha·IL2R\beta] * \gamma_c + k_{10,rev} * [IL2·IL2R\alpha·IL2R\beta·\gamma_c]
+$$
+
+$$
+\frac{d[IL2·IL2R\alpha]}{dt} = -k_{fwd} * [IL2·IL2R\alpha] * IL2R\beta + k_{11,rev} * [IL2·IL2R\alpha·IL2R\beta] - k_{fwd} * {IL2·IL2R\alpha} * \gamma_c + k_{4,rev} * [IL2·IL2R\alpha·\gamma_c] + k_{fbnd} * IL2 * IL2R\alpha - k_{1,rev} * [IL2·IL2R\alpha]
+$$
+
+$$
+\frac{d[IL2·IL2R\beta]}{dt} = -k_{fwd} * [IL2·IL2R\beta] * IL2R\alpha + k_{12,rev} * [IL2·IL2R\alpha·IL2R\beta] - k_{fwd} * [IL2·IL2R\beta] * \gamma_c + k_{5,rev} * [IL2·IL2R\beta·\gamma_c] + k_{fbnd} * IL2 * IL2R\beta - k_{2,rev} * [IL2·IL2R\beta]
+$$
+
+$$
+\frac{d[IL2·IL2R\alpha·IL2R\beta]}{dt} = -k_{fwd} * [IL2·IL2R\alpha·IL2R\beta] * \gamma_c + k_{10,rev} * [IL2·IL2R\alpha·IL2R\beta·\gamma_c] + k_{fwd} * [IL2·IL2R\alpha] * IL2R\beta - k_{11,rev} * [IL2·IL2R\alpha·IL2R\beta] + k_{fwd} * [IL2·IL2R\beta] * IL2R\alpha - k_{12,rev} * [IL2·IL2R\alpha·IL2R\beta]
+$$
+
+$$  
+\frac{d[IL2·IL2R\alpha·\gamma_c]}{dt} = -k_{fwd} * [IL2·IL2R\alpha·\gamma_c] * IL2R\beta  + k_{9,rev} * [IL2·IL2R\alpha·IL2R\beta·\gamma_c] + k_{fwd} * [IL2·IL2R\alpha] * \gamma_c - k_{4,rev} * [IL2·IL2R\alpha·\gamma_c] 
+$$
+
+$$
+\frac{d[IL2·IL2R\beta·\gamma_c]}{dt} = -k_{fwd} * [IL2·IL2R\beta·\gamma_c] * IL2R\alpha  + k_{8,rev} * [IL2·IL2R\alpha·IL2R\beta·\gamma_c] + k_{fwd} * [IL2·IL2R\beta] * \gamma_c - k_{5,rev} * [IL2·IL2R\beta·\gamma_c] 
+$$
+
+$$
+\frac{d[IL2·IL2R\alpha·IL2R\beta·\gamma_c]}{dt} = k_{fwd} * [IL2·IL2R\beta·\gamma_c] * IL2R\alpha  - k_{8,rev} * [IL2·IL2R\alpha·IL2R\beta·\gamma_c] + k_{fwd} * [IL2·IL2R\alpha·\gamma_c] * IL2R\beta - k_{9,rev} * [IL2·IL2R\alpha·IL2R\beta·\gamma_c] + k_{fwd} * [IL2·IL2R\alpha·IL2R\beta] * \gamma_c - k_{10,rev} * [IL2·IL2R\alpha·IL2R\beta·\gamma_c]
+$$
+
+The ODEs for IL-15 binding and unbinding events are of the same form as those for IL-2, with IL-2, and IL-2R$\alpha$ having analogous species IL-15, and IL-15R$\alpha$. The analogous reverse binding rates are as follows:
+
+$$
+k_{1,rev} = k_{13,rev}, \  k_{2,rev} = k_{14,rev}, \  k_{4,rev} = k_{16,rev}, \  k_{5,rev} = k_{17,rev}, \  k_{8,rev} = k_{20,rev}, \  k_{9,rev} = k_{21,rev}, \  k_{10,rev} = k_{22,rev}, \  k_{11,rev} = k_{23,rev}, \  k_{12,rev} = k_{24,rev}
+$$
+
+Below are the ODEs pertaining to IL-4 binding and unbinding events.
+
+$$
+\frac{dIL4R\alpha}{dt} = -k_{fbnd} * IL4 * IL4R\alpha + k_{32_rev}*[IL4·IL4R\alpha]
+$$
+
+$$
+\frac{d[IL4·IL4R\alpha]}{dt} = - k_{fwd} * [IL4·IL4R\alpha] * \gamma_c + k_{33,rev} * [IL4·IL4R\alpha·\gamma_c] + k_{fbnd} * IL4 * IL4R\alpha
+$$
+
+$$
+\frac{d[IL4·IL4R\alpha·\gamma_c]}{dt} = k_{fwd} * [IL4·IL4R\alpha] * \gamma_c - k_{33,rev} * [IL4·IL4R\alpha·\gamma_c]
+$$
+
+The ODEs for IL-7 binding and unbinding events are of the same form as those for IL-4, with IL-4, and IL-4R$\alpha$ having analogous species IL-7, and IL-7R$\alpha$. The analogous reverse binding rates are as follows:
+
+$$
+k_{33,rev} = k_{27,rev}, \  k_{32,rev} = k_{25,rev} 
+$$
+
+All of the above reactions also occur in the endosome for trafficked species, with reverse binding rates being 5 fold larger due to pH discrepancies between the endosome and extracellular space.
+
+Trafficking is calculated for each species using the below equations.
+
+$$
+\frac{d \ Extracellular \ Active \ Species}{dt} = -Extracellular \ Active \ Species * (k_{endo} + k_{endo,a})
+$$
+
+$$
+\frac{d \ Intracellular \ Active \ Species}{dt} = Extracellular \ Active \ Species * (k_{endo} + k_{endo,a}) / 0.5 - k_{deg}*Intracellular \ Active \ Species
+$$
+
+$$
+\frac{d \ Extracellular \ Inactive \ Species}{dt} = -Extracellular \ Inactive \ Species * (k_{endo}) + k_{rec}*(1-f_{sort})*Intracellular \ Inactive \ Species * 0.5
+$$
+
+$$
+\frac{d \ Intracellular \ Inactive \ Species}{dt} = Extracellular \ Inactive \ Species * (k_{endo}) / 0.5 - k_{rec}*(1-f_{sort})*Intracellular \ Inactive \ Species - (k_{deg}*f_{sort})*Intracellular \ Inactive \ Species
+$$
 
 ### Model fitting
 
