@@ -134,7 +134,6 @@ def misc_violin(ax, unkVec):
     """ Create violin plot of activity scaling constants, sortF, and kfwd. """
     misc = (unkVec[6, :] / np.max(unkVec[6, :]))
     misc = pd.DataFrame(misc.T)
-
     misc.columns = [
         "Cmplx form. rate / " + "{:.2E}".format(np.max(unkVec[6, :]))
     ]
