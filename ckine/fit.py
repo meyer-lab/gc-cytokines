@@ -18,7 +18,7 @@ def load_data(filename):
 
 def sampling(M):
     """ This is the sampling that actually runs the model. """
-    return pm.sample(init="adapt_diag", chains=2, model=M, target_accept=0.90, step_scale=0.01)
+    return pm.sample(init="advi+adapt_diag", chains=2, model=M)
 
 
 def commonTraf(trafficking=True):
@@ -27,12 +27,10 @@ def commonTraf(trafficking=True):
 
     if trafficking:
         endo = pm.Lognormal("endo", mu=np.log(0.1), sigma=0.1, shape=1)
-        activeEndo = T.ones(1, dtype=np.float64)  # pm.Lognormal("activeEndo", sigma=0.1, shape=1)
-        pm.Deterministic("activeEndo", activeEndo)
+        activeEndo = pm.Lognormal("activeEndo", sigma=0.1, shape=1)
         kRec = pm.Lognormal("kRec", mu=np.log(0.1), sigma=0.1, shape=1)
         kDeg = pm.Lognormal("kDeg", mu=np.log(0.01), sigma=0.2, shape=1)
-        sortF = T.ones(1, dtype=np.float64) * 0.1  # pm.Beta("sortF", alpha=12, beta=80, shape=1)
-        pm.Deterministic("sortF", sortF)
+        sortF = pm.Beta("sortF", alpha=12, beta=80, shape=1)
     else:
         # Assigning trafficking to zero to fit without trafficking
         endo = activeEndo = kRec = kDeg = T.zeros(1, dtype=np.float64)

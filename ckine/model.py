@@ -166,7 +166,7 @@ def receptor_expression(receptor_abundance, endo, kRec, sortF, kDeg):
 
 def condenseSENV(sensVin):
     """ Condense sensitivities down into the old rxnRates format. """
-    sensVin[:, 7:27] += sensVin[:, 27:47] * 5.0
+    sensVin[:, 7:27] += sensVin[:, 27:47] * 20.0
     sensVin[:, 10] += 12.0 * sensVin[:, 11] / 1.5 + 63.0 * sensVin[:, 12] / 1.5
     sensV = sensVin[:, np.array([0, 1, 2, 3, 4, 5, 6, 9, 10, 15, 16, 17, 18, 20, 22, 24, 26, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59])]
 
@@ -181,7 +181,8 @@ def getparamsdict(rxntfr):
     rd["IL2"], rd["IL15"], rd["IL7"], rd["IL9"], rd["IL4"], rd["IL21"], rd["kfwd"] = tuple(rxntfr[0:7])
     rd["surf.k1rev"] = kfbnd * 10.0  # 7
     rd["surf.k2rev"] = kfbnd * 144.0
-    rd["surf.k4rev"], rd["surf.k5rev"] = rxntfr[7], rxntfr[8]  # 9 #10
+    rd["surf.k4rev"] = rxntfr[7]  # 9
+    rd["surf.k5rev"] = rxntfr[8]  # 10
     rd["surf.k10rev"] = 12.0 * rd["surf.k5rev"] / 1.5
     rd["surf.k11rev"] = 63.0 * rd["surf.k5rev"] / 1.5
     rd["surf.k13rev"] = kfbnd * 0.065
@@ -199,8 +200,9 @@ def getparamsdict(rxntfr):
     rd["surf.k34rev"] = kfbnd * 0.07
     rd["surf.k35rev"] = rxntfr[16]
 
-    for ii in ("1", "2", "4", "5", "10", "11", "13", "14", "16", "17", "22", "23", "25", "27", "29", "31", "32", "33", "34", "35"):
-        rd["endo.k" + ii + "rev"] = rd["surf.k" + ii + "rev"] * 5.0
+    for key, value in rd.copy().items():
+        if "surf.k" in key:
+            rd[key.replace("surf", "endo")] = value * 20.0
 
     rd["endo"], rd["activeEndo"], rd["sortF"], rd["kRec"], rd["kDeg"] = tuple(rxntfr[17:22])
     rd["Rexpr_2Ra"], rd["Rexpr_2Rb"], rd["Rexpr_gc"], rd["Rexpr_15Ra"], rd["Rexpr_7R"], rd["Rexpr_9R"], rd["Rexpr_4Ra"], rd["Rexpr_21Ra"] = tuple(rxntfr[22:30])
