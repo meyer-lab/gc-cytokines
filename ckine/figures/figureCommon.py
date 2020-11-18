@@ -491,7 +491,6 @@ def expScaleMut(mutDF, scaleTimes):
                         pred_data = np.append(pred_data, np.ravel(np.array(mutDF.loc[(mutDF["Cells"] == cell) & (mutDF["Ligand"] == mutLig)
                                                                                      & (mutDF["Activity Type"] == "predicted") & (mutDF["Time Point"] == time)].Activity)))
 
-            #slope, intercept, _, _, _ = stats.linregress(expArray, pred_data)
             slope = np.linalg.lstsq(np.atleast_2d(expArray).T, pred_data, rcond=None)[0]
 
             mutDF.loc[(mutDF["Cells"].isin(cellSet)) & (mutDF["Ligand"].isin(mutsGroup)) & (mutDF["Activity Type"] == "experimental"), "Activity"] = np.array(
