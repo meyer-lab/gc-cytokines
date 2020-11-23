@@ -92,10 +92,10 @@ def pstat_plot(ax, unkVec):
     plot_conf_int(ax, cytokC_common, IL7_output * 100.0, "b", "IL-7 stim.")
 
     # overlay experimental data
-    ax.scatter(cytokC_4, (dataIL4[:, 1] / IL4_data_max) * 100.0, color="powderblue", marker="^", edgecolors="k", zorder=100, s=20)
-    ax.scatter(cytokC_4, (dataIL4[:, 2] / IL4_data_max) * 100.0, color="powderblue", marker="^", edgecolors="k", zorder=200, s=20)
-    ax.scatter(cytokC_7, (dataIL7[:, 1] / IL7_data_max) * 100.0, color="b", marker="^", edgecolors="k", zorder=300, s=20)
-    ax.scatter(cytokC_7, (dataIL7[:, 2] / IL7_data_max) * 100.0, color="b", marker="^", edgecolors="k", zorder=400, s=20)
+    ax.scatter(rand_jitter(cytokC_4), (dataIL4[:, 1] / IL4_data_max) * 100.0, color="powderblue", marker="^", edgecolors="k", zorder=100, s=20)
+    ax.scatter(rand_jitter(cytokC_4), (dataIL4[:, 2] / IL4_data_max) * 100.0, color="powderblue", marker="^", edgecolors="k", zorder=200, s=20)
+    ax.scatter(rand_jitter(cytokC_7), (dataIL7[:, 1] / IL7_data_max) * 100.0, color="b", marker="^", edgecolors="k", zorder=300, s=20)
+    ax.scatter(rand_jitter(cytokC_7), (dataIL7[:, 2] / IL7_data_max) * 100.0, color="b", marker="^", edgecolors="k", zorder=400, s=20)
     ax.set(ylabel="pSTAT5/6 (% of max)", xlabel="Ligand Concentration (nM)", title="Activity")
     ax.set_xscale("log")
     ax.set_xticks([10e-5, 10e-3, 10e-1, 10e1])
@@ -104,10 +104,10 @@ def pstat_plot(ax, unkVec):
 def traf_violin(ax, unkVec):
     """ Create violin plot of trafficking parameters. """
     unkVec = unkVec.transpose()
-    traf = np.concatenate((unkVec[:, 17:18], unkVec[:, 20:22]), axis=1)
+    traf = np.concatenate((unkVec[:, 17:19], unkVec[:, 20:22]), axis=1)
     traf = pd.DataFrame(traf)
 
-    traf.columns = [traf_names()[0]] + traf_names()[2::]
+    traf.columns = traf_names()
     a = sns.violinplot(data=np.log10(traf), ax=ax, linewidth=0.5, color="grey")
     a.set_xticklabels(a.get_xticklabels(), rotation=25, rotation_mode="anchor", ha="right", fontsize=6, position=(0, 0.04))
     a.set_ylabel(r"$\mathrm{log_{10}(\frac{1}{min})}$")
@@ -220,12 +220,12 @@ def plot_pretreat(ax, unkVec, title):
     ax.set_ylabel("Inhibition (% of no pretreat)")
 
     # add experimental data to plots
-    ax.scatter(IL7_pretreat_conc, data[:, 1], color="powderblue", zorder=100, marker="^", edgecolors="k", s=20)
-    ax.scatter(IL7_pretreat_conc, data[:, 2], color="powderblue", zorder=101, marker="^", edgecolors="k", s=20)
-    ax.scatter(IL7_pretreat_conc, data[:, 3], color="powderblue", zorder=102, marker="^", edgecolors="k", s=20)
-    ax.scatter(IL4_pretreat_conc, data[:, 6], color="b", zorder=103, marker="^", edgecolors="k", s=20)
-    ax.scatter(IL4_pretreat_conc, data[:, 7], color="b", zorder=104, marker="^", edgecolors="k", s=20)
-    ax.scatter(IL4_pretreat_conc, data[:, 8], color="b", zorder=105, marker="^", edgecolors="k", s=20)
+    ax.scatter(rand_jitter(IL7_pretreat_conc), data[:, 1], color="powderblue", zorder=100, marker="^", edgecolors="k", s=20)
+    ax.scatter(rand_jitter(IL7_pretreat_conc), data[:, 2], color="powderblue", zorder=101, marker="^", edgecolors="k", s=20)
+    ax.scatter(rand_jitter(IL7_pretreat_conc), data[:, 3], color="powderblue", zorder=102, marker="^", edgecolors="k", s=20)
+    ax.scatter(rand_jitter(IL4_pretreat_conc), data[:, 6], color="b", zorder=103, marker="^", edgecolors="k", s=20)
+    ax.scatter(rand_jitter(IL4_pretreat_conc), data[:, 7], color="b", zorder=104, marker="^", edgecolors="k", s=20)
+    ax.scatter(rand_jitter(IL4_pretreat_conc), data[:, 8], color="b", zorder=105, marker="^", edgecolors="k", s=20)
     ax.set_xscale("log")
     ax.set_xticks([10e-5, 10e-2, 10e0])
 
@@ -296,3 +296,8 @@ def relativeGC(ax, unkVec2, unkVec4):
     a = sns.violinplot(data=np.log10(df), ax=ax, linewidth=0, scale="width")
     a.set_xticklabels(a.get_xticklabels(), rotation=45, rotation_mode="anchor", ha="right", fontsize=8, position=(0, 0.02))
     a.set(title=r"Relative $\mathrm{γ_{c}}$ Affinity", ylabel=r"$\mathrm{log_{10}(K_{a})}$")
+
+
+def rand_jitter(arr):
+    """Substitute for Dodge"""
+    return arr + np.random.randn(len(arr)) * 0.25 * arr
