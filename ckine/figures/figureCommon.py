@@ -112,11 +112,11 @@ def plot_conf_int(ax, x_axis, y_axis, color, label=None):
     """ Shades the 25-75 percentiles dark and the 10-90 percentiles light. The percentiles are found along axis=1. """
     y_axis_top = np.percentile(y_axis, 90.0, axis=1)
     y_axis_bot = np.percentile(y_axis, 10.0, axis=1)
-    ax.fill_between(x_axis, y_axis_top, y_axis_bot, color=color, alpha=0.2, linewidth=0.5)
+    ax.fill_between(x_axis, y_axis_top, y_axis_bot, color=color, alpha=0.15, linewidth=0.5)
 
     y_axis_top = np.percentile(y_axis, 75.0, axis=1)
     y_axis_bot = np.percentile(y_axis, 25.0, axis=1)
-    ax.fill_between(x_axis, y_axis_top, y_axis_bot, color=color, alpha=0.65, label=label, linewidth=0.5)
+    ax.fill_between(x_axis, y_axis_top, y_axis_bot, color=color, alpha=0.6, label=label, linewidth=0.5)
     if label is not None:
         ax.legend()
 
@@ -311,7 +311,7 @@ def calc_dose_response(cell_names, unkVec, receptor_data, tps, cytokC, expr_act2
 def import_pMuteins():
     """ Loads CSV file containing pSTAT5 levels from Visterra data for muteins. """
     data = pds.read_csv(join(path_here, "data/Monomeric_mutein_pSTAT_data.csv"), encoding="latin1")
-    data["RFU"] = data["RFU"] - data.groupby(["Cells", "Ligand"])["RFU"].transform("min")
+    data["RFU"] = data["RFU"] - data.groupby(["Ligand", "Cells"])["RFU"].transform("min")
 
     for conc in data.Concentration.unique():
         data = data.replace({"Concentration": conc}, np.round(conc, decimals=9))
@@ -325,7 +325,6 @@ def import_pMuteins():
         "Cterm N88D monomeric": "N88D C-term",
     }
     data = data.replace({"Ligand": namedict})
-
     return data
 
 
@@ -492,11 +491,9 @@ def expScaleMut(mutDF, scaleTimes):
                         pred_data = np.append(pred_data, np.ravel(np.array(mutDF.loc[(mutDF["Cells"] == cell) & (mutDF["Ligand"] == mutLig)
                                                                                      & (mutDF["Activity Type"] == "predicted") & (mutDF["Time Point"] == time)].Activity)))
 
-            slope, intercept, _, _, _ = stats.linregress(expArray, pred_data)
+            slope = np.linalg.lstsq(np.atleast_2d(expArray).T, pred_data, rcond=None)[0]
 
             mutDF.loc[(mutDF["Cells"].isin(cellSet)) & (mutDF["Ligand"].isin(mutsGroup)) & (mutDF["Activity Type"] == "experimental"), "Activity"] = np.array(
                 mutDF.loc[(mutDF["Cells"].isin(cellSet)) & (mutDF["Ligand"].isin(mutsGroup)) & (mutDF["Activity Type"] == "experimental"), "Activity"]) * slope
-            mutDF.loc[(mutDF["Cells"].isin(cellSet)) & (mutDF["Ligand"].isin(mutsGroup)) & (mutDF["Activity Type"] == "experimental"), "Activity"] = np.array(
-                mutDF.loc[(mutDF["Cells"].isin(cellSet)) & (mutDF["Ligand"].isin(mutsGroup)) & (mutDF["Activity Type"] == "experimental"), "Activity"]) + intercept
 
     return mutDF

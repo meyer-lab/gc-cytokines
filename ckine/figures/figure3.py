@@ -35,7 +35,7 @@ def makeFigure():
 
     # Start plotting
     PCA_receptor(ax[1:3], cell_names, numpy_data)
-    ax[1].text(1.5, 1.9, 'See\nLegend\nBelow', verticalalignment='center', fontsize=7)
+    ax[1].text(1.5, 1.9, 'See\nCell\nLegend', verticalalignment='center', fontsize=7)
     ax[2].text(0.3, 0.75, 'See 3A\nLegend', verticalalignment='center', fontsize=7)
     catplot_receptors(ax[0], data)
 
@@ -53,14 +53,16 @@ def makeFigure():
     plot_timepoints(ax[6], tensor_time, tl.to_numpy(factors_activ[0]))
 
     plot_cells(ax[7], tl.to_numpy(factors_activ[1]), 1, 2, cell_names)
+    ax[7].text(0.6, 0.8, 'See\nCell\nLegend', verticalalignment='center', fontsize=7)
     ax[7].set_xlim(left=-0.03)
     ax[7].set_ylim(bottom=-0.03)
     plot_cells(ax[8], tl.to_numpy(factors_activ[1]), 1, 3, cell_names)
+    ax[8].text(0.6, 0.8, 'See\nCell\nLegend', verticalalignment='center', fontsize=7)
     ax[8].set_xlim(left=-0.03)
     ax[8].set_ylim(bottom=-0.03)
     legend = ax[7].get_legend()
     labels = (x.get_text() for x in legend.get_texts())
-    ax[4].legend(legend.legendHandles, labels, loc="center right", prop={"size": 9})
+    ax[4].legend(legend.legendHandles, labels, loc="center right", prop={"size": 9}, title="Cell Legend", )
     ax[7].get_legend().remove()
     ax[8].get_legend().remove()
     ax[5].set_ylabel("Variance of Model\nOutput Explained", fontsize=8, multialignment="center")
