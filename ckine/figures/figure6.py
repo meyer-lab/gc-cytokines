@@ -279,7 +279,6 @@ def Specificity(ax):
     for ii, _ in enumerate(labels):
         labels[ii] = labels[ii].split(".")[-1]
     ax.set_xticklabels(labels, rotation=60, rotation_mode="anchor", ha="right", fontdict={"fontsize": 5.5})
-    ax.set_yticks([-1e3, -1e1, -1e-1, 0, 1e-1, 1e1, 1e3])
 
 
 def OPgen(unkVecOP, CellTypes, OpC, RaAffM, RbAffM):
