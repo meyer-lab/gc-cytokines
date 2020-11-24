@@ -17,42 +17,39 @@ class IL4_7_activity:  # pylint: disable=too-few-public-methods
 
     def __init__(self):
         path = os.path.dirname(os.path.abspath(__file__))
-        dataIL4 = pds.read_csv(join(path, "./data/Gonnord_S3B.csv")).values  # imports IL4 file into pandas array
-        dataIL7 = pds.read_csv(join(path, "./data/Gonnord_S3C.csv")).values  # imports IL7 file into pandas array
+        self.dataIL4 = pds.read_csv(join(path, "./data/Gonnord_S3B.csv")).values[:, 1:]  # imports IL4 file into pandas array
+        self.dataIL4 /= np.amax(self.dataIL4, axis=0)[np.newaxis, :]
+        self.dataIL7 = pds.read_csv(join(path, "./data/Gonnord_S3C.csv")).values[:, 1:]  # imports IL7 file into pandas array
+        self.dataIL7 /= np.amax(self.dataIL7, axis=0)[np.newaxis, :]
+        self.nDoses = 6
 
+        self.cytokM = np.zeros((self.nDoses * 2, 6), dtype=np.float64)
         # units are converted from pg/mL to nM
-        self.cytokC_4 = np.array([5.0, 50.0, 500.0, 5000.0, 50000.0, 250000.0]) / 14900.0  # 14.9 kDa according to sigma aldrich
-        self.cytokC_7 = np.array([1.0, 10.0, 100.0, 1000.0, 10000.0, 100000.0]) / 17400.0  # 17.4 kDa according to prospec bio
+        self.cytokM[0: self.nDoses, 4] = np.array([5.0, 50.0, 500.0, 5000.0, 50000.0, 250000.0]) / 14900.0  # 14.9 kDa according to sigma aldrich
+        self.cytokM[self.nDoses::, 2] = np.array([1.0, 10.0, 100.0, 1000.0, 10000.0, 100000.0]) / 17400.0  # 17.4 kDa according to prospec bio
 
-        self.cytokM = np.zeros((self.cytokC_4.size * 2, 6), dtype=np.float64)
-        self.cytokM[0: self.cytokC_4.size, 4] = self.cytokC_4
-        self.cytokM[self.cytokC_4.size::, 2] = self.cytokC_7
-
-        IL4_data_max = np.amax(np.concatenate((dataIL4[:, 1], dataIL4[:, 2])))
-        IL7_data_max = np.amax(np.concatenate((dataIL7[:, 1], dataIL7[:, 2])))
-        self.fit_data = np.concatenate(
-            (dataIL4[:, 1] / IL4_data_max, dataIL4[:, 2] / IL4_data_max, dataIL7[:, 1] / IL7_data_max, dataIL7[:, 2] / IL7_data_max)
-        )  # measurements ARE normalized to max of own species
-
-    def calc(self, unkVec):
+    def calc(self, unkVec, M):
         """ Simulate the experiment with different ligand stimulations and compare with experimental data. """
         Op = runCkineDoseOp(tt=np.array(10.0), condense=getTotalActiveSpecies().astype(np.float64), conditions=self.cytokM)
 
         # Run the experiment
         outt = Op(unkVec)
 
-        actVecIL4 = outt[0: self.cytokC_4.size]
-        actVecIL7 = outt[self.cytokC_4.size: self.cytokC_4.size * 2]
+        actVecIL4 = outt[0: self.nDoses]
+        actVecIL7 = outt[self.nDoses: self.nDoses * 2]
 
         # normalize each actVec by its maximum
-        actVecIL4 = actVecIL4 / T.max(actVecIL4)
-        actVecIL7 = actVecIL7 / T.max(actVecIL7)
+        actVecIL4 = T.tile(actVecIL4, (2, 1))
+        actVecIL7 = T.tile(actVecIL7, (2, 1))
 
         # put into one vector
-        actVec = T.concatenate((actVecIL4, actVecIL4, actVecIL7, actVecIL7))
+        actVecIL4 = T.flatten(self.dataIL4.T - actVecIL4)
+        actVecIL7 = T.flatten(self.dataIL7.T - actVecIL7)
+        Y_int = T.concatenate((actVecIL4, actVecIL7))
 
-        # return residual
-        return self.fit_data - actVec
+        with M:
+            pm.Deterministic("Y_int", T.sum(T.square(Y_int)))
+            pm.Normal("fitD_int", sigma=T.minimum(T.std(Y_int), 0.1), observed=Y_int)
 
 
 class crosstalk:  # pylint: disable=too-few-public-methods
@@ -65,7 +62,8 @@ class crosstalk:  # pylint: disable=too-few-public-methods
         self.cytokM[1, 2] = 50.0 / 17400.0  # concentration used for IL7 stimulation
 
         path = os.path.dirname(os.path.abspath(__file__))
-        data = pds.read_csv(join(path, "./data/Gonnord_S3D.csv")).values
+        self.data = pds.read_csv(join(path, "./data/Gonnord_S3D.csv")).values
+        data = self.data
         self.fit_data = np.concatenate((data[:, 1], data[:, 2], data[:, 3], data[:, 6], data[:, 7], data[:, 8])) / 100.0
         self.pre_IL7 = data[:, 0] / 17400.0  # concentrations of IL7 used as pretreatment
         self.pre_IL4 = data[:, 5] / 14900.0  # concentrations of IL4 used as pretreatment
@@ -151,11 +149,7 @@ class build_model:
             # indexing same as in model.hpp
             unkVec = T.concatenate((kfwd, nullRates, k27rev, Tone, k33rev, Tone, endo, activeEndo, sortF, kRec, kDeg, Rexpr))
 
-            Y_int = self.act.calc(unkVec)  # fitting the data based on act.calc for the given parameters
-
-            sd_int = T.minimum(T.std(Y_int), 0.1)
-            pm.Deterministic("Y_int", T.sum(T.square(Y_int)))
-            pm.Normal("fitD_int", sigma=sd_int, observed=Y_int)
+            self.act.calc(unkVec, M)  # fitting the data based on act.calc for the given parameters
 
             if self.pretreat is True:
                 Y_cross = self.cross.calc(unkVec)  # fitting the data based on cross.calc

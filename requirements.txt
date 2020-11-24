@@ -1,11 +1,11 @@
-matplotlib==3.3.2
+matplotlib==3.3.3
 pandas==1.1.4
 scipy==1.5.4
 seaborn==0.11.0
 numpy==1.19.4
 pytest==6.1.2
 pytest-cov==2.10.1
-hypothesis==5.41.1
+hypothesis==5.41.3
 hypothesis-numpy==2.0.0
 Theano==1.0.5
 pymc3==3.9.3
