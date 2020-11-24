@@ -275,7 +275,7 @@ def Specificity(ax):
     sns.set_palette(sns.xkcd_palette(colors))
 
     sns.barplot(data=df, x="rate", y="value", hue="cell", ax=ax)
-    ax.set_ylabel(r"$\frac{d[K_a]}{d[Param]}$")
+    ax.set_ylabel(r"$\frac{d[Specificity]}{d[K_a]}$")
     ax.set_xlabel("")
     ax.set_yscale("symlog", linthresh=0.01)
     labels = df.rate.unique()
