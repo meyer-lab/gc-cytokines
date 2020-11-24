@@ -215,41 +215,59 @@ def Specificity(ax):
     kfbnd = 0.6
     kfwd = unkVec_2_15[6]
 
-    dfNKka = pd.DataFrame(
-        {"rate":["surf.(2)·2Rα", "surf.(2)·2Rβ", r"surf.($\mathrm{γ_{c}}$)·2·2Rα", r"surf.($\mathrm{γ_{c}}$)·2·2Rβ", r"surf.($\mathrm{γ_{c}}$)·2·2Rα·2Rβ", "surf.(2Rβ)·2·2Rα", "endo.(2)·2Rα", "endo.(2)·2Rβ", r"endo.($\mathrm{γ_{c}}$)·2·2Rα", r"endo.($\mathrm{γ_{c}}$)·2·2Rβ", r"endo.($\mathrm{γ_{c}}$)·2·2Rα·2Rβ", "endo.(2Rβ)·2·2Rα"],
-        "value": [(kfbnd / dfNK.loc[(dfNK["rate"] == "surf.k1rev")].value.to_numpy())[0], 
-            (kfbnd / dfNK.loc[(dfNK["rate"] == "surf.k2rev")].value.to_numpy())[0],
-            (kfwd / dfNK.loc[(dfNK["rate"] == "surf.k4rev")].value.to_numpy())[0],
-            (kfwd / dfNK.loc[(dfNK["rate"] == "surf.k5rev")].value.to_numpy())[0],
-            (kfwd / dfNK.loc[(dfNK["rate"] == "surf.k10rev")].value.to_numpy())[0],
-            (kfwd / dfNK.loc[(dfNK["rate"] == "surf.k11rev")].value.to_numpy())[0],
-            (kfbnd / dfNK.loc[(dfNK["rate"] == "endo.k1rev")].value.to_numpy())[0], 
-            (kfbnd / dfNK.loc[(dfNK["rate"] == "endo.k2rev")].value.to_numpy())[0],
-            (kfwd / dfNK.loc[(dfNK["rate"] == "endo.k4rev")].value.to_numpy())[0],
-            (kfwd / dfNK.loc[(dfNK["rate"] == "endo.k5rev")].value.to_numpy())[0],
-            (kfwd / dfNK.loc[(dfNK["rate"] == "endo.k10rev")].value.to_numpy())[0],
-            (kfwd / dfNK.loc[(dfNK["rate"] == "endo.k11rev")].value.to_numpy())[0]],
-        "cell": np.tile("NK", dfNK.shape[0])
-        }
-    )
+    dfNKka = pd.DataFrame({"rate": ["surf.(2)·2Rα",
+                                    "surf.(2)·2Rβ",
+                                    r"surf.($\mathrm{γ_{c}}$)·2·2Rα",
+                                    r"surf.($\mathrm{γ_{c}}$)·2·2Rβ",
+                                    r"surf.($\mathrm{γ_{c}}$)·2·2Rα·2Rβ",
+                                    "surf.(2Rβ)·2·2Rα",
+                                    "endo.(2)·2Rα",
+                                    "endo.(2)·2Rβ",
+                                    r"endo.($\mathrm{γ_{c}}$)·2·2Rα",
+                                    r"endo.($\mathrm{γ_{c}}$)·2·2Rβ",
+                                    r"endo.($\mathrm{γ_{c}}$)·2·2Rα·2Rβ",
+                                    "endo.(2Rβ)·2·2Rα"],
+                           "value": [(kfbnd / dfNK.loc[(dfNK["rate"] == "surf.k1rev")].value.to_numpy())[0],
+                                     (kfbnd / dfNK.loc[(dfNK["rate"] == "surf.k2rev")].value.to_numpy())[0],
+                                     (kfwd / dfNK.loc[(dfNK["rate"] == "surf.k4rev")].value.to_numpy())[0],
+                                     (kfwd / dfNK.loc[(dfNK["rate"] == "surf.k5rev")].value.to_numpy())[0],
+                                     (kfwd / dfNK.loc[(dfNK["rate"] == "surf.k10rev")].value.to_numpy())[0],
+                                     (kfwd / dfNK.loc[(dfNK["rate"] == "surf.k11rev")].value.to_numpy())[0],
+                                     (kfbnd / dfNK.loc[(dfNK["rate"] == "endo.k1rev")].value.to_numpy())[0],
+                                     (kfbnd / dfNK.loc[(dfNK["rate"] == "endo.k2rev")].value.to_numpy())[0],
+                                     (kfwd / dfNK.loc[(dfNK["rate"] == "endo.k4rev")].value.to_numpy())[0],
+                                     (kfwd / dfNK.loc[(dfNK["rate"] == "endo.k5rev")].value.to_numpy())[0],
+                                     (kfwd / dfNK.loc[(dfNK["rate"] == "endo.k10rev")].value.to_numpy())[0],
+                                     (kfwd / dfNK.loc[(dfNK["rate"] == "endo.k11rev")].value.to_numpy())[0]],
+                           "cell": np.tile("NK",
+                                           dfNK.shape[0])})
 
-    dfThka = pd.DataFrame(
-        {"rate":["surf.(2)·2Rα", "surf.(2)·2Rβ", r"surf.($\mathrm{γ_{c}}$)·2·2Rα", r"surf.($\mathrm{γ_{c}}$)·2·2Rβ", r"surf.($\mathrm{γ_{c}}$)·2·2Rα·2Rβ", "surf.(2Rβ)·2·2Rα", "endo.(2)·2Rα", "endo.(2)·2Rβ", r"endo.($\mathrm{γ_{c}}$)·2·2Rα", r"endo.($\mathrm{γ_{c}}$)·2·2Rβ", r"endo.($\mathrm{γ_{c}}$)·2·2Rα·2Rβ", "endo.(2Rβ)·2·2Rα"],
-        "value": [(kfbnd / dfTh.loc[(dfTh["rate"] == "surf.k1rev")].value.to_numpy())[0], 
-            (kfbnd / dfTh.loc[(dfTh["rate"] == "surf.k2rev")].value.to_numpy())[0],
-            (kfwd / dfTh.loc[(dfTh["rate"] == "surf.k4rev")].value.to_numpy())[0],
-            (kfwd / dfTh.loc[(dfTh["rate"] == "surf.k5rev")].value.to_numpy())[0],
-            (kfwd / dfTh.loc[(dfTh["rate"] == "surf.k10rev")].value.to_numpy())[0],
-            (kfwd / dfTh.loc[(dfTh["rate"] == "surf.k11rev")].value.to_numpy())[0],
-            (kfbnd / dfTh.loc[(dfTh["rate"] == "endo.k1rev")].value.to_numpy())[0],
-            (kfbnd / dfTh.loc[(dfTh["rate"] == "endo.k2rev")].value.to_numpy())[0],
-            (kfwd / dfTh.loc[(dfTh["rate"] == "endo.k4rev")].value.to_numpy())[0],
-            (kfwd / dfTh.loc[(dfTh["rate"] == "endo.k5rev")].value.to_numpy())[0],
-            (kfwd / dfTh.loc[(dfTh["rate"] == "endo.k10rev")].value.to_numpy())[0],
-            (kfwd / dfTh.loc[(dfTh["rate"] == "endo.k11rev")].value.to_numpy())[0]],
-        "cell": np.tile("T-helper", dfTh.shape[0])
-        }
-    )
+    dfThka = pd.DataFrame({"rate": ["surf.(2)·2Rα",
+                                    "surf.(2)·2Rβ",
+                                    r"surf.($\mathrm{γ_{c}}$)·2·2Rα",
+                                    r"surf.($\mathrm{γ_{c}}$)·2·2Rβ",
+                                    r"surf.($\mathrm{γ_{c}}$)·2·2Rα·2Rβ",
+                                    "surf.(2Rβ)·2·2Rα",
+                                    "endo.(2)·2Rα",
+                                    "endo.(2)·2Rβ",
+                                    r"endo.($\mathrm{γ_{c}}$)·2·2Rα",
+                                    r"endo.($\mathrm{γ_{c}}$)·2·2Rβ",
+                                    r"endo.($\mathrm{γ_{c}}$)·2·2Rα·2Rβ",
+                                    "endo.(2Rβ)·2·2Rα"],
+                           "value": [(kfbnd / dfTh.loc[(dfTh["rate"] == "surf.k1rev")].value.to_numpy())[0],
+                                     (kfbnd / dfTh.loc[(dfTh["rate"] == "surf.k2rev")].value.to_numpy())[0],
+                                     (kfwd / dfTh.loc[(dfTh["rate"] == "surf.k4rev")].value.to_numpy())[0],
+                                     (kfwd / dfTh.loc[(dfTh["rate"] == "surf.k5rev")].value.to_numpy())[0],
+                                     (kfwd / dfTh.loc[(dfTh["rate"] == "surf.k10rev")].value.to_numpy())[0],
+                                     (kfwd / dfTh.loc[(dfTh["rate"] == "surf.k11rev")].value.to_numpy())[0],
+                                     (kfbnd / dfTh.loc[(dfTh["rate"] == "endo.k1rev")].value.to_numpy())[0],
+                                     (kfbnd / dfTh.loc[(dfTh["rate"] == "endo.k2rev")].value.to_numpy())[0],
+                                     (kfwd / dfTh.loc[(dfTh["rate"] == "endo.k4rev")].value.to_numpy())[0],
+                                     (kfwd / dfTh.loc[(dfTh["rate"] == "endo.k5rev")].value.to_numpy())[0],
+                                     (kfwd / dfTh.loc[(dfTh["rate"] == "endo.k10rev")].value.to_numpy())[0],
+                                     (kfwd / dfTh.loc[(dfTh["rate"] == "endo.k11rev")].value.to_numpy())[0]],
+                           "cell": np.tile("T-helper",
+                                           dfTh.shape[0])})
 
     df = pd.concat([dfNKka, dfThka])
 
