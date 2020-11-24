@@ -78,6 +78,7 @@ def makeFigure():
     )
     ckineConc_ = np.delete(ckineConc, 11, 0)  # delete smallest concentration since zero/negative activity
 
+    Specificity(ax=ax[2])
     overlayT, overlaycells = 60.0, ["T-reg", "NK", "T-helper"]
     MuteinModelOverlay(ax[5:8], overlayT, overlaycells)
     mutEC50df = get_Mut_EC50s()
@@ -86,7 +87,6 @@ def makeFigure():
     calc_plot_specificity(ax[0], "NK", df_spec, df_act, ckines, ckineConc_)
     calc_plot_specificity(ax[1], "T-helper", df_spec, df_act, ckines, ckineConc_)
     global_legend(ax[0], Spec=True, Mut=True)
-    Specificity(ax=ax[2])
     Spec_Aff(ax[3], 40, unkVecT)
     Mut_Fact(ax[8:12])
     legend = ax[8].get_legend()
@@ -212,19 +212,59 @@ def Specificity(ax):
     dfTh.drop(dfTh.index[0], inplace=True)
     dfTh.drop(dfTh.index[-5:], inplace=True)
 
-    df = pd.concat([dfNK, dfTh])
+    kfbnd = 0.6
+    kfwd = unkVec_2_15[6]
+
+    dfNKka = pd.DataFrame(
+        {"rate":["surf.(2)·2Rα", "surf.(2)·2Rβ", r"surf.($\mathrm{γ_{c}}$)·2·2Rα", r"surf.($\mathrm{γ_{c}}$)·2·2Rβ", r"surf.($\mathrm{γ_{c}}$)·2·2Rα·2Rβ", "surf.(2Rβ)·2·2Rα", "endo.(2)·2Rα", "endo.(2)·2Rβ", r"endo.($\mathrm{γ_{c}}$)·2·2Rα", r"endo.($\mathrm{γ_{c}}$)·2·2Rβ", r"endo.($\mathrm{γ_{c}}$)·2·2Rα·2Rβ", "endo.(2Rβ)·2·2Rα"],
+        "value": [(kfbnd / dfNK.loc[(dfNK["rate"] == "surf.k1rev")].value.to_numpy())[0], 
+            (kfbnd / dfNK.loc[(dfNK["rate"] == "surf.k2rev")].value.to_numpy())[0],
+            (kfwd / dfNK.loc[(dfNK["rate"] == "surf.k4rev")].value.to_numpy())[0],
+            (kfwd / dfNK.loc[(dfNK["rate"] == "surf.k5rev")].value.to_numpy())[0],
+            (kfwd / dfNK.loc[(dfNK["rate"] == "surf.k10rev")].value.to_numpy())[0],
+            (kfwd / dfNK.loc[(dfNK["rate"] == "surf.k11rev")].value.to_numpy())[0],
+            (kfbnd / dfNK.loc[(dfNK["rate"] == "endo.k1rev")].value.to_numpy())[0], 
+            (kfbnd / dfNK.loc[(dfNK["rate"] == "endo.k2rev")].value.to_numpy())[0],
+            (kfwd / dfNK.loc[(dfNK["rate"] == "endo.k4rev")].value.to_numpy())[0],
+            (kfwd / dfNK.loc[(dfNK["rate"] == "endo.k5rev")].value.to_numpy())[0],
+            (kfwd / dfNK.loc[(dfNK["rate"] == "endo.k10rev")].value.to_numpy())[0],
+            (kfwd / dfNK.loc[(dfNK["rate"] == "endo.k11rev")].value.to_numpy())[0]],
+        "cell": np.tile("NK", dfNK.shape[0])
+        }
+    )
+
+    dfThka = pd.DataFrame(
+        {"rate":["surf.(2)·2Rα", "surf.(2)·2Rβ", r"surf.($\mathrm{γ_{c}}$)·2·2Rα", r"surf.($\mathrm{γ_{c}}$)·2·2Rβ", r"surf.($\mathrm{γ_{c}}$)·2·2Rα·2Rβ", "surf.(2Rβ)·2·2Rα", "endo.(2)·2Rα", "endo.(2)·2Rβ", r"endo.($\mathrm{γ_{c}}$)·2·2Rα", r"endo.($\mathrm{γ_{c}}$)·2·2Rβ", r"endo.($\mathrm{γ_{c}}$)·2·2Rα·2Rβ", "endo.(2Rβ)·2·2Rα"],
+        "value": [(kfbnd / dfTh.loc[(dfTh["rate"] == "surf.k1rev")].value.to_numpy())[0], 
+            (kfbnd / dfTh.loc[(dfTh["rate"] == "surf.k2rev")].value.to_numpy())[0],
+            (kfwd / dfTh.loc[(dfTh["rate"] == "surf.k4rev")].value.to_numpy())[0],
+            (kfwd / dfTh.loc[(dfTh["rate"] == "surf.k5rev")].value.to_numpy())[0],
+            (kfwd / dfTh.loc[(dfTh["rate"] == "surf.k10rev")].value.to_numpy())[0],
+            (kfwd / dfTh.loc[(dfTh["rate"] == "surf.k11rev")].value.to_numpy())[0],
+            (kfbnd / dfTh.loc[(dfTh["rate"] == "endo.k1rev")].value.to_numpy())[0],
+            (kfbnd / dfTh.loc[(dfTh["rate"] == "endo.k2rev")].value.to_numpy())[0],
+            (kfwd / dfTh.loc[(dfTh["rate"] == "endo.k4rev")].value.to_numpy())[0],
+            (kfwd / dfTh.loc[(dfTh["rate"] == "endo.k5rev")].value.to_numpy())[0],
+            (kfwd / dfTh.loc[(dfTh["rate"] == "endo.k10rev")].value.to_numpy())[0],
+            (kfwd / dfTh.loc[(dfTh["rate"] == "endo.k11rev")].value.to_numpy())[0]],
+        "cell": np.tile("T-helper", dfTh.shape[0])
+        }
+    )
+
+    df = pd.concat([dfNKka, dfThka])
 
     colors = ["rich blue", "sun yellow"]
     sns.set_palette(sns.xkcd_palette(colors))
 
     sns.barplot(data=df, x="rate", y="value", hue="cell", ax=ax)
-    ax.set_ylabel(r"$\frac{d[Specificity]}{d[Param]}$")
+    ax.set_ylabel(r"$\frac{d[K_a]}{d[Param]}$")
     ax.set_xlabel("")
     ax.set_yscale("symlog", linthresh=0.01)
     labels = df.rate.unique()
     for ii, _ in enumerate(labels):
         labels[ii] = labels[ii].split(".")[-1]
-    ax.set_xticklabels(labels, rotation=60, rotation_mode="anchor", ha="right", fontdict={"fontsize": 6})
+    ax.set_xticklabels(labels, rotation=60, rotation_mode="anchor", ha="right", fontdict={"fontsize": 5.5})
+    ax.set_yticks([-1e3, -1e1, -1e-1, 0, 1e-1, 1e1, 1e3])
 
 
 def OPgen(unkVecOP, CellTypes, OpC, RaAffM, RbAffM):

@@ -38,6 +38,7 @@ def makeFigure():
     plot_timepoints(ax[0], tensor_time, tl.to_numpy(factors[0]))
     plot_cells(ax[1], tl.to_numpy(factors[1]), 1, 2, cell_names)
     plot_ligands(ax[2], tl.to_numpy(factors[2]), ligand_names=["IL-2", "IL-15", "IL-7"])
+    ax[2].set_ylim(0, 1)
 
     # Blank out
     ax[5].axis("off")
