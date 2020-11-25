@@ -39,6 +39,8 @@ class IL4_7_activity:  # pylint: disable=too-few-public-methods
         actVecIL7 = outt[self.nDoses: self.nDoses * 2]
 
         # normalize each actVec by its maximum
+        actVecIL4 = actVecIL4 / T.max(actVecIL4)
+        actVecIL7 = actVecIL7 / T.max(actVecIL7)
         actVecIL4 = T.tile(actVecIL4, (2, 1))
         actVecIL7 = T.tile(actVecIL7, (2, 1))
 
