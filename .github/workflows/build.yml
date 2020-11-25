@@ -26,4 +26,5 @@ jobs:
         name: files
         path: |
           Manuscript/Figures/*.pdf
+          Manuscript/Figures/*.svg
           Manuscript/*.pdf
