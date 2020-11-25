@@ -45,6 +45,7 @@ def makeFigure():
     # Predicted tensor
     predicted_cell_factors = predicted_factors[n_pred_comps - 1]
     correlation_cells(experimental_decomposition[0], predicted_cell_factors[1])
+    ax[3].set_ylim(0, 15)
 
     return f
 
