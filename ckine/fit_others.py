@@ -18,9 +18,9 @@ class IL4_7_activity:  # pylint: disable=too-few-public-methods
     def __init__(self):
         path = os.path.dirname(os.path.abspath(__file__))
         self.dataIL4 = pds.read_csv(join(path, "./data/Gonnord_S3B.csv")).values[:, 1:]  # imports IL4 file into pandas array
-        self.dataIL4 /= np.amax(self.dataIL4, axis=0)[np.newaxis, :]
+        self.dataIL4 /= np.amax(self.dataIL4)
         self.dataIL7 = pds.read_csv(join(path, "./data/Gonnord_S3C.csv")).values[:, 1:]  # imports IL7 file into pandas array
-        self.dataIL7 /= np.amax(self.dataIL7, axis=0)[np.newaxis, :]
+        self.dataIL7 /= np.amax(self.dataIL7)
         self.nDoses = 6
 
         self.cytokM = np.zeros((self.nDoses * 2, 6), dtype=np.float64)

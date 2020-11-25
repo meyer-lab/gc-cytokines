@@ -228,7 +228,7 @@ def plot_pretreat(ax, unkVec, title):
 def surf_gc(ax, cytokC_pg, unkVec):
     """ Generate a plot that shows the relative amount of gc on the cell surface under IL4 and IL7 stimulation. """
     PTS = 40
-    ts = np.linspace(0.0, 100.0, num=PTS)
+    ts = np.linspace(0.0, 20.0, num=PTS)
     output = calc_surf_gc(ts, cytokC_pg, unkVec)
     IL4vec = np.transpose(output[:, 0:PTS])
     IL7vec = np.transpose(output[:, PTS: (PTS * 2)])
