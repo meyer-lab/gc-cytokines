@@ -8,6 +8,7 @@ import seaborn as sns
 import pandas as pd
 from .figureCommon import subplotLabel, getSetup, traf_names, plot_conf_int
 from ..model import nParams, getTotalActiveSpecies, runCkineUP, getSurfaceGCSpecies, getTotalActiveCytokine
+from ..fit_others import IL4_7_activity, crosstalk
 from ..imports import import_samples_4_7, import_samples_2_15
 
 
@@ -77,10 +78,6 @@ def pstat_plot(ax, unkVec):
     cytokC_4 = np.array([5.0, 50.0, 500.0, 5000.0, 50000.0, 250000.0]) / 14900.0  # 14.9 kDa according to sigma aldrich
     cytokC_7 = np.array([1.0, 10.0, 100.0, 1000.0, 10000.0, 100000.0]) / 17400.0  # 17.4 kDa according to prospec bio
     cytokC_common = np.logspace(-3.8, 1.5, num=PTS)
-    dataIL4 = pd.read_csv(join(os.path.dirname(os.path.abspath(__file__)), "../data/Gonnord_S3B.csv")).values  # imports IL4 file into pandas array
-    dataIL7 = pd.read_csv(join(os.path.dirname(os.path.abspath(__file__)), "../data/Gonnord_S3C.csv")).values  # imports IL7 file into pandas array
-    IL4_data_max = np.amax(np.concatenate((dataIL4[:, 1], dataIL4[:, 2])))
-    IL7_data_max = np.amax(np.concatenate((dataIL7[:, 1], dataIL7[:, 2])))
 
     output = pstat_calc(unkVec, cytokC_common)  # run simulation
     # split according to cytokine and transpose for input into plot_conf_int
@@ -92,10 +89,11 @@ def pstat_plot(ax, unkVec):
     plot_conf_int(ax, cytokC_common, IL7_output * 100.0, "b", "IL-7 stim.")
 
     # overlay experimental data
-    ax.scatter(rand_jitter(cytokC_4), (dataIL4[:, 1] / IL4_data_max) * 100.0, color="powderblue", marker="^", edgecolors="k", zorder=100, s=20)
-    ax.scatter(rand_jitter(cytokC_4), (dataIL4[:, 2] / IL4_data_max) * 100.0, color="powderblue", marker="^", edgecolors="k", zorder=200, s=20)
-    ax.scatter(rand_jitter(cytokC_7), (dataIL7[:, 1] / IL7_data_max) * 100.0, color="b", marker="^", edgecolors="k", zorder=300, s=20)
-    ax.scatter(rand_jitter(cytokC_7), (dataIL7[:, 2] / IL7_data_max) * 100.0, color="b", marker="^", edgecolors="k", zorder=400, s=20)
+    ILdata = IL4_7_activity()
+    ax.scatter(rand_jitter(cytokC_4), ILdata.dataIL4[:, 0] * 100.0, color="powderblue", marker="^", edgecolors="k", zorder=100, s=20)
+    ax.scatter(rand_jitter(cytokC_4), ILdata.dataIL4[:, 1] * 100.0, color="powderblue", marker="^", edgecolors="k", zorder=200, s=20)
+    ax.scatter(rand_jitter(cytokC_7), ILdata.dataIL7[:, 0] * 100.0, color="b", marker="^", edgecolors="k", zorder=300, s=20)
+    ax.scatter(rand_jitter(cytokC_7), ILdata.dataIL7[:, 1] * 100.0, color="b", marker="^", edgecolors="k", zorder=400, s=20)
     ax.set(ylabel="pSTAT5/6 (% of max)", xlabel="Ligand Concentration (nM)", title="Activity")
     ax.set_xscale("log")
     ax.set_xticks([10e-5, 10e-3, 10e-1, 10e1])
@@ -200,10 +198,7 @@ def pretreat_calc(unkVec, pre_conc):
 
 def plot_pretreat(ax, unkVec, title):
     """ Generates plots that mimic the percent inhibition after pretreatment in Gonnord Fig S3. """
-    path = os.path.dirname(os.path.abspath(__file__))
-    data = pd.read_csv(join(path, "../data/Gonnord_S3D.csv")).values
-    IL7_pretreat_conc = data[:, 0] / 17400.0  # concentrations used for IL7 pretreatment followed by IL4 stimulation
-    IL4_pretreat_conc = data[:, 5] / 14900.0  # concentrations used for IL4 pretreatment followed by IL7 stimulation
+    datacl = crosstalk()
     PTS = 30
     K = unkVec.shape[1]  # should be 500
     pre_conc = np.logspace(-3.8, 1.0, num=PTS)
@@ -220,12 +215,12 @@ def plot_pretreat(ax, unkVec, title):
     ax.set_ylabel("Inhibition (% of no pretreat)")
 
     # add experimental data to plots
-    ax.scatter(rand_jitter(IL7_pretreat_conc), data[:, 1], color="powderblue", zorder=100, marker="^", edgecolors="k", s=20)
-    ax.scatter(rand_jitter(IL7_pretreat_conc), data[:, 2], color="powderblue", zorder=101, marker="^", edgecolors="k", s=20)
-    ax.scatter(rand_jitter(IL7_pretreat_conc), data[:, 3], color="powderblue", zorder=102, marker="^", edgecolors="k", s=20)
-    ax.scatter(rand_jitter(IL4_pretreat_conc), data[:, 6], color="b", zorder=103, marker="^", edgecolors="k", s=20)
-    ax.scatter(rand_jitter(IL4_pretreat_conc), data[:, 7], color="b", zorder=104, marker="^", edgecolors="k", s=20)
-    ax.scatter(rand_jitter(IL4_pretreat_conc), data[:, 8], color="b", zorder=105, marker="^", edgecolors="k", s=20)
+    ax.scatter(rand_jitter(datacl.pre_IL7), datacl.data[:, 1], color="powderblue", zorder=100, marker="^", edgecolors="k", s=20)
+    ax.scatter(rand_jitter(datacl.pre_IL7), datacl.data[:, 2], color="powderblue", zorder=101, marker="^", edgecolors="k", s=20)
+    ax.scatter(rand_jitter(datacl.pre_IL7), datacl.data[:, 3], color="powderblue", zorder=102, marker="^", edgecolors="k", s=20)
+    ax.scatter(rand_jitter(datacl.pre_IL4), datacl.data[:, 6], color="b", zorder=103, marker="^", edgecolors="k", s=20)
+    ax.scatter(rand_jitter(datacl.pre_IL4), datacl.data[:, 7], color="b", zorder=104, marker="^", edgecolors="k", s=20)
+    ax.scatter(rand_jitter(datacl.pre_IL4), datacl.data[:, 8], color="b", zorder=105, marker="^", edgecolors="k", s=20)
     ax.set_xscale("log")
     ax.set_xticks([10e-5, 10e-2, 10e0])
 
@@ -233,7 +228,7 @@ def plot_pretreat(ax, unkVec, title):
 def surf_gc(ax, cytokC_pg, unkVec):
     """ Generate a plot that shows the relative amount of gc on the cell surface under IL4 and IL7 stimulation. """
     PTS = 40
-    ts = np.linspace(0.0, 100.0, num=PTS)
+    ts = np.linspace(0.0, 20.0, num=PTS)
     output = calc_surf_gc(ts, cytokC_pg, unkVec)
     IL4vec = np.transpose(output[:, 0:PTS])
     IL7vec = np.transpose(output[:, PTS: (PTS * 2)])
