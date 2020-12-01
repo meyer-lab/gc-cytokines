@@ -6,7 +6,7 @@
 |--------------------------	|--------------	|--------------------------	|--------------------------	|----------	|
 |    CD25 (M-A251)        	|    1:120   	|    Brilliant   Violet 421	|    BioLegend (356114)    	|    0     	|
 |    CD122 (TU27)          	|    1:120     	|    PE/Cy7               	|    BioLegend (339014)    	|    0     	|
-|    CD132 (TUGh4)         	|    1:120     	|    APC                 	|    BioLegend (3386       	|    0     	|
+|    CD132 (TUGh4)         	|    1:120     	|    APC                 	|    BioLegend (3386)       	|    0     	|
 |    CD215 1st mAb (JM7A4) 	|    1:120     	|    APC                   	|    BioLegend (330210)    	|    0     	|
 |    CD215 2nd mAb (151303)	|    3:100     	|    APC                   	|    R&D Systems (FAB1471A)	|    0     	|
 |    CD127 (A019D5)        	|    1:120     	|    Alexa   Fluor 488   	|    BioLegend (351313)    	|    0     	|
