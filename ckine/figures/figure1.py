@@ -260,7 +260,7 @@ def rateComp(ax, unkVec, fsize=5):
             r"(2Rβ)·2·2Rα·$\mathrm{γ_{c}}$, (2Rβ)·15·15Rα·$\mathrm{γ_{c}}$": np.append(kfwd / k9rev, kfwd / k21rev),
             r"($\mathrm{γ_{c}}$)·2·2Rα·2Rβ, ($\mathrm{γ_{c}}$)·15·15Rα·2Rβ": np.append(kfwd / k10rev, kfwd / k22rev),
             "(2Rβ)·2·2Rα, (2Rβ)·15·15Rα": np.append(kfwd / k11rev, kfwd / k23rev),
-            "(15Rα)·2·2Rβ, (15Rα)·15·2Rβ": np.append(kfwd / k12rev, kfwd / k24rev),
+            "(2Rα)·2·2Rβ, (15Rα)·15·2Rβ": np.append(kfwd / k12rev, kfwd / k24rev),
         }
     )
 
