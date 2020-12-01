@@ -130,11 +130,12 @@ def rexpr_violin(ax, unkVec):
 
 def misc_violin(ax, unkVec):
     """ Create violin plot of activity scaling constants, sortF, and kfwd. """
-    misc = (unkVec[6, :] / np.max(unkVec[6, :]))
+    misc = np.vstack((unkVec[19, :], unkVec[6, :] / np.max(unkVec[6, :])))
     misc = pd.DataFrame(misc.T)
 
     misc.columns = [
-        "Cmplx form. rate / " + "{:.2E}".format(np.max(unkVec[6, :]))
+        "Sorting Fraction",
+        "Cmplx form. rate / " + "{:.2E}".format(np.max(unkVec[6, :])),
     ]
     a = sns.violinplot(data=misc, ax=ax, linewidth=0.5, color="grey")
     a.set_xticklabels(a.get_xticklabels(), rotation=25, rotation_mode="anchor", ha="right", fontsize=5, position=(0, 0.02))
