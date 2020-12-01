@@ -18,7 +18,7 @@ unkVec_2_15 = import_samples_2_15(N=1)
 data, receptor_data, cell_names_receptor = import_Rexpr()
 ckineConc, cell_names_pstat, IL2_data, IL15_data, _ = import_pstat()
 ckineC = ckineConc[7]
-time = 240.0
+time = 60.0
 unkVec = getRateVec(unkVec_2_15)
 CondIL = np.zeros((1, 6), dtype=np.float64)
 CondIL[0, 0] = ckineC

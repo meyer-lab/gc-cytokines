@@ -264,13 +264,13 @@ def global_legend(ax, Spec=False, Mut=False, exppred=True):
                 ax.legend(handles=[purple, yellow, circle, line], bbox_to_anchor=(1.02, 1), loc="upper left")
         if Mut:
             if not Spec:
-                circle = Line2D([], [], color="black", marker="o", linestyle="None", markersize=6, label="Experimental")
-                triangle = Line2D([], [], color="black", marker="^", linestyle="None", markersize=6, label="Predicted")
-                ax.legend(handles=[purple, yellow, circle, triangle], loc="upper left")
+                circle = Line2D([], [], color="black", marker="o", linestyle="None", markersize=6, label="Exper.")
+                triangle = Line2D([], [], color="black", marker="^", linestyle="None", markersize=6, label="Pred.")
+                ax.legend(handles=[purple, yellow, circle, triangle], loc="upper right", fontsize=6)
             if Spec:
-                circle = Line2D([], [], color="black", marker="o", linestyle="None", markersize=6, label="Experimental")
-                line = Line2D([], [], color="black", marker="_", linestyle="None", markersize=6, label="Predicted")
-                ax.legend(handles=[purple, yellow, circle, line], loc="upper left")
+                circle = Line2D([], [], color="black", marker="o", linestyle="None", markersize=6, label="Exper.")
+                line = Line2D([], [], color="black", marker="_", linestyle="None", markersize=6, label="Pred.")
+                ax.legend(handles=[purple, yellow, circle, line], loc="upper right", fontsize=6)
 
 
 def calc_dose_response(cell_names, unkVec, receptor_data, tps, cytokC, expr_act2, expr_act15):
