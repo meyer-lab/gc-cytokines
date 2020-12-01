@@ -7,7 +7,7 @@ flist = 1 2 3 4 5 6 S1 S2 S4 S5 S7
 
 .PHONY: clean test all testcover autopep spell
 
-all: ckine/ckine.so $(patsubst %, $(fdir)/figure%.svg, $(flist)) spell.txt
+all: ckine/ckine.so $(patsubst %, $(fdir)/figure%.svg, $(flist)) spell.txt Manuscript/Manuscript.pdf
 
 venv: venv/bin/activate
 
