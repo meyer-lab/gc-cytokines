@@ -292,9 +292,9 @@ def calc_dose_response(cell_names, unkVec, receptor_data, tps, cytokC, expr_act2
         else:
             # updates rxntfr for receptor expression for IL2Ra, IL2Rb, gc
             cell_data = receptor_data[i]
-            rxntfr2[:, 22] = cell_data[0] / 100
-            rxntfr2[:, 23] = cell_data[1] / 100
-            rxntfr2[:, 24] = cell_data[2] / 100
+            rxntfr2[:, 22] = cell_data[0]
+            rxntfr2[:, 23] = cell_data[1]
+            rxntfr2[:, 24] = cell_data[2]
             rxntfr2[:, 25] = 0.0  # We never observed any IL-15Ra
 
         rxntfr15 = rxntfr2.copy()
