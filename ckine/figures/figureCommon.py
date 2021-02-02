@@ -313,7 +313,10 @@ def calc_dose_response(cell_names, unkVec, receptor_data, tps, cytokC, expr_act2
             total_activity2[i, j, :, :] = np.reshape(activity2, (-1, len(tps)))  # save the activity from this concentration for all 4 tps
             total_activity15[i, j, :, :] = np.reshape(activity15, (-1, len(tps)))  # save the activity from this concentration for all 4 tps
 
-    return total_activity2, total_activity15
+    if Traf:
+        return total_activity2, total_activity15
+    else:
+        return total_activity2 / 1000, total_activity15 / 1000
 
 
 def import_pMuteins():
