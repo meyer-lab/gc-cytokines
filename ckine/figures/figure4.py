@@ -11,7 +11,7 @@ from ..imports import import_pstat, import_Rexpr, import_samples_2_15
 
 ckineConc, cell_names_pstat, IL2_data, IL2_data2, IL15_data, IL15_data2 = import_pstat(combine_samples=False)
 _, _, IL2_data_avg, IL15_data_avg, _ = import_pstat(combine_samples=True)
-unkVec_2_15 = import_samples_2_15(N=1)  # use one rate
+unkVec_2_15_glob = import_samples_2_15(N=1)  # use one rate
 _, receptor_data, cell_names_receptor = import_Rexpr()
 
 pstat_data = {
@@ -32,9 +32,9 @@ def makeFigure():
     tps = np.array([0.5, 1.0, 2.0, 4.0]) * 60.0
     tpsSC = np.array([0.5, 1.0]) * 60.0
     compare_experimental_data(ax[0], pstat_df)  # compare experiment 1 to 2
-    df = WT_EC50s()
+    df = WT_EC50s(unkVec_2_15_glob)
     catplot_comparison(ax[1], df, Mut=False)  # compare experiments to model predictions
-    plot_corrcoef(ax[2], tps)  # find correlation coefficients
+    plot_corrcoef(ax[2], tps, unkVec_2_15_glob)  # find correlation coefficients
     global_legend(ax[0], Mut=True, exppred=False)  # add legend subplots A-C
 
     plot_exp_v_pred(ax[3:9], tpsSC, cell_subset=["NK", "CD8+", "T-reg"])  # NK, CD8+, and Treg subplots taken from fig S5
@@ -52,11 +52,11 @@ def compare_experimental_data(ax, df):
     ax.set_aspect("equal", "box")
 
 
-def plot_corrcoef(ax, tps):
+def plot_corrcoef(ax, tps, unkVec_2_15, Traf=True):
     """ Plot correlation coefficients between predicted and experimental data for all cell types. """
     corr_coefs = np.zeros(2 * len(cell_names_receptor))
 
-    pred_data2, pred_data15 = calc_dose_response(cell_names_receptor, unkVec_2_15, receptor_data, tps, ckineConc, IL2_data_avg, IL15_data_avg)
+    pred_data2, pred_data15 = calc_dose_response(cell_names_receptor, unkVec_2_15, receptor_data, tps, ckineConc, IL2_data_avg, IL15_data_avg, Traf)
 
     for l, _ in enumerate(cell_names_receptor):
         corr_coef2 = pearsonr(IL2_data_avg[(l * 4): ((l + 1) * 4)].flatten(), np.squeeze(pred_data2[l, :, :, :]).T.flatten())
@@ -71,9 +71,9 @@ def plot_corrcoef(ax, tps):
     ax.set_xticklabels(ax.get_xticklabels(), rotation=40, fontsize=6.8, rotation_mode="anchor", ha="right")
 
 
-def calculate_predicted_EC50(x0, receptors, tps, cell_index):
+def calculate_predicted_EC50(x0, receptors, tps, cell_index, unkVec_2_15, Traf=True):
     """ Calculate average EC50 from model predictions. """
-    IL2_activity, IL15_activity = calc_dose_response(cell_names_pstat, unkVec_2_15, receptors, tps, ckineConc, IL2_data_avg, IL15_data_avg)
+    IL2_activity, IL15_activity = calc_dose_response(cell_names_pstat, unkVec_2_15, receptors, tps, ckineConc, IL2_data_avg, IL15_data_avg, Traf)
     EC50_2 = np.zeros(len(tps))
     EC50_15 = EC50_2.copy()
     # calculate EC50 for each timepoint... using 0 in activity matrices since we only have 1 sample from unkVec_2_15
@@ -83,7 +83,7 @@ def calculate_predicted_EC50(x0, receptors, tps, cell_index):
     return EC50_2, EC50_15
 
 
-def WT_EC50s():
+def WT_EC50s(unkVec_2_15, Traf=True):
     """Returns dataframe of the Wild Type EC50s"""
     df = pd.DataFrame(columns=["Time Point", "Cell Type", "IL", "Data Type", "EC50"])
 
@@ -100,7 +100,7 @@ def WT_EC50s():
         celltype_data_15 = IL15_data_avg[(i * 4): ((i + 1) * 4)]
         data_types.append(np.tile(np.array("Predicted"), len(tps)))
         # predicted EC50
-        EC50_2, EC50_15 = calculate_predicted_EC50(x0, receptor_data, tps, i)
+        EC50_2, EC50_15 = calculate_predicted_EC50(x0, receptor_data, tps, i, unkVec_2_15, Traf)
         for j, item in enumerate(EC50_2):
             EC50s_2[(2 * len(tps) * i) + j] = item
             EC50s_15[(2 * len(tps) * i) + j] = EC50_15[j]

@@ -273,7 +273,7 @@ def global_legend(ax, Spec=False, Mut=False, exppred=True):
                 ax.legend(handles=[purple, yellow, circle, line], loc="upper right", fontsize=6)
 
 
-def calc_dose_response(cell_names, unkVec, receptor_data, tps, cytokC, expr_act2, expr_act15):
+def calc_dose_response(cell_names, unkVec, receptor_data, tps, cytokC, expr_act2, expr_act15, Traf=True):
     """ Calculates activity for all cell types at various cytokine concentrations and timepoints. """
     PTS = cytokC.shape[0]  # number of cytokine concentrations
 
@@ -282,12 +282,20 @@ def calc_dose_response(cell_names, unkVec, receptor_data, tps, cytokC, expr_act2
     total_activity15 = total_activity2.copy()
 
     for i, cell in enumerate(cell_names):
-        # updates rxntfr for receptor expression for IL2Ra, IL2Rb, gc
-        cell_data = receptor_data[i]
-        rxntfr2[:, 22] = receptor_expression(cell_data[0], rxntfr2[:, 17], rxntfr2[:, 20], rxntfr2[:, 19], rxntfr2[:, 21])
-        rxntfr2[:, 23] = receptor_expression(cell_data[1], rxntfr2[:, 17], rxntfr2[:, 20], rxntfr2[:, 19], rxntfr2[:, 21])
-        rxntfr2[:, 24] = receptor_expression(cell_data[2], rxntfr2[:, 17], rxntfr2[:, 20], rxntfr2[:, 19], rxntfr2[:, 21])
-        rxntfr2[:, 25] = 0.0  # We never observed any IL-15Ra
+        if Traf:
+            # updates rxntfr for receptor expression for IL2Ra, IL2Rb, gc
+            cell_data = receptor_data[i]
+            rxntfr2[:, 22] = receptor_expression(cell_data[0], rxntfr2[:, 17], rxntfr2[:, 20], rxntfr2[:, 19], rxntfr2[:, 21])
+            rxntfr2[:, 23] = receptor_expression(cell_data[1], rxntfr2[:, 17], rxntfr2[:, 20], rxntfr2[:, 19], rxntfr2[:, 21])
+            rxntfr2[:, 24] = receptor_expression(cell_data[2], rxntfr2[:, 17], rxntfr2[:, 20], rxntfr2[:, 19], rxntfr2[:, 21])
+            rxntfr2[:, 25] = 0.0  # We never observed any IL-15Ra
+        else:
+            # updates rxntfr for receptor expression for IL2Ra, IL2Rb, gc
+            cell_data = receptor_data[i]
+            rxntfr2[:, 22] = cell_data[0]
+            rxntfr2[:, 23] = cell_data[1]
+            rxntfr2[:, 24] = cell_data[2]
+            rxntfr2[:, 25] = 0.0  # We never observed any IL-15Ra
 
         rxntfr15 = rxntfr2.copy()
 
@@ -305,7 +313,10 @@ def calc_dose_response(cell_names, unkVec, receptor_data, tps, cytokC, expr_act2
             total_activity2[i, j, :, :] = np.reshape(activity2, (-1, len(tps)))  # save the activity from this concentration for all 4 tps
             total_activity15[i, j, :, :] = np.reshape(activity15, (-1, len(tps)))  # save the activity from this concentration for all 4 tps
 
-    return total_activity2, total_activity15
+    if Traf:
+        return total_activity2, total_activity15
+    else:
+        return total_activity2 / 1000, total_activity15 / 1000
 
 
 def import_pMuteins():
