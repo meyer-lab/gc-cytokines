@@ -16,7 +16,7 @@ class runCkineDoseOp(Op):
     def __init__(self, tt, condense, conditions, preT=0.0, prestim=None):
         self.dOp = runCkineOpDoseDiff(tt, condense, conditions, preT, prestim)
 
-    def infer_shape(self, _, i0_shapes):
+    def infer_shape(self, _, node, i0_shapes):
         """ Infer shape of output. """
         assert len(i0_shapes) == 1
         return [(self.dOp.conditions.shape[0] * self.dOp.ts.size,)]
