@@ -1,6 +1,6 @@
 # Supplement
 
-### IL-2, IL-15, and IL-7 Receptor Quantitation
+### IL-2, IL-15, and IL-7 Receptor Quantitation. Related to Figure 3.
 
 |    Antibody (clone)      	|    Dilution  	|    Fluorophore           	|    Vendor (CAT#)         	|    Panel	| 
 |--------------------------	|--------------	|--------------------------	|--------------------------	|----------	|
