@@ -59,12 +59,6 @@
 
 \cleardoublepage
 
-### IL-2 variants' IL-2Rβ/γ~c~ affinities. Related to Figure 6.
-
-Data Table SD1: **IL-2Rβ/γ~c~ binding affinities of mutant and modified cytokines. Related to Figure 6.** Data from the BLI studies for each IL-2 mutein.
-
-\cleardoublepage
-
 ![**Model without trafficking fitted to IL-2/-15 dose response. Related to Figure 1.** A) Model without trafficking fit to IL-2 and IL-15 pSTAT5 dose response data [@ring_mechanistic_2012]. This model was not fit to the surface IL-2Rβ measurements since no receptors were allowed to internalize from the cell surface ([@Fig:modelConstruct]B-D). B) Posterior distributions for the analogous association constants of IL-2 and IL-15. Association constants measured in literature are represented by dots. Association constants are shown for species in parentheses complexing with following species. K~a~s for (2)·2Rα, (15)·15Rα, (2)·2Rβ, and (15)·2Rβ have units of nM, all other K~a~s have units of $\mathrm{\# \times cell^{-1}}$. C) Posterior distributions for receptor surface abundance in no-trafficking model. D) Posterior distributions after data fitting for no-trafficking model. C~5~, which is a constant in the sigmoidal relationship our model uses to translate active signaling complexes to pSTAT levels, has units of $\mathrm{\# \times cell^{-1}}$, Complex Formation Rate (k~fwd~) has units of $\mathrm{cell \times \#^{-1} \times min^{-1}}$. ](./Manuscript/Figures/figureS1.svg){#fig:supp1}
 
 ![**Geweke criterion scores for model fitting with and without trafficking. Related to Figure 1, 2, 4, and 6.** Geweke criterion z-scores in all subplots were calculated using 20 intervals in the first 10% and last 50% of MCMC chain. Scores of |z| < 1 imply fitting convergence. A-B) IL-2/-15 with and without trafficking. C) IL-4/-7 with trafficking ([@Fig:supp1]). ](./Manuscript/Figures/figureS2.svg){#fig:supp2}
