@@ -1,7 +1,5 @@
 # Supplement
 
-### IL-2, IL-15, and IL-7 Receptor Quantitation. Related to Figure 3.
-
 |    Antibody (clone)      	|    Dilution  	|    Fluorophore           	|    Vendor (CAT#)         	|    Panel	| 
 |--------------------------	|--------------	|--------------------------	|--------------------------	|----------	|
 |    CD25 (M-A251)        	|    1:120   	|    Brilliant   Violet 421	|    BioLegend (356114)    	|    0     	|
@@ -42,11 +40,9 @@
 |    CD56 (5.1H11)         	|    1:120     	|    Alexa Fluor    488    	|    BioLegend (362518)    	|    6     	|
 |    pSTAT5 (D4737)        	|    1:120     	|    PE                  	|    $\mathrm{CST^{*}}$ (14603)           	|    6     	|
 
-: *Panel 0:* Antibodies for IL-2, IL-15, and IL-7 receptor analysis; *Panel 1:* Antibodies to gate Naïve and Memory T-regulatory and T-helper cells; *Panel 2:* Antibodies to gate NK and CD56bright NK cells; *Panel 3:* Antibodies to gate Naïve and Memory Cytotoxic T cells; *Panel 4:* Antibodies to gate Naïve and Memory T-regulatory, T helper, and Cytotoxic cells, and NK cells for CD127 (IL-7) Quantitation; *Panel 5:* Antibodies to gate Memory and Naïve T-regulatory cells, Memory and Naïve T-helper cells; *Panel 6:* Antibodies to gate NK cells, CD56bright NK cells, and Cytotoxic T cells. $\mathrm{^{*}}$CST: Cell Signaling Technology.
+: **Antibodies used to quantify receptors and cell types. Related to Figure 3** *Panel 0:* Antibodies for IL-2, IL-15, and IL-7 receptor analysis; *Panel 1:* Antibodies to gate Naïve and Memory T-regulatory and T-helper cells; *Panel 2:* Antibodies to gate NK and CD56bright NK cells; *Panel 3:* Antibodies to gate Naïve and Memory Cytotoxic T cells; *Panel 4:* Antibodies to gate Naïve and Memory T-regulatory, T helper, and Cytotoxic cells, and NK cells for CD127 (IL-7) Quantitation; *Panel 5:* Antibodies to gate Memory and Naïve T-regulatory cells, Memory and Naïve T-helper cells; *Panel 6:* Antibodies to gate NK cells, CD56bright NK cells, and Cytotoxic T cells. $\mathrm{^{*}}$CST: Cell Signaling Technology.
 
 \cleardoublepage
-
-### IL-2 variants' mutations and conjugations. Related to Figure 6.
 
 |    Ligand      	|    Fc Conjugation  	|    Specificity Mutation           	|    Other Mutations         	| 
 |--------------------------	|--------------	|--------------------------	|--------------------------	|
@@ -56,6 +52,8 @@
 |    V91K C-term        	|    C-Terminus   	|    V91K	|   C125A   	|
 |    WT C-term        	|    C-Terminus   	|    Wild-type	|   C125A    	|
 |    WT N-term        	|    N-Terminus   	|    Wild-type	|   V69A/Q74P/C125S     	|
+
+: **Modified IL-2 ligands and their respective mutations, and Fc conjugations. Related to Figure 6.**.
 
 \cleardoublepage
 
