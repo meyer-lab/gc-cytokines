@@ -40,7 +40,7 @@
 |    CD56 (5.1H11)         	|    1:120     	|    Alexa Fluor    488    	|    BioLegend (362518)    	|    6     	|
 |    pSTAT5 (D4737)        	|    1:120     	|    PE                  	|    $\mathrm{CST^{*}}$ (14603)           	|    6     	|
 
-: **Antibodies used to quantify receptors and cell types. Related to Figure 3** *Panel 0:* Antibodies for IL-2, IL-15, and IL-7 receptor analysis; *Panel 1:* Antibodies to gate Naïve and Memory T-regulatory and T-helper cells; *Panel 2:* Antibodies to gate NK and CD56bright NK cells; *Panel 3:* Antibodies to gate Naïve and Memory Cytotoxic T cells; *Panel 4:* Antibodies to gate Naïve and Memory T-regulatory, T helper, and Cytotoxic cells, and NK cells for CD127 (IL-7) Quantitation; *Panel 5:* Antibodies to gate Memory and Naïve T-regulatory cells, Memory and Naïve T-helper cells; *Panel 6:* Antibodies to gate NK cells, CD56bright NK cells, and Cytotoxic T cells. $\mathrm{^{*}}$CST: Cell Signaling Technology.
+: **Antibodies used to quantify receptors and cell types. Related to Figure 3.** *Panel 0:* Antibodies for IL-2, IL-15, and IL-7 receptor analysis; *Panel 1:* Antibodies to gate Naïve and Memory T-regulatory and T-helper cells; *Panel 2:* Antibodies to gate NK and CD56bright NK cells; *Panel 3:* Antibodies to gate Naïve and Memory Cytotoxic T cells; *Panel 4:* Antibodies to gate Naïve and Memory T-regulatory, T helper, and Cytotoxic cells, and NK cells for CD127 (IL-7) Quantitation; *Panel 5:* Antibodies to gate Memory and Naïve T-regulatory cells, Memory and Naïve T-helper cells; *Panel 6:* Antibodies to gate NK cells, CD56bright NK cells, and Cytotoxic T cells. $\mathrm{^{*}}$CST: Cell Signaling Technology.
 
 \cleardoublepage
 
@@ -53,7 +53,7 @@
 |    WT C-term        	|    C-Terminus   	|    Wild-type	|   C125A    	|
 |    WT N-term        	|    N-Terminus   	|    Wild-type	|   V69A/Q74P/C125S     	|
 
-: **Modified IL-2 ligands and their respective mutations, and Fc conjugations. Related to Figure 6.**.
+: **Modified IL-2 ligands and their respective mutations, and Fc conjugations. Related to Figure 6.**
 
 \cleardoublepage
 
@@ -61,7 +61,7 @@
 
 ![**Geweke criterion scores for model fitting with and without trafficking. Related to Figure 1, 2, 4, and 6.** Geweke criterion z-scores in all subplots were calculated using 20 intervals in the first 10% and last 50% of MCMC chain. Scores of |z| < 1 imply fitting convergence. A-B) IL-2/-15 with and without trafficking. C) IL-4/-7 with trafficking ([@Fig:supp1]). ](./Manuscript/Figures/figureS2.svg){#fig:supp2}
 
-![**Receptor quantification and gating of PBMC-derived immune cell types.Related to Figure 3.** A) Preliminary gating for single lyphocytes. B) Example staining for CD122 (red), the corresponding isotype control (blue), and unstained cells (black). C) Gating for live T helper and T regulatory cells during receptor quantification. D) Live cell NK cell gating. E) Live cell CD8+ T cell gating. F) Gating for fixed T helper and T regulatory cells during pSTAT5 quantification. G) Fixed CD8+ T cell and NK cell gating.](./Manuscript/gatingFigure.svg){#fig:gating}
+![**Receptor quantification and gating of PBMC-derived immune cell types. Related to Figure 3.** A) Preliminary gating for single lyphocytes. B) Example staining for CD122 (red), the corresponding isotype control (blue), and unstained cells (black). C) Gating for live T helper and T regulatory cells during receptor quantification. D) Live cell NK cell gating. E) Live cell CD8+ T cell gating. F) Gating for fixed T helper and T regulatory cells during pSTAT5 quantification. G) Fixed CD8+ T cell and NK cell gating.](./Manuscript/gatingFigure.svg){#fig:gating}
 
 ![**Tucker factorization of predicted immune cell type responses. Related to Figure 5.** A) Timepoint decomposition plot showing factorization component values against time after decomposing the tensor’s first dimension into 2 components. B) Decomposition plot along the second (cell) dimension after decomposing it to 2 components showing the ten cell type values along each component. C) Ligand decomposition plot along the tensor’s third dimension after decomposing it into 3 components. D–E) Slices of the Tucker core tensor corresponding to time component 1 (D) and 2 (E).](./Manuscript/Figures/figureS4.svg){#fig:supp4}
 
