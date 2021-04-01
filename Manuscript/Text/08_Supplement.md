@@ -57,6 +57,8 @@
 |    WT C-term        	|    C-Terminus   	|    Wild-type	|   C125A    	|
 |    WT N-term        	|    N-Terminus   	|    Wild-type	|   V69A/Q74P/C125S     	|
 
+: Modified IL-2 ligands and their respective mutations, and Fc conjugations.
+
 \cleardoublepage
 
 ![**Model without trafficking fitted to IL-2/-15 dose response. Related to Figure 1.** A) Model without trafficking fit to IL-2 and IL-15 pSTAT5 dose response data [@ring_mechanistic_2012]. This model was not fit to the surface IL-2Rβ measurements since no receptors were allowed to internalize from the cell surface ([@Fig:modelConstruct]B-D). B) Posterior distributions for the analogous association constants of IL-2 and IL-15. Association constants measured in literature are represented by dots. Association constants are shown for species in parentheses complexing with following species. K~a~s for (2)·2Rα, (15)·15Rα, (2)·2Rβ, and (15)·2Rβ have units of nM, all other K~a~s have units of $\mathrm{\# \times cell^{-1}}$. C) Posterior distributions for receptor surface abundance in no-trafficking model. D) Posterior distributions after data fitting for no-trafficking model. C~5~, which is a constant in the sigmoidal relationship our model uses to translate active signaling complexes to pSTAT levels, has units of $\mathrm{\# \times cell^{-1}}$, Complex Formation Rate (k~fwd~) has units of $\mathrm{cell \times \#^{-1} \times min^{-1}}$. ](./Manuscript/Figures/figureS1.svg){#fig:supp1}
