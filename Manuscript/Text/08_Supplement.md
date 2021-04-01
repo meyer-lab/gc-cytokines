@@ -34,13 +34,13 @@
 |    CD25 (M-A251)         	|    1:120     	|    Brilliant   Violet 421	|    BioLegend (356114)    	|    5     	|
 |    CD4 (SK3)             	|    1:120     	|    Brilliant   Violet 605	|    BioLegend (344646)    	|    5     	|
 |    CD45RA (HI100)        	|    1:120     	|    PE/Dazzle   594      	|    BioLegend (304146)    	|    5     	|
-|    pSTAT5 (C71E5)        	|    1:120     	|    Alexa Fluor    647    	|    $\mathrm{CST^{*}}$ (9365)            	|    5     	|
+|    pSTAT5 (C71E5)        	|    1:120     	|    Alexa Fluor    647    	|    CST (9365)            	|    5     	|
 |    CD3 (UCHT1)           	|    1:120     	|    Brilliant   Violet 605	|    BioLegend (300460)    	|    6     	|
 |    CD8 (RPA-T8)          	|    1:120     	|    Alexa Fluor    647   	|    BioLegend (301062)    	|    6     	|
 |    CD56 (5.1H11)         	|    1:120     	|    Alexa Fluor    488    	|    BioLegend (362518)    	|    6     	|
-|    pSTAT5 (D4737)        	|    1:120     	|    PE                  	|    $\mathrm{CST^{*}}$ (14603)           	|    6     	|
+|    pSTAT5 (D4737)        	|    1:120     	|    PE                  	|    CST (14603)           	|    6     	|
 
-: **Antibodies used to quantify receptors and cell types. Related to Figure 3.** *Panel 0:* Antibodies for IL-2, IL-15, and IL-7 receptor analysis; *Panel 1:* Antibodies to gate Naïve and Memory T-regulatory and T-helper cells; *Panel 2:* Antibodies to gate NK and CD56bright NK cells; *Panel 3:* Antibodies to gate Naïve and Memory Cytotoxic T cells; *Panel 4:* Antibodies to gate Naïve and Memory T-regulatory, T helper, and Cytotoxic cells, and NK cells for CD127 (IL-7) Quantitation; *Panel 5:* Antibodies to gate Memory and Naïve T-regulatory cells, Memory and Naïve T-helper cells; *Panel 6:* Antibodies to gate NK cells, CD56bright NK cells, and Cytotoxic T cells. $\mathrm{^{*}}$CST: Cell Signaling Technology.
+: **Antibodies used to quantify receptors and cell types. Related to Figure 3.** *Panel 0:* Antibodies for IL-2, IL-15, and IL-7 receptor analysis; *Panel 1:* Antibodies to gate Naïve and Memory T-regulatory and T-helper cells; *Panel 2:* Antibodies to gate NK and CD56bright NK cells; *Panel 3:* Antibodies to gate Naïve and Memory Cytotoxic T cells; *Panel 4:* Antibodies to gate Naïve and Memory T-regulatory, T helper, and Cytotoxic cells, and NK cells for CD127 (IL-7) Quantitation; *Panel 5:* Antibodies to gate Memory and Naïve T-regulatory cells, Memory and Naïve T-helper cells; *Panel 6:* Antibodies to gate NK cells, CD56bright NK cells, and Cytotoxic T cells. CST: Cell Signaling Technology.
 
 \cleardoublepage
 
